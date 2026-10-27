@@ -748,15 +748,17 @@
       if (overImg){ overImg.style.transition = 'transform .25s'; } }, {passive:true});
     document.addEventListener('pointerleave', function(){ el.classList.remove('on'); });
     document.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); });
-    var vx = 0, prev = null, rot = 0;
+    var vx = 0, prev = null, rot = 0, running = false;
+    /* Schleife läuft nur, solange sich die Maus bewegt (schont CPU, Screenshots bleiben möglich) */
+    document.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && !running){ running = true; requestAnimationFrame(tick); } }, {passive:true});
     function tick(){ var now = performance.now();
+      if (!cur.t || now - cur.t > 1500){ running = false; return; }
       if (prev){ var dx = cur.x - prev.x; vx = vx * .8 + dx * .2; } prev = {x:cur.x, y:cur.y};
       rot = Math.max(-28, Math.min(28, vx * 1.4));
       el.style.transform = 'translate(' + (cur.x - 9) + 'px,' + (cur.y - 9) + 'px) rotate(' + rot.toFixed(1) + 'deg)';
       hist.unshift({x:cur.x, y:cur.y}); if (hist.length > 24) hist.pop();
       ghosts.forEach(function(g, i){ var p = hist[Math.min(hist.length - 1, (i + 1) * 5)]; if (p) g.style.transform = 'translate(' + (p.x - 9) + 'px,' + (p.y - 9) + 'px) scale(' + (1 - (i + 1) * .12) + ')'; });
       requestAnimationFrame(tick); }
-    requestAnimationFrame(tick);
   })();
   /* Abdruck beim Klick (Maus) bzw. Tippen (Touch), je Serie ein Motiv, verblasst */
   (function(){

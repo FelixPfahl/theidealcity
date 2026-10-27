@@ -1,5 +1,7 @@
 /* Josef Knoll, Portfolio: Spielereien. Kein Framework, keine Audiodateien (alles Web Audio). */
 (function(){
+  /* Holzschnitt-Textur der Versalien: Seeds je Seitenaufruf neu, damit die Textur immer variiert */
+  try { if (window.innerWidth > 700){ document.querySelectorAll('feTurbulence').forEach(function(t){ t.setAttribute('seed', String(Math.floor(Math.random() * 1000))); }); document.documentElement.classList.add('woodcut'); } } catch(e){}
   var T = window.JK_STRINGS || {};
   function safe(f){ try { f(); } catch(e){ try { console.warn('jk', e); } catch(_){} } }   /* ein Fehler in einem Block legt nicht alles lahm (Firefox) */
   var lang = document.documentElement.lang || 'de';
@@ -39,6 +41,45 @@
   /* Gesamtlautstärke (Regler) */
   var MASTER = null;
   function OUT(ac){ if(MASTER && MASTER.ctx===ac) return MASTER.node; var g=ac.createGain(); g.gain.value=FX.vol/100; g.connect(ac['destination']); MASTER={ctx:ac,node:g}; return g; }
+  /* ---------- Busse (Game-Audio): Werkzeuge, UI, Atmos, Spiel; Ducking der Atmos, wenn ein Werkzeug schreibt ---------- */
+  var BUS = null;
+  function bus(ac, name){ if (!BUS || BUS.ctx !== ac){ BUS = {ctx:ac}; var lv = {tools:.9, ui:.55, atmos:.5, game:1.0}; for (var k in lv){ var g = ac.createGain(); g.gain.value = lv[k]; g.connect(OUT(ac)); BUS[k] = g; } BUS.duckT = 0; }
+    return BUS[name] || OUT(ac); }
+  function duck(ac){ bus(ac, 'atmos'); var now = ac.currentTime; BUS.atmos.gain.cancelScheduledValues(now); BUS.atmos.gain.setTargetAtTime(.25, now, .05); clearTimeout(BUS.duckT); BUS.duckT = setTimeout(function(){ try { BUS.atmos.gain.setTargetAtTime(.5, ac.currentTime, .6); } catch(e){} }, 700); }
+  /* ---------- Werkzeug-Sprites (Aufnahmen von Pixabay, dunkel abgemischt): Round-Robin, Pitch und Lautstärke zufällig, 3 Stimmen je Werkzeug, Panning nach x ---------- */
+  var SPR = {};   /* tool -> {buf, clips, last, voices:[], lastT} */
+  var MOBILE = window.innerWidth <= 700 || /Mobi|Android/i.test(navigator.userAgent);
+  function spriteLoad(tool){ if (SPR[tool]) return SPR[tool].p; var ac = ctx(); if (!ac) return null; var base = '../assets/snd/' + tool + (MOBILE ? '-m' : '');
+    var ext = (document.createElement('audio').canPlayType('audio/ogg; codecs=vorbis') ? '.ogg' : '.mp3');
+    var st = {buf:null, clips:[], last:-1, voices:[], lastT:0};
+    st.p = Promise.all([fetch(base + '.json').then(function(r){ return r.json(); }), fetch(base + ext).then(function(r){ return r.arrayBuffer(); }).then(function(ab){ return ac.decodeAudioData(ab); })])
+      .then(function(r){ st.clips = r[0].clips; st.buf = r[1]; }).catch(function(){ st.buf = null; });
+    SPR[tool] = st; return st.p; }
+  function spritePlay(tool, opt){ opt = opt || {}; var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR[tool];
+    if (!st){ spriteLoad(tool); return; } if (!st.buf || !st.clips.length) return;
+    var now = ac.currentTime; if (now - st.lastT < .06 && !opt.force) return; st.lastT = now;
+    var i; do { i = Math.floor(Math.random() * st.clips.length); } while (st.clips.length > 1 && i === st.last); st.last = i;
+    var c = st.clips[i]; var src = ac.createBufferSource(); src.buffer = st.buf; src.playbackRate.value = Math.pow(2, ((Math.random() * 4 - 2) + (opt.semi || 0)) / 12);
+    var g = ac.createGain(); var vol = (opt.vol || 1) * Math.pow(10, (Math.random() * 6 - 3) / 20); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(vol, now + .01);
+    var dur = Math.min(c[1], opt.max || c[1]); g.gain.setValueAtTime(vol, now + dur - .03); g.gain.linearRampToValueAtTime(0, now + dur);
+    var pan = null; if (ac.createStereoPanner && opt.x !== undefined){ pan = ac.createStereoPanner(); pan.pan.value = Math.max(-.4, Math.min(.4, (opt.x / window.innerWidth - .5) * .8)); }
+    src.connect(g); if (pan){ g.connect(pan); pan.connect(bus(ac, opt.bus || 'tools')); } else g.connect(bus(ac, opt.bus || 'tools'));
+    src.start(now, c[0], dur); 
+    /* Polyphonie: höchstens 3 Stimmen je Werkzeug, die älteste wird ausgeblendet */
+    st.voices.push({g:g, src:src, t:now}); while (st.voices.length > 3){ var v = st.voices.shift(); try { v.g.gain.setTargetAtTime(0, now, .03); v.src.stop(now + .12); } catch(e){} }
+    st.voices = st.voices.filter(function(v){ return v.t + 2 > now; });
+    if ((opt.bus || 'tools') === 'tools') duck(ac); }
+  /* Plotter-Loop beim Scrollen: läuft mit Fade, solange gescrollt wird */
+  var LOOP = null;
+  function plotterLoop(on){ var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR.plotter; if (!st){ spriteLoad('plotter'); return; } if (!st.buf) return;
+    if (on){ if (!LOOP){ var src = ac.createBufferSource(); src.buffer = st.buf; src.loop = true; var c = st.clips[Math.floor(Math.random() * st.clips.length)]; src.loopStart = c[0]; src.loopEnd = c[0] + c[1]; src.playbackRate.value = .9 + Math.random() * .2;
+        var g = ac.createGain(); g.gain.value = 0; src.connect(g); g.connect(bus(ac, 'tools')); src.start(ac.currentTime, c[0]); LOOP = {src:src, g:g}; }
+      LOOP.g.gain.setTargetAtTime(.5, ac.currentTime, .08); clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
+    else if (LOOP){ LOOP.g.gain.setTargetAtTime(0, ac.currentTime, .15); var L = LOOP; LOOP = null; setTimeout(function(){ try { L.src.stop(); } catch(e){} }, 700); } }
+  window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad;
+  /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
+  var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function(ev){ window.addEventListener(ev, unlock, {passive:true, once:true}); });
   function vary(){ V.cents = (Math.random()*1000-500); V.len = .75+Math.random()*.6; V.vol = .7+Math.random()*.45; }
   function osc(ac, type, f, t, d, vol, env){ d*=V.len; vol*=V.vol; var o=ac.createOscillator(), g=ac.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); o.detune.value=V.cents;
     g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+(env||.01)); g.gain.exponentialRampToValueAtTime(.0005,t+d); o.connect(g); g.connect(OUT(ac)); o.start(t); o.stop(t+d+.02); return o; }
@@ -246,6 +287,7 @@
       clearInterval(pfTimer); pfTimer=null; clearTimeout(pfHide);
       if(!face.classList.contains('on') || face.classList.contains('fade')) return;
       face.classList.add('fade'); water.classList.remove('on'); clearTimeout(pfGone); pfGone=setTimeout(function(){ face.classList.remove('on','fade'); }, touch ? 9500 : 6500); }
+    window.JK_PFAHL = {on:function(e){ faceOn(e); }, off:function(){ faceOff(); }, move:function(e){ moveFace(e); }};
     function faceOn(e){ moveFace(e); clearTimeout(pfGone); face.classList.remove('fade'); face.classList.add('on'); water.classList.add('on'); play('pfahl'); clearInterval(pfTimer); pfTimer=setInterval(function(){ play('pfahl'); }, 3300); }
     pf.forEach(function(s){
       /* Maus: Überfahren zeigt das Gesicht; Finger oder Stift: Antippen zeigt es 8 s lang */
@@ -450,7 +492,7 @@
   });
 
   /* ---------- Fließtext: Wörter werden unter der Maus rot und bleiben rot, kurze Linse ---------- */
-  if (MOUSE) safe(function(){
+  if (false) safe(function(){   /* rote Hover-Wörter gestrichen (siebtes Interview): der Plotter ist die Textbewegung */
     var zones = '.sertext, .bio, .notes, .legal, .einzel .side, .textblock, .cvl, .info p';
     var raf = false, last = null;
     function wordAt(x, y){
@@ -510,8 +552,8 @@
   safe(function(){
     var menu = document.getElementById('menu'), btn = document.querySelector('.menubtn'); if (!menu || !btn) return;
     var peek = menu.querySelector('.mpeek'), x = menu.querySelector('.menux');
-    function open(){ menu.hidden = false; document.body.classList.add('menuopen'); btn.setAttribute('aria-expanded', 'true'); requestAnimationFrame(function(){ requestAnimationFrame(function(){ menu.classList.add('vis'); }); }); play('pageturn'); }
-    function close(){ menu.classList.remove('vis'); btn.setAttribute('aria-expanded', 'false'); document.body.classList.remove('menuopen'); setTimeout(function(){ menu.hidden = true; }, 320); }
+    function open(){ menu.hidden = false; document.body.classList.add('menuopen'); btn.setAttribute('aria-expanded', 'true'); requestAnimationFrame(function(){ requestAnimationFrame(function(){ menu.classList.add('vis'); }); }); if (SPR.papier && SPR.papier.buf) spritePlay('papier', {vol:.9, force:true, bus:'ui'}); else play('pageturn'); }
+    function close(){ if (SPR.papier && SPR.papier.buf) spritePlay('papier', {vol:.6, max:.5, force:true, bus:'ui'}); menu.classList.remove('vis'); btn.setAttribute('aria-expanded', 'false'); document.body.classList.remove('menuopen'); setTimeout(function(){ menu.hidden = true; }, 320); }
     btn.addEventListener('click', function(){ menu.hidden ? open() : close(); });
     x.addEventListener('click', close);
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden) close(); });
@@ -546,7 +588,7 @@
   safe(function(){
     var heads = Array.prototype.slice.call(document.querySelectorAll('section.series .serhead'));
     heads.forEach(function(hd){ hd.classList.add('sticky-head'); });
-    var par = Array.prototype.slice.call(document.querySelectorAll('.notes .figs, .einzel .side'));
+    var par = [];   /* Parallax gestrichen (siebtes Interview) */
     var calm = document.documentElement.classList.contains('calm');
     var t = false;
     function upd(){ t = false;
@@ -640,7 +682,8 @@
           if (!el._landed){ el._landed = true; if (el._huge && el._seen) softPlay(secSound(el), .35); } return; }
         el._seen = true;
         var w = r.width / Math.max(.01, parseFloat(el.style.getPropertyValue('--s')) || 1);
-        var maxS = el._huge ? Math.min(8, (vw * .92) / w) : Math.min(3, (vw * .5) / w);
+        if (el._rk === undefined) el._rk = .9 + Math.random() * .2;   /* leicht zufällig (Interview 27.10.) */
+        var maxS = (el._huge ? Math.min(8, (vw * .92) / w) : Math.min(3, (vw * .5) / w)) * el._rk;
         if (maxS < 1.35) maxS = 1.35;   /* auch am Handy sichtbar: mindestens ein Drittel größer */
         var e = ease(p), sc = maxS - (maxS - 1) * e;
         var cx = r.left + r.width / 2, tx = (vw / 2 - cx) * (1 - e);
@@ -692,7 +735,8 @@
     function applyZoom(){ img.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')'; img.style.transformOrigin = '0 0'; }
     function show(i){ idx = (i + group.length) % group.length; var a = group[idx]; var f = a.closest('figure') || a.parentNode;
       img.src = a.getAttribute('data-full') || a.getAttribute('href'); img.alt = a.getAttribute('data-alt') || '';
-      var fc = f.querySelector('figcaption'); cap.innerHTML = fc ? fc.innerHTML : ''; cnt.textContent = group.length > 1 ? (idx + 1) + ' / ' + group.length : '';
+      var fc = f.querySelector('figcaption'); cap.innerHTML = fc ? fc.innerHTML : ''; cap.classList.remove('plotted'); cap.style.minHeight = ''; cnt.textContent = group.length > 1 ? (idx + 1) + ' / ' + group.length : '';
+      if (window.JK_PLOT_ONCE) setTimeout(function(){ window.JK_PLOT_ONCE(cap, 900); }, 30);
       lb.querySelector('.p').style.display = lb.querySelector('.nx').style.display = group.length > 1 ? '' : 'none';
       resetZoom(); lensOn = !!a.closest('#suchbilder'); lens.classList.remove('on');
       if (spotBox){ spotBox.remove(); spotBox = null; } if (playBtn){ playBtn.remove(); playBtn = null; }
@@ -765,15 +809,15 @@
       weitere:[0, 'wind', .03, .05], praxis:[0, 'wind', .03, .08], princeofwales:[0, 'hall', .05, 0], draugr:[0, 'wind', .06, .15], idealcity:[0, 'hall', .05, 0], prozess:[0, 'wind', .03, .05],
       pinakothek2025:[0, 'hall', .04, 0], beckmann2022:[0, 'hall', .05, 0], huelshoff2022:[0, 'wind', .05, .12], streaming:[110, 'square', .02, 8], schule:[0, 'hall', .04, 0], texte:[0, 'wind', .05, .1] };
     var running = null;
-    function stopAtmo(){ if (!running) return; try { running.g.gain.setTargetAtTime(0, running.ac.currentTime, .4); running.nodes.forEach(function(n){ try { n.stop(running.ac.currentTime + 1.5); } catch(e){} }); } catch(e){} running.btn.classList.remove('on'); running.btn.textContent = 'Atmo an'; running.btn.setAttribute('aria-pressed','false'); running = null; }
+    function stopAtmo(){ if (!running) return; try { running.g.gain.setTargetAtTime(0, running.ac.currentTime, .4); running.nodes.forEach(function(n){ try { n.stop(running.ac.currentTime + 1.5); } catch(e){} }); } catch(e){} document.querySelectorAll('.atmo[data-atmo="' + running.btn.getAttribute('data-atmo') + '"]').forEach(function(x){ x.classList.remove('on'); x.textContent = 'Atmo an'; x.setAttribute('aria-pressed','false'); }); running = null; }
     function startAtmo(btn, sec){ var ac = ctx(); if (!ac) return; stopAtmo(); var p = ATMO[sec] || [0, 'wind', .04, .1];
-      var g = ac.createGain(); g.gain.setValueAtTime(0, ac.currentTime); g.gain.setTargetAtTime(p[2], ac.currentTime, 1.2); g.connect(OUT(ac)); var nodes = [];
+      var g = ac.createGain(); g.gain.setValueAtTime(0, ac.currentTime); g.gain.setTargetAtTime(p[2] * 2, ac.currentTime, 1.2); g.connect(bus(ac, 'atmos')); var nodes = [];
       if (p[1] === 'wind' || p[1] === 'hall'){ var n = ac.createBufferSource(); n.buffer = noiseBuf(ac, 4); n.loop = true; var f = ac.createBiquadFilter(); f.type = p[1] === 'hall' ? 'lowpass' : 'bandpass'; f.frequency.value = p[1] === 'hall' ? 420 : 600; f.Q.value = .6;
         var l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = p[3] || .1; lg.gain.value = p[1] === 'hall' ? 150 : 400; l.connect(lg); lg.connect(f.frequency); n.connect(f); f.connect(g); if (p[1] === 'hall'){ try { f.connect(rev(ac)); } catch(e){} } n.start(); l.start(); nodes.push(n, l); }
       else { var o = ac.createOscillator(); o.type = p[1]; o.frequency.value = p[0]; var o2 = ac.createOscillator(); o2.type = p[1]; o2.frequency.value = p[0] * 1.005; var lf = ac.createBiquadFilter(); lf.type = 'lowpass'; lf.frequency.value = 900;
         var l2 = ac.createOscillator(), lg2 = ac.createGain(); l2.frequency.value = p[3] || .3; lg2.gain.value = p[0] * .02; l2.connect(lg2); lg2.connect(o.frequency); o.connect(lf); o2.connect(lf); lf.connect(g); o.start(); o2.start(); l2.start(); nodes.push(o, o2, l2); }
-      running = {ac:ac, g:g, nodes:nodes, btn:btn}; btn.classList.add('on'); btn.textContent = 'Atmo aus'; btn.setAttribute('aria-pressed','true'); }
-    document.querySelectorAll('.atmo').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); if (running && running.btn === b) stopAtmo(); else startAtmo(b, b.getAttribute('data-atmo')); }); });
+      running = {ac:ac, g:g, nodes:nodes, btn:btn}; document.querySelectorAll('.atmo[data-atmo="' + sec + '"]').forEach(function(x){ x.classList.add('on'); x.textContent = 'Atmo aus'; x.setAttribute('aria-pressed','true'); }); }
+    document.querySelectorAll('.atmo').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); var sec = b.getAttribute('data-atmo'); if (running && running.btn.getAttribute('data-atmo') === sec) stopAtmo(); else startAtmo(b, sec); }); });
   });
 
   /* ---------- Schreibmaschine im Newsletter-Feld, Menü- und Modus-Töne, Wusch bei schneller Maus ---------- */
@@ -825,5 +869,212 @@
       var d = document.createElement('div'); d.className = 'imprint'; d.innerHTML = SH[id] || INK; d.style.left = (x + window.scrollX) + 'px'; d.style.top = (y + window.scrollY) + 'px'; d.style.setProperty('--r', ((Math.random() * 60) - 30).toFixed(0) + 'deg');
       document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 3300); }
     document.addEventListener('pointerdown', function(e){ if (e.button !== 0) return; if (e.target.closest && e.target.closest('.lb2, .menu, .modem, iframe, input, textarea, button, .nlpanel')) return; stamp(e.clientX, e.clientY, e.target); }, {passive:true});
+  });
+
+  /* ============================================================
+     Plotter: Fließtexte als Einlinien-Schrift (Relief SingleLine, isdaT), scrollgekoppelt gezeichnet, auf Canvas
+     (schnell auch auf schwachen Rechnern). Realismus (Interview 27.10., 21:00): Tintenpunkte beim Auf- und Absetzen, Duktus,
+     blasser bei schnellem Scrollen, Stift gibt nach 600 bis 900 Buchstaben auf (Halt, Motorfahrt, neuer Stift mit anderem Ton),
+     Betonungen mit fetterem Farbstift (Wechsel nur hörbar), Stift kratzt selten, alles leicht zufällig. Startseite: JO SEF beim Laden.
+     ============================================================ */
+  safe(function(){
+    var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p'));
+    if (!targets.length || !window.fetch || !window.Path2D) return;
+    var F = null, built = [], raf = false, humT = null, hum = null, lastScrollT = performance.now(), lastScrollY = window.scrollY, speed = 0;
+    var rnd = Math.random, R = function(a, b){ return a + rnd() * (b - a); };
+    var DPR = Math.min(2, window.devicePixelRatio || 1);
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var meas = document.createElementNS(svgNS, 'svg'); meas.setAttribute('width', 0); meas.setAttribute('height', 0); meas.style.position = 'absolute'; meas.style.left = '-9999px';
+    var mpath = document.createElementNS(svgNS, 'path'); meas.appendChild(mpath); document.body.appendChild(meas);
+    var GL = {}, GH = {}, FH = null;   /* je Zeichen: Path2D, Länge, Start, Ende (Glyph-Einheiten); GH/FH = Handschrift (Betonungen, nach Dürers Briefen 1506) */
+    var HAND = 1.6;   /* Handschrift: x-Höhe der Relief (545) zu Dürers Hand (300), Ober- und Unterlängen ragen in die Nachbarzeilen */
+    function mk(d, a){ mpath.setAttribute('d', d); var l = mpath.getTotalLength(), s0 = mpath.getPointAtLength(0), e0 = mpath.getPointAtLength(l); return {p:new Path2D(d), d:d, a:a, l:l, s:[s0.x, s0.y], e:[e0.x, e0.y]}; }
+    function glyph(ch, hand){
+      if (hand && FH){
+        var keys = GH['#' + ch]; if (!keys){ keys = []; for (var k in FH.g){ if (k === ch || k.indexOf(ch + '#') === 0) keys.push(k); } GH['#' + ch] = keys; }
+        if (!keys.length) return glyph(ch, false);
+        var key = keys[Math.floor(rnd() * keys.length)]; var gh = GH[key]; if (gh) return gh;
+        var dh = FH.g[key]; if (!dh.d){ gh = {p:null, a:dh.a, hand:true, en:dh.en, ex:dh.ex}; GH[key] = gh; return gh; }
+        gh = mk(dh.d, dh.a); gh.hand = true; gh.en = dh.en; gh.ex = dh.ex; gh.ap = dh.ap; if (dh.d2){ var g2 = mk(dh.d2, dh.a); gh.p2 = g2.p; gh.l2 = g2.l; gh.s2 = g2.s; gh.d2 = dh.d2; }
+        GH[key] = gh; return gh; }
+      var g = GL[ch]; if (g) return g; var d = F.g[ch] || F.g['?'] || {d:'',a:280}; if (!d.d){ g = {p:null, a:d.a}; GL[ch] = g; return g; }
+      g = mk(d.d, d.a); GL[ch] = g; return g; }
+    Promise.all([fetch('../assets/relief-lines.json').then(function(r){ return r.json(); }), fetch('../assets/duerer-hand.json').then(function(r){ return r.json(); }).catch(function(){ return null; })])
+      .then(function(fs){ F = fs[0]; FH = fs[1]; buildAll(); }).catch(function(){});
+    function runsOf(node, st, out){
+      Array.prototype.forEach.call(node.childNodes, function(c){
+        if (c.nodeType === 3){ if (c.nodeValue) out.push({t:c.nodeValue, s:st}); return; }
+        if (c.nodeType !== 1) return;
+        var s2 = {acc:st.acc, bold:st.bold, it:st.it, href:st.href, pf:st.pf};
+        var tag = c.tagName.toLowerCase(), cl = c.className || '';
+        if (tag === 'br'){ out.push({t:'\n', s:st}); return; }
+        if (tag === 'sup'){ out.push({sup:c}); return; }
+        if (/\bkw\b/.test(cl)) s2.acc = true; if (/\bname\b/.test(cl)) s2.bold = true;
+        if (tag === 'i' || tag === 'em' || tag === 'cite') s2.it = true; if (tag === 'b' || tag === 'strong') s2.bold = true;
+        if (tag === 'a'){ s2.href = c.getAttribute('href'); s2.acc = true; }
+        if (/\bpfahl\b/.test(cl)) s2.pf = true;
+        runsOf(c, s2, out); });
+      return out; }
+    function colors(el){ var cs = getComputedStyle(el); var acc = getComputedStyle(el.closest('.herohand, .comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A';
+      var dark = document.documentElement.getAttribute('data-mode') === 'dunkel';
+      return {ink: cs.color, acc: acc, warm: dark ? '#e3d4c2' : '#2a1c12', cool: dark ? '#c3d3e4' : '#101c2a'}; }
+    function build(el){
+      var hero = el.classList.contains('hero');
+      var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize), lh = hero ? fs * .9 : (parseFloat(cs.lineHeight) || fs * 1.42);
+      var W = el.clientWidth; if (!W || W < 40) return;
+      var sc = fs / F.upm, b_sc = sc, sw = hero ? Math.max(3, fs * .022) : 1.2;
+      var runs = hero ? [] : runsOf(el, {}, []);
+      var words = [], cur = null;
+      runs.forEach(function(r){
+        if (r.sup){ if (!cur){ cur = {items:[], w:0}; words.push(cur); } cur.items.push({sup:r.sup}); return; }
+        var txt = r.t.replace(/\s+/g, function(m){ return m.indexOf('\n') >= 0 ? '\n' : ' '; });
+        for (var i = 0; i < txt.length; i++){ var ch = txt[i];
+          if (ch === ' '){ cur = null; continue; }
+          if (ch === '\n'){ words.push({br:true}); cur = null; continue; }
+          if (!cur){ cur = {items:[], w:0}; words.push(cur); }
+          var hand = !!r.s.acc && !hero && ch !== ' '; var g = glyph(ch, hand); var kk = g.hand ? R(.95, 1.05) : 1; var s1 = (g.hand ? sc * HAND : sc) * kk; var adv = g.a * s1 * (r.s.bold && !g.hand ? 1.04 : 1);
+          cur.items.push({ch:ch, g:g, adv:adv, s:r.s, sc:s1, rot:g.hand ? R(-2, 2) : 0}); cur.w += adv; }
+      });
+      var nGl = words.reduce(function(n, w){ return n + (w.items ? w.items.length : 0); }, 0);
+      var scratch = {next:Math.round(R(60, 500)), left:0, used:0, max:Math.floor(nGl * .08)};
+      var space = glyph(' ').a * sc;
+      var x = 0, lines = 0, asc = F.asc * sc, base = asc + (lh - fs) / 2, lineOff = R(0, 1);
+      var items = [], hitems = [], sups = [], overlays = [], hwords = [], count = 0, life = hero ? 1e9 : Math.round(R(600, 900)), pen = {tone:0, fresh:0}, prev = null, prevH = null, cum = 0, hcum = 0;
+      var phase = R(0, 6.28);
+      function add(it, px, py){
+        var g = it.g; if (!g.p) return; var sc = it.sc || b_sc;
+        var acc = !!it.s.acc, w = acc ? (g.hand ? (it.s.bold ? 2.0 : 1.8) : (it.s.bold ? 2.6 : 2.2)) : sw; count++;
+        var o = R(.85, 1), wm = R(.8, 1.2), gapLen = 0, snd = null;
+        if (count > life - 40 && count <= life){ var k = (count - (life - 40)) / 40; o *= 1 - .8 * k; wm *= 1 - .5 * k; }
+        if (count === life){ gapLen = 900; snd = 'station'; pen.tone = (pen.tone === 0 ? (rnd() < .5 ? 1 : -1) : -pen.tone); pen.fresh = 6; life += Math.round(R(600, 900)); }
+        else if (pen.fresh > 0){ wm *= 1.5; o = 1; pen.fresh--; }
+        var scr = false;
+        if (!hero && !g.hand){ if (scratch.left > 0){ scr = true; scratch.left--; scratch.used++; } else if (count >= scratch.next && scratch.used < scratch.max){ scratch.left = Math.round(R(2, 8)) - 1; scr = true; scratch.used++; scratch.next = count + Math.round(R(300, 500)); } }
+        var skew = (it.s.it && !g.hand ? -9 : 0) + R(-1, 1);
+        /* Handschrift (Betonungen): wird ausgelassen und am Ende des Absatzes in Rot nachgetragen; Grundlinie wellt, Buchstaben verbunden */
+        var list = g.hand ? hitems : items, pv = g.hand ? prevH : prev, cc = g.hand ? hcum : cum;
+        var path = g.p, len = g.l, gs = g.s, ge = g.e;
+        if (g.hand){ py += (Math.sin(px / (fs * 2.2) + phase) * 70 + R(-45, 45)) * sc;
+          if (pv && !pv.wordEnd && g.ap && pv.exy > 180 && g.p2){ path = g.p2; len = g.l2; gs = g.s2; } }
+        var start = [px + gs[0] * sc, py - gs[1] * sc], end = [px + ge[0] * sc, py - ge[1] * sc];
+        if (g.hand && pv && !pv.wordEnd){
+          var tgt = (path === g.p2) ? [px + g.ap[0] * sc, py - g.ap[1] * sc] : [px + g.en[0] * sc, py - g.en[1] * sc];
+          var lx = (tgt[0] - pv.end[0]) / sc, ly = -(tgt[1] - pv.end[1]) / sc, ll = Math.hypot(lx, ly);
+          if (ll > 2 && ll < 900){ var ld = 'M0 0L' + lx.toFixed(1) + ' ' + ly.toFixed(1);
+            list.push({g:{p:new Path2D(ld), l:ll, d:ld}, x:pv.end[0], y:pv.end[1], sc:sc, skew:0, w:w * .8, o:o * .9, acc:true, hand:true, tone:0, scr:false, dash:null, len:ll, cum:cc, start:pv.end, end:tgt, d1:[0,0,0,0], d2:[0,0,0,0], bleed:null, pf:false, href:null, adv:0, link:true}); cc += ll; }
+          if (path === g.p2){ start = tgt; } }
+        else { gapLen += (pv ? R(10, 40) : 0) + (pv && pv.wordEnd ? R(20, 120) : 0); }
+        if (gapLen){ list.push({gap:true, len:gapLen, snd:snd, at:pv ? pv.end : start, cum:cc}); cc += gapLen; }
+        var item = {g:{p:path, l:len, a:g.a, d:(path === g.p2 ? g.d2 : g.d)}, x:px, y:py, sc:sc, skew:skew, rot:it.rot || 0, w:w * wm, o:o, acc:acc, hand:!!g.hand, exy:g.hand ? g.ex[1] : 0, tone:acc ? 0 : pen.tone, scr:scr, dash:null, len:len, cum:cc, start:start, end:end,
+          d1:[start[0] + R(-.3, .3), start[1] + R(-.3, .3), w * wm * R(.8, 1.2), R(.7, 1)], d2:[end[0] + R(-.3, .3), end[1] + R(-.3, .3), w * wm * R(.8, 1.2), R(.7, 1)],
+          bleed: rnd() < (g.hand ? .05 : .025) ? [start[0] + R(-1, 1), start[1] + R(-1, 1), w * wm * R(1.4, 2), R(.25, .45)] : null, pf: !!it.s.pf, href: it.s.href || null, adv: it.adv};
+        if (g.hand){ item.d1 = [start[0], start[1], w * wm * R(.9, 1.3), R(.8, 1)]; }
+        if (scr){ var da = [], tot = 0; while (tot < g.l){ var on = R(.3, 1.6) / sc, off = R(.6, 3) / sc; da.push(on, off); tot += on + off; } item.dash = da; item.oScr = R(.6, .9); }
+        list.push(item); cc += len;
+        if (g.hand){ prevH = item; hcum = cc; } else { prev = item; cum = cc; }
+      }
+      /* Hero: das Monogramm JK (nach Dürers AD) als Einlinie, groß geplottet */
+      if (hero && window.JK_MONO){ var M = window.JK_MONO, msc = (lh * 2) / M.h, mx = 2, my = M.h * msc + 2;
+        M.lines.forEach(function(line, li){ var pts = line.map(function(q){ return [q[0], M.h - q[1]]; }); var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1), l = 0;
+          for (var i = 1; i < pts.length; i++){ d += 'L' + pts[i][0].toFixed(1) + ' ' + pts[i][1].toFixed(1); l += Math.hypot(pts[i][0] - pts[i-1][0], pts[i][1] - pts[i-1][1]); }
+          var st = [mx + pts[0][0] * msc, my - pts[0][1] * msc], en = [mx + pts[pts.length-1][0] * msc, my - pts[pts.length-1][1] * msc];
+          if (li){ items.push({gap:true, len:300, at:prev ? prev.end : st, cum:cum}); cum += 300; }
+          var it = {g:{p:new Path2D(d), l:l, d:d, a:0}, x:mx, y:my, sc:msc, skew:0, rot:0, w:sw * 1.7, o:1, acc:false, hand:false, tone:0, scr:false, dash:null, len:l, cum:cum, start:st, end:en, d1:[st[0], st[1], sw * .9, .9], d2:[en[0], en[1], sw * .9, .9], bleed:null, pf:false, href:null, adv:0};
+          items.push(it); cum += l; prev = it; });
+        lines = 1; }
+      words.forEach(function(w){
+        if (w.br){ x = 0; lines++; lineOff = R(0, 1); return; }
+        if (x > 0 && x + w.w > W){ x = 0; lines++; lineOff = R(0, 1); }
+        var wx0 = x + lineOff, wy = lines * lh;
+        w.items.forEach(function(it){
+          if (it.sup){ sups.push({el:it.sup, x:x + lineOff, y:wy}); x += fs * .55; return; }
+          add(it, x + lineOff, wy + base); x += it.adv; });
+        var fi = w.items.filter(function(i){ return !i.sup; })[0];
+        if (fi && (fi.s.href || fi.s.pf)) overlays.push({x:wx0, y:wy, w:x - wx0, h:lh, href:fi.s.href, pf:fi.s.pf});
+        if (fi && fi.g && fi.g.hand && !hero) hwords.push({x:wx0, y:wy, w:x - wx0, h:lh, txt:w.items.filter(function(i){ return !i.sup; }).map(function(i){ return i.ch; }).join(''), base:base});
+        if (prev) prev.wordEnd = true; if (prevH) prevH.wordEnd = true;
+        x += space;
+      });
+      lines++;
+      /* Nachtrag: Federwechsel, dann alle Betonungen in Rot über dem Grau */
+      if (hitems.length){ items.push({gap:true, len:900, snd:'feder', at:prev ? prev.end : [0, 0], cum:cum}); cum += 900; var off = cum; hitems.forEach(function(h){ h.cum += off; items.push(h); }); cum += hcum; }
+      var H = hero && window.JK_MONO ? lh * 2 + 4 : lines * lh;
+      var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = 0; cv.height = 0;
+      var lv = document.createElement('canvas'); lv.className = 'plot live'; lv.style.width = W + 'px'; lv.style.height = H + 'px'; lv.width = 0; lv.height = 0;
+      var keep = document.createElement('span'); keep.className = 'vh plotsrc';
+      while (el.firstChild) keep.appendChild(el.firstChild);
+      el.appendChild(keep); el.appendChild(cv); el.appendChild(lv); el.classList.add('plotted'); el.style.minHeight = H + 'px';
+      sups.forEach(function(s){ s.el.classList.add('plotsup'); s.el.style.left = s.x + 'px'; s.el.style.top = s.y + 'px'; el.appendChild(s.el); });
+      /* Links und Felix Pfahl als unsichtbare Flächen über dem Canvas */
+      overlays.forEach(function(o){ var a = document.createElement(o.href ? 'a' : 'span'); a.className = 'plotlink' + (o.pf ? ' pfahl2' : ''); if (o.href) a.href = o.href; a.style.left = o.x + 'px'; a.style.top = o.y + 'px'; a.style.width = o.w + 'px'; a.style.height = o.h + 'px'; el.appendChild(a);
+        if (o.pf){ a.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.on(e); }); a.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.move(e); }); a.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.off(); }); a.addEventListener('click', function(e){ if (window.JK_PFAHL){ window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 8000); } }); } });
+      hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
+        var t = document.createElement('b'); t.className = 'plothand-w'; t.textContent = hw.txt; t.style.top = (lh * .55 + hw.base - fs * .78) + 'px'; a.appendChild(t); el.appendChild(a);
+        a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerleave', function(){ a.classList.remove('on'); }); });
+      built.push({el:el, cv:cv, lv:lv, W:W, H:H, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, played:{}, col:colors(el), alive:false, dirty:true});
+    }
+    window.JK_PLOT_ONCE = function(el, ms){ if (!F || !el || el.classList.contains('plotted')) return; try { build(el); } catch(e){ return; } var b = built[built.length - 1]; if (!b || b.el !== el) return; b.hero = true; b.t0 = performance.now(); b.ms = ms || 900; update(); };
+    function unbuild(b){ var src = b.el.querySelector('.plotsrc'); b.el.querySelectorAll('.plotsup').forEach(function(s){ s.classList.remove('plotsup'); s.style.left = s.style.top = ''; src.appendChild(s); }); b.el.querySelectorAll('.plotlink,.plothand').forEach(function(a){ a.remove(); }); b.cv.remove(); b.lv.remove(); if (src){ while (src.firstChild) b.el.appendChild(src.firstChild); src.remove(); } b.el.classList.remove('plotted'); b.el.style.minHeight = ''; }
+    function buildAll(){ built.forEach(unbuild); built = []; targets.forEach(function(el){ try { build(el); } catch(e){ try { console.warn('plot', e); } catch(_){} } }); update(); }
+    function strokeItem(c, b, it, d){ /* einen Glyph (ganz oder teilweise) auf einen Kontext zeichnen */
+      var col = b.col, sc = it.sc || b.sc, full = d >= it.len, stroke = it.acc ? col.acc : (it.tone > 0 ? col.warm : (it.tone < 0 ? col.cool : col.ink));
+      if (it.o0 === undefined) it.o0 = speed > 2.2 ? R(.45, .65) : 1;
+      c.setTransform(DPR * sc, 0, Math.tan(it.skew * Math.PI / 180) * -DPR * sc, -DPR * sc, it.x * DPR, it.y * DPR);
+      if (it.rot) c.rotate(-it.rot * Math.PI / 180);
+      c.strokeStyle = stroke; c.lineWidth = it.w / sc; c.globalAlpha = it.o * it.o0 * (full && it.scr ? it.oScr : 1); c.lineCap = 'round'; c.lineJoin = 'round';
+      if (full && it.scr){ c.setLineDash(it.dash); c.lineDashOffset = 0; } else { c.setLineDash([it.len, it.len + 2]); c.lineDashOffset = full ? 0 : (it.len - d); }
+      c.stroke(it.g.p);
+      c.setTransform(DPR, 0, 0, DPR, 0, 0); c.setLineDash([]); c.fillStyle = stroke;
+      c.globalAlpha = it.d1[3] * it.o0; c.beginPath(); c.arc(it.d1[0], it.d1[1], it.d1[2], 0, 6.283); c.fill();
+      if (it.bleed){ c.globalAlpha = it.bleed[3]; c.beginPath(); c.arc(it.bleed[0], it.bleed[1], it.bleed[2], 0, 6.283); c.fill(); }
+      if (full){ c.globalAlpha = it.d2[3] * it.o0; c.beginPath(); c.arc(it.d2[0], it.d2[1], it.d2[2], 0, 6.283); c.fill(); }
+      c.globalAlpha = 1; }
+    function travelTo(c, b, i){ var it = b.items[i], pr = null; for (var k = i - 1; k >= 0; k--){ if (!b.items[k].gap){ pr = b.items[k]; break; } }
+      if (!pr) return; c.setTransform(DPR, 0, 0, DPR, 0, 0); c.globalAlpha = .14; c.strokeStyle = b.col.ink; c.lineWidth = .6; c.setLineDash([]); c.beginPath(); c.moveTo(pr.end[0], pr.end[1]); c.lineTo(it.start[0], it.start[1]); c.stroke(); c.globalAlpha = 1; }
+    function draw(b){
+      /* Grundlage: fertige Glyphen bleiben stehen (nur neue dazu); Live-Lage: der laufende Strich und der Stift */
+      var cv = b.cv, lv = b.lv; if (!b.alive){ cv.width = Math.round(b.W * DPR); cv.height = Math.round(b.H * DPR); lv.width = cv.width; lv.height = cv.height; b.alive = true; b.done = 0; }
+      var c = cv.getContext('2d'), L = lv.getContext('2d');
+      var D = b.f * b.total, items = b.items, n = items.length;
+      /* wie viele Einträge sind vollständig? */
+      var done = 0; while (done < n && D - items[done].cum >= items[done].len) done++;
+      if (done < b.done){ /* rückwärts: nur die betroffenen Glyphen löschen, Nachbarn nachziehen (schnell) */
+        if (b.done - done > 400){ c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); b.done = 0; }
+        else { c.setTransform(DPR, 0, 0, DPR, 0, 0); for (var k = b.done - 1; k >= done; k--){ var g = items[k]; if (g.gap) continue; c.clearRect(g.x - 4, g.y - b.sc * F.asc - 6, g.adv + 8, b.sc * (F.asc - F.desc) + 12); }
+          for (var m = Math.max(0, done - 3); m < done; m++){ if (!items[m].gap){ travelTo(c, b, m); strokeItem(c, b, items[m], items[m].len); } } b.done = done; } }
+      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35) spritePlay('feder', {vol:.5, max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
+      b.done = done;
+      L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lv.width, lv.height);
+      var penAt = null;
+      if (done < n){ var cur = items[done], d = D - cur.cum;
+        if (cur.gap){ if (d > 0) penAt = cur.at; if (cur.snd && d > 0 && b.fwd && !b.played[done]){ b.played[done] = true; if (AC) penSound(cur.snd); } }
+        else if (d > 0){ travelTo(L, b, done); strokeItem(L, b, cur, d); mpath.setAttribute('d', cur.g.d); var pt = mpath.getPointAtLength(d); penAt = [cur.x + pt.x * (cur.sc || b.sc), cur.y - pt.y * (cur.sc || b.sc)]; } }
+      for (var j = done; j < n; j++) if (D - items[j].cum <= 0 && items[j].gap) b.played[j] = false;
+      if (penAt){ L.setTransform(DPR, 0, 0, DPR, 0, 0); L.globalAlpha = 1; L.fillStyle = b.col.acc; L.beginPath(); L.arc(penAt[0], penAt[1], b.hero ? 6 : 3, 0, 6.283); L.fill(); }
+    }
+    function update(){ raf = false; var vh = window.innerHeight, moved = false, now = performance.now();
+      var dy = Math.abs(window.scrollY - lastScrollY), dt = Math.max(1, now - lastScrollT); speed = speed * .6 + (dy / dt) * .4; lastScrollY = window.scrollY; lastScrollT = now;
+      built.forEach(function(b){ var r = b.el.getBoundingClientRect();
+        if (r.bottom < -vh * 2 || r.top > vh * 3){ if (b.alive && !b.hero){ b.cv.width = 0; b.cv.height = 0; b.lv.width = 0; b.lv.height = 0; b.alive = false; b.dirty = true; } return; }   /* weit weg: Speicher frei */
+        var f;
+        if (b.hero){ f = Math.min(1, (now - b.t0) / (b.ms || 2800)); if (f < 1) moved = true; }
+        else { f = Math.min(1, Math.max(0, (vh * .92 - r.top) / (r.height + vh * .3))); }
+        if (f !== b.f || b.dirty){ b.fwd = f > b.f; moved = moved || f !== b.f; b.f = f; b.dirty = false; if (r.bottom > -vh && r.top < vh * 2) draw(b); else b.dirty = true; } });
+      if (moved && AC){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
+      if (built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }
+    function penSound(kind){ var ac = ctx(); if (!ac) return; var t = ac.currentTime + .01; vary(); V.len = 1; V.vol = .8;
+      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:1.1, force:true}); spritePlay('plotter', {vol:.6, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
+      if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8, max:.3, force:true}); return; }
+      if (kind === 'swap'){ [0, .09].forEach(function(dt){ noise(ac, t + dt, .025, .5, 'lowpass', 900, 1, .025); osc(ac, 'square', 180, t + dt, .03, .25); }); }
+      else if (kind === 'feder'){ /* Feder wird aufgenommen und eingetaucht: Klirren, Tropfen, Kratzen */ noise(ac, t, .05, .35, 'highpass', 2600, 1, .05); osc(ac, 'triangle', 1900, t + .06, .05, .12, .002); noise(ac, t + .18, .22, .4, 'bandpass', 3200, 3, .1); }
+      else { var n = 9; for (var k = 0; k < n; k++){ osc(ac, 'square', 70 + k * 4, t + k * .035, .02, .14); } noise(ac, t + .34, .04, .5, 'lowpass', 700, 1, .04); osc(ac, 'sine', 60, t + .34, .12, .45, .004); noise(ac, t + .5, .03, .4, 'lowpass', 900, 1, .03); } }
+    function humOn(){ var ac = ctx(); if (!ac) return; if (!hum){ var o = ac.createOscillator(); o.type = 'square'; o.frequency.value = 55; var o2 = ac.createOscillator(); o2.type = 'sawtooth'; o2.frequency.value = 110.5;
+        var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260; lp.Q.value = 2; var g = ac.createGain(); g.gain.value = 0; o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(OUT(ac));
+        var n = ac.createBufferSource(); n.buffer = noiseBuf(ac, 2); n.loop = true; var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 6; var ng = ac.createGain(); ng.gain.value = .25; n.connect(bp); bp.connect(ng); ng.connect(g); o.start(); o2.start(); n.start(); hum = {g:g, ac:ac}; }
+      hum.g.gain.setTargetAtTime(.06 * V.vol, hum.ac.currentTime, .05); clearTimeout(humT); humT = setTimeout(function(){ hum.g.gain.setTargetAtTime(0, hum.ac.currentTime, .12); }, 220); }
+    window.addEventListener('scroll', function(){ if (!raf){ raf = true; requestAnimationFrame(update); } }, {passive:true});
+    var rs = null; window.addEventListener('resize', function(){ clearTimeout(rs); rs = setTimeout(function(){ if (F) buildAll(); }, 250); });
+    document.querySelectorAll('.modes button').forEach(function(bt){ bt.addEventListener('click', function(){ setTimeout(function(){ built.forEach(function(b){ b.col = colors(b.el); b.done = 0; if (b.alive){ var c = b.cv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,b.cv.width,b.cv.height); } b.dirty = true; }); update(); }, 30); }); });
+    document.addEventListener('pointerdown', function(){ if (built.some(function(b){ return b.hero && b.f < 1; })) requestAnimationFrame(update); }, {passive:true});
   });
 })();

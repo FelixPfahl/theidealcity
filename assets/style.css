@@ -1,18 +1,18 @@
 /* Josef Knoll, Portfolio. Weiß, Schwarz, Zinnoberrot #E2231A, Non-Photo-Blau #A4DDED (Comic).
-   Schriften: Relief SingleLine (Fließtext), Computer Duerer (Titel), Baskervville (Akzent). */
+   Schriften: Relief SingleLine (Fließtext, Plotter), Duerer1525 (Titel, Versalien nach der Underweysung 1525), DuererHand (Betonungen, nach Dürers Briefen 1506). */
 @font-face{font-family:"Relief";src:url(fonts/Relief-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Duerer";src:url(fonts/Duerer-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Duerer";src:url(fonts/Duerer-Bold.woff2) format("woff2");font-weight:700;font-display:swap}
 @font-face{font-family:"Duerer Sans";src:url(fonts/Duerer-Sans.woff2) format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"Baskervville";src:url(fonts/Baskervville.woff2) format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"Baskervville";src:url(fonts/Baskervville-Italic.woff2) format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Duerer1525";src:url(fonts/Duerer1525.woff2) format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"DuererHand";src:url(fonts/DuererHand.woff2) format("woff2");font-weight:400;font-display:swap}
 :root{
   --red:#E2231A; --blue:#A4DDED; --blue-ink:#3F97B8; --ink:#000; --paper:#fff; --grey:#6b6b6b; --line:#000; --hair:#e5e5e5; --green:#00A651;
   --gutter:clamp(16px,3vw,40px);
   --body:"Relief","Helvetica Neue",Helvetica,Arial,sans-serif;
-  --head:"Duerer","Baskervville","Times New Roman",serif;
+  --head:"Duerer1525","Duerer","Times New Roman",serif;
   --sans:"Duerer Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
-  --acc:"Baskervville","Times New Roman",serif;
+  --acc:"DuererHand","Duerer1525",cursive;
   --mono:"Courier New",Courier,monospace;
   --accent:var(--red);
 }
@@ -23,8 +23,8 @@ a{color:var(--accent);text-decoration:underline;text-underline-offset:.15em;text
 a:hover{background:var(--accent);color:#fff;text-decoration:none}
 img{max-width:100%;height:auto;display:block}
 ::selection{background:var(--red);color:#fff}
-h1,h2,h3,.hero,.mark{font-family:var(--head);font-weight:700;letter-spacing:.01em;text-transform:uppercase}
-i,em,cite{font-family:var(--acc);font-style:italic}
+h1,h2,h3,.hero,.mark{font-family:var(--head);font-weight:400;letter-spacing:.02em;text-transform:uppercase}
+i,em,cite{font-family:var(--acc);font-style:normal;font-size:1.12em}
 sup{font-size:.72em;line-height:0;vertical-align:super;color:var(--red);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:700}   /* Duerer Sans hat keine Ziffern: Ziffern ausdrücklich aus einer Schrift mit Ziffern */
 .n{color:var(--grey)}
 
@@ -66,7 +66,7 @@ nav.tabs a.on{border-bottom-color:var(--ink)}
 main{padding:0 var(--gutter) 60px}
 main.comicpage{background:var(--blue);margin:0;padding:0 0 60px}
 .pagehead{padding:clamp(28px,5vw,70px) 0 clamp(16px,3vw,40px);border-bottom:2px solid var(--line)}
-.pagehead h1{font-size:clamp(44px,9vw,150px);line-height:.9;margin:0}
+.pagehead h1{font-size:clamp(44px,9vw,150px);line-height:1;margin:0}
 .pagehead p{max-width:62ch;font-size:clamp(17px,1.3vw,22px);margin:.8em 0 0}
 .subnav{display:flex;flex-wrap:wrap;gap:8px 20px;padding:14px 0;font-size:15px;border-bottom:1px solid rgba(0,0,0,.25);font-family:var(--sans)}
 .subnav a{text-decoration:none;color:var(--ink)}
@@ -76,7 +76,7 @@ section.series{padding:clamp(36px,6vw,90px) 0;border-bottom:2px solid var(--line
 section.series:last-of-type{border-bottom:0}
 .serhead{display:grid;grid-template-columns:1fr;gap:12px 40px;align-items:end}
 @media (min-width:900px){.serhead{grid-template-columns:2fr 1fr}}
-.serhead h2{font-size:clamp(36px,6vw,96px);line-height:.95;margin:0}
+.serhead h2{font-size:clamp(30px,4.6vw,72px);line-height:1.05;margin:0}
 .meta{font-family:var(--sans);font-size:14px;line-height:1.5;text-transform:uppercase;letter-spacing:.06em}
 .meta .acc{color:var(--accent)}
 .meta .credit{text-transform:none;letter-spacing:0;color:var(--grey);font-family:var(--body);font-size:15px}
@@ -95,7 +95,7 @@ section.series:last-of-type{border-bottom:0}
 .work a{display:block;outline:none}
 .work img{width:100%;background:var(--hair);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
 .comicpage .work img{background:#fff}
-.work:hover img{transform:translateY(-6px) scale(1.02);box-shadow:0 18px 36px -12px rgba(0,0,0,.45)}
+.work:hover img{transform:none}   /* Kippen und Heben gestrichen (siebtes Interview) */
 .work figcaption{font-size:13.5px;line-height:1.35;margin-top:8px;color:var(--ink);font-family:var(--body)}
 .work figcaption i{font-family:var(--acc)}
 .work figcaption .n{color:var(--grey)}
@@ -416,7 +416,7 @@ sup.fn:hover,sup.fn:focus-visible,sup.fn.on{background:var(--red);color:#fff;out
 .landing .bigtabs small{display:none}
 @media (min-width:900px){.landing .peek{width:min(26vw,320px);opacity:.6}}
 /* Schlagworte im Fließtext: Akzentschrift kursiv in der Akzentfarbe (Josef, 27.10.) */
-em.kw{font-family:var(--acc);font-style:italic;font-weight:400;color:var(--accent);font-size:1.04em}
+em.kw{font-family:var(--acc);font-style:normal;font-weight:400;color:var(--accent);font-size:1.15em;line-height:0}
 .comicpage em.kw{color:var(--blue-ink)}
 .nlform em.kw,.legal em.kw{font:inherit;color:inherit}
 /* Schwebender Newsletter-Knopf (unten links) mit kleinem Anmeldefeld */
@@ -450,19 +450,19 @@ em.kw{font-family:var(--acc);font-style:italic;font-weight:400;color:var(--accen
 .fat{display:inline;white-space:normal}
 .fat .w{display:inline-block;white-space:nowrap}
 .fat .sp{display:inline-block;width:.28em}
-.fat .l{display:inline-block;-webkit-text-stroke:var(--st,0) currentColor;paint-order:stroke fill;transition:-webkit-text-stroke-width .9s ease-out,color .25s,transform .25s;margin-right:calc(var(--st,0px)*-.55);position:relative}
+.fat .l{display:inline-block;-webkit-text-stroke:var(--st,0) currentColor;paint-order:stroke fill;stroke-linejoin:miter;transition:-webkit-text-stroke-width .9s ease-out,color .25s,transform .25s;margin-right:calc(var(--st,0px)*-.55);position:relative}
 .fat .l.free{transition:-webkit-text-stroke-width .08s ease-out}
 .fat .l:nth-child(odd){z-index:1}
-.fatready .fat .l{--st:var(--fatmax,.09em)}
+.fatready .fat .l{--st:var(--fatmax,.045em)}
 /* Startseite: grüne Fläche = das Quadrat; Reiter schwarz, Hover rot; Newsletter weiß mit roter Kante */
 body.start{background:var(--green)}
 body.start .top{background:var(--green);border-bottom-color:#000}
 body.start footer{background:var(--paper)}
 .landing{grid-template-rows:auto auto auto 1fr;touch-action:pan-y;padding-bottom:40px;color:#000}
-.landing .hero{font-size:clamp(84px,12.5vw,230px);line-height:.86;--fatmax:.11em;touch-action:none;overflow:visible}
+.landing .hero{font-size:clamp(84px,12.5vw,230px);line-height:.86;--fatmax:.06em;touch-action:none;overflow:visible}
 .landing .hero .hl.red{color:var(--red)}
 .landing .bigtabs{justify-content:start;margin-top:.3em;gap:.08em;touch-action:none}
-.landing .bigtabs a{font-size:clamp(26px,6.4vw,104px);line-height:.95;color:#000;--fatmax:.1em;transition:color .25s;transform:none}
+.landing .bigtabs a{font-size:clamp(26px,6.4vw,104px);line-height:.95;color:#000;--fatmax:.05em;transition:color .25s;transform:none}
 .landing .bigtabs a:hover{color:var(--red);transform:none}
 .landing .bigtabs a.comic:hover{color:var(--red)}
 .landing .nlform.big{background:#000;color:#fff;border-color:#000;box-shadow:14px 14px 0 var(--red);margin:28px 0 0;max-width:980px}
@@ -487,12 +487,12 @@ body.start .nlknob{background:#fff;color:#000;border-color:#000}
 .serhead .serbg{position:absolute;left:14%;top:0;bottom:0;width:min(50vw,560px);z-index:-1;pointer-events:none;opacity:.42;transform:rotate(-2deg);transition:transform .8s cubic-bezier(.2,.8,.2,1);display:flex;align-items:flex-end}
 .serhead .serbg img{max-height:100%;width:auto;max-width:100%;object-fit:contain;filter:grayscale(1) contrast(.9);mix-blend-mode:multiply}
 .serhead:hover .serbg{transform:rotate(1deg) scale(1.03)}
-.serhead h2{font-size:clamp(40px,9.5vw,170px);line-height:.9;margin:0;--fatmax:.09em;position:relative;overflow-wrap:normal;hyphens:manual;padding-top:.1em}
+.serhead h2{font-size:clamp(40px,9.5vw,170px);line-height:.9;margin:0;--fatmax:.04em;position:relative;overflow-wrap:normal;hyphens:manual;padding-top:.1em}
 .serhead h2.long{font-size:clamp(34px,6.8vw,120px)}
 .serhead h2.xlong{font-size:clamp(28px,4.6vw,78px);line-height:.95}
 .pagehead h1.long{font-size:clamp(36px,7vw,120px)}
 .serhead .meta{margin-top:18px;max-width:46ch}
-.pagehead h1{--fatmax:.09em}
+.pagehead h1{--fatmax:.04em}
 .sticky-head{position:sticky;top:calc(var(--headh,70px) + var(--subh,50px));z-index:40;background:var(--paper);transform-origin:left top;transition:transform .2s linear,box-shadow .3s}
 .comicpage .sticky-head{background:var(--blue)}
 .comicpage .serhead .serbg img{mix-blend-mode:multiply}
@@ -569,7 +569,7 @@ body.start .menubtn{border-color:#000;color:#000}body.start .menubtn:hover{backg
 .menux{position:fixed;top:14px;left:var(--gutter);z-index:2;font:inherit;font-family:var(--sans);text-transform:uppercase;letter-spacing:.1em;font-size:13px;background:#000;border:1.5px solid #fff;color:#fff;padding:5px 10px;cursor:pointer}
 .menux:hover{background:#fff;color:#000}
 .menunav{position:relative;z-index:1;max-width:1400px}
-.menunav .mh{display:block;color:#fff;text-decoration:none;font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(40px,9vw,150px);line-height:.92;margin:.25em 0 0;--fatmax:.08em}
+.menunav .mh{display:block;color:#fff;text-decoration:none;font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(40px,9vw,150px);line-height:.92;margin:.25em 0 0;--fatmax:.04em}
 .menunav .mh:hover{background:none;color:var(--red)}
 .msub{display:flex;flex-wrap:wrap;gap:4px 22px;margin:10px 0 0;font-family:var(--sans);text-transform:uppercase;letter-spacing:.08em;font-size:clamp(13px,1.1vw,17px)}
 .msub a{color:#bbb;text-decoration:none;border-bottom:1px solid transparent}
@@ -631,7 +631,7 @@ body.start .veil{background:var(--green)}
    ============================================================ */
 .opener{position:relative;margin:0 calc(-1*var(--gutter));min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;padding:0 var(--gutter) 5vh;overflow:hidden;background:var(--paper)}
 .opener img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;padding:6vh 4vw;box-sizing:border-box;filter:brightness(.92)}
-.opener h2{position:relative;z-index:1;font-size:clamp(44px,11vw,220px);line-height:.9;margin:0;--fatmax:.1em;padding-bottom:.12em}
+.opener h2{position:relative;z-index:1;font-size:clamp(44px,11vw,220px);line-height:.9;margin:0;--fatmax:.05em;padding-bottom:.12em}
 @media (max-height:640px){.opener h2{font-size:clamp(36px,8vw,120px)}.opener h2.long{font-size:clamp(30px,6vw,90px)}.opener img{padding:4vh 4vw}}
 .opener::after{content:'';position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(to top,var(--paper) 0%,transparent 100%);opacity:.85;pointer-events:none}
 .opener.noimg::after{display:none}
@@ -642,7 +642,7 @@ html[data-mode=dunkel] .comicpage .opener::after{background:linear-gradient(to t
 .opener.noimg{min-height:0;padding-top:6vh;padding-bottom:3vh}
 html[data-mode=dunkel] .opener img{filter:brightness(.82)}
 .serhead{min-height:0;overflow:visible;padding:18px 0 0}
-.serhead .minititle{display:none;font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(18px,2vw,30px);line-height:1;background:var(--paper);padding:4px 0}
+.serhead .minititle{text-transform:uppercase;display:none;font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(18px,2vw,30px);line-height:1;background:var(--paper);padding:4px 0}
 .sticky-head{pointer-events:none;background:none}
 .sticky-head .meta,.sticky-head .topics{transition:opacity .25s}
 .sticky-head.small .meta,.sticky-head.small .topics{opacity:0}
@@ -664,7 +664,7 @@ html[data-mode=dunkel] .opener img{filter:brightness(.82)}
 .grid .work.fly,.powtiles figure.fly,.einzel .work.fly,.marg figure.fly{transform:translate(var(--tx,0px),0) scale(var(--s,1));z-index:calc(20 - var(--z,0));transition:none;position:relative;transform-origin:50% 50%;pointer-events:none}
 .grid .work.fly img{box-shadow:0 30px 60px -20px rgba(0,0,0,.7)}
 .grid .work{position:relative}
-.bigcap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(22px,4.2vw,76px);line-height:.9;color:#fff;text-align:center;width:100%;pointer-events:none;opacity:var(--cap,0);text-shadow:0 2px 24px rgba(0,0,0,.6);--fatmax:.06em;z-index:2}
+.bigcap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(22px,4.2vw,76px);line-height:.9;color:#fff;text-align:center;width:100%;pointer-events:none;opacity:var(--cap,0);text-shadow:0 2px 24px rgba(0,0,0,.6);--fatmax:.03em;z-index:2}
 .bigcap small{display:block;font-family:var(--acc);font-style:italic;text-transform:none;font-size:.32em;margin-top:.3em}
 html[data-mode=rot] .bigcap{color:#000;text-shadow:0 2px 24px rgba(226,35,26,.8)}
 /* Ausstellungsansicht als Trenner: bildschirmfüllend, angeschnitten, Parallax */
@@ -710,7 +710,7 @@ html[data-mode=dunkel] .marg figure img{filter:grayscale(1) contrast(.85) bright
 .song .playbig:hover{transform:scale(1.12) rotate(-6deg);background:none}
 .song .playbig.on{transform:scale(.9);color:var(--ink)}
 .song .playbig:active{transform:scale(1.4)}
-.song .quote{font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(24px,4.6vw,84px);line-height:.95;--fatmax:.08em}
+.song .quote{font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(24px,4.6vw,84px);line-height:.95;--fatmax:.04em}
 .song .songmeta{font-family:var(--acc);font-style:italic;font-size:clamp(15px,1.3vw,20px);margin:10px 0 0}
 .song .songmeta .n{font-style:normal}
 .song .spot{grid-column:1/-1;margin:0;overflow:hidden;max-height:0;transition:max-height .45s cubic-bezier(.2,.8,.2,1),transform .45s cubic-bezier(.2,.8,.2,1.4);transform:translateY(-30px)}
@@ -812,9 +812,110 @@ html[data-mode=dunkel] .mute,html[data-mode=dunkel] .menubtn{border-color:#8f8f8
 /* Zeiger über Fließtext halbtransparent (fünftes Interview) */
 .cur-el.dim{opacity:.4}
 /* Dürer-Eigenheiten in den großen Titeln (Josef, 27.10., 20:29) */
-.fat .l.sm{font-size:.72em;vertical-align:baseline}
-.fat .l.hi{font-size:.5em;vertical-align:.9em;margin-left:-.08em}
+.fat .l.mac{position:relative}
+.fat .l.mac::after{content:'';position:absolute;left:.08em;right:.08em;top:-.12em;height:.07em;background:currentColor}
+.fat .l.virgel{margin:0 .04em;transform:skewX(-12deg)}
+.ln{display:block}.ln2{font-size:.78em}.ln3{font-size:.62em}
+.ln:not(.last)::after{content:' /';opacity:.7}
 .fat .l.lig{margin-right:calc(var(--st,0px)*-.55 - .06em)}
 .fat .l.um{position:relative}
-.fat .l.um .ue{position:absolute;left:50%;top:-.22em;transform:translateX(-50%);font-size:.4em;line-height:1;-webkit-text-stroke:0;font-weight:700;text-transform:none}
+.fat .l.um .ue{position:absolute;left:50%;top:-.3em;transform:translateX(-50%);font-size:.42em;line-height:1;-webkit-text-stroke:.06em currentColor;font-weight:400;text-transform:none}
 .sertext .fat .l.sm,.sertext .fat .l.hi{font-size:inherit;vertical-align:baseline}
+/* Monogramm JK (wie Dürers AD) statt JO SEF im Kopf (Josef, 27.10.) */
+.mark .mono{height:40px;width:auto;display:block;fill:currentColor}
+@media (max-width:700px){.mark .mono{height:32px}}
+.mark:hover .mono{fill:var(--red)}
+/* Plotter: Fließtext als Einlinien-Schrift, scrollgekoppelt gezeichnet */
+.plotted{position:relative}
+.plotted .plotsrc{position:absolute!important}
+.plot{display:block}
+.plot path.acc{stroke:var(--accent)}
+.plot path.bold{stroke-width:2px}
+.plot path.acc.bold{stroke-width:2.2px}
+.plot .tr{stroke:var(--ink);opacity:.14;stroke-width:.6px}
+.plot .pen{fill:var(--accent);stroke:none;opacity:0;transition:opacity .2s}
+.plot a.wl path{stroke:var(--accent)}
+.plot a.wl:hover path{stroke:var(--ink)}
+.plotted sup.plotsup{position:absolute;margin:0;line-height:1;transform:translateY(-.3em)}
+.comicpage .plot path.acc,.comicpage .plot a.wl path{stroke:var(--blue-ink)}
+.plothero{stroke-width:5px}
+@media (max-width:700px){.plothero{stroke-width:3px}}
+.landing .hero.plotted{color:#000}
+.landing .hero.plotted .plot{stroke:#000}
+.landing .hero.plotted .pen{fill:var(--red)}
+html[data-mode=rot] .plot path.acc{stroke:#000}
+.sertext p.plotted em.kw,.sertext p.plotted em.kw.name{font:inherit}
+/* Plotter-Realismus: Tintenpunkte, Stifttöne, Farbstift */
+.plot .dots circle{fill:var(--ink);stroke:none}
+.plot .dots circle.acc{fill:var(--accent)}
+.plot path.warm,.plot .dots circle.warm{stroke:#2a1c12;fill:#2a1c12}
+.plot path.cool,.plot .dots circle.cool{stroke:#101c2a;fill:#101c2a}
+html[data-mode=dunkel] .plot path.warm,html[data-mode=dunkel] .plot .dots circle.warm{stroke:#e3d4c2;fill:#e3d4c2}
+html[data-mode=dunkel] .plot path.cool,html[data-mode=dunkel] .plot .dots circle.cool{stroke:#c3d3e4;fill:#c3d3e4}
+.plot .dots circle.warm{stroke:none}.plot .dots circle.cool{stroke:none}
+.comicpage .plot .dots circle.acc{fill:var(--blue-ink)}
+.plot path.bold{stroke-width:inherit}
+.lb2 .cap.plotted{min-width:min(60ch,80vw);text-align:left}
+.lb2 .cap .plot{stroke:#d6d6d6}.lb2 .cap .plot path.acc{stroke:var(--red)}
+.cvl li span.plotted{display:block}
+.plot g.pfahlg{pointer-events:stroke;cursor:help}
+.plot g.pfahlg path{stroke-width:1.6px}
+.minititle .atmo{margin:0 0 0 12px;vertical-align:middle;font-size:10px;padding:3px 7px}
+.sticky-head.small .minititle .atmo{opacity:1;pointer-events:auto}
+.sticky-head:not(.small) .minititle .atmo{display:none}
+.plotted{contain:layout paint}
+.plot path{transition:none}
+
+.plotted .plotlink{position:absolute;display:block;cursor:pointer;background:none}
+.plotted a.plotlink:hover{background:none}
+.plotted .plotlink.pfahl2{cursor:help}
+.landing .hero.plotted{color:#000}
+.plotted canvas.plot.live{position:absolute;left:0;top:0;pointer-events:none}
+.plotted canvas.plot{pointer-events:none}
+
+/* Dürer-Schriften: alle Titel, Reiter, Menüs in Versalien (Duerer1525 hat nur Versalien) */
+nav.tabs a,.subnav a,.menu a,.msub a,.minititle,.bigtabs a,.ctabtn .big,.nextpart,.fxpanel h2,.nlok,.moti p{font-family:var(--head);text-transform:uppercase;font-weight:400;letter-spacing:.02em}
+.fat .l{font-weight:400}
+.fatready .fat .l{--st:var(--fatmax,.03em)}
+/* Unterschrift unter jedem Text, in Dürers Hand */
+.sertext p.sig{margin:.6em 0 0;text-align:right;font-size:1.25em}
+.sertext p.sig em.kw{font-size:1em}
+.sticky-head .minititle,.serhead .minititle{font-size:clamp(20px,2.6vw,34px);line-height:1.05}
+
+/* Duerer1525: Buchstabenabstand und Zeilen der fetten Titel */
+.fat .l{margin-right:.015em}
+.fat .l.lig{margin-right:-.01em}
+h1 .fat,h2 .fat,.bigtabs .fat,.nextpart .fat{line-height:1.1}
+
+/* Hover über ein Handschriftwort: Federstrich durch das Wort, dann das Wort in Relief fett und rot an derselben Stelle; Handschrift blendet aus */
+.plotted .plothand{position:absolute;display:block;z-index:3;cursor:crosshair}
+.plotted .plothand::before{content:'';position:absolute;left:-2%;top:55%;width:0;height:2px;background:var(--accent);transform:rotate(-3deg);transition:width .18s ease-out}
+.plotted .plothand .plothand-w{position:absolute;left:0;white-space:nowrap;font-family:"Relief",sans-serif;font-weight:700;color:var(--accent);background:var(--paper);padding:0 .08em 0 0;opacity:0;transition:opacity .15s .22s;line-height:1;font-size:1em;-webkit-text-stroke:.5px var(--accent)}
+.plotted .plothand.on::before{width:104%}
+.plotted .plothand.on .plothand-w{opacity:1}
+.plotted .plothand.on{background:var(--paper)}
+
+/* Drucktextur der Versalien (Holzschnitt): rauer Rand, ungleichmäßige Deckung; Filter und Seeds wechseln je Aufruf (app.js) */
+.woodcut .fat .w{filter:url(#holz1)}
+.woodcut .fat .w:nth-child(3n+2){filter:url(#holz2)}
+.woodcut .fat .w:nth-child(3n){filter:url(#holz3)}
+/* Rot = Dürers Hand: alles in der Akzentfarbe läuft in der Handschrift; Bereichsfarbe: Kunst und Vermittlung rot, Comic blau, Texte grün */
+body.textbody{--accent:var(--green)}
+body.textbody em.kw,body.textbody .meta .acc{color:var(--green)}
+sup,.figs .abb,.marg .abb,.meta .acc,.notes h4,.textblock details summary,.footgrid a,a.wl,.sertext a,.work figcaption i,.cover figcaption i,.powtiles figcaption i,.chron i,.cvl i,.scriptcap i,.playcap i,.playmark i,.nlok{font-family:var(--acc);font-style:normal;font-weight:400}
+sup{font-size:.95em;vertical-align:super;line-height:0}
+.figs .abb,.marg .abb{font-size:1.2em}
+.work figcaption i,.cover figcaption i,.powtiles figcaption i{color:var(--accent);font-size:1.25em;line-height:0}
+.sertext a{font-size:1.15em;line-height:0}
+/* Roter Modus: Handschrift schwarz, Versalien weiß */
+html[data-mode=rot] em.kw,html[data-mode=rot] sup,html[data-mode=rot] .abb,html[data-mode=rot] .work figcaption i{color:#000}
+html[data-mode=rot] h1,html[data-mode=rot] h2,html[data-mode=rot] .fat,html[data-mode=rot] nav.tabs a,html[data-mode=rot] .subnav a{color:#fff}
+/* Holzschnitt-Textur nur auf großen Titeln */
+.woodcut nav.tabs .fat .w,.woodcut .subnav .fat .w,.woodcut .menu .fat .w,.woodcut .minititle .fat .w{filter:none}
+
+/* Hero: Monogramm geplottet, darunter die Handzeile (Josef, 28.10.) */
+.landing .hero{overflow:visible}
+.landing .herohand{font-size:clamp(18px,2.4vw,34px);margin:.2em 0 1.2em;color:#000;--accent:#000}
+.landing .herohand .plot{stroke:#000}
+.landing .herohand em{font-size:1em}
+.landing .hero.plotted .plotsrc{display:none}

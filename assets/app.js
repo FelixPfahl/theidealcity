@@ -302,6 +302,19 @@
     });
   }
 
+  /* ---------- Referenzbilder: groß ansehen, einzeln (kein Karussell) ---------- */
+  var refs = document.querySelectorAll('a.reflink');
+  if (refs.length){
+    var rb = document.createElement('div'); rb.className='lb lbref';
+    rb.innerHTML = '<button class="x">'+(T.close||'Schließen')+'</button><img alt=""><div class="cap"></div>';
+    document.body.appendChild(rb);
+    var rimg = rb.querySelector('img'), rcap = rb.querySelector('.cap');
+    function rhide(){ rb.classList.remove('on'); document.body.style.overflow=''; rimg.removeAttribute('src'); }
+    refs.forEach(function(a){ a.addEventListener('click', function(ev){ ev.preventDefault(); var im=a.querySelector('img'); rimg.src=a.getAttribute('href'); rimg.alt=im?im.alt:''; var fc=a.parentNode.querySelector('figcaption'); rcap.innerHTML=fc?fc.innerHTML:''; rb.classList.add('on'); document.body.style.overflow='hidden'; }); });
+    rb.querySelector('.x').onclick=rhide; rb.addEventListener('click', function(e){ if(e.target===rb || e.target===rimg) rhide(); });
+    document.addEventListener('keydown', function(e){ if(rb.classList.contains('on') && e.key==='Escape') rhide(); });
+  }
+
   /* ---------- Startseite: Bild zum Reiter ---------- */
   var peek = document.querySelector('.peek');
   if (peek){

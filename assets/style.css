@@ -302,3 +302,14 @@ a.wl:hover{color:var(--accent);background:none}
 #pfahlface.fade{opacity:0!important;transition:opacity 6s ease-out;animation:none!important}
 @media (hover:none){#pfahlface.fade{transition:opacity 9s ease-out}}
 .hero,.bigtabs,.mark,nav.tabs,.pagehead h1,.serhead h2,.ctabtn,.subnav,.work,.powtiles,.cover,.divider{-webkit-user-select:none;user-select:none}
+/* Handy: lange Titel dürfen nicht über den Rand laufen */
+.serhead h2{overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.serhead .meta{overflow-wrap:anywhere}
+@media (max-width:620px){.serhead h2{font-size:clamp(26px,8.2vw,40px)}.pagehead h1{overflow-wrap:break-word;hyphens:auto}}
+/* Referenzbilder anklickbar; auf großen Bildschirmen größer */
+a.reflink{display:block;cursor:zoom-in}
+a.reflink:hover{background:none}
+a.reflink img{transition:filter .2s}
+a.reflink:hover img{filter:none}
+.lbref img{cursor:zoom-out}
+@media (min-width:900px){.figs figure{width:210px}.figs.small figure{width:170px}.einzel .side{max-width:none}}

@@ -110,6 +110,28 @@
     slam: function(ac,t){ noise(ac,t,.12,.5,'lowpass',1200,.7,.12); var o=osc(ac,'sine',95,t,.3,.5,.005); o.frequency.exponentialRampToValueAtTime(40,t+.25); },
     flap: function(ac,t){ var n=3+Math.floor(Math.random()*3); for(var k=0;k<n;k++){ noise(ac,t+k*.11,.07,.3,'lowpass',1800,.7,.07); } },
     bikebell: function(ac,t){ for(var k=0;k<2;k++){ var tt=t+k*.14; osc(ac,'sine',2900,tt,.3,.12,.003); osc(ac,'sine',4300,tt,.2,.06,.003); } },
+    tja: function(ac,t){
+      /* "Tja": Formantsynthese einer resignierten Männerstimme. t (Verschluss, Aspiration), j (F1 280, F2 2250), Gleiten zum a (F1 750, F2 1250), Tonhöhe fällt */
+      var k=.85+Math.random()*.3, L=.9+Math.random()*.5, f0=128*k;
+      var mix=ac.createGain(); mix.gain.value=1.1; mix.connect(ac.destination); try{ mix.connect(rev(ac)); }catch(e){}
+      var src=ac.createOscillator(); src.type='sawtooth';
+      var tj=t+.035, ta=tj+.07*L, ts=ta+.08*L, te=ts+.42*L;
+      src.frequency.setValueAtTime(f0*1.12,tj); src.frequency.linearRampToValueAtTime(f0*1.05,ta); src.frequency.linearRampToValueAtTime(f0*.95,ts); src.frequency.exponentialRampToValueAtTime(f0*.66,te);
+      var soft=ac.createBiquadFilter(); soft.type='lowpass'; soft.frequency.value=3800; src.connect(soft);
+      var vg=ac.createGain(); vg.gain.setValueAtTime(.0001,tj); vg.gain.exponentialRampToValueAtTime(.55,tj+.03); vg.gain.setValueAtTime(.6,ts); vg.gain.exponentialRampToValueAtTime(.0001,te+.05); soft.connect(vg);
+      /* Formanten: j -> a */
+      var F=[[280,750,90,1],[2250,1250,110,.55],[2950,2600,160,.3],[3500,3400,250,.12]];
+      F.forEach(function(f){ var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.setValueAtTime(f[0],tj); bp.frequency.setValueAtTime(f[0],ta-.01); bp.frequency.linearRampToValueAtTime(f[1],ts); bp.Q.value=f[1]/f[2];
+        var g=ac.createGain(); g.gain.value=f[3]*2.2; vg.connect(bp); bp.connect(g); g.connect(mix); });
+      /* t: kurzer Verschlusslöser plus Aspiration */
+      var nb=ac.createBufferSource(); nb.buffer=noiseBuf(ac,.08); var hp=ac.createBiquadFilter(); hp.type='bandpass'; hp.frequency.value=4200; hp.Q.value=.9;
+      var ng=ac.createGain(); ng.gain.setValueAtTime(.0001,t); ng.gain.exponentialRampToValueAtTime(.35,t+.006); ng.gain.exponentialRampToValueAtTime(.06,t+.03); ng.gain.exponentialRampToValueAtTime(.0001,t+.07);
+      nb.connect(hp); hp.connect(ng); ng.connect(mix); nb.start(t); nb.stop(t+.08);
+      /* Hauch im Vokal (etwas Luft, klingt müder) */
+      var br=ac.createBufferSource(); br.buffer=noiseBuf(ac,1); var bf=ac.createBiquadFilter(); bf.type='bandpass'; bf.frequency.setValueAtTime(2000,tj); bf.frequency.linearRampToValueAtTime(1200,ts); bf.Q.value=1.5;
+      var bg=ac.createGain(); bg.gain.setValueAtTime(.0001,tj); bg.gain.exponentialRampToValueAtTime(.05,ta); bg.gain.exponentialRampToValueAtTime(.0001,te+.08); br.connect(bf); bf.connect(bg); bg.connect(mix); br.start(tj); br.stop(te+.1);
+      src.start(tj); src.stop(te+.1);
+    },
     pfahl: function(ac,t){
       /* Felix Pfahl: alles im Mittenbereich, damit es auch aus Handy-Lautsprechern unheimlich klingt
          (Handys geben unter ca. 250 Hz fast nichts wieder). Dissonanter Cluster, Theremin-Klage,

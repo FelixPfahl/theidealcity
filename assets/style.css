@@ -405,3 +405,13 @@ sup.fn:hover,sup.fn:focus-visible,sup.fn.on{background:var(--red);color:#fff;out
 .nlform.big .nlrow button:hover{background:var(--ink);border-color:var(--ink)}
 .landing .nlform.big{margin:36px var(--gutter) 0}
 @media (max-width:600px){.nlform.big{padding:18px 16px 16px;box-shadow:6px 6px 0 var(--red)}}
+/* Startseite: nach dem Newsletter nur eine schlanke Zeile (Josef, 27.10.: "da ist zu viel los") */
+.ctaline{font-family:var(--sans);text-transform:uppercase;letter-spacing:.08em;font-size:13px;line-height:1.9;margin:22px var(--gutter) 0;color:var(--ink)}
+.ctaline a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--red);padding-bottom:1px}
+.ctaline a:hover{color:var(--red);background:none}
+.ctaline .n{color:var(--grey);letter-spacing:.04em;font-size:11.5px}
+.ctaline .sep{color:var(--grey);margin:0 6px}
+.landing .nlform.big{margin-top:28px}
+.landing .cover{max-width:200px;margin-top:24px}.landing .cover .greensq{max-width:200px;padding-bottom:min(100%,200px)}
+.landing .bigtabs small{display:none}
+@media (min-width:900px){.landing .peek{width:min(26vw,320px);opacity:.6}}

@@ -30,6 +30,10 @@
   function noiseBuf(ac, d){ var n=Math.floor(ac.sampleRate*d), b=ac.createBuffer(1,n,ac.sampleRate), ch=b.getChannelData(0); for(var i=0;i<n;i++){ ch[i]=Math.random()*2-1; } return b; }
   function noise(ac, t, d, vol, type, f, q, decay){ d*=V.len; vol=(vol||.2)*V.vol; if(decay) decay*=V.len; var s=ac.createBufferSource(); s.buffer=noiseBuf(ac,d); var fl=ac.createBiquadFilter(); fl.type=type||'bandpass'; fl.frequency.setValueAtTime(f||1800,t); fl.detune.value=V.cents; fl.Q.value=q||.8;
     var g=ac.createGain(); g.gain.setValueAtTime(vol||.2,t); g.gain.exponentialRampToValueAtTime(.0005,t+(decay||d)); s.connect(fl); fl.connect(g); g.connect(ac.destination); s.start(t); s.stop(t+d); return fl; }
+  var REV = null;
+  function rev(ac){ if(REV && REV.ctx===ac) return REV.node; var d=2.8, n=Math.floor(ac.sampleRate*d), b=ac.createBuffer(2,n,ac.sampleRate);
+    for(var c=0;c<2;c++){ var ch=b.getChannelData(c); for(var i=0;i<n;i++){ ch[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.6); } }
+    var cv=ac.createConvolver(); cv.buffer=b; var g=ac.createGain(); g.gain.value=.9; cv.connect(g); g.connect(ac.destination); REV={ctx:ac,node:cv}; return cv; }
   var SND = {
     whistle: function(ac,t){ var o=osc(ac,'sine',1500,t,.36,.18,.03); o.frequency.exponentialRampToValueAtTime(2600,t+.12); o.frequency.exponentialRampToValueAtTime(1900,t+.3);
       var v=ac.createOscillator(), vg=ac.createGain(); v.frequency.value=22; vg.gain.value=60; v.connect(vg); vg.connect(o.frequency); v.start(t); v.stop(t+.35); },
@@ -106,7 +110,27 @@
     slam: function(ac,t){ noise(ac,t,.12,.5,'lowpass',1200,.7,.12); var o=osc(ac,'sine',95,t,.3,.5,.005); o.frequency.exponentialRampToValueAtTime(40,t+.25); },
     flap: function(ac,t){ var n=3+Math.floor(Math.random()*3); for(var k=0;k<n;k++){ noise(ac,t+k*.11,.07,.3,'lowpass',1800,.7,.07); } },
     bikebell: function(ac,t){ for(var k=0;k<2;k++){ var tt=t+k*.14; osc(ac,'sine',2900,tt,.3,.12,.003); osc(ac,'sine',4300,tt,.2,.06,.003); } },
-    pfahl: function(ac,t){ var o=osc(ac,'sine',55,t,2.2,.22,.6); o.frequency.linearRampToValueAtTime(48,t+2); noise(ac,t+.3,1.8,.06,'bandpass',300+Math.random()*300,2,1.8); osc(ac,'triangle',(Math.random()<.5?660:990),t+.6,.9,.04,.3); }
+    pfahl: function(ac,t){
+      /* Felix Pfahl: Drone mit Schwebung, Atem, Flüstern, verstimmte Spieluhr, Herzschlag, alles im Hall */
+      var wet = rev(ac);
+      function to(node, g, t0, d, vol, env){ var gg=ac.createGain(); gg.gain.setValueAtTime(0,t0); gg.gain.linearRampToValueAtTime(vol,t0+(env||.05)); gg.gain.exponentialRampToValueAtTime(.0005,t0+d); node.connect(gg); gg.connect(wet); gg.connect(ac.destination); }
+      var lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(140,t); lp.frequency.linearRampToValueAtTime(900,t+1.6); lp.frequency.linearRampToValueAtTime(120,t+3.2); lp.Q.value=6;
+      var d1=ac.createOscillator(), d2=ac.createOscillator(), d3=ac.createOscillator(); d1.type='sawtooth'; d2.type='sawtooth'; d3.type='sine';
+      d1.frequency.value=55; d2.frequency.value=55.7; d3.frequency.value=27.5; d1.connect(lp); d2.connect(lp); d3.connect(lp);
+      to(lp,null,t,3.4,.16,.5); d1.start(t); d2.start(t); d3.start(t); d1.stop(t+3.5); d2.stop(t+3.5); d3.stop(t+3.5);
+      /* Atem: langsam an- und abschwellendes Rauschen */
+      var br=ac.createBufferSource(); br.buffer=noiseBuf(ac,3); var bf=ac.createBiquadFilter(); bf.type='bandpass'; bf.frequency.setValueAtTime(400,t); bf.frequency.linearRampToValueAtTime(1600,t+1.4); bf.frequency.linearRampToValueAtTime(300,t+2.9); bf.Q.value=1.2; br.connect(bf); to(bf,null,t,3,.07,1.3); br.start(t); br.stop(t+3);
+      /* Flüstern: kurze Zischlaute in Sprachrhythmus */
+      var n=4+Math.floor(Math.random()*5), tt=t+.3+Math.random()*.6;
+      for(var k=0;k<n;k++){ var w=ac.createBufferSource(); w.buffer=noiseBuf(ac,.12); var wf=ac.createBiquadFilter(); wf.type='bandpass'; wf.frequency.value=1800+Math.random()*2500; wf.Q.value=5; w.connect(wf); to(wf,null,tt,.1+Math.random()*.08,.09,.01); w.start(tt); w.stop(tt+.2); tt+=.09+Math.random()*.16; }
+      /* Spieluhr, leicht verstimmt, irgendwo weit weg */
+      if(Math.random()<.8){ var f=[1760,1976,2093,1568,2349][Math.floor(Math.random()*5)]*(1+(Math.random()-.5)*.03); var mt=t+.8+Math.random()*1.6;
+        var m1=ac.createOscillator(), m2=ac.createOscillator(); m1.frequency.value=f; m2.frequency.value=f*2.76; to(m1,null,mt,1.4,.05,.005); to(m2,null,mt,.6,.015,.005); m1.start(mt); m2.start(mt); m1.stop(mt+1.5); m2.stop(mt+.7); }
+      /* Herzschlag */
+      [0.5,0.84].forEach(function(dt){ var h=ac.createOscillator(); h.frequency.setValueAtTime(52,t+dt); h.frequency.exponentialRampToValueAtTime(30,t+dt+.18); to(h,null,t+dt,.22,.3,.01); h.start(t+dt); h.stop(t+dt+.25); });
+      /* Rückwärts-Schwell: Rauschen wird lauter und bricht ab */
+      if(Math.random()<.6){ var st=t+1.6; var sw=ac.createBufferSource(); sw.buffer=noiseBuf(ac,1.3); var sf=ac.createBiquadFilter(); sf.type='highpass'; sf.frequency.value=2500; var sg=ac.createGain(); sg.gain.setValueAtTime(.0005,st); sg.gain.exponentialRampToValueAtTime(.12,st+1.25); sg.gain.setValueAtTime(0,st+1.27); sw.connect(sf); sf.connect(sg); sg.connect(wet); sw.start(st); sw.stop(st+1.3); }
+    }
   };
   var DEFAULT = ['whistle','squeak','shotgun','boing','zip','click','bell','ticks'];
   var lastName = '';
@@ -157,13 +181,17 @@
     var pfTimer = null;
     function moveFace(e){ face.style.left=e.clientX+'px'; face.style.top=e.clientY+'px'; }
     var pfHide = null;
-    function faceOff(){ face.classList.remove('on'); clearInterval(pfTimer); pfTimer=null; clearTimeout(pfHide); }
-    function faceOn(e){ moveFace(e); face.classList.add('on'); play('pfahl'); clearInterval(pfTimer); pfTimer=setInterval(function(){ play('pfahl'); }, 2100); }
+    var pfGone = null;
+    function faceOff(){ /* sehr langsam ausfaden (6 s), der Ton klingt mit Hall aus */
+      clearInterval(pfTimer); pfTimer=null; clearTimeout(pfHide);
+      if(!face.classList.contains('on') || face.classList.contains('fade')) return;
+      face.classList.add('fade'); clearTimeout(pfGone); pfGone=setTimeout(function(){ face.classList.remove('on','fade'); }, 6500); }
+    function faceOn(e){ moveFace(e); clearTimeout(pfGone); face.classList.remove('fade'); face.classList.add('on'); play('pfahl'); clearInterval(pfTimer); pfTimer=setInterval(function(){ play('pfahl'); }, 3300); }
     var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
     pf.forEach(function(s){
       if (touch){
         /* Handy: beim Antippen kurz zeigen, nach 2,5 Sekunden oder beim nächsten Tippen irgendwo wieder weg */
-        s.addEventListener('touchstart', function(e){ var t=e.touches[0]; faceOn({clientX:t.clientX, clientY:t.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 2500); }, {passive:true});
+        s.addEventListener('touchstart', function(e){ var t=e.touches[0]; faceOn({clientX:t.clientX, clientY:t.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 6000); }, {passive:true});
       } else {
         s.addEventListener('mouseenter', faceOn);
         s.addEventListener('mousemove', moveFace);

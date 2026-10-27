@@ -175,6 +175,8 @@
     lastName = name; play(name);
   }
   document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl')) return; clickSound(e.target); }, true);
+  /* Schnelles Mehrfachklicken (wegen der Klänge) markiert keinen Text außerhalb von Fließtext */
+  document.addEventListener('mousedown', function(e){ if(e.detail>1 && !(e.target.closest && e.target.closest('p, li, pre, blockquote, input, textarea, .sertext, .notes'))) e.preventDefault(); });
   /* Handy: Audio beim ersten Antippen freischalten (iOS) */
   ['touchend','click'].forEach(function(ev){ document.addEventListener(ev, function(){ ctx(); }, {passive:true}); });
   /* Spotify erst auf Klick laden (Datenschutz) */

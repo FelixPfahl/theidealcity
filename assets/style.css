@@ -301,3 +301,4 @@ a.wl:hover{color:var(--accent);background:none}
 .cta.links{grid-template-columns:1fr;max-width:720px}
 #pfahlface.fade{opacity:0!important;transition:opacity 6s ease-out;animation:none!important}
 @media (hover:none){#pfahlface.fade{transition:opacity 9s ease-out}}
+.hero,.bigtabs,.mark,nav.tabs,.pagehead h1,.serhead h2,.ctabtn,.subnav,.work,.powtiles,.cover,.divider{-webkit-user-select:none;user-select:none}

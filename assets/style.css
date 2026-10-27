@@ -298,3 +298,4 @@ a.wl:hover{color:var(--accent);background:none}
 .cfoot .n{font-size:13px}
 .landing .cta{margin-top:24px}
 .cover .greensq{padding-bottom:min(100%,260px)}
+.cta.links{grid-template-columns:1fr;max-width:720px}

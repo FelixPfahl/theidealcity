@@ -115,7 +115,7 @@
       var k=.85+Math.random()*.3, L=.9+Math.random()*.5, f0=128*k;
       var mix=ac.createGain(); mix.gain.value=1.1; mix.connect(ac.destination); try{ mix.connect(rev(ac)); }catch(e){}
       var src=ac.createOscillator(); src.type='sawtooth';
-      var tj=t+.035, ta=tj+.07*L, ts=ta+.08*L, te=ts+.42*L;
+      var tb=t+.03, tj=tb+.075, ta=tj+.07*L, ts=ta+.08*L, te=ts+.42*L;   /* tb: Verschlusslösung des t, danach 75 ms Behauchung (deutsches t), dann Stimme */
       src.frequency.setValueAtTime(f0*1.12,tj); src.frequency.linearRampToValueAtTime(f0*1.05,ta); src.frequency.linearRampToValueAtTime(f0*.95,ts); src.frequency.exponentialRampToValueAtTime(f0*.66,te);
       var soft=ac.createBiquadFilter(); soft.type='lowpass'; soft.frequency.value=3800; src.connect(soft);
       var vg=ac.createGain(); vg.gain.setValueAtTime(.0001,tj); vg.gain.exponentialRampToValueAtTime(.55,tj+.03); vg.gain.setValueAtTime(.6,ts); vg.gain.exponentialRampToValueAtTime(.0001,te+.05); soft.connect(vg);
@@ -123,14 +123,41 @@
       var F=[[280,750,90,1],[2250,1250,110,.55],[2950,2600,160,.3],[3500,3400,250,.12]];
       F.forEach(function(f){ var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.setValueAtTime(f[0],tj); bp.frequency.setValueAtTime(f[0],ta-.01); bp.frequency.linearRampToValueAtTime(f[1],ts); bp.Q.value=f[1]/f[2];
         var g=ac.createGain(); g.gain.value=f[3]*2.2; vg.connect(bp); bp.connect(g); g.connect(mix); });
-      /* t: kurzer Verschlusslöser plus Aspiration */
-      var nb=ac.createBufferSource(); nb.buffer=noiseBuf(ac,.08); var hp=ac.createBiquadFilter(); hp.type='bandpass'; hp.frequency.value=4200; hp.Q.value=.9;
-      var ng=ac.createGain(); ng.gain.setValueAtTime(.0001,t); ng.gain.exponentialRampToValueAtTime(.35,t+.006); ng.gain.exponentialRampToValueAtTime(.06,t+.03); ng.gain.exponentialRampToValueAtTime(.0001,t+.07);
-      nb.connect(hp); hp.connect(ng); ng.connect(mix); nb.start(t); nb.stop(t+.08);
+      /* t: knackige Verschlusslösung (breitbandig, 4 ms) */
+      var nb=ac.createBufferSource(); nb.buffer=noiseBuf(ac,.02); var hp=ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=2200;
+      var ng=ac.createGain(); ng.gain.setValueAtTime(.0001,tb); ng.gain.exponentialRampToValueAtTime(.45,tb+.002); ng.gain.exponentialRampToValueAtTime(.0001,tb+.018);
+      nb.connect(hp); hp.connect(ng); ng.connect(mix); nb.start(tb); nb.stop(tb+.02);
+      /* Behauchung mit Zischen wie "tch" (palatal vor dem j), hört man deutlich als t */
+      var na=ac.createBufferSource(); na.buffer=noiseBuf(ac,.12); var af=ac.createBiquadFilter(); af.type='bandpass'; af.frequency.setValueAtTime(4200,tb); af.frequency.linearRampToValueAtTime(3200,tj); af.Q.value=1.4;
+      var ag=ac.createGain(); ag.gain.setValueAtTime(.0001,tb); ag.gain.exponentialRampToValueAtTime(.32,tb+.012); ag.gain.setValueAtTime(.28,tj-.02); ag.gain.exponentialRampToValueAtTime(.0001,tj+.035);
+      na.connect(af); af.connect(ag); ag.connect(mix); na.start(tb); na.stop(tb+.12);
       /* Hauch im Vokal (etwas Luft, klingt müder) */
       var br=ac.createBufferSource(); br.buffer=noiseBuf(ac,1); var bf=ac.createBiquadFilter(); bf.type='bandpass'; bf.frequency.setValueAtTime(2000,tj); bf.frequency.linearRampToValueAtTime(1200,ts); bf.Q.value=1.5;
       var bg=ac.createGain(); bg.gain.setValueAtTime(.0001,tj); bg.gain.exponentialRampToValueAtTime(.05,ta); bg.gain.exponentialRampToValueAtTime(.0001,te+.08); br.connect(bf); bf.connect(bg); bg.connect(mix); br.start(tj); br.stop(te+.1);
       src.start(tj); src.stop(te+.1);
+    },
+    hm: function(ac,t){
+      /* "Hm": geschlossener Mund, Nasalklang mit fallender Tonhöhe */
+      var f0=(110+Math.random()*30), d=.45+Math.random()*.35; var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(f0*1.08,t); o.frequency.exponentialRampToValueAtTime(f0*.8,t+d);
+      var g=ac.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.5,t+.06); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g);
+      [[250,60,1],[1100,200,.12],[2400,250,.06]].forEach(function(f){ var bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=f[0]; bp.Q.value=f[0]/f[1]; var gg=ac.createGain(); gg.gain.value=f[2]*2.5; g.connect(bp); bp.connect(gg); gg.connect(ac.destination); });
+      o.start(t); o.stop(t+d+.05); },
+    sigh: function(ac,t){
+      /* Seufzer: Ausatmen durch den offenen Mund, Formant sinkt */
+      var d=.7+Math.random()*.4; var n=ac.createBufferSource(); n.buffer=noiseBuf(ac,d+.1); var f=ac.createBiquadFilter(); f.type='bandpass'; f.frequency.setValueAtTime(1400,t); f.frequency.exponentialRampToValueAtTime(600,t+d); f.Q.value=1.2;
+      var g=ac.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.3,t+.12); g.gain.exponentialRampToValueAtTime(.0001,t+d); n.connect(f); f.connect(g); g.connect(ac.destination); n.start(t); n.stop(t+d+.1); },
+    waves: function(ac,t){
+      /* Brandung: Rauschen schwillt an und zieht sich zurück */
+      var d=1.6+Math.random()*.8; var n=ac.createBufferSource(); n.buffer=noiseBuf(ac,d); var f=ac.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(400,t); f.frequency.linearRampToValueAtTime(2600,t+d*.45); f.frequency.linearRampToValueAtTime(500,t+d);
+      var g=ac.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.28,t+d*.45); g.gain.exponentialRampToValueAtTime(.0001,t+d); n.connect(f); f.connect(g); g.connect(ac.destination); n.start(t); n.stop(t+d); },
+    oars: function(ac,t){
+      /* Ruder: Holz klopft an die Dolle, dann Wasser */
+      for(var k=0;k<2;k++){ var tt=t+k*.55; var o=osc(ac,'triangle',420,tt,.08,.25,.003); o.frequency.exponentialRampToValueAtTime(260,tt+.06);
+        noise(ac,tt+.06,.35,.14,'bandpass',900,.7,.35); }
+    },
+    chains: function(ac,t){
+      /* Ketten: viele kleine Metallglieder, unregelmäßig */
+      var n=8+Math.floor(Math.random()*8); for(var k=0;k<n;k++){ var tt=t+Math.random()*.45; var f=2200+Math.random()*3000; osc(ac,'sine',f,tt,.09,.05,.002); osc(ac,'sine',f*1.47,tt,.06,.03,.002); noise(ac,tt,.015,.12,'highpass',4000,1,.015); }
     },
     pfahl: function(ac,t){
       /* Felix Pfahl: alles im Mittenbereich, damit es auch aus Handy-Lautsprechern unheimlich klingt

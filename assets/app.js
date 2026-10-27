@@ -181,17 +181,17 @@
     var pfTimer = null;
     function moveFace(e){ face.style.left=e.clientX+'px'; face.style.top=e.clientY+'px'; }
     var pfHide = null;
+    var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
     var pfGone = null;
     function faceOff(){ /* sehr langsam ausfaden (6 s), der Ton klingt mit Hall aus */
       clearInterval(pfTimer); pfTimer=null; clearTimeout(pfHide);
       if(!face.classList.contains('on') || face.classList.contains('fade')) return;
-      face.classList.add('fade'); clearTimeout(pfGone); pfGone=setTimeout(function(){ face.classList.remove('on','fade'); }, 6500); }
+      face.classList.add('fade'); clearTimeout(pfGone); pfGone=setTimeout(function(){ face.classList.remove('on','fade'); }, touch ? 9500 : 6500); }
     function faceOn(e){ moveFace(e); clearTimeout(pfGone); face.classList.remove('fade'); face.classList.add('on'); play('pfahl'); clearInterval(pfTimer); pfTimer=setInterval(function(){ play('pfahl'); }, 3300); }
-    var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
     pf.forEach(function(s){
       if (touch){
         /* Handy: beim Antippen kurz zeigen, nach 2,5 Sekunden oder beim nächsten Tippen irgendwo wieder weg */
-        s.addEventListener('touchstart', function(e){ var t=e.touches[0]; faceOn({clientX:t.clientX, clientY:t.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 6000); }, {passive:true});
+        s.addEventListener('touchstart', function(e){ var t=e.touches[0]; faceOn({clientX:t.clientX, clientY:t.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 8000); }, {passive:true});
       } else {
         s.addEventListener('mouseenter', faceOn);
         s.addEventListener('mousemove', moveFace);

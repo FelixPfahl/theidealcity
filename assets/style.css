@@ -95,7 +95,7 @@ section.series:last-of-type{border-bottom:0}
 .work a{display:block;outline:none}
 .work img{width:100%;background:var(--hair);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
 .comicpage .work img{background:#fff}
-.work:hover img{transform:translateY(-8px) scale(1.025) rotate(calc(var(--tilt,0deg)*2.2));box-shadow:0 18px 36px -12px rgba(0,0,0,.45)}
+.work:hover img{transform:translateY(-6px) scale(1.02);box-shadow:0 18px 36px -12px rgba(0,0,0,.45)}
 .work figcaption{font-size:13.5px;line-height:1.35;margin-top:8px;color:var(--ink);font-family:var(--body)}
 .work figcaption i{font-family:var(--acc)}
 .work figcaption .n{color:var(--grey)}
@@ -508,9 +508,15 @@ body.start .nlknob{background:#fff;color:#000;border-color:#000}
 .nextpart a:hover{background:none;color:var(--accent)}
 .comicpage .nextpart a:hover{color:var(--blue-ink)}
 /* Fortschrittsbalken */
-.progress{position:fixed;left:0;top:0;height:4px;width:100%;z-index:60;pointer-events:none}
-.progress i{display:block;height:100%;width:0;background:var(--accent);transition:width .12s linear}
-body.comicbody .progress i{background:var(--blue-ink)}
+.progress{position:fixed;left:0;top:0;height:12px;width:100%;z-index:60;pointer-events:none;background:rgba(128,128,128,.18)}
+.progress i{display:block;height:100%;width:0;background:var(--green);transition:width .15s linear,background .4s}
+.progress2{position:fixed;left:0;top:12px;height:6px;width:100%;z-index:60;pointer-events:none;background:rgba(128,128,128,.12);opacity:0;transition:opacity .3s}
+.progress2.on{opacity:1}
+.progress2 i{display:block;height:100%;width:0;background:#E2231A;transition:width .15s linear}
+body.start .progress,body.start .progress2{display:none}
+.top{top:18px}
+.subnav{top:calc(var(--headh,70px) + 18px)}
+.sticky-head{top:calc(var(--headh,70px) + var(--subh,50px) + 18px)}
 /* Modi: weiß, schwarz, rot (Schalter im Kopf) */
 .modes{display:flex;gap:6px;margin-left:auto;align-items:center}
 .modes button{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--ink);padding:0;cursor:pointer;background:#fff;transition:transform .2s}
@@ -623,9 +629,10 @@ body.start .veil{background:var(--green)}
 /* ============================================================
    Bilder vor Schrift (zweites Interview, 27.10.): Auftakt, wildes Raster, Einflug, Marginalie, Trenner
    ============================================================ */
-.opener{position:relative;margin:0 calc(-1*var(--gutter));min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;padding:0 var(--gutter) 6vh;overflow:hidden;background:var(--paper)}
+.opener{position:relative;margin:0 calc(-1*var(--gutter));min-height:100vh;min-height:100svh;display:flex;align-items:flex-end;padding:0 var(--gutter) 5vh;overflow:hidden;background:var(--paper)}
 .opener img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;padding:6vh 4vw;box-sizing:border-box;filter:brightness(.92)}
-.opener h2{position:relative;z-index:1;font-size:clamp(44px,11vw,220px);line-height:.88;margin:0;--fatmax:.1em}
+.opener h2{position:relative;z-index:1;font-size:clamp(44px,11vw,220px);line-height:.9;margin:0;--fatmax:.1em;padding-bottom:.12em}
+@media (max-height:640px){.opener h2{font-size:clamp(36px,8vw,120px)}.opener h2.long{font-size:clamp(30px,6vw,90px)}.opener img{padding:4vh 4vw}}
 .opener::after{content:'';position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(to top,var(--paper) 0%,transparent 100%);opacity:.85;pointer-events:none}
 .opener.noimg::after{display:none}
 .comicpage .opener{background:none}.comicpage .opener::after{background:linear-gradient(to top,var(--blue),transparent)}
@@ -654,8 +661,9 @@ html[data-mode=dunkel] .opener img{filter:brightness(.82)}
 @media (max-width:620px){.grid.wild{grid-template-columns:repeat(2,1fr)}.grid.wild .work.s3,.grid.wild .work.s2,.grid.wild .work.big{grid-column:span 2}}
 @media (min-width:621px) and (max-width:1000px){.grid.wild{grid-template-columns:repeat(4,1fr)}}
 /* Einflug: app.js setzt --p (0 unten am Rand, 1 gelandet), --sx (Skalierung riesig), --tx (Verschiebung zur Mitte) */
-.grid.wild .work.fly,.powtiles figure.fly,.einzel .work.fly{transform:translate(var(--tx,0px),0) scale(var(--s,1)) rotate(var(--tilt,0deg));z-index:calc(20 - var(--z,0));transition:none}
-.grid.wild .work.fly img{box-shadow:0 30px 60px -20px rgba(0,0,0,.7)}
+.grid .work.fly,.powtiles figure.fly,.einzel .work.fly,.marg figure.fly{transform:translate(var(--tx,0px),0) scale(var(--s,1));z-index:calc(20 - var(--z,0));transition:none;position:relative;transform-origin:50% 50%;pointer-events:none}
+.grid .work.fly img{box-shadow:0 30px 60px -20px rgba(0,0,0,.7)}
+.grid .work{position:relative}
 .bigcap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(22px,4.2vw,76px);line-height:.9;color:#fff;text-align:center;width:100%;pointer-events:none;opacity:var(--cap,0);text-shadow:0 2px 24px rgba(0,0,0,.6);--fatmax:.06em;z-index:2}
 .bigcap small{display:block;font-family:var(--acc);font-style:italic;text-transform:none;font-size:.32em;margin-top:.3em}
 html[data-mode=rot] .bigcap{color:#000;text-shadow:0 2px 24px rgba(226,35,26,.8)}
@@ -739,18 +747,18 @@ body.lbopen{overflow:hidden}
    Eigener Zeiger (viertes Interview): groß, animiert, Spur, Schlag, Abdruck, Lupe, Radiergummi
    ============================================================ */
 html.cur,html.cur *{cursor:none!important}
-.cur-el{position:fixed;left:0;top:0;width:160px;height:160px;pointer-events:none;z-index:1000;transform:translate(-9px,-9px);will-change:transform;opacity:0;transition:opacity .2s}
+.cur-el{position:fixed;left:0;top:0;width:160px;height:160px;pointer-events:none;z-index:1000;margin:-16px 0 0 -16px;will-change:transform;opacity:0;transition:opacity .2s;transform-origin:16px 16px}
 .cur-el.on{opacity:1}
-.cur-el img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform-origin:10% 10%;animation:breathe 2.6s ease-in-out infinite}
+.cur-el img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:0 0;transform-origin:16px 16px;animation:breathe 2.6s ease-in-out infinite}
 .cur-el.hit img{animation:hit .34s cubic-bezier(.2,.9,.2,1.4)}
 @keyframes breathe{0%,100%{transform:rotate(-2deg) scale(1)}50%{transform:rotate(3deg) scale(1.05)}}
-@keyframes hit{0%{transform:scale(1)}30%{transform:scale(2.2) rotate(-8deg)}100%{transform:scale(1)}}
+@keyframes hit{0%{transform:scale(1)}30%{transform:scale(1.9) rotate(-8deg)}100%{transform:scale(1)}}
 .cur-el .lensc,.cur-el .eras{position:absolute;inset:0;width:100%;height:100%;display:none}
 .cur-el.lens img,.cur-el.eras img{display:none}
-.cur-el.lens .lensc{display:block;transform:translate(-25%,-25%)}
-.cur-el.eras .eras{display:block;transform:translate(-30%,-30%) rotate(-20deg)}
-.cur-ghost{position:fixed;left:0;top:0;width:160px;height:160px;pointer-events:none;z-index:999;opacity:.35;will-change:transform;transform:translate(-9px,-9px)}
-.cur-ghost img{width:100%;height:100%;object-fit:contain}
+.cur-el.lens .lensc{display:block;width:90px;height:90px;transform:translate(-29px,-29px)}
+.cur-el.eras .eras{display:block;width:90px;height:90px;transform:translate(-29px,-29px) rotate(-20deg)}
+.cur-ghost{position:fixed;left:0;top:0;width:160px;height:160px;pointer-events:none;z-index:999;opacity:.35;will-change:transform;margin:-16px 0 0 -16px;transform-origin:16px 16px}
+.cur-ghost img{width:100%;height:100%;object-fit:contain;object-position:0 0}
 .imprint{position:absolute;width:64px;height:64px;pointer-events:none;z-index:5;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0);animation:imp 3.2s ease-out forwards;color:var(--accent)}
 .imprint svg{width:100%;height:100%;display:block}
 @keyframes imp{0%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0);opacity:1}12%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1.15)}30%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1);opacity:.9}100%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1);opacity:0}}
@@ -780,3 +788,33 @@ body,main{overflow-x:clip}
 @media (min-width:900px){.info{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .cvl span,.legal p,.credits{overflow-wrap:anywhere}
 @media (max-width:600px){.nlknob{left:auto;right:10px}.nlpanel{left:10px;right:10px;width:auto}}
+
+/* Augenschonend (Josef, 27.10., 20:09): im Dunkelmodus kein hartes Weiß, auch nicht in großen Bildern, Vorschauen und Schrift */
+html[data-mode=dunkel]{--ink:#d6d6d6;--line:#bdbdbd;--grey:#8f8f8f}
+html[data-mode=dunkel] .hov img,html[data-mode=dunkel] .lb2 img.main,html[data-mode=dunkel] .opener img,html[data-mode=dunkel] .bleed img,html[data-mode=dunkel] .songbg,html[data-mode=dunkel] .lb2 .lens{filter:brightness(.74) contrast(.94)}
+html[data-mode=dunkel] .peekbig{filter:brightness(.8)}
+html[data-mode=dunkel] .menu{background:#050505;color:#d6d6d6}
+html[data-mode=dunkel] .menunav .mh,html[data-mode=dunkel] .mfoot a,html[data-mode=dunkel] .menux{color:#d6d6d6}
+html[data-mode=dunkel] .hero .hl:not(.red),html[data-mode=dunkel] .landing .bigtabs a{color:#0a0a0a}
+html[data-mode=dunkel] .bigcap{color:#d6d6d6}
+html[data-mode=dunkel] .lb2 .cap,html[data-mode=dunkel] .lb2 button{color:#d6d6d6;border-color:#d6d6d6}
+html[data-mode=dunkel] .lb2 button:hover{background:#d6d6d6;color:#000}
+html[data-mode=dunkel] .nlrow button,html[data-mode=dunkel] .nlpanel button[type=submit]{color:#111}
+html[data-mode=dunkel] a:hover{color:#111}
+html[data-mode=dunkel] .landing .nlform.big{background:#0a0a0a;color:#d6d6d6}
+html[data-mode=dunkel] .landing .nlform.big h2{color:#d6d6d6}
+html[data-mode=dunkel] .landing .nlform.big .nlrow input{color:#d6d6d6;border-color:#8f8f8f}
+html[data-mode=dunkel] ::selection{background:#8a1510;color:#e6e6e6}
+html[data-mode=dunkel] .modes button[data-mode=hell]{background:#b8b8b8}
+html[data-mode=dunkel] .modes button{border-color:#8f8f8f}
+html[data-mode=dunkel] .mute,html[data-mode=dunkel] .menubtn{border-color:#8f8f8f}
+
+/* Zeiger über Fließtext halbtransparent (fünftes Interview) */
+.cur-el.dim{opacity:.4}
+/* Dürer-Eigenheiten in den großen Titeln (Josef, 27.10., 20:29) */
+.fat .l.sm{font-size:.72em;vertical-align:baseline}
+.fat .l.hi{font-size:.5em;vertical-align:.9em;margin-left:-.08em}
+.fat .l.lig{margin-right:calc(var(--st,0px)*-.55 - .06em)}
+.fat .l.um{position:relative}
+.fat .l.um .ue{position:absolute;left:50%;top:-.22em;transform:translateX(-50%);font-size:.4em;line-height:1;-webkit-text-stroke:0;font-weight:700;text-transform:none}
+.sertext .fat .l.sm,.sertext .fat .l.hi{font-size:inherit;vertical-align:baseline}

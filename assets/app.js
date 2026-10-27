@@ -1,6 +1,7 @@
 /* Josef Knoll, Portfolio: Spielereien. Kein Framework, keine Audiodateien (alles Web Audio). */
 (function(){
   var T = window.JK_STRINGS || {};
+  function safe(f){ try { f(); } catch(e){ try { console.warn('jk', e); } catch(_){} } }   /* ein Fehler in einem Block legt nicht alles lahm (Firefox) */
   var lang = document.documentElement.lang || 'de';
 
   /* ---------- Sichtbar werden ---------- */
@@ -16,7 +17,7 @@
   /* ---------- Feste Werte (Regler abgeschafft, Josef, 27.10.): Ton alle 2 bis 5 Klicks, Bewegung voll, bei Systemeinstellung "weniger Bewegung" ruhig ---------- */
   var REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
-  var FX_DEFAULT = {ton:5, vol:100, bewegung:(REDUCED ? 1 : 2), modem:true};   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
+  var FX_DEFAULT = {ton:5, vol:100, bewegung:2, modem:true};   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
   try { localStorage.removeItem('jk_fx'); } catch(e){}   /* Regler abgeschafft (Josef, 27.10., 18:30): nichts mehr gespeichert */
   function applyMotion(){ var h = document.documentElement; h.classList.toggle('calm', FX.bewegung < 2); h.classList.toggle('still', FX.bewegung === 0); }
@@ -207,7 +208,7 @@
   };
   var DEFAULT = ['whistle','squeak','shotgun','boing','zip','click','bell','ticks'];
   var lastName = '';
-  function play(name){ var ac=ctx(); if(!ac||!SND[name]) return; if(name!=='pfahl') vary(); else { V.cents=0; V.len=1; V.vol=1; } SND[name](ac, ac.currentTime+.005); }
+  var play = function(name){ var ac=ctx(); if(!ac||!SND[name]) return; if(name!=='pfahl') vary(); else { V.cents=0; V.len=1; V.vol=1; } SND[name](ac, ac.currentTime+.005); };
   function clickSound(target){
     var el = target && target.closest ? target.closest('[data-sounds]') : null;
     var list = el ? el.getAttribute('data-sounds').split(',') : DEFAULT;
@@ -263,17 +264,16 @@
     var t0 = ac.currentTime, out = ac.createGain(); out.gain.value = .5; out.connect(OUT(ac));
     function tone(f, t, d, vol, type){ var o=ac.createOscillator(), g=ac.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol||.3,t+.01); g.gain.setValueAtTime(vol||.3,t+d-.01); g.gain.linearRampToValueAtTime(0,t+d); o.connect(g); g.connect(out); o.start(t); o.stop(t+d+.02); }
     function nz(t, d, vol, lp){ var s=ac.createBufferSource(); s.buffer=noiseBuf(ac,d); var f=ac.createBiquadFilter(); f.type='bandpass'; f.frequency.value=lp||1800; f.Q.value=.7; var g=ac.createGain(); g.gain.setValueAtTime(vol||.2,t); s.connect(f); f.connect(g); g.connect(out); s.start(t); s.stop(t+d); }
-    var t = t0 + .1;
-    tone(350, t, .9, .18); tone(440, t, .9, .18); t += 1.0;
-    var dtmf = [[697,1209],[770,1336],[852,1477],[697,1336],[941,1336],[770,1209],[852,1336]];
-    dtmf.forEach(function(p){ tone(p[0], t, .12, .22); tone(p[1], t, .12, .22); t += .19; });
-    t += .3; tone(425, t, .8, .15); t += 1.3;
-    tone(2100, t, .9, .22); t += 1.0;
-    tone(1800, t, .35, .2); tone(2250, t+.35, .35, .2); t += .75;
-    for (var k=0;k<6;k++){ tone(1200+Math.random()*900, t, .08, .18, 'square'); t += .1; }
-    nz(t, 1.2, .25, 2200); tone(1650, t, .6, .12); t += 1.25;
-    nz(t, 1.4, .3, 1200); t += 1.45;
-    tone(1000, t, .18, .25, 'square'); tone(1500, t+.2, .18, .25, 'square'); t += .5;
+    var t = t0 + .1;   /* dunkler und kürzer (Josef, 27.10.): alles eine Oktave tiefer, ca. 5 s */
+    tone(175, t, .7, .2); tone(220, t, .7, .18); t += .8;
+    var dtmf = [[348,604],[385,668],[426,738],[348,668],[470,668]];
+    dtmf.forEach(function(p){ tone(p[0], t, .1, .22); tone(p[1], t, .1, .2); t += .14; });
+    t += .2; tone(212, t, .6, .16); t += .8;
+    tone(1050, t, .6, .18); t += .65;
+    tone(900, t, .3, .18); tone(1125, t+.3, .3, .18); t += .65;
+    nz(t, .9, .3, 900); tone(825, t, .5, .1); t += .95;
+    nz(t, .8, .35, 500); t += .85;
+    tone(500, t, .15, .25, 'square'); tone(750, t+.17, .15, .25, 'square'); t += .4;
     var total = (t - t0) * 1000;
     setTimeout(onDone, total);
     return total;
@@ -284,7 +284,7 @@
      Über den Regler abschaltbar. */
   var fromInside = false;
   try { fromInside = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch(e){}
-  if (!fromInside && FX.modem){
+  if (!fromInside && FX.modem && !/nomodem/.test(location.search)){
     var ov = document.createElement('div'); ov.className='modem';
     ov.innerHTML = '<div class="box"><pre></pre><div class="bar"><i></i></div><button type="button">'+(T.skip||'Überspringen')+'</button>'+(T.modem_hint?'<small>'+T.modem_hint+'</small>':'')+'</div>';
     document.body.appendChild(ov);
@@ -295,7 +295,7 @@
       if (!armed) return;
       var a = e.target.closest && e.target.closest('a[href]'); if(!a) return;
       var href = a.getAttribute('href'); if(!href || href.charAt(0)==='#' || a.target==='_blank' || /^(mailto|tel):/.test(href)) return;
-      if (a.closest('.work') || a.closest('.powgrid')) return;
+      if (a.closest('.work, .powgrid, .powtiles, .powinfo, .powlead, .marg') || a.hasAttribute('data-full') || a.classList.contains('reflink')) return;   /* Bilder öffnen die Großansicht, nie das Modem */
       e.preventDefault(); armed = false;
       ov.classList.add('on'); pre.textContent='';
       var go = function(){ window.location.href = href; };
@@ -335,7 +335,7 @@
 
   /* ---------- Newsletter: schwebender Mail-Knopf, Anmeldung mit Applaus (Josef, 27.10.) ----------
      Mit Brevo-Link läuft die Anmeldung im Hintergrund; sonst geht das Formular normal ab (FormSubmit), nach dem Applaus. */
-  (function(){
+  safe(function(){
     var box = document.querySelector('.nlfloat'); if (!box) return;
     var knob = box.querySelector('.nlknob'), panel = box.querySelector('.nlpanel');
     function open(){ panel.classList.add('on'); knob.setAttribute('aria-expanded','true'); var i = panel.querySelector('input[type=email]'); if (i) setTimeout(function(){ i.focus(); }, 120); }
@@ -344,10 +344,9 @@
     panel.querySelector('.x').addEventListener('click', close);
     document.addEventListener('keydown', function(e){ if (e.key==='Escape' && panel.classList.contains('on')){ close(); knob.focus(); } });
     document.addEventListener('pointerdown', function(e){ if (panel.classList.contains('on') && !(e.target.closest && e.target.closest('.nlfloat'))) close(); });
-  })();
-  function applause(){ var ac = ctx(); if (!ac) return 0; vary(); V.len = 1; V.vol = 1; var t = ac.currentTime + .02;
-    for (var r = 0; r < 3; r++){ var n = 26; for (var k = 0; k < n; k++){ noise(ac, t + r * .55 + Math.random() * .55, .018, .12, 'bandpass', 1200 + Math.random() * 2600, 1, .018); } }
-    var o = osc(ac, 'sine', 880, t + .1, .5, .05, .02); o.frequency.exponentialRampToValueAtTime(1320, t + .3); return 1900; }
+  });
+  function applause(){ /* dunkel: Sub-Schwell mit Glocke (Josef, 27.10.: kein Applaus mehr) */ var ac = ctx(); if (!ac) return 0; vary(); V.len = 1; V.vol = 1; var t = ac.currentTime + .02;
+    SND['d_sub05'](ac, t); SND['d_bell07'](ac, t + .25); SND['d_choir03'](ac, t + .5); return 1900; }
   document.querySelectorAll('form[data-nl]').forEach(function(f){
     var busy = false;
     f.addEventListener('submit', function(e){
@@ -364,7 +363,7 @@
     });
   });
   /* ---------- Kopf- und Unterleiste: Höhen für Sticky und Sprungziele, aktive Serie markieren ---------- */
-  (function(){
+  safe(function(){
     var top = document.querySelector('header.top'), sub = document.querySelector('.subnav');
     function measure(){ var r = document.documentElement.style;
       if (top) r.setProperty('--headh', top.offsetHeight + 'px');
@@ -391,10 +390,10 @@
     window.addEventListener('scroll', function(){ if (!ticking){ ticking = true; requestAnimationFrame(spy); } }, {passive:true});
     sub.addEventListener('scroll', more, {passive:true}); window.addEventListener('resize', more);
     spy(); more();
-  })();
+  });
 
   /* ---------- Fußnoten: Quelle als kleines Fenster (Maus: Drüberfahren, Touch: Antippen, Tastatur: Fokus) ---------- */
-  (function(){
+  safe(function(){
     var pop = document.createElement('div'); pop.className = 'fnpop'; pop.setAttribute('role','tooltip'); pop.id = 'fnpop'; document.body.appendChild(pop);
     var hideT = null, cur = null, shownAt = 0;
     function place(sup){ var r = sup.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
@@ -421,7 +420,7 @@
     document.addEventListener('pointerdown', function(e){ if (cur && !(e.target.closest && e.target.closest('.fnpop, sup.fn'))) hide(true); });
     window.addEventListener('scroll', function(){ if (cur && pop.classList.contains('on')) place(cur); }, {passive:true});
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && cur) hide(true); });
-  })();
+  });
 
   /* ============================================================
      Design Harder (Erik Carter) als Vorbild, 27.10.2026
@@ -429,7 +428,7 @@
   var MOUSE = !(window.matchMedia && window.matchMedia('(hover: none)').matches);
 
   /* ---------- Fette Buchstaben: Maus oder Finger macht sie frei, sie wachsen langsam wieder zu ---------- */
-  (function(){
+  safe(function(){
     var fats = document.querySelectorAll('.fat'); if (!fats.length) return;
     function ready(){ document.documentElement.classList.add('fatready'); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ setTimeout(ready, 60); }); else setTimeout(ready, 300);
@@ -448,10 +447,10 @@
     document.addEventListener('pointerdown', function(e){ hit(e.clientX, e.clientY); }, {passive:true});
     /* Finger-Wischen über Titel (touch-action none auf Hero und Reitern, sonst würde gescrollt) */
     document.addEventListener('touchmove', function(e){ var t = e.touches[0]; if (t) hit(t.clientX, t.clientY); }, {passive:true});
-  })();
+  });
 
   /* ---------- Fließtext: Wörter werden unter der Maus rot und bleiben rot, kurze Linse ---------- */
-  if (MOUSE) (function(){
+  if (MOUSE) safe(function(){
     var zones = '.sertext, .bio, .notes, .legal, .einzel .side, .textblock, .cvl, .info p';
     var raf = false, last = null;
     function wordAt(x, y){
@@ -476,17 +475,26 @@
     }
     document.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse') return; last = e; if (raf) return; raf = true;
       requestAnimationFrame(function(){ raf = false; var w = wordAt(last.clientX, last.clientY); if (w) mark(w); }); }, {passive:true});
-  })();
+  });
 
-  /* ---------- Fortschrittsbalken ---------- */
-  (function(){
-    var bar = document.querySelector('.progress i'); if (!bar) return; var t = false;
-    function upd(){ t = false; var h = document.documentElement, max = h.scrollHeight - h.clientHeight; bar.style.width = (max > 0 ? Math.min(100, (h.scrollTop || document.body.scrollTop) / max * 100) : 0) + '%'; }
+  /* ---------- Fortschrittsbalken: nur das jeweilige Kapitel; Grün für Bilder-Kapitel, Rot für Texte, Blau für Comic; darunter Lesebalken für den Fließtext ---------- */
+  safe(function(){
+    var bar = document.querySelector('.progress i'), bar2 = document.querySelector('.progress2 i'); if (!bar) return; var t = false;
+    var secs = Array.prototype.slice.call(document.querySelectorAll('section.series'));
+    var comic = document.body.classList.contains('comicbody'), isText = document.body.classList.contains('textbody');
+    var texts = Array.prototype.slice.call(document.querySelectorAll('.sertext'));
+    function upd(){ t = false; var h = document.documentElement, vh = h.clientHeight, p = 0, p2 = 0, col = comic ? '#3F97B8' : (isText ? '#E2231A' : '#00A651');
+      var cur = null; secs.forEach(function(s){ var r = s.getBoundingClientRect(); if (r.top <= vh * .5 && r.bottom > vh * .5) cur = s; });
+      if (cur){ var r = cur.getBoundingClientRect(); p = Math.min(100, Math.max(0, (vh * .5 - r.top) / Math.max(1, r.height - vh * .5) * 100)); }
+      else if (!secs.length){ var max = h.scrollHeight - vh; p = max > 0 ? Math.min(100, (h.scrollTop || 0) / max * 100) : 0; }
+      var ct = null; texts.forEach(function(x){ var r = x.getBoundingClientRect(); if (r.top <= vh * .6 && r.bottom > vh * .3) ct = x; });
+      if (ct){ var rr = ct.getBoundingClientRect(); p2 = Math.min(100, Math.max(0, (vh * .6 - rr.top) / Math.max(1, rr.height) * 100)); }
+      bar.style.width = p + '%'; bar.style.background = col; if (bar2){ bar2.style.width = p2 + '%'; bar2.parentNode.classList.toggle('on', !!ct); } }
     window.addEventListener('scroll', function(){ if (!t){ t = true; requestAnimationFrame(upd); } }, {passive:true}); window.addEventListener('resize', upd); upd();
-  })();
+  });
 
   /* ---------- Drei Modi: weiß, schwarz, rot (im Browser gemerkt, ohne Personenbezug) ---------- */
-  (function(){
+  safe(function(){
     var h = document.documentElement, btns = document.querySelectorAll('.modes button'); if (!btns.length) return;
     function set(m, save){ if (m === 'hell') h.removeAttribute('data-mode'); else h.setAttribute('data-mode', m);
       btns.forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode') === m); });
@@ -496,10 +504,10 @@
     var cur = 'dunkel'; try { cur = localStorage.getItem('jk_mode') || 'dunkel'; } catch(e){}
     set(cur, false);
     btns.forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); set(b.getAttribute('data-mode'), true); play('ratchet'); }); });   /* Lichtschalter-Knacken */
-  })();
+  });
 
   /* ---------- Menü-Overlay ---------- */
-  (function(){
+  safe(function(){
     var menu = document.getElementById('menu'), btn = document.querySelector('.menubtn'); if (!menu || !btn) return;
     var peek = menu.querySelector('.mpeek'), x = menu.querySelector('.menux');
     function open(){ menu.hidden = false; document.body.classList.add('menuopen'); btn.setAttribute('aria-expanded', 'true'); requestAnimationFrame(function(){ requestAnimationFrame(function(){ menu.classList.add('vis'); }); }); play('pageturn'); }
@@ -515,10 +523,10 @@
       var href = a.getAttribute('href'); var here = location.pathname.split('/').pop() || 'index.html';
       if (href.indexOf('#') >= 0 && href.split('#')[0].replace('./','') === here) close();   /* Sprung auf dieser Seite: Menü zu */
       else if (href.charAt(0) === '#') close(); }); });
-  })();
+  });
 
   /* ---------- Seitenwechsel: weicher Farbübergang in der Serienfarbe (kein harter Blitz) ---------- */
-  (function(){
+  safe(function(){
     var veil = document.querySelector('.veil'); if (!veil) return;
     var h = document.documentElement;
     if (h.classList.contains('arrive')){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ h.classList.add('go'); setTimeout(function(){ h.classList.remove('arrive', 'go'); }, 450); }); }); }
@@ -532,18 +540,18 @@
       e.preventDefault(); veil.classList.add('on'); setTimeout(function(){ location.href = href; }, 320);
     });
     window.addEventListener('pageshow', function(ev){ if (ev.persisted){ veil.classList.remove('on'); h.classList.remove('arrive','go'); } });
-  })();
+  });
 
   /* ---------- Serienköpfe kleben oben und schrumpfen; Marginalien laufen langsamer mit (Parallax) ---------- */
-  (function(){
+  safe(function(){
     var heads = Array.prototype.slice.call(document.querySelectorAll('section.series .serhead'));
     heads.forEach(function(hd){ hd.classList.add('sticky-head'); });
     var par = Array.prototype.slice.call(document.querySelectorAll('.notes .figs, .einzel .side'));
     var calm = document.documentElement.classList.contains('calm');
     var t = false;
     function upd(){ t = false;
-      var top = (document.querySelector('header.top') || {offsetHeight:0}).offsetHeight + ((document.querySelector('.subnav') || {offsetHeight:0}).offsetHeight || 0);
       heads.forEach(function(hd){ var r = hd.getBoundingClientRect(), sec = hd.parentNode.getBoundingClientRect();
+        var top = parseFloat(getComputedStyle(hd).top) || 0;   /* der echte Sticky-Abstand (Kopf, Unterleiste, Fortschrittsbalken) */
         var stuck = r.top <= top + 1 && sec.bottom > top + r.height * .5;
         hd.classList.toggle('small', stuck); });
       if (calm) return;
@@ -552,29 +560,72 @@
         var c = (r.top + r.height / 2) - vh / 2; el.style.transform = 'translateY(' + Math.max(-48, Math.min(48, c * -0.07)).toFixed(1) + 'px)'; });
     }
     if (heads.length || par.length){ window.addEventListener('scroll', function(){ if (!t){ t = true; requestAnimationFrame(upd); } }, {passive:true}); window.addEventListener('resize', upd); upd(); }
-  })();
+  });
 
   /* ============================================================
      Zweites Interview (Bilder vor Schrift) und viertes (Zeiger, Sounds), 27.10.2026
      ============================================================ */
   var CALM = document.documentElement.classList.contains('calm');
   function secOf(el){ var s = el.closest('section, main'); return s ? s.id || '' : ''; }
-  function softPlay(name, vol){ var ac = ctx(); if(!ac||!SND[name]) return; vary(); V.vol *= (vol || .4); SND[name](ac, ac.currentTime + .005); }
+  var softPlay = function(name, vol){ var ac = ctx(); if(!ac||!SND[name]) return; vary(); V.vol *= (vol || .4); SND[name](ac, ac.currentTime + .005); };
   function secSound(el){ var s = el.closest('[data-sounds]'); var list = s ? s.getAttribute('data-sounds').split(',') : DEFAULT; return list[Math.floor(Math.random()*list.length)]; }
 
+
+  /* ============================================================
+     Dunkle Klangbibliothek (Josef, 27.10., 19:58): synthetisch, düster, bassschwer. 12 Familien x 18 Varianten = 216 Klänge,
+     deterministisch aus dem Variantenindex erzeugt (jede Variante klingt immer gleich, play() variiert zusätzlich leicht).
+     ============================================================ */
+  var DARK = {};
+  function sr(i, k){ var x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); }   /* 0..1, stabil je Variante */
+  function dout(ac, t, d, vol, att, wet){ var g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(.001, vol * V.vol), t + (att || .01)); g.gain.exponentialRampToValueAtTime(.0001, t + d * V.len);
+    g.connect(OUT(ac)); if (wet){ try { var w = ac.createGain(); w.gain.value = wet; g.connect(w); w.connect(rev(ac)); } catch(e){} } return g; }
+  function dosc(ac, type, f, t, stop){ var o = ac.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.detune.value = V.cents * .3; o.start(t); o.stop(t + stop); return o; }
+  function dnoise(ac, t, d){ var n = ac.createBufferSource(); n.buffer = noiseBuf(ac, d + .1); n.start(t); n.stop(t + d + .1); return n; }
+  function dist(ac, k){ var ws = ac.createWaveShaper(), n = 256, c = new Float32Array(n); for (var i = 0; i < n; i++){ var x = i * 2 / n - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); } ws.curve = c; return ws; }
+  var FAM = {
+    sub: function(ac, t, i){ /* 808-Kick, tief, mit Knack */ var f0 = 48 + sr(i,1) * 40, d = .35 + sr(i,2) * .7; var o = dosc(ac, 'sine', f0 * 3, t, d + .1); o.frequency.exponentialRampToValueAtTime(f0, t + .06); o.frequency.exponentialRampToValueAtTime(Math.max(22, f0 * .45), t + d);
+      var ds = dist(ac, 2 + sr(i,3) * 6); o.connect(ds); ds.connect(dout(ac, t, d, .9, .004)); var c = dnoise(ac, t, .03); var hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1500 + sr(i,4) * 3000; c.connect(hp); hp.connect(dout(ac, t, .03, .25 * sr(i,5), .002)); },
+    drone: function(ac, t, i){ /* zwei verstimmte Sägezähne, tief, Tiefpass öffnet und schließt */ var f0 = 30 + sr(i,1) * 30, d = .9 + sr(i,2) * 1.6; var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 3 + sr(i,3) * 8; lp.frequency.setValueAtTime(120, t); lp.frequency.exponentialRampToValueAtTime(300 + sr(i,4) * 900, t + d * .35); lp.frequency.exponentialRampToValueAtTime(90, t + d);
+      [1, 1.007 + sr(i,5) * .01, .5].forEach(function(r){ dosc(ac, 'sawtooth', f0 * r, t, d + .2).connect(lp); }); lp.connect(dout(ac, t, d, .5, .08 + sr(i,6) * .3, .5)); },
+    growl: function(ac, t, i){ /* FM-Knurren */ var f0 = 38 + sr(i,1) * 50, d = .5 + sr(i,2) * .9, ratio = [1.5, 2, 2.5, 3.01, 3.7][Math.floor(sr(i,3) * 5)]; var c = dosc(ac, 'sine', f0, t, d + .1); var m = dosc(ac, 'sine', f0 * ratio, t, d + .1); var mg = ac.createGain(); mg.gain.setValueAtTime(f0 * (4 + sr(i,4) * 14), t); mg.gain.exponentialRampToValueAtTime(f0 * .3, t + d); m.connect(mg); mg.connect(c.frequency);
+      var ds = dist(ac, 4 + sr(i,5) * 10); c.connect(ds); ds.connect(dout(ac, t, d, .6, .02, .35)); },
+    rumble: function(ac, t, i){ /* Grollen: tiefes Rauschen, langsam */ var d = 1 + sr(i,1) * 1.8; var n = dnoise(ac, t, d); var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(60 + sr(i,2) * 80, t); lp.frequency.linearRampToValueAtTime(140 + sr(i,3) * 200, t + d * .5); lp.frequency.linearRampToValueAtTime(50, t + d); lp.Q.value = 1 + sr(i,4) * 4;
+      n.connect(lp); lp.connect(dout(ac, t, d, 1.2, .15 + sr(i,5) * .4, .4)); var o = dosc(ac, 'sine', 28 + sr(i,6) * 20, t, d + .1); o.connect(dout(ac, t, d, .5, .2)); },
+    impact: function(ac, t, i){ /* Einschlag: Knall, Sub, Hall */ var d = .5 + sr(i,1) * .6; var n = dnoise(ac, t, .25); var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(3000 + sr(i,2) * 5000, t); lp.frequency.exponentialRampToValueAtTime(120, t + .25); n.connect(lp); lp.connect(dout(ac, t, .3, .9, .003, .7));
+      var o = dosc(ac, 'sine', 90 + sr(i,3) * 60, t, d + .1); o.frequency.exponentialRampToValueAtTime(26 + sr(i,4) * 14, t + d * .6); var ds = dist(ac, 3 + sr(i,5) * 5); o.connect(ds); ds.connect(dout(ac, t, d, .9, .005, .3)); },
+    metal: function(ac, t, i){ /* Metall, unharmonisch, tief, lang */ var f0 = 70 + sr(i,1) * 110, d = 1.2 + sr(i,2) * 1.8; [1, 2.76, 5.4, 8.9, 1.41].forEach(function(r, k){ var o = dosc(ac, k % 2 ? 'triangle' : 'sine', f0 * r * (1 + (sr(i, 3 + k) - .5) * .01), t, d + .2); o.connect(dout(ac, t, d / (1 + k * .4), .32 / (1 + k * .8), .004, .6)); });
+      var n = dnoise(ac, t, .04); var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 400 + sr(i,8) * 1200; bp.Q.value = 2; n.connect(bp); bp.connect(dout(ac, t, .05, .3, .002)); },
+    riser: function(ac, t, i){ /* Rückwärts-Schwell, bricht ab */ var d = .7 + sr(i,1) * 1; var n = dnoise(ac, t, d); var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.setValueAtTime(80, t); bp.frequency.exponentialRampToValueAtTime(600 + sr(i,2) * 2400, t + d); bp.Q.value = 1 + sr(i,3) * 3; n.connect(bp);
+      var g = ac.createGain(); g.gain.setValueAtTime(.0005, t); g.gain.exponentialRampToValueAtTime(.7 * V.vol, t + d - .02); g.gain.setValueAtTime(0, t + d); bp.connect(g); g.connect(OUT(ac)); try { g.connect(rev(ac)); } catch(e){}
+      var o = dosc(ac, 'sawtooth', 40 + sr(i,4) * 30, t, d); o.frequency.exponentialRampToValueAtTime(90 + sr(i,5) * 120, t + d); var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500; o.connect(lp); lp.connect(g); },
+    glitch: function(ac, t, i){ /* Störung: tiefe Rechteck-Fetzen mit Lücken */ var n = 3 + Math.floor(sr(i,1) * 6), f0 = 45 + sr(i,2) * 120; for (var k = 0; k < n; k++){ var tt = t + k * (.03 + sr(i, 3 + k) * .09); var o = dosc(ac, 'square', f0 * (1 + Math.floor(sr(i, 20 + k) * 4) * .5), tt, .06); var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400 + sr(i, 40 + k) * 1200; o.connect(lp); lp.connect(dout(ac, tt, .03 + sr(i, 60 + k) * .05, .35, .002)); }
+      var s = dosc(ac, 'sine', f0 * .5, t, .4); s.connect(dout(ac, t, .35, .5, .01)); },
+    choir: function(ac, t, i){ /* dunkler Moll-Akkord, verstimmte Dreiecke */ var f0 = 55 + sr(i,1) * 55, d = 1.4 + sr(i,2) * 1.6; [1, 1.1892, 1.4983, 2, .5].forEach(function(r, k){ [-6, 6].forEach(function(dc){ var o = dosc(ac, k < 2 ? 'triangle' : 'sawtooth', f0 * r, t, d + .3); o.detune.value = dc + (sr(i, 10 + k) - .5) * 8; var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500 + sr(i,3) * 500; o.connect(lp); lp.connect(dout(ac, t, d, .09, .3 + sr(i,4) * .6, .8)); }); }); },
+    heart: function(ac, t, i){ /* Herzschlag, zwei Schläge, Sub */ var gap = .32 + sr(i,1) * .25, f0 = 50 + sr(i,2) * 40; [0, gap].forEach(function(dt, k){ var o = dosc(ac, 'sine', f0 * 1.8, t + dt, .3); o.frequency.exponentialRampToValueAtTime(f0 * .6, t + dt + .18); o.connect(dout(ac, t + dt, .26, k ? .6 : .85, .004, .25)); var n = dnoise(ac, t + dt, .05); var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 250; n.connect(lp); lp.connect(dout(ac, t + dt, .06, .3, .003)); }); },
+    scrape: function(ac, t, i){ /* Schaben, abwärts, dunkel */ var d = .4 + sr(i,1) * .8; var n = dnoise(ac, t, d); var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.setValueAtTime(900 + sr(i,2) * 1500, t); bp.frequency.exponentialRampToValueAtTime(120 + sr(i,3) * 200, t + d); bp.Q.value = 3 + sr(i,4) * 10; n.connect(bp); bp.connect(dout(ac, t, d, .7, .02, .5));
+      var o = dosc(ac, 'sawtooth', 60 + sr(i,5) * 40, t, d); o.frequency.exponentialRampToValueAtTime(30, t + d); var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 200; o.connect(lp); lp.connect(dout(ac, t, d, .35, .02)); },
+    bell: function(ac, t, i){ /* dunkle Glocke, langsamer Anschlag */ var f0 = 65 + sr(i,1) * 90, d = 1.5 + sr(i,2) * 2; [1, 2.0, 2.98, 4.2, .5].forEach(function(r, k){ var o = dosc(ac, 'sine', f0 * r * (1 + (sr(i, 5 + k) - .5) * .006), t, d + .2); o.connect(dout(ac, t, d / (1 + k * .5), .3 / (1 + k * .6), .04 + sr(i,3) * .25, .7)); }); }
+  };
+  var FAMS = Object.keys(FAM), VARIANTS = 18;
+  FAMS.forEach(function(name){ DARK[name] = []; for (var i = 1; i <= VARIANTS; i++){ (function(nm, idx){ var key = 'd_' + nm + (idx < 10 ? '0' + idx : idx); SND[key] = function(ac, t){ FAM[nm](ac, t, idx); }; DARK[nm].push(key); })(name, i); } });
+  /* Familienname in den Klanglisten = zufällige Variante */
+  var _play = play; play = function(name){ if (DARK[name]) name = DARK[name][Math.floor(Math.random() * DARK[name].length)]; _play(name); };
+  var _softPlay = softPlay; softPlay = function(name, vol){ if (DARK[name]) name = DARK[name][Math.floor(Math.random() * DARK[name].length)]; _softPlay(name, vol); };
+  DEFAULT = ['sub', 'impact', 'glitch', 'metal', 'drone', 'heart'];
+
   /* ---------- Stumm-Knopf ---------- */
-  (function(){
+  safe(function(){
     var b = document.querySelector('.mute'); if (!b) return; var muted = false;
     try { muted = localStorage.getItem('jk_mute') === '1'; } catch(e){}
     function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton an' : 'Ton aus'); FX.vol = muted ? 0 : FX_DEFAULT.vol; if (MASTER) MASTER.node.gain.value = FX.vol/100; }
     apply();
     b.addEventListener('click', function(e){ e.stopPropagation(); muted = !muted; try { localStorage.setItem('jk_mute', muted ? '1' : '0'); } catch(err){} apply(); if (!muted) play('click'); });
-  })();
+  });
 
   /* ---------- Einflug: Bilder kommen beim Scrollen riesig und schrumpfen an ihren Platz (scrollgekoppelt) ---------- */
-  (function(){
+  safe(function(){
     if (CALM) return;
-    var els = Array.prototype.slice.call(document.querySelectorAll('.grid.wild .work, .powtiles figure, .einzelgrid .work, .marg figure'));
+    var els = Array.prototype.slice.call(document.querySelectorAll('.grid .work, .powtiles figure, .einzelgrid .work, .marg figure'));
     if (!els.length) return;
     var t = false, vw = window.innerWidth, vh = window.innerHeight;
     els.forEach(function(el){ el._landed = false; el._huge = el.classList.contains('huge'); });
@@ -584,13 +635,13 @@
         var r = el.getBoundingClientRect();
         if (r.top > vh + 40 || r.bottom < -40){ if (el.classList.contains('fly')){ el.classList.remove('fly'); el.style.removeProperty('--s'); el.style.removeProperty('--tx'); el.style.removeProperty('--z'); el.style.removeProperty('--cap'); } return; }
         /* 0: Oberkante am unteren Rand, 1: Oberkante bei 42 % der Höhe */
-        var p = Math.min(1, Math.max(0, (vh - r.top) / (vh * .58)));
+        var p = Math.min(1, Math.max(0, (vh - r.top) / (vh * .6)));
         if (p >= 1){ if (el.classList.contains('fly')){ el.classList.remove('fly'); el.style.removeProperty('--s'); el.style.removeProperty('--tx'); el.style.removeProperty('--z'); el.style.removeProperty('--cap'); }
           if (!el._landed){ el._landed = true; if (el._huge && el._seen) softPlay(secSound(el), .35); } return; }
         el._seen = true;
         var w = r.width / Math.max(.01, parseFloat(el.style.getPropertyValue('--s')) || 1);
-        var maxS = el._huge ? Math.min(6, (vw * .92) / w) : 1.6;
-        if (maxS < 1.05) maxS = 1.05;
+        var maxS = el._huge ? Math.min(8, (vw * .92) / w) : Math.min(3, (vw * .5) / w);
+        if (maxS < 1.35) maxS = 1.35;   /* auch am Handy sichtbar: mindestens ein Drittel größer */
         var e = ease(p), sc = maxS - (maxS - 1) * e;
         var cx = r.left + r.width / 2, tx = (vw / 2 - cx) * (1 - e);
         el.classList.add('fly');
@@ -604,29 +655,31 @@
     var bleeds = Array.prototype.slice.call(document.querySelectorAll('.bleed img'));
     if (bleeds.length){ var tb = false; function pb(){ tb = false; bleeds.forEach(function(im){ var r = im.parentNode.parentNode.getBoundingClientRect(); if (r.bottom < 0 || r.top > vh) return; var c = (r.top + r.height/2 - vh/2) / vh; im.style.setProperty('--py', (-10 - c * 10).toFixed(1) + '%'); }); }
       window.addEventListener('scroll', function(){ if (!tb){ tb = true; requestAnimationFrame(pb); } }, {passive:true}); pb(); }
-  })();
+  });
 
   /* ---------- Hover-Vorschau: Bild sofort groß über dem Raster; leiser Ton ---------- */
   var hov = null;
-  if (MOUSE) (function(){
+  if (MOUSE) safe(function(){
     hov = document.createElement('div'); hov.className = 'hov'; hov.innerHTML = '<img alt=""><div class="cap"></div>'; document.body.appendChild(hov);
     var him = hov.querySelector('img'), hcap = hov.querySelector('.cap'), cur = null, lastSnd = 0;
-    function place(e){ var w = hov.offsetWidth, h = hov.offsetHeight, x = e.clientX + 24, y = e.clientY - h / 2;
+    var lastE = null;
+    function place(e){ if (e) lastE = e; e = e || lastE; if (!e) return; var w = hov.offsetWidth, h = hov.offsetHeight, x = e.clientX + 24, y = e.clientY - h / 2;
       if (x + w > window.innerWidth - 12) x = e.clientX - w - 24; if (x < 12) x = 12;
-      y = Math.max(12, Math.min(window.innerHeight - h - 40, y)); hov.style.left = x + 'px'; hov.style.top = y + 'px'; }
-    document.querySelectorAll('.grid.wild .work, .powtiles figure, .einzelgrid .work, .marg figure, .powinfo figure, .powlead figure').forEach(function(f){
+      y = Math.min(window.innerHeight - h - 40, y); if (y < 12) y = 12; hov.style.left = x + 'px'; hov.style.top = y + 'px'; }
+    him.addEventListener('load', function(){ place(); });   /* erst nach dem Laden ist die Größe bekannt: nie aus dem Bild (Josef, 27.10.) */
+    document.querySelectorAll('.grid .work, .powtiles figure, .einzelgrid .work, .marg figure, .powinfo figure, .powlead figure').forEach(function(f){
       var a = f.querySelector('a[data-full], a.reflink'); if (!a) return;
-      f.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse' || f.classList.contains('fly')) return; cur = f;
+      f.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; if (f.classList.contains('fly') && (parseFloat(f.style.getPropertyValue('--s')) || 1) > 1.2) return; cur = f;
         him.src = a.getAttribute('data-full') || a.getAttribute('href'); var fc = f.querySelector('figcaption'); hcap.innerHTML = fc ? fc.innerHTML : '';
         hov.classList.add('on'); place(e); if (Date.now() - lastSnd > 350){ lastSnd = Date.now(); softPlay(secSound(f), .25); } });
       f.addEventListener('pointermove', function(e){ if (cur === f && e.pointerType === 'mouse') place(e); });
       f.addEventListener('pointerleave', function(){ if (cur === f){ cur = null; hov.classList.remove('on'); } });
       f.addEventListener('click', function(){ cur = null; hov.classList.remove('on'); });
     });
-  })();
+  });
 
   /* ---------- Großansicht: schwarz, bildschirmfüllend, Wischen, Pfeile, Zoom, Lupe, Play ---------- */
-  (function(){
+  safe(function(){
     var links = Array.prototype.slice.call(document.querySelectorAll('a[data-full]'));
     if (!links.length) return;
     var lb = document.createElement('div'); lb.className = 'lb2';
@@ -679,10 +732,10 @@
       var f = 2.6, bw = r.width * f, bh = r.height * f, fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
       lens.style.backgroundImage = 'url("' + img.src + '")'; lens.style.backgroundSize = bw + 'px ' + bh + 'px'; lens.style.backgroundPosition = (-(fx * bw) + 120) + 'px ' + (-(fy * bh) + 120) + 'px'; }
     lb.addEventListener('pointerleave', function(){ lens.classList.remove('on'); });
-  })();
+  });
 
   /* ---------- Tonspur: riesige Zeilen, Play-Knopf kracht, ein Player, Blatt groß dahinter, Pulsieren ---------- */
-  (function(){
+  safe(function(){
     var songs = document.querySelectorAll('.song'); if (!songs.length) return;
     var bg = document.createElement('img'); bg.className = 'songbg'; bg.alt = ''; document.body.appendChild(bg);
     var open = null;
@@ -701,10 +754,10 @@
         var w = document.getElementById(sg.getAttribute('data-work')); if (w) w.classList.add('pulse'); var sec = sg.closest('section'); if (sec) sec.classList.add('playing');
       });
     });
-  })();
+  });
 
   /* ---------- Stinger je Serie beim Auftakt; Atmo nur auf Knopfdruck ---------- */
-  (function(){
+  safe(function(){
     var ops = document.querySelectorAll('section.series .opener'); if (!ops.length || !('IntersectionObserver' in window)) return;
     var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting && e.intersectionRatio > .5 && !e.target._stung){ e.target._stung = true; if (AC) softPlay(secSound(e.target), .7); } }); }, {threshold:[.5]});
     ops.forEach(function(o){ io.observe(o); });
@@ -721,14 +774,14 @@
         var l2 = ac.createOscillator(), lg2 = ac.createGain(); l2.frequency.value = p[3] || .3; lg2.gain.value = p[0] * .02; l2.connect(lg2); lg2.connect(o.frequency); o.connect(lf); o2.connect(lf); lf.connect(g); o.start(); o2.start(); l2.start(); nodes.push(o, o2, l2); }
       running = {ac:ac, g:g, nodes:nodes, btn:btn}; btn.classList.add('on'); btn.textContent = 'Atmo aus'; btn.setAttribute('aria-pressed','true'); }
     document.querySelectorAll('.atmo').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); if (running && running.btn === b) stopAtmo(); else startAtmo(b, b.getAttribute('data-atmo')); }); });
-  })();
+  });
 
   /* ---------- Schreibmaschine im Newsletter-Feld, Menü- und Modus-Töne, Wusch bei schneller Maus ---------- */
   document.querySelectorAll('input[type=email], input[type=text], textarea').forEach(function(i){ i.addEventListener('keydown', function(e){ if (e.key.length === 1 || e.key === 'Backspace') softPlay('typewriter', .5); }); });
   (function(){ var last = null, lastW = 0; document.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse') return; var now = performance.now(); if (last){ var v = Math.hypot(e.clientX - last.x, e.clientY - last.y) / Math.max(1, now - last.t); if (v > 3.2 && now - lastW > 900){ lastW = now; softPlay('shh', .35); } } last = {x:e.clientX, y:e.clientY, t:now}; }, {passive:true}); })();
 
   /* ---------- Eigener Zeiger: groß, atmet, neigt sich, Spur, Schlag, Abdruck, Lupe über Bildern, Radiergummi über Fett-Titeln ---------- */
-  if (MOUSE && !CALM) (function(){
+  if (MOUSE) safe(function(){
     var h = document.documentElement; h.classList.add('cur');
     var el = document.createElement('div'); el.className = 'cur-el';
     el.innerHTML = '<img alt=""><svg class="lensc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="40" cy="40" r="26" fill="rgba(255,255,255,.12)" stroke="currentColor" stroke-width="5"/><line x1="59" y1="59" x2="88" y2="88" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg><svg class="eras" viewBox="0 0 100 100" aria-hidden="true"><rect x="18" y="34" width="64" height="32" rx="4" fill="currentColor"/><rect x="18" y="34" width="22" height="32" rx="4" fill="#fff" stroke="currentColor" stroke-width="4"/></svg>';
@@ -736,7 +789,7 @@
     var ghosts = []; for (var k = 0; k < 4; k++){ var g = document.createElement('div'); g.className = 'cur-ghost'; g.innerHTML = '<img alt="">'; g.style.opacity = (.3 - k * .06).toFixed(2); document.body.appendChild(g); ghosts.push(g); }
     var cur = {x: -200, y: -200}, hist = [], srcSec = '', lastSrc = '';
     var SECS = ['lickitcutit','clickclickboom','suchbilder','cowboykaugummi','egoshooter','weitere','fruehe','praxis','princeofwales','texte','prozess','draugr','idealcity','auftrag','streamdrawings','pinakothek2025','beckmann2022','huelshoff2022','streaming','schule'];
-    var ALIAS = {egoshooter:'clickclickboom', prozess:'comic', fruehe:'weitere'};
+    var ALIAS = {egoshooter:'clickclickboom', prozess:'comic', fruehe:'weitere', texte:'praxis', schule:'pinakothek2025'};
     function srcFor(target){ var s = target.closest ? target.closest('section[id], main.comicpage') : null; var id = s ? (s.id || 'comic') : ''; if (ALIAS[id]) id = ALIAS[id]; if (SECS.indexOf(id) < 0 && id !== 'comic') id = ''; return '../assets/' + (id ? 'cursors/' + id + '@2x.png' : 'bird.png'); }
     function setSrc(src){ if (src === lastSrc) return; lastSrc = src; im.src = src; ghosts.forEach(function(g){ g.querySelector('img').src = src; }); el.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#E2231A'; }
     setSrc('../assets/bird.png');
@@ -744,7 +797,8 @@
       var tg = e.target; setSrc(srcFor(tg));
       var overImg = tg.closest && tg.closest('.work img, .powtiles img, .marg img, .bleed img, .powinfo img, .powlead img, .opener img');
       var overFat = tg.closest && tg.closest('.fat');
-      el.classList.toggle('lens', !!overImg); el.classList.toggle('eras', !!overFat && !overImg);
+      var overText = tg.closest && tg.closest('.sertext, .bio, .notes, .legal, .einzel .side, .textblock, .cvl, .marg figcaption, .songmeta');
+      el.classList.toggle('lens', !!overImg); el.classList.toggle('eras', !!overFat && !overImg); el.classList.toggle('dim', !!overText && !overImg);
       if (overImg){ overImg.style.transition = 'transform .25s'; } }, {passive:true});
     document.addEventListener('pointerleave', function(){ el.classList.remove('on'); });
     document.addEventListener('pointerdown', function(e){ if (e.pointerType !== 'mouse') return; el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); });
@@ -755,13 +809,13 @@
       if (!cur.t || now - cur.t > 1500){ running = false; return; }
       if (prev){ var dx = cur.x - prev.x; vx = vx * .8 + dx * .2; } prev = {x:cur.x, y:cur.y};
       rot = Math.max(-28, Math.min(28, vx * 1.4));
-      el.style.transform = 'translate(' + (cur.x - 9) + 'px,' + (cur.y - 9) + 'px) rotate(' + rot.toFixed(1) + 'deg)';
+      el.style.transform = 'translate(' + cur.x + 'px,' + cur.y + 'px) rotate(' + rot.toFixed(1) + 'deg)';
       hist.unshift({x:cur.x, y:cur.y}); if (hist.length > 24) hist.pop();
-      ghosts.forEach(function(g, i){ var p = hist[Math.min(hist.length - 1, (i + 1) * 5)]; if (p) g.style.transform = 'translate(' + (p.x - 9) + 'px,' + (p.y - 9) + 'px) scale(' + (1 - (i + 1) * .12) + ')'; });
+      ghosts.forEach(function(g, i){ var p = hist[Math.min(hist.length - 1, (i + 1) * 5)]; if (p) g.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) scale(' + (1 - (i + 1) * .12) + ')'; });
       requestAnimationFrame(tick); }
-  })();
+  });
   /* Abdruck beim Klick (Maus) bzw. Tippen (Touch), je Serie ein Motiv, verblasst */
-  (function(){
+  safe(function(){
     var SH = { clickclickboom:'<svg viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="8" fill="currentColor"/><rect x="34" y="78" width="32" height="12" rx="3" fill="currentColor"/></svg>',
       cowboykaugummi:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="#f6a4c8"/><circle cx="38" cy="38" r="8" fill="#fff" opacity=".7"/></svg>',
       princeofwales:'<svg viewBox="0 0 100 100"><path d="M50 20 l-22 30 h14 v30 h16 v-30 h14z" fill="#f2b400"/></svg>',
@@ -771,5 +825,5 @@
       var d = document.createElement('div'); d.className = 'imprint'; d.innerHTML = SH[id] || INK; d.style.left = (x + window.scrollX) + 'px'; d.style.top = (y + window.scrollY) + 'px'; d.style.setProperty('--r', ((Math.random() * 60) - 30).toFixed(0) + 'deg');
       document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 3300); }
     document.addEventListener('pointerdown', function(e){ if (e.button !== 0) return; if (e.target.closest && e.target.closest('.lb2, .menu, .modem, iframe, input, textarea, button, .nlpanel')) return; stamp(e.clientX, e.clientY, e.target); }, {passive:true});
-  })();
+  });
 })();

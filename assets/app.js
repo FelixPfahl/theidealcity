@@ -263,6 +263,94 @@
     document.addEventListener('keydown', function(e){ if(lb.classList.contains('on') && e.key==='Escape') hide(); });
   }
 
+  /* ---------- Felix Pfahl: Gesicht aus dem Holzschnitt, unheimlicher Ton ---------- */
+  var pf = document.querySelectorAll('.pfahl');
+  if (pf.length){
+    var face = document.createElement('img'); face.id='pfahlface'; face.src='../assets/pfahl-face.png'; face.alt=''; document.body.appendChild(face);
+    var pfTimer = null;
+    function moveFace(e){ face.style.left=e.clientX+'px'; face.style.top=e.clientY+'px'; }
+    var pfHide = null;
+    var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
+    var pfGone = null;
+    function faceOff(){ /* sehr langsam ausfaden (6 s), der Ton klingt mit Hall aus */
+      clearInterval(pfTimer); pfTimer=null; clearTimeout(pfHide);
+      if(!face.classList.contains('on') || face.classList.contains('fade')) return;
+      face.classList.add('fade'); clearTimeout(pfGone); pfGone=setTimeout(function(){ face.classList.remove('on','fade'); }, touch ? 9500 : 6500); }
+    function faceOn(e){ moveFace(e); clearTimeout(pfGone); face.classList.remove('fade'); face.classList.add('on'); play('pfahl'); clearInterval(pfTimer); pfTimer=setInterval(function(){ play('pfahl'); }, 3300); }
+    pf.forEach(function(s){
+      /* Maus: Überfahren zeigt das Gesicht; Finger oder Stift: Antippen zeigt es 8 s lang */
+      s.addEventListener('pointerenter', function(e){ if(e.pointerType==='mouse'){ faceOn(e); } });
+      s.addEventListener('pointermove', function(e){ if(e.pointerType==='mouse') moveFace(e); });
+      s.addEventListener('pointerleave', function(e){ if(e.pointerType==='mouse') faceOff(); });
+      s.addEventListener('click', function(e){ if(e.pointerType==='mouse' || (!e.pointerType && face.classList.contains('on'))) return; faceOn({clientX:e.clientX, clientY:e.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 8000); });
+    });
+    document.addEventListener('touchstart', function(e){ if(face.classList.contains('on') && !(e.target.closest && e.target.closest('.pfahl'))) faceOff(); }, {passive:true});
+    document.addEventListener('scroll', function(){ if(touch && face.classList.contains('on')) faceOff(); }, {passive:true});
+  }
+
+  /* 56k-Modem: Wählton, DTMF, Klingeln, V.90-Handshake, Rauschen. Etwa 9 Sekunden. */
+  function dialup(onDone){
+    var ac = ctx(); if(!ac){ onDone(); return; }
+    var t0 = ac.currentTime, out = ac.createGain(); out.gain.value = .5; out.connect(ac.destination);
+    function tone(f, t, d, vol, type){ var o=ac.createOscillator(), g=ac.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol||.3,t+.01); g.gain.setValueAtTime(vol||.3,t+d-.01); g.gain.linearRampToValueAtTime(0,t+d); o.connect(g); g.connect(out); o.start(t); o.stop(t+d+.02); }
+    function nz(t, d, vol, lp){ var s=ac.createBufferSource(); s.buffer=noiseBuf(ac,d); var f=ac.createBiquadFilter(); f.type='bandpass'; f.frequency.value=lp||1800; f.Q.value=.7; var g=ac.createGain(); g.gain.setValueAtTime(vol||.2,t); s.connect(f); f.connect(g); g.connect(out); s.start(t); s.stop(t+d); }
+    var t = t0 + .1;
+    tone(350, t, .9, .18); tone(440, t, .9, .18); t += 1.0;
+    var dtmf = [[697,1209],[770,1336],[852,1477],[697,1336],[941,1336],[770,1209],[852,1336]];
+    dtmf.forEach(function(p){ tone(p[0], t, .12, .22); tone(p[1], t, .12, .22); t += .19; });
+    t += .3; tone(425, t, .8, .15); t += 1.3;
+    tone(2100, t, .9, .22); t += 1.0;
+    tone(1800, t, .35, .2); tone(2250, t+.35, .35, .2); t += .75;
+    for (var k=0;k<6;k++){ tone(1200+Math.random()*900, t, .08, .18, 'square'); t += .1; }
+    nz(t, 1.2, .25, 2200); tone(1650, t, .6, .12); t += 1.25;
+    nz(t, 1.4, .3, 1200); t += 1.45;
+    tone(1000, t, .18, .25, 'square'); tone(1500, t+.2, .18, .25, 'square'); t += .5;
+    var total = (t - t0) * 1000;
+    setTimeout(onDone, total);
+    return total;
+  }
+
+  /* ---------- Modem-Overlay beim ersten Klick auf einen Link ---------- */
+  var modemDone = false;
+  try { modemDone = sessionStorage.getItem('jk_modem') === '1'; } catch(e){}
+  if (!modemDone){
+    var ov = document.createElement('div'); ov.className='modem';
+    ov.innerHTML = '<div class="box"><pre></pre><div class="bar"><i></i></div><button type="button">'+(T.skip||'Überspringen')+'</button>'+(T.modem_hint?'<small>'+T.modem_hint+'</small>':'')+'</div>';
+    document.body.appendChild(ov);
+    var pre = ov.querySelector('pre'), bar = ov.querySelector('.bar i'), skipBtn = ov.querySelector('button');
+    var lines = ['ATZ','OK','ATDT 0049 89 56000','',(T.connecting||'CONNECTING')+' ...','CARRIER 56000','PROTOCOL: LAP-M','COMPRESSION: V.42BIS','',(T.connected||'CONNECT 56000')];
+    var armed = true;
+    document.addEventListener('click', function(e){
+      if (!armed) return;
+      var a = e.target.closest && e.target.closest('a[href]'); if(!a) return;
+      var href = a.getAttribute('href'); if(!href || href.charAt(0)==='#' || a.target==='_blank' || /^(mailto|tel):/.test(href)) return;
+      if (a.closest('.work') || a.closest('.powgrid')) return;
+      e.preventDefault(); armed = false;
+      try { sessionStorage.setItem('jk_modem','1'); } catch(err){}
+      ov.classList.add('on'); pre.textContent='';
+      var go = function(){ window.location.href = href; };
+      var dur = dialup(go) || 9000; var start = Date.now();
+      var li = 0; var step = function(){ if(li<lines.length){ pre.textContent += lines[li++] + '\n'; setTimeout(step, dur/lines.length); } };
+      step();
+      var tick = setInterval(function(){ var p=Math.min(100,(Date.now()-start)/dur*100); bar.style.width=p+'%'; if(p>=100) clearInterval(tick); }, 100);
+      skipBtn.style.visibility='hidden'; setTimeout(function(){ skipBtn.style.visibility='visible'; }, 2500);
+      skipBtn.onclick = function(){ try{ if(AC) AC.close(); AC=null; }catch(err){} go(); };
+    }, true);
+  }
+
+  /* ---------- Motivationsrede ---------- */
+  var mo = document.querySelector('[data-moti]');
+  if (mo && window.JK_MOTI){
+    mo.addEventListener('click', function(){
+      var d = document.createElement('div'); d.className='moti on';
+      var parts = window.JK_MOTI.split(/(?<=[!?.])\s+/);
+      d.innerHTML = '<button>'+(T.close||'X')+'</button>' + parts.map(function(p,i){ return '<p style="--i:'+Math.min(i,40)+'">'+p.replace(/</g,'&lt;')+'</p>'; }).join('');
+      document.body.appendChild(d); document.body.style.overflow='hidden';
+      d.querySelector('button').onclick=function(){ d.remove(); document.body.style.overflow=''; };
+      var ps = d.querySelectorAll('p'); ps.forEach(function(p,i){ p.style.opacity=0; setTimeout(function(){ p.style.opacity=1; if(i%6===5) play('blip'); }, 120*i); });
+    });
+  }
+
   /* ---------- Referenzbilder: groß ansehen, einzeln (kein Karussell) ---------- */
   var refs = document.querySelectorAll('a.reflink');
   if (refs.length){

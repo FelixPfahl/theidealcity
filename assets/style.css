@@ -44,7 +44,8 @@ nav.tabs a.on{border-bottom-color:var(--ink)}
   .top{gap:8px 12px;padding:8px var(--gutter)}
   .mark{font-size:22px}
   .langs{order:2;margin-left:auto;font-size:12px}
-  nav.tabs{order:3;width:100%;gap:12px;font-size:13px;letter-spacing:.04em}
+  nav.tabs{order:3;width:100%;gap:10px;font-size:12px;letter-spacing:.03em;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
 }
 
 /* Start */
@@ -448,3 +449,23 @@ a.reflink:hover img{filter:none}
 .nlrow button:hover{background:var(--red);border-color:var(--red)}
 .nlok{font-family:var(--head);font-size:clamp(18px,2vw,26px);line-height:1.15;margin:10px 0 0;color:var(--red)}
 .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* Unterleiste (Serien-Auswahl) bleibt beim Scrollen unter der Kopfleiste stehen (Josef, 27.10.) */
+.subnav{position:sticky;top:var(--headh,70px);z-index:45;background:var(--paper)}
+.comicpage .subnav{background:var(--blue)}
+.subnav a.on{color:var(--accent);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+section[id],.series[id],[id].powlead{scroll-margin-top:calc(var(--headh,70px) + var(--subh,50px) + 14px)}
+@media (max-width:700px){
+  .subnav{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;gap:0 18px;padding:10px 0;font-size:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .subnav::-webkit-scrollbar{display:none}
+  .subnav.more{-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
+}
+@media print{.subnav{position:static}}
+
+/* Fußnoten: kleines Fenster mit der Quelle beim Drüberfahren oder Antippen (Josef, 27.10.) */
+sup.fn{cursor:help;padding:0 .15em;border-radius:2px}
+sup.fn:hover,sup.fn:focus-visible,sup.fn.on{background:var(--red);color:#fff;outline:none}
+.comicpage sup.fn:hover,.comicpage sup.fn.on{background:#000;color:var(--blue)}
+.fnpop{position:fixed;z-index:120;max-width:min(340px,calc(100vw - 24px));background:#fff;color:var(--ink);border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--blue);padding:10px 12px 11px;font-family:var(--body);font-size:14px;line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none}
+.fnpop.on{opacity:1;transform:none;pointer-events:auto}
+.fnpop b{display:block;font-family:var(--sans);font-weight:400;text-transform:uppercase;letter-spacing:.1em;font-size:10.5px;color:var(--red);margin-bottom:4px}
+@media print{.fnpop{display:none}}

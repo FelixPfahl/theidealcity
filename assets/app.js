@@ -217,7 +217,7 @@
      sonst Animation mit FX.anim Prozent, Rest nichts. Bilder, die sich öffnen, haben ihren eigenen Knaller (workPop). */
   var untilSound = nextGap();
   var WORKSEL = '.work a[data-full], .powgrid a[data-full], .powtiles a[data-full], .powinfo a[data-full], .powlead a[data-full]';
-  document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl, .lb, .fxpanel, .fxknob, .nlform')) return;
+  document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl, .lb, .fxpanel, .fxknob, .nlform, sup.fn, .fnpop')) return;
     var isWork = e.target.closest && e.target.closest(WORKSEL);
     if (--untilSound <= 0){ untilSound = nextGap(); clickSound(e.target); return; }
     if (!isWork && !FX.still && Math.random()*100 < FX.anim) randomAnim(e); }, true);
@@ -475,4 +475,64 @@
       }).catch(function(){ if (btn) btn.disabled = false; f.submit(); });
     });
   });
+
+  /* ---------- Kopf- und Unterleiste: Höhen für Sticky und Sprungziele, aktive Serie markieren ---------- */
+  (function(){
+    var top = document.querySelector('header.top'), sub = document.querySelector('.subnav');
+    function measure(){ var r = document.documentElement.style;
+      if (top) r.setProperty('--headh', top.offsetHeight + 'px');
+      if (sub) r.setProperty('--subh', sub.offsetHeight + 'px'); }
+    measure();
+    if (window.ResizeObserver){ var ro = new ResizeObserver(measure); if (top) ro.observe(top); if (sub) ro.observe(sub); }
+    else window.addEventListener('resize', measure);
+    if (!sub) return;
+    var links = Array.prototype.slice.call(sub.querySelectorAll('a[href^="#"]'));
+    var targets = links.map(function(a){ return document.getElementById(a.getAttribute('href').slice(1)); });
+    var current = null, ticking = false;
+    function more(){ sub.classList.toggle('more', sub.scrollWidth - sub.clientWidth - sub.scrollLeft > 8); }
+    function spy(){ ticking = false;
+      var line = (top ? top.offsetHeight : 0) + sub.offsetHeight + 30, idx = -1;
+      targets.forEach(function(t, i){ if (t && t.getBoundingClientRect().top <= line) idx = i; });
+      var a = idx >= 0 ? links[idx] : null;
+      if (a === current) return;
+      if (current) current.classList.remove('on');
+      current = a;
+      if (a){ a.classList.add('on');
+        if (sub.scrollWidth > sub.clientWidth){ var l = a.offsetParent === sub ? a.offsetLeft : a.offsetLeft - sub.offsetLeft, rr = l + a.offsetWidth;
+          if (l < sub.scrollLeft || rr > sub.scrollLeft + sub.clientWidth) sub.scrollTo({left: Math.max(0, l - 16), behavior: 'smooth'}); } }
+    }
+    window.addEventListener('scroll', function(){ if (!ticking){ ticking = true; requestAnimationFrame(spy); } }, {passive:true});
+    sub.addEventListener('scroll', more, {passive:true}); window.addEventListener('resize', more);
+    spy(); more();
+  })();
+
+  /* ---------- Fußnoten: Quelle als kleines Fenster (Maus: Drüberfahren, Touch: Antippen, Tastatur: Fokus) ---------- */
+  (function(){
+    var pop = document.createElement('div'); pop.className = 'fnpop'; pop.setAttribute('role','tooltip'); pop.id = 'fnpop'; document.body.appendChild(pop);
+    var hideT = null, cur = null, shownAt = 0;
+    function place(sup){ var r = sup.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+      var x = Math.min(Math.max(12, r.left + r.width/2 - pw/2), window.innerWidth - pw - 12);
+      var y = r.top - ph - 10; if (y < ((document.querySelector('header.top')||{}).offsetHeight || 0) + 8) y = r.bottom + 10;
+      pop.style.left = x + 'px'; pop.style.top = y + 'px'; }
+    function show(sup){ clearTimeout(hideT); if (cur !== sup || !pop.classList.contains('on')) shownAt = Date.now(); if (cur && cur !== sup) cur.classList.remove('on'); cur = sup; sup.classList.add('on');
+      pop.innerHTML = '<b>' + (T.note || 'Anmerkung') + ' ' + sup.textContent + '</b>' + sup._note.innerHTML;
+      pop.style.left = '-9999px'; pop.style.top = '0'; pop.classList.add('on'); place(sup); sup.setAttribute('aria-describedby','fnpop'); }
+    function hide(now){ clearTimeout(hideT); hideT = setTimeout(function(){ pop.classList.remove('on'); if (cur){ cur.classList.remove('on'); cur.removeAttribute('aria-describedby'); } cur = null; }, now ? 0 : 160); }
+    document.querySelectorAll('.notes ol').forEach(function(ol){
+      var box = ol.closest('section, .powlead, .textblock, main') || document.body, lis = ol.querySelectorAll('li');
+      box.querySelectorAll('sup').forEach(function(sup){
+        if (sup.closest('.notes')) return; var n = parseInt(sup.textContent, 10); if (!n || !lis[n-1] || sup._note) return;
+        sup._note = lis[n-1]; sup.classList.add('fn'); sup.tabIndex = 0; sup.setAttribute('role','button'); sup.setAttribute('aria-label', (T.note || 'Anmerkung') + ' ' + n);
+        sup.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') show(sup); });
+        sup.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hide(); });
+        sup.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); if (cur === sup && pop.classList.contains('on') && Date.now() - shownAt > 450) hide(true); else show(sup); });
+        sup.addEventListener('focus', function(){ show(sup); }); sup.addEventListener('blur', function(){ hide(); });
+      });
+    });
+    pop.addEventListener('pointerenter', function(){ clearTimeout(hideT); });
+    pop.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hide(); });
+    document.addEventListener('pointerdown', function(e){ if (cur && !(e.target.closest && e.target.closest('.fnpop, sup.fn'))) hide(true); });
+    window.addEventListener('scroll', function(){ if (cur && pop.classList.contains('on')) place(cur); }, {passive:true});
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && cur) hide(true); });
+  })();
 })();

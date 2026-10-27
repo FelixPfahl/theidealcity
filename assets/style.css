@@ -436,3 +436,9 @@ em.kw{font-family:var(--acc);font-style:italic;font-weight:400;color:var(--accen
 .nlpanel .nlok{font-family:var(--head);color:var(--red);font-size:18px;margin:8px 0 0}
 @media print{.nlfloat{display:none!important}}
 @media (max-width:600px){.nlknob{left:10px;bottom:10px}.nlpanel{left:10px;bottom:62px;width:calc(100vw - 20px)}}
+/* Sehr kleine und sehr große Bildschirme (Test 27.10.) */
+.bigtabs a{font-size:clamp(26px,9vw,84px);white-space:normal}
+@media (max-width:360px){.hero{font-size:clamp(64px,24vw,100px)}.bigtabs a{font-size:clamp(22px,8.4vw,36px)}}
+@media (min-width:2200px){body{zoom:1.6}.landing{min-height:calc(100vh/1.6 - 60px)}}
+@media (min-width:3000px){body{zoom:1.9}.landing{min-height:calc(100vh/1.9 - 60px)}}
+.landing .nlform.big{margin-top:22px}

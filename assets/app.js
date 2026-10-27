@@ -13,13 +13,12 @@
   var titles = [document.title, 'JO', 'SEF', document.title];
   var ti = 0; setInterval(function(){ if(document.hidden){ ti=(ti+1)%titles.length; document.title = titles[ti]; } else { document.title = titles[0]; } }, 1500);
 
-  /* ---------- Regler-Werte (Josef, 27.10.): jede*r stellt selbst ein. Gespeichert wird nur, wenn jemand den Regler bewegt
-     (localStorage jk_fx, vom Nutzer ausdrücklich gewünscht, § 25 Abs. 2 Nr. 2 TDDDG). Sonst speichert die Seite nichts. ---------- */
+  /* ---------- Feste Werte (Regler abgeschafft, Josef, 27.10.): Ton alle 2 bis 5 Klicks, Bewegung voll, bei Systemeinstellung "weniger Bewegung" ruhig ---------- */
   var REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
   var FX_DEFAULT = {ton:3, vol:80, bewegung:(REDUCED ? 1 : 2), modem:true};
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
-  try { var saved = JSON.parse(localStorage.getItem('jk_fx') || 'null'); if (saved){ for (var k1 in saved) if (k1 in FX) FX[k1] = saved[k1]; if (saved.still === true && !('bewegung' in saved)) FX.bewegung = 0; } } catch(e){}
+  try { localStorage.removeItem('jk_fx'); } catch(e){}   /* Regler abgeschafft (Josef, 27.10., 18:30): nichts mehr gespeichert */
   function applyMotion(){ var h = document.documentElement; h.classList.toggle('calm', FX.bewegung < 2); h.classList.toggle('still', FX.bewegung === 0); }
   applyMotion();
   /* Töne: 0 aus, 1 selten, 2 manchmal, 3 normal (alle 2 bis 5 Klicks), 4 oft, 5 bei jedem Klick */
@@ -357,44 +356,6 @@
 
   /* ---------- Zufällige Neigung der Werke (dezent) ---------- */
   document.querySelectorAll('.work.rot').forEach(function(w,i){ w.style.setProperty('--tilt', (((i*7919)%7)-3)*0.5+'deg'); });
-
-  /* ---------- Regler (Josef, 27.10.): Besucher*innen stellen Töne, Lautstärke, Bewegung und Modem-Intro selbst ein ---------- */
-  (function(){
-    var TON_TXT = ['aus','selten','manchmal','normal','oft','immer'];
-    var ROWS = [
-      {k:'ton',  label:'Töne',        min:0, max:5,   step:1, txt:function(v){ return TON_TXT[v]; }},
-      {k:'vol',  label:'Lautstärke',  min:0, max:100, step:5, txt:function(v){ return v+' %'; }},
-      {k:'bewegung',label:'Bewegung', min:0, max:2, step:1, txt:function(v){ return ['aus','ruhig','voll'][v]; }}
-    ];
-    var ICON = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3v18M12 3v18M19 3v18"/><rect x="2.5" y="13" width="5" height="3.2" fill="currentColor"/><rect x="9.5" y="6" width="5" height="3.2" fill="currentColor"/><rect x="16.5" y="15.5" width="5" height="3.2" fill="currentColor"/></svg>';
-    var knob = document.createElement('button'); knob.type='button'; knob.className='fxknob'; knob.setAttribute('aria-label','Regler: Töne und Bewegung einstellen'); knob.setAttribute('aria-expanded','false'); knob.title='Regler'; knob.innerHTML=ICON;
-    var panel = document.createElement('div'); panel.className='fxpanel'; panel.id='fxpanel'; panel.setAttribute('role','dialog'); panel.setAttribute('aria-label','Regler'); knob.setAttribute('aria-controls','fxpanel');
-    var h = '<button type="button" class="x" aria-label="Schließen" title="Schließen">&times;</button><h2>Regler</h2>';
-    ROWS.forEach(function(r){ h += '<label class="fxrow"><span class="l">'+r.label+'</span><span class="v" data-v="'+r.k+'"></span><input type="range" min="'+r.min+'" max="'+r.max+'" step="'+r.step+'" data-k="'+r.k+'"'+(r.cls?' class="'+r.cls+'"':'')+'></label>'; });
-    h += '<label class="fxcheck"><input type="checkbox" data-k="modem"> Modem-Intro</label>';
-    h += '<div class="fxbtns"><button type="button" data-a="test">Ausprobieren</button><button type="button" data-a="reset">Zurücksetzen</button></div>';
-    h += '<p class="fxnote">Bleibt nur in diesem Browser gespeichert, und nur, wenn du etwas verstellst.</p>';
-    panel.innerHTML = h;
-    document.body.appendChild(panel); document.body.appendChild(knob);
-    function show(){ ROWS.forEach(function(r){ var i = panel.querySelector('input[data-k="'+r.k+'"]'); i.value = FX[r.k]; panel.querySelector('[data-v="'+r.k+'"]').textContent = r.txt(+FX[r.k]); });
-      panel.querySelector('input[data-k="modem"]').checked = !!FX.modem; }
-    function save(){ try { localStorage.setItem('jk_fx', JSON.stringify(FX)); } catch(e){} }
-    function apply(k){ if (k==='vol' && MASTER) MASTER.node.gain.value = FX.vol/100; if (k==='ton') untilSound = nextGap(); if (k==='bewegung') applyMotion(); }
-    function open(){ show(); panel.classList.add('on'); knob.setAttribute('aria-expanded','true'); }
-    function close(){ panel.classList.remove('on'); knob.setAttribute('aria-expanded','false'); }
-    knob.addEventListener('click', function(){ panel.classList.contains('on') ? close() : open(); });
-    panel.querySelector('.x').addEventListener('click', close);
-    document.addEventListener('keydown', function(e){ if (e.key==='Escape' && panel.classList.contains('on')){ close(); knob.focus(); } });
-    document.addEventListener('pointerdown', function(e){ if (panel.classList.contains('on') && !(e.target.closest && e.target.closest('.fxpanel, .fxknob'))) close(); });
-    panel.addEventListener('input', function(e){ var i = e.target, k = i.getAttribute('data-k'); if (!k) return;
-      FX[k] = i.type==='checkbox' ? i.checked : +i.value; apply(k); save();
-      var r = ROWS.filter(function(x){ return x.k===k; })[0]; if (r) panel.querySelector('[data-v="'+k+'"]').textContent = r.txt(FX[k]); });
-    panel.addEventListener('change', function(e){ var k = e.target.getAttribute('data-k'); if (k==='vol' || k==='ton'){ if (FX.ton > 0) clickSound(knob); } });
-    panel.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
-      if (b.getAttribute('data-a')==='test'){
-        if (FX.ton > 0) clickSound(document.querySelector('main') || knob); }
-      else { try { localStorage.removeItem('jk_fx'); } catch(err){} for (var k in FX_DEFAULT) FX[k] = FX_DEFAULT[k]; apply('vol'); apply('ton'); apply('bewegung'); show(); } });
-  })();
 
   /* ---------- Newsletter (Brevo): ohne Anbieter-Skript, Anmeldung im Hintergrund; ohne JavaScript öffnet sich Brevo im neuen Tab ---------- */
   document.querySelectorAll('form[data-nl]').forEach(function(f){

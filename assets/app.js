@@ -201,24 +201,49 @@
     if (list.length > 1 && name === lastName) name = list[(list.indexOf(name)+1) % list.length];   /* nie zweimal hintereinander derselbe */
     lastName = name; play(name);
   }
-  document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl')) return; clickSound(e.target); }, true);
+  document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl, .lb')) return;
+    /* Zufall (Josef, 27.10.): 30 % Ton, 25 % Animation, 45 % nichts. Bilder, die sich öffnen, haben ihren eigenen Knaller. */
+    if (e.target.closest && e.target.closest('.work a[data-full], .powgrid a[data-full], .powtiles a[data-full], .powinfo a[data-full], .powlead a[data-full]')) { if(Math.random()<.5) clickSound(e.target); return; }
+    var r = Math.random(); if (r < .30) clickSound(e.target); else if (r < .55) randomAnim(e); }, true);
   /* Schnelles Mehrfachklicken (wegen der Klänge) markiert keinen Text außerhalb von Fließtext */
   document.addEventListener('mousedown', function(e){ if(e.detail>1 && !(e.target.closest && e.target.closest('p, li, pre, blockquote, input, textarea, .sertext, .notes'))) e.preventDefault(); });
   /* Handy: Audio beim ersten Antippen freischalten (iOS) */
   ['touchend','click'].forEach(function(ev){ document.addEventListener(ev, function(){ ctx(); }, {passive:true}); });
+  var ANIMS = [function(e){ textPop(e, e.target); }];
+  function randomAnim(e){ try{ ANIMS[Math.floor(Math.random()*ANIMS.length)](e); }catch(err){} }
   /* Spotify erst auf Klick laden (Datenschutz) */
   document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('.spot button'); if(!b) return; var box = b.parentNode; var f = document.createElement('iframe'); f.src = box.getAttribute('data-src'); f.title = box.getAttribute('data-title')||'Spotify'; f.setAttribute('allow','autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'); f.setAttribute('loading','lazy'); box.innerHTML=''; box.appendChild(f); });
 
   /* ---------- Click Click Boom ---------- */
   var clicks = 0, boomWords = (T.boom||['CLICK','CLICK','BOOM']);
-  function clickBoom(ev, el){
-    var w = boomWords[clicks % 3]; clicks++;
-    var tag = document.createElement('div'); tag.className='boomtag' + (document.querySelector('main.comicpage') ? ' blue' : ''); tag.textContent=w;
-    var x = ev.clientX || (window.innerWidth/2), y = ev.clientY || (window.innerHeight/2);
-    tag.style.left=x+'px'; tag.style.top=y+'px'; document.body.appendChild(tag);
-    setTimeout(function(){ tag.remove(); }, 800);
-    if (w==='BOOM'){ document.body.classList.add('shake'); setTimeout(function(){document.body.classList.remove('shake')},600); }
+  /* ---------- Schrift-Knaller in Dürer-Schrift, frei nach Erik Carter (Design Harder): gestreckt, gestaucht, gespiegelt, Kontur, Echo ---------- */
+  var WORDS = {
+    lickitcutit:['LICK','CUT','SNIP','SCHNITT','LICK IT','CUT IT'], clickclickboom:['CLICK','KLICK','BOOM','PENG','KA-BOOM'],
+    suchbilder:['AHA!','WO?','DA!','GEFUNDEN','HM?'], cowboykaugummi:['PLOPP','YEEHAW','BLUBB','KAU KAU','SPUCK'],
+    egoshooter:['PEW','PEW PEW','RELOAD','GAME OVER','1UP','LEVEL UP'], weitere:['RATSCH','KRITZEL','RADIER','SPITZ'],
+    praxis:['PUNKT','LINIE','FLUCHT','PUNKT.','RASTER'], draugr:['GRAAH','HEL','KNACK','UUUH','WALHALL'],
+    idealcity:['TUUT','PLATSCH','WUSCH','AHOI'], prozess:['SKIZZE','TUSCHE','RADIER','FERTIG?','NOCHMAL'],
+    pinakothek2025:['PSST','SCHAU','AH','OH','HUCH'], beckmann2022:['TJA','TJA.','HM','AHOI','TJA?'],
+    huelshoff2022:['KNARZ','UHU','PSST','HUI'], streaming:['LIVE','PING','HI CHAT','GG'], schule:['RUHE!','PAUSE','HA!','NOCHMAL'],
+    princeofwales:['QUAK','QUAK QUAK','PRINCE','QUAAAK'], texte:['TAPP','TAPP TAPP','WEITER','PUH'],
+    _:['CLICK','BOOM','ZACK','BÄM','WUMM','HUI','PENG','KNALL']
+  };
+  var STYLES = ['tall','wide','mirror','outline','echo','stack','skew','giant','block','turn','squash','tilt'];
+  function secOf(el){ var s = el && el.closest ? el.closest('section.series, .powlead, main') : null; if(s && s.id) return s.id; if(document.querySelector('main.comicpage')) return 'draugr'; return '_'; }
+  function textPop(ev, el, word){
+    var sec = secOf(el), list = WORDS[sec] || WORDS._;
+    var w = word || list[Math.floor(Math.random()*list.length)];
+    var st = STYLES[Math.floor(Math.random()*STYLES.length)];
+    var col = document.querySelector('main.comicpage') ? 'blue' : (Math.random()<.22 ? 'black' : 'red');
+    var tag = document.createElement('div'); tag.className = 'tp tp-'+st+' tp-'+col; tag.setAttribute('aria-hidden','true');
+    if (st==='stack'){ for(var i=0;i<4;i++){ var l=document.createElement('span'); l.textContent=w; tag.appendChild(l); } } else tag.textContent = w;
+    var x = (ev && ev.clientX) || (window.innerWidth/2), y = (ev && ev.clientY) || (window.innerHeight/2);
+    if (st==='giant'){ x = window.innerWidth/2; y = window.innerHeight/2; }
+    tag.style.left = x+'px'; tag.style.top = y+'px'; tag.style.setProperty('--r', ((Math.random()*16)-8).toFixed(1)+'deg');
+    document.body.appendChild(tag); setTimeout(function(){ tag.remove(); }, 1100);
+    if (/BOOM|KNALL|PENG|GAME OVER/.test(w)){ document.body.classList.add('shake'); setTimeout(function(){document.body.classList.remove('shake')},600); }
   }
+  function clickBoom(ev, el){ var w = boomWords[clicks % 3]; clicks++; textPop(ev, el, w); }
 
   /* sanftes Ein- und Ausblenden der Großansicht */
   function lbOpen(el){ el.classList.add('on'); document.body.style.overflow='hidden'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); }); }

@@ -193,6 +193,9 @@
     if (w==='BOOM'){ document.body.classList.add('shake'); setTimeout(function(){document.body.classList.remove('shake')},600); }
   }
 
+  /* sanftes Ein- und Ausblenden der Großansicht */
+  function lbOpen(el){ el.classList.add('on'); document.body.style.overflow='hidden'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); }); }
+  function lbClose(el, done){ el.classList.remove('show'); setTimeout(function(){ el.classList.remove('on'); document.body.style.overflow=''; if(done) done(); }, 300); }
   /* ---------- Lightbox: nur das angeklickte Bild, kein Karussell (Josef, 27.10.) ---------- */
   var works = Array.prototype.slice.call(document.querySelectorAll('.work a[data-full], .powgrid a[data-full], .powtiles a[data-full], .powinfo a[data-full], .powlead a[data-full]'));
   if (works.length){
@@ -200,8 +203,8 @@
     lb.innerHTML = '<button class="x" aria-label="'+(T.close||'Schließen')+'" title="'+(T.close||'Schließen')+'">&times;</button><img alt=""><div class="cap"></div>';
     document.body.appendChild(lb);
     var img = lb.querySelector('img'), cap = lb.querySelector('.cap');
-    function show(a){ img.src=a.getAttribute('data-full'); img.alt=a.getAttribute('data-alt')||''; var fc=a.parentNode.querySelector('figcaption'); cap.innerHTML=fc? fc.innerHTML : ''; lb.classList.add('on'); document.body.style.overflow='hidden'; }
-    function hide(){ lb.classList.remove('on'); document.body.style.overflow=''; img.removeAttribute('src'); }
+    function show(a){ img.src=a.getAttribute('data-full'); img.alt=a.getAttribute('data-alt')||''; var fc=a.parentNode.querySelector('figcaption'); cap.innerHTML=fc? fc.innerHTML : ''; lbOpen(lb); }
+    function hide(){ lbClose(lb, function(){ img.removeAttribute('src'); }); }
     works.forEach(function(a){ a.addEventListener('click', function(ev){ ev.preventDefault(); clickBoom(ev, a); show(a); }); });
     lb.querySelector('.x').onclick=hide;
     lb.addEventListener('click', function(e){ if(e.target===lb || e.target===img) hide(); });
@@ -215,8 +218,8 @@
     rb.innerHTML = '<button class="x" aria-label="'+(T.close||'Schließen')+'" title="'+(T.close||'Schließen')+'">&times;</button><img alt=""><div class="cap"></div>';
     document.body.appendChild(rb);
     var rimg = rb.querySelector('img'), rcap = rb.querySelector('.cap');
-    function rhide(){ rb.classList.remove('on'); document.body.style.overflow=''; rimg.removeAttribute('src'); }
-    refs.forEach(function(a){ a.addEventListener('click', function(ev){ ev.preventDefault(); var im=a.querySelector('img'); rimg.src=a.getAttribute('href'); rimg.alt=im?im.alt:''; var fc=a.parentNode.querySelector('figcaption'); rcap.innerHTML=fc?fc.innerHTML:''; rb.classList.add('on'); document.body.style.overflow='hidden'; }); });
+    function rhide(){ lbClose(rb, function(){ rimg.removeAttribute('src'); }); }
+    refs.forEach(function(a){ a.addEventListener('click', function(ev){ ev.preventDefault(); var im=a.querySelector('img'); rimg.src=a.getAttribute('href'); rimg.alt=im?im.alt:''; var fc=a.parentNode.querySelector('figcaption'); rcap.innerHTML=fc?fc.innerHTML:''; lbOpen(rb); }); });
     rb.querySelector('.x').onclick=rhide; rb.addEventListener('click', function(e){ if(e.target===rb || e.target===rimg) rhide(); });
     document.addEventListener('keydown', function(e){ if(rb.classList.contains('on') && e.key==='Escape') rhide(); });
   }

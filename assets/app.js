@@ -111,25 +111,35 @@
     flap: function(ac,t){ var n=3+Math.floor(Math.random()*3); for(var k=0;k<n;k++){ noise(ac,t+k*.11,.07,.3,'lowpass',1800,.7,.07); } },
     bikebell: function(ac,t){ for(var k=0;k<2;k++){ var tt=t+k*.14; osc(ac,'sine',2900,tt,.3,.12,.003); osc(ac,'sine',4300,tt,.2,.06,.003); } },
     pfahl: function(ac,t){
-      /* Felix Pfahl: Drone mit Schwebung, Atem, Flüstern, verstimmte Spieluhr, Herzschlag, alles im Hall */
+      /* Felix Pfahl: alles im Mittenbereich, damit es auch aus Handy-Lautsprechern unheimlich klingt
+         (Handys geben unter ca. 250 Hz fast nichts wieder). Dissonanter Cluster, Theremin-Klage,
+         fallendes Glissando, Flüstern, Rückwärts-Schwell, verzerrter Herzschlag, langer Hall. */
       var wet = rev(ac);
-      function to(node, g, t0, d, vol, env){ var gg=ac.createGain(); gg.gain.setValueAtTime(0,t0); gg.gain.linearRampToValueAtTime(vol,t0+(env||.05)); gg.gain.exponentialRampToValueAtTime(.0005,t0+d); node.connect(gg); gg.connect(wet); gg.connect(ac.destination); }
-      var lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(140,t); lp.frequency.linearRampToValueAtTime(900,t+1.6); lp.frequency.linearRampToValueAtTime(120,t+3.2); lp.Q.value=6;
-      var d1=ac.createOscillator(), d2=ac.createOscillator(), d3=ac.createOscillator(); d1.type='sawtooth'; d2.type='sawtooth'; d3.type='sine';
-      d1.frequency.value=55; d2.frequency.value=55.7; d3.frequency.value=27.5; d1.connect(lp); d2.connect(lp); d3.connect(lp);
-      to(lp,null,t,3.4,.16,.5); d1.start(t); d2.start(t); d3.start(t); d1.stop(t+3.5); d2.stop(t+3.5); d3.stop(t+3.5);
-      /* Atem: langsam an- und abschwellendes Rauschen */
-      var br=ac.createBufferSource(); br.buffer=noiseBuf(ac,3); var bf=ac.createBiquadFilter(); bf.type='bandpass'; bf.frequency.setValueAtTime(400,t); bf.frequency.linearRampToValueAtTime(1600,t+1.4); bf.frequency.linearRampToValueAtTime(300,t+2.9); bf.Q.value=1.2; br.connect(bf); to(bf,null,t,3,.07,1.3); br.start(t); br.stop(t+3);
-      /* Flüstern: kurze Zischlaute in Sprachrhythmus */
-      var n=4+Math.floor(Math.random()*5), tt=t+.3+Math.random()*.6;
-      for(var k=0;k<n;k++){ var w=ac.createBufferSource(); w.buffer=noiseBuf(ac,.12); var wf=ac.createBiquadFilter(); wf.type='bandpass'; wf.frequency.value=1800+Math.random()*2500; wf.Q.value=5; w.connect(wf); to(wf,null,tt,.1+Math.random()*.08,.09,.01); w.start(tt); w.stop(tt+.2); tt+=.09+Math.random()*.16; }
-      /* Spieluhr, leicht verstimmt, irgendwo weit weg */
-      if(Math.random()<.8){ var f=[1760,1976,2093,1568,2349][Math.floor(Math.random()*5)]*(1+(Math.random()-.5)*.03); var mt=t+.8+Math.random()*1.6;
-        var m1=ac.createOscillator(), m2=ac.createOscillator(); m1.frequency.value=f; m2.frequency.value=f*2.76; to(m1,null,mt,1.4,.05,.005); to(m2,null,mt,.6,.015,.005); m1.start(mt); m2.start(mt); m1.stop(mt+1.5); m2.stop(mt+.7); }
-      /* Herzschlag */
-      [0.5,0.84].forEach(function(dt){ var h=ac.createOscillator(); h.frequency.setValueAtTime(52,t+dt); h.frequency.exponentialRampToValueAtTime(30,t+dt+.18); to(h,null,t+dt,.22,.3,.01); h.start(t+dt); h.stop(t+dt+.25); });
-      /* Rückwärts-Schwell: Rauschen wird lauter und bricht ab */
-      if(Math.random()<.6){ var st=t+1.6; var sw=ac.createBufferSource(); sw.buffer=noiseBuf(ac,1.3); var sf=ac.createBiquadFilter(); sf.type='highpass'; sf.frequency.value=2500; var sg=ac.createGain(); sg.gain.setValueAtTime(.0005,st); sg.gain.exponentialRampToValueAtTime(.12,st+1.25); sg.gain.setValueAtTime(0,st+1.27); sw.connect(sf); sf.connect(sg); sg.connect(wet); sw.start(st); sw.stop(st+1.3); }
+      function out(node, t0, d, vol, att, dry){ var g=ac.createGain(); g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+(att||.05)); g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+        node.connect(g); g.connect(wet); if(dry!==false) g.connect(ac.destination); return g; }
+      var root = [207.65,220,233.08][Math.floor(Math.random()*3)];
+      /* 1 Cluster: Grundton, kleine Sekunde, Tritonus, große Septime, jede Stimme verstimmt doppelt (Schwebung) */
+      var lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.Q.value=4; lp.frequency.setValueAtTime(500,t); lp.frequency.linearRampToValueAtTime(2400,t+1.8); lp.frequency.linearRampToValueAtTime(700,t+3.4);
+      [1, 1.0595, 1.4142, 1.8877].forEach(function(r,i){ [-7,7].forEach(function(dc){ var o=ac.createOscillator(); o.type= i%2 ? 'sawtooth' : 'triangle'; o.frequency.value=root*r; o.detune.value=dc+(Math.random()*6-3); o.connect(lp); o.start(t); o.stop(t+3.8); }); });
+      out(lp, t, 3.7, .07, 1.1);
+      /* 2 Theremin: Sinus mit Vibrato, gleitet klagend nach unten */
+      var th=ac.createOscillator(); th.type='sine'; var thf=root*3*(1+Math.random()*.06); th.frequency.setValueAtTime(thf,t+.4); th.frequency.exponentialRampToValueAtTime(thf*1.12,t+1.2); th.frequency.exponentialRampToValueAtTime(thf*.71,t+3.2);
+      var vb=ac.createOscillator(), vg=ac.createGain(); vb.frequency.value=5.2; vg.gain.value=thf*.018; vb.connect(vg); vg.connect(th.frequency);
+      out(th, t+.4, 3.1, .06, .9); th.start(t+.4); vb.start(t+.4); th.stop(t+3.6); vb.stop(t+3.6);
+      /* 3 fallendes Glissando im Hintergrund (nur Hall) */
+      var gl=ac.createOscillator(); gl.type='sawtooth'; gl.frequency.setValueAtTime(root*4,t+.2); gl.frequency.exponentialRampToValueAtTime(root*1.5,t+3.3);
+      var glf=ac.createBiquadFilter(); glf.type='bandpass'; glf.frequency.value=900; glf.Q.value=2; gl.connect(glf); out(glf, t+.2, 3.2, .05, .8, false); gl.start(t+.2); gl.stop(t+3.5);
+      /* 4 Flüstern in Sprachrhythmus, jedes Mal andere Silben */
+      var n=6+Math.floor(Math.random()*6), tt=t+.25+Math.random()*.5;
+      for(var k=0;k<n;k++){ var w=ac.createBufferSource(); w.buffer=noiseBuf(ac,.2); var wf=ac.createBiquadFilter(); wf.type='bandpass'; wf.frequency.value=[1200,2200,3400,5200][Math.floor(Math.random()*4)]; wf.Q.value=4+Math.random()*4;
+        w.connect(wf); out(wf, tt, .09+Math.random()*.12, .14, .015); w.start(tt); w.stop(tt+.25); tt+=.07+Math.random()*.2; }
+      /* 5 Herzschlag mit Obertönen, damit man ihn auch am Handy hört */
+      [0.55,0.86].forEach(function(dt){ var h=ac.createOscillator(); h.type='triangle'; h.frequency.setValueAtTime(150,t+dt); h.frequency.exponentialRampToValueAtTime(70,t+dt+.16);
+        var hf=ac.createBiquadFilter(); hf.type='lowpass'; hf.frequency.value=600; h.connect(hf); out(hf, t+dt, .24, .22, .008); h.start(t+dt); h.stop(t+dt+.26);
+        var hn=ac.createBufferSource(); hn.buffer=noiseBuf(ac,.06); var hnf=ac.createBiquadFilter(); hnf.type='bandpass'; hnf.frequency.value=300; hnf.Q.value=2; hn.connect(hnf); out(hnf, t+dt, .06, .2, .004); hn.start(t+dt); hn.stop(t+dt+.07); });
+      /* 6 Rückwärts-Schwell, bricht abrupt ab */
+      if(Math.random()<.7){ var st=t+1.7; var sw=ac.createBufferSource(); sw.buffer=noiseBuf(ac,1.4); var sf=ac.createBiquadFilter(); sf.type='bandpass'; sf.frequency.setValueAtTime(600,st); sf.frequency.exponentialRampToValueAtTime(3500,st+1.3); sf.Q.value=1.5;
+        var sg=ac.createGain(); sg.gain.setValueAtTime(.0005,st); sg.gain.exponentialRampToValueAtTime(.16,st+1.32); sg.gain.setValueAtTime(0,st+1.34); sw.connect(sf); sf.connect(sg); sg.connect(wet); sg.connect(ac.destination); sw.start(st); sw.stop(st+1.4); }
     }
   };
   var DEFAULT = ['whistle','squeak','shotgun','boing','zip','click','bell','ticks'];
@@ -142,7 +152,9 @@
     if (list.length > 1 && name === lastName) name = list[(list.indexOf(name)+1) % list.length];   /* nie zweimal hintereinander derselbe */
     lastName = name; play(name);
   }
-  document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe')) return; clickSound(e.target); }, true);
+  document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl')) return; clickSound(e.target); }, true);
+  /* Handy: Audio beim ersten Antippen freischalten (iOS) */
+  ['touchend','click'].forEach(function(ev){ document.addEventListener(ev, function(){ ctx(); }, {passive:true}); });
   /* Spotify erst auf Klick laden (Datenschutz) */
   document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('.spot button'); if(!b) return; var box = b.parentNode; var f = document.createElement('iframe'); f.src = box.getAttribute('data-src'); f.title = box.getAttribute('data-title')||'Spotify'; f.setAttribute('allow','autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'); f.setAttribute('loading','lazy'); box.innerHTML=''; box.appendChild(f); });
 
@@ -191,7 +203,8 @@
     pf.forEach(function(s){
       if (touch){
         /* Handy: beim Antippen kurz zeigen, nach 2,5 Sekunden oder beim nächsten Tippen irgendwo wieder weg */
-        s.addEventListener('touchstart', function(e){ var t=e.touches[0]; faceOn({clientX:t.clientX, clientY:t.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 8000); }, {passive:true});
+        /* click statt touchstart: nur ein echtes Antippen schaltet auf iPhones den Ton frei */
+        s.addEventListener('click', function(e){ faceOn({clientX:e.clientX, clientY:e.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 8000); });
       } else {
         s.addEventListener('mouseenter', faceOn);
         s.addEventListener('mousemove', moveFace);

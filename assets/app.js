@@ -357,18 +357,36 @@
   /* ---------- Zufällige Neigung der Werke (dezent) ---------- */
   document.querySelectorAll('.work.rot').forEach(function(w,i){ w.style.setProperty('--tilt', (((i*7919)%7)-3)*0.5+'deg'); });
 
-  /* ---------- Newsletter (Brevo): ohne Anbieter-Skript, Anmeldung im Hintergrund; ohne JavaScript öffnet sich Brevo im neuen Tab ---------- */
+  /* ---------- Newsletter: schwebender Mail-Knopf, Anmeldung mit Applaus (Josef, 27.10.) ----------
+     Mit Brevo-Link läuft die Anmeldung im Hintergrund; sonst geht das Formular normal ab (FormSubmit), nach dem Applaus. */
+  (function(){
+    var box = document.querySelector('.nlfloat'); if (!box) return;
+    var knob = box.querySelector('.nlknob'), panel = box.querySelector('.nlpanel');
+    function open(){ panel.classList.add('on'); knob.setAttribute('aria-expanded','true'); var i = panel.querySelector('input[type=email]'); if (i) setTimeout(function(){ i.focus(); }, 120); }
+    function close(){ panel.classList.remove('on'); knob.setAttribute('aria-expanded','false'); }
+    knob.addEventListener('click', function(){ panel.classList.contains('on') ? close() : open(); });
+    panel.querySelector('.x').addEventListener('click', close);
+    document.addEventListener('keydown', function(e){ if (e.key==='Escape' && panel.classList.contains('on')){ close(); knob.focus(); } });
+    document.addEventListener('pointerdown', function(e){ if (panel.classList.contains('on') && !(e.target.closest && e.target.closest('.nlfloat'))) close(); });
+  })();
+  function applause(){ var ac = ctx(); if (!ac) return 0; vary(); V.len = 1; V.vol = 1; var t = ac.currentTime + .02;
+    for (var r = 0; r < 3; r++){ var n = 26; for (var k = 0; k < n; k++){ noise(ac, t + r * .55 + Math.random() * .55, .018, .12, 'bandpass', 1200 + Math.random() * 2600, 1, .018); } }
+    var o = osc(ac, 'sine', 880, t + .1, .5, .05, .02); o.frequency.exponentialRampToValueAtTime(1320, t + .3); return 1900; }
   document.querySelectorAll('form[data-nl]').forEach(function(f){
+    var busy = false;
     f.addEventListener('submit', function(e){
-      if (!window.fetch || !window.FormData) return;
-      e.preventDefault();
-      var btn = f.querySelector('button[type=submit]'); if (btn) btn.disabled = true;
-      fetch(f.action, {method:'POST', body:new FormData(f), mode:'no-cors'}).then(function(){
-        f.querySelector('.nlrow').hidden = true; var ok = f.querySelector('.nlok'); if (ok) ok.hidden = false;
-      }).catch(function(){ if (btn) btn.disabled = false; f.submit(); });
+      if (busy) return; e.preventDefault(); busy = true;
+      var btn = f.querySelector('button[type=submit]'); if (btn){ btn.disabled = true; btn.textContent = 'Danke!'; }
+      var wait = applause() || 300;
+      var brevo = /sibforms|brevo/.test(f.action);
+      if (brevo && window.fetch && window.FormData){
+        fetch(f.action, {method:'POST', body:new FormData(f), mode:'no-cors'}).then(function(){
+          var row = f.querySelector('.nlrow'); if (row) row.hidden = true; var ok = f.querySelector('.nlok') || f.parentNode.querySelector('.nlok'); if (ok) ok.hidden = false;
+          if (!ok){ var p = document.createElement('p'); p.className = 'nlok'; p.textContent = 'Fast geschafft: Bitte die Mail bestätigen, die gleich kommt.'; f.parentNode.appendChild(p); f.hidden = true; }
+        }).catch(function(){ setTimeout(function(){ f.submit(); }, wait); });
+      } else { setTimeout(function(){ f.submit(); }, wait); }
     });
   });
-
   /* ---------- Kopf- und Unterleiste: Höhen für Sticky und Sprungziele, aktive Serie markieren ---------- */
   (function(){
     var top = document.querySelector('header.top'), sub = document.querySelector('.subnav');

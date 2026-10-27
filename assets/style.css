@@ -419,3 +419,20 @@ sup.fn:hover,sup.fn:focus-visible,sup.fn.on{background:var(--red);color:#fff;out
 em.kw{font-family:var(--acc);font-style:italic;font-weight:400;color:var(--accent);font-size:1.04em}
 .comicpage em.kw{color:var(--blue-ink)}
 .nlform em.kw,.legal em.kw{font:inherit;color:inherit}
+/* Schwebender Newsletter-Knopf (unten links) mit kleinem Anmeldefeld */
+.nlknob{position:fixed;left:14px;bottom:14px;z-index:90;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;opacity:.75;transition:opacity .2s,transform .2s,color .2s}
+.nlknob:hover,.nlknob[aria-expanded=true]{opacity:1;color:var(--red);transform:rotate(-6deg)}
+.nlknob:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.nlpanel{position:fixed;left:14px;bottom:70px;z-index:95;width:min(340px,calc(100vw - 28px));background:#fff;border:2px solid var(--ink);box-shadow:6px 6px 0 var(--red);padding:16px 18px 14px;display:none}
+.nlpanel.on{display:block;animation:fxIn .3s ease-out forwards}
+.nlpanel h2{font-size:26px;line-height:1;margin:0 0 6px}
+.nlpanel .n{font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--grey);margin:0 0 8px}
+.nlpanel .n.small{margin:8px 0 0;font-size:11px}
+.nlpanel .x{position:absolute;top:6px;right:8px;width:32px;height:32px;border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--ink)}
+.nlpanel form{display:flex;gap:6px}
+.nlpanel input[type=email]{flex:1 1 140px;min-width:0;padding:9px 10px;font:inherit;font-size:15px;border:1.5px solid var(--ink);border-radius:0;background:#fff}
+.nlpanel button[type=submit]{font:inherit;font-family:var(--sans);text-transform:uppercase;letter-spacing:.08em;font-size:13px;background:var(--red);color:#fff;border:2px solid var(--red);padding:9px 14px;cursor:pointer}
+.nlpanel button[type=submit]:hover{background:var(--ink);border-color:var(--ink)}
+.nlpanel .nlok{font-family:var(--head);color:var(--red);font-size:18px;margin:8px 0 0}
+@media print{.nlfloat{display:none!important}}
+@media (max-width:600px){.nlknob{left:10px;bottom:10px}.nlpanel{left:10px;bottom:62px;width:calc(100vw - 20px)}}

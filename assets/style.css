@@ -321,3 +321,10 @@ a.reflink:hover img{filter:none}
 .lb .cap:empty{display:none}
 .lb button.x{top:14px;right:14px;left:auto;width:48px;height:48px;padding:0;font:400 34px/44px var(--body);border:2px solid #000;background:#fff;text-align:center;z-index:2}
 .lb button.x:hover{background:var(--red);border-color:var(--red);color:#fff}
+/* Großansicht: Hauptseite milchig (weiß und unscharf), Bild immer ganz sichtbar */
+.lb{background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(10px) saturate(.5);backdrop-filter:blur(10px) saturate(.5)}
+.lb img{max-width:min(92vw,100%);max-height:calc(100vh - 170px);max-height:calc(100dvh - 170px);flex:0 1 auto;min-height:0}
+/* Großansicht: Hauptseite milchig, Bild ganz sichtbar, Angaben klein darunter */
+.lb{background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(10px) saturate(.5);backdrop-filter:blur(10px) saturate(.5)}
+.lb img{max-width:min(92vw,100%);max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);flex:0 1 auto;min-height:0}
+.lb .cap{font-size:11.5px;line-height:1.35;margin-top:8px;padding:4px 8px;box-shadow:none;background:rgba(255,255,255,.85)}

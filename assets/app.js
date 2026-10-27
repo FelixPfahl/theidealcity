@@ -92,11 +92,22 @@
     var face = document.createElement('img'); face.id='pfahlface'; face.src='../assets/pfahl-face.png'; face.alt=''; document.body.appendChild(face);
     var pfTimer = null;
     function moveFace(e){ face.style.left=e.clientX+'px'; face.style.top=e.clientY+'px'; }
+    var pfHide = null;
+    function faceOff(){ face.classList.remove('on'); clearInterval(pfTimer); pfTimer=null; clearTimeout(pfHide); }
+    function faceOn(e){ moveFace(e); face.classList.add('on'); play('pfahl'); clearInterval(pfTimer); pfTimer=setInterval(function(){ play('pfahl'); }, 2100); }
+    var touch = window.matchMedia && window.matchMedia('(hover: none)').matches;
     pf.forEach(function(s){
-      s.addEventListener('mouseenter', function(e){ moveFace(e); face.classList.add('on'); play('pfahl'); pfTimer=setInterval(function(){ play('pfahl'); }, 2100); });
-      s.addEventListener('mousemove', moveFace);
-      s.addEventListener('mouseleave', function(){ face.classList.remove('on'); clearInterval(pfTimer); });
+      if (touch){
+        /* Handy: beim Antippen kurz zeigen, nach 2,5 Sekunden oder beim nächsten Tippen irgendwo wieder weg */
+        s.addEventListener('touchstart', function(e){ var t=e.touches[0]; faceOn({clientX:t.clientX, clientY:t.clientY}); clearTimeout(pfHide); pfHide=setTimeout(faceOff, 2500); }, {passive:true});
+      } else {
+        s.addEventListener('mouseenter', faceOn);
+        s.addEventListener('mousemove', moveFace);
+        s.addEventListener('mouseleave', faceOff);
+      }
     });
+    document.addEventListener('touchstart', function(e){ if(face.classList.contains('on') && !(e.target.closest && e.target.closest('.pfahl'))) faceOff(); }, {passive:true});
+    document.addEventListener('scroll', function(){ if(touch && face.classList.contains('on')) faceOff(); }, {passive:true});
   }
 
   /* 56k-Modem: Wählton, DTMF, Klingeln, V.90-Handshake, Rauschen. Etwa 9 Sekunden. */

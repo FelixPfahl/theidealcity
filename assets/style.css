@@ -207,8 +207,8 @@ footer{border-top:2px solid var(--line);padding:0 0 30px;background:var(--paper)
 .boomtag{position:fixed;z-index:300;pointer-events:none;font-family:var(--head);font-weight:700;font-size:clamp(28px,5vw,80px);color:var(--red);transform:translate(-50%,-50%) rotate(-6deg);animation:boom .7s ease-out forwards}
 .comicpage ~ .boomtag,.boomtag.blue{color:var(--blue-ink)}
 @keyframes boom{0%{opacity:1;transform:translate(-50%,-50%) scale(.6) rotate(-6deg)}70%{opacity:1;transform:translate(-50%,-80%) scale(1.1) rotate(4deg)}100%{opacity:0;transform:translate(-50%,-120%) scale(1.2) rotate(-2deg)}}
-.shake{animation:shake .5s}
-@keyframes shake{10%,90%{transform:translate(-2px,0)}20%,80%{transform:translate(4px,0)}30%,50%,70%{transform:translate(-6px,0)}40%,60%{transform:translate(6px,0)}}
+.shake{animation:shake .9s ease-in-out}
+@keyframes shake{0%,100%{transform:none}25%{transform:translate(-7px,2px) rotate(-.4deg)}50%{transform:translate(6px,-2px) rotate(.3deg)}75%{transform:translate(-3px,1px)}}
 
 /* Motivationsrede */
 .moti{position:fixed;inset:0;background:var(--red);color:#fff;z-index:150;display:none;overflow:auto;padding:5vw}
@@ -340,30 +340,111 @@ a.reflink:hover img{filter:none}
 .lb.lb img{max-height:calc(100vh - 160px);transform:translate(-50%,calc(-50% - 24px)) scale(.96)}
 .lb.lb.show img{transform:translate(-50%,calc(-50% - 24px)) scale(1)}
 /* Schrift-Knaller: Dürer-Schrift, verzerrt wie bei Erik Carter (Design Harder) */
-.tp{position:fixed;z-index:300;pointer-events:none;font-family:var(--head);font-weight:700;text-transform:uppercase;line-height:.85;white-space:nowrap;font-size:clamp(34px,6vw,96px);
-  transform:translate(-50%,-50%) rotate(var(--r,0deg));animation:tpPop 1s cubic-bezier(.2,1.6,.4,1) forwards}
-.tp-red{color:var(--red)}.tp-black{color:#000}.tp-blue{color:var(--blue-ink)}
-.tp-tall{--sx:.55;--sy:2.3}
-.tp-wide{--sx:2.6;--sy:.62;letter-spacing:-.02em}
-.tp-squash{--sx:1.9;--sy:.35}
-.tp-mirror{--sx:-1.4;--sy:1.4}
+/* Schrift-Knaller (Dürer-Schrift). Farben kommen als Variablen: --c1 Hauptfarbe, --c2 Gegenfarbe, --bt Schrift auf Fläche */
+.tp{position:fixed;z-index:300;pointer-events:none;font-family:var(--head);font-weight:700;text-transform:uppercase;line-height:.85;white-space:nowrap;font-size:calc(clamp(38px,7vw,110px) * var(--k,1));
+  color:var(--c1,#E2231A);isolation:isolate;
+  transform:translate(-50%,-50%) rotate(var(--r,0deg));animation:tpPop 1.6s cubic-bezier(.2,1.5,.4,1) forwards}
+.tp span{display:inline-block}
+.tp-tall{--sx:.6;--sy:2.8}
+.tp-wide{--sx:3.1;--sy:.7;letter-spacing:-.02em}
+.tp-squash{--sx:2.3;--sy:.4}
+.tp-mirror{--sx:-1.7;--sy:1.7}
 .tp-turn{--sx:1.2;--sy:1.2;--r:90deg!important}
 .tp-skew{--sx:1.3;--sy:1.1;font-style:italic;letter-spacing:.1em}
 .tp-tilt{--sx:1;--sy:1.8;--r:-24deg!important}
-.tp-giant{font-size:clamp(90px,24vw,420px);--sx:1;--sy:1.25;opacity:.92}
-.tp-outline{color:transparent!important;-webkit-text-stroke:2px currentColor;--sx:1.6;--sy:1.6}
-.tp-outline.tp-red{-webkit-text-stroke-color:var(--red)}.tp-outline.tp-black{-webkit-text-stroke-color:#000}.tp-outline.tp-blue{-webkit-text-stroke-color:var(--blue-ink)}
-.tp-echo{--sx:1.3;--sy:1.3;text-shadow:.08em .08em 0 rgba(226,35,26,.55),.16em .16em 0 rgba(226,35,26,.35),.24em .24em 0 rgba(226,35,26,.2),.32em .32em 0 rgba(226,35,26,.1)}
-.tp-echo.tp-blue{text-shadow:.08em .08em 0 rgba(63,151,184,.55),.16em .16em 0 rgba(63,151,184,.35),.24em .24em 0 rgba(63,151,184,.2)}
-.tp-block{background:var(--red);color:#fff!important;padding:.08em .18em .02em;--sx:1.2;--sy:1.2}
-.tp-block.tp-blue{background:var(--blue-ink)}.tp-block.tp-black{background:#000}
+.tp-giant{font-size:clamp(110px,30vw,520px);--sx:1;--sy:1.35;opacity:.95}
+.tp-outline{color:transparent;-webkit-text-stroke:3px var(--c1);--sx:1.9;--sy:1.9;text-shadow:.06em .06em 0 color-mix(in srgb,var(--c2) 70%,transparent)}
+.tp-echo{--sx:1.6;--sy:1.6;text-shadow:.08em .08em 0 color-mix(in srgb,var(--c1) 55%,transparent),.16em .16em 0 color-mix(in srgb,var(--c1) 35%,transparent),.24em .24em 0 color-mix(in srgb,var(--c1) 20%,transparent),.32em .32em 0 color-mix(in srgb,var(--c1) 10%,transparent)}
+.tp-block{background:var(--c1);color:var(--bt,#fff);padding:.08em .18em .02em;--sx:1.4;--sy:1.4;box-shadow:.12em .12em 0 var(--c2)}
 .tp-stack{--sx:1;--sy:1}
 .tp-stack span{display:block;text-align:center}
 .tp-stack span:nth-child(2){opacity:.6;transform:scaleY(.8)}.tp-stack span:nth-child(3){opacity:.35;transform:scaleY(.6)}.tp-stack span:nth-child(4){opacity:.15;transform:scaleY(.4)}
+/* Fehldruck: die Gegenfarbe liegt leicht versetzt dahinter */
+.tp-misreg{--sx:1.7;--sy:1.7;text-shadow:-.07em .05em 0 var(--c2),.05em -.03em 0 color-mix(in srgb,var(--c2) 45%,transparent)}
+/* Explosionsstern aus der Comicsprache, zweifarbig */
+.tp-burst{--sx:1.25;--sy:1.25;color:var(--bt,#fff);padding:.55em .7em}
+.tp-burst::before,.tp-burst::after{content:"";position:absolute;inset:-.1em -.2em;z-index:-1;background:var(--c1);
+  clip-path:polygon(50% 3%,55% 23%,67% 3%,63% 27%,81% 13%,72% 32%,89% 28%,77% 40%,94% 42%,79% 50%,94% 58%,75% 59%,91% 74%,74% 70%,79% 85%,64% 74%,67% 97%,55% 81%,50% 99%,45% 78%,32% 100%,37% 73%,17% 90%,29% 68%,11% 73%,25% 59%,4% 58%,19% 50%,5% 42%,22% 40%,7% 25%,28% 32%,19% 13%,37% 27%,35% 8%,45% 23%)}
+.tp-burst::after{z-index:-2;background:var(--c2);transform:translate(.09em,.09em) scale(1.08) rotate(6deg)}
+/* Rasterpunkte (Ben-Day) hinter dem Wort */
+.tp-dots{--sx:1.5;--sy:1.5}
+.tp-dots::before{content:"";position:absolute;left:50%;top:50%;width:3.4em;height:3.4em;margin:-1.7em 0 0 -1.7em;z-index:-1;border-radius:50%;
+  background:radial-gradient(circle,var(--c2) 34%,transparent 38%) 0 0/.17em .17em;
+  -webkit-mask:radial-gradient(circle,#000 28%,transparent 70%);mask:radial-gradient(circle,#000 28%,transparent 70%)}
+/* Speedlines rundherum */
+.tp-lines{--sx:1.4;--sy:1.4}
+.tp-lines::before{content:"";position:absolute;left:50%;top:50%;width:6.5em;height:6.5em;margin:-3.25em 0 0 -3.25em;z-index:-1;
+  background:repeating-conic-gradient(var(--c2) 0deg 2.4deg,transparent 2.4deg 11deg);
+  -webkit-mask:radial-gradient(circle,transparent 22%,#000 26%,#000 40%,transparent 68%);mask:radial-gradient(circle,transparent 22%,#000 26%,#000 40%,transparent 68%)}
+/* senkrecht gestapelt */
+.tp-vertical{writing-mode:vertical-rl;text-orientation:upright;letter-spacing:-.14em;font-size:clamp(24px,4.2vw,66px)}
+/* kommt riesig von vorn und schrumpft */
+.tp-zoom{animation:tpZoom 1.7s cubic-bezier(.2,.8,.3,1) forwards}
+/* Buchstaben fliegen auseinander */
+.tp-scatter span{animation:tpFly 1.6s cubic-bezier(.2,.7,.3,1) forwards}
+/* Buchstaben fallen nacheinander herein */
+.tp-rain{animation:tpHold 2s linear forwards}
+.tp-rain span{animation:tpDrop .6s cubic-bezier(.3,1.5,.5,1) both}
+/* Buchstaben schaukeln */
+.tp-wave{animation:tpHold 2s linear forwards}
+.tp-wave span{animation:tpWave .8s ease-in-out infinite alternate}
+/* Schnitt: obere und untere Hälfte rutschen auseinander */
+.tp-split{animation:tpHold 1.7s linear forwards;--sx:1.7;--sy:1.7}
+.tp-split span{display:block;clip-path:inset(0 0 50% 0);animation:tpCutA 1.7s cubic-bezier(.6,0,.3,1) forwards}
+.tp-split span+span{position:absolute;left:0;top:0;clip-path:inset(50% 0 0 0);animation-name:tpCutB}
+/* Druckwelle ohne Wort */
+.tp-ring{width:30px;height:30px;border:4px solid var(--c1);border-radius:50%;box-sizing:border-box;animation:tpRing 1.2s cubic-bezier(.1,.6,.3,1) forwards}
+.tp-ring::after{content:"";position:absolute;inset:-4px;border:3px solid var(--c2);border-radius:50%;animation:tpRing2 1.2s .1s cubic-bezier(.1,.6,.3,1) both}
 @keyframes tpPop{
   0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(calc(var(--sx,1)*.2),calc(var(--sy,1)*.2))}
-  18%{opacity:1;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(calc(var(--sx,1)*1.12),calc(var(--sy,1)*1.12))}
-  32%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}
+  16%{opacity:1;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(calc(var(--sx,1)*1.22),calc(var(--sy,1)*1.22))}
+  30%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}
   72%{opacity:1;transform:translate(-50%,-54%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}
   100%{opacity:0;transform:translate(-50%,-62%) rotate(var(--r,0deg)) scale(calc(var(--sx,1)*1.05),calc(var(--sy,1)*1.05))}}
-@media (prefers-reduced-motion:reduce){.tp{animation-duration:.01s}}
+@keyframes tpHold{0%,78%{opacity:1;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}}
+@keyframes tpZoom{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(8)}15%{opacity:.85}55%{opacity:1;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(.9)}}
+@keyframes tpFly{0%,28%{transform:none}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rr));opacity:0}}
+@keyframes tpDrop{0%{opacity:0;transform:translateY(-1.6em) rotate(-12deg)}100%{opacity:1;transform:none}}
+@keyframes tpWave{from{transform:translateY(.12em)}to{transform:translateY(-.22em)}}
+@keyframes tpCutA{0%,30%{transform:none}100%{transform:translate(-.4em,-.12em) rotate(-5deg)}}
+@keyframes tpCutB{0%,30%{transform:none}100%{transform:translate(.4em,.12em) rotate(4deg)}}
+@keyframes tpRing{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(14)}}
+@keyframes tpRing2{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
+@media (prefers-reduced-motion:reduce){.tp,.tp *{animation-duration:.01s!important}}
+/* Regler (Knopf unten links, Panel) */
+.fxknob{position:fixed;left:14px;bottom:14px;z-index:90;width:46px;height:46px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:3px 3px 0 var(--red);transition:transform .25s,box-shadow .25s}
+.fxknob:hover,.fxknob[aria-expanded=true]{transform:rotate(-8deg);box-shadow:3px 3px 0 var(--blue);color:var(--red)}
+.fxknob:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.fxpanel{position:fixed;left:14px;bottom:72px;z-index:95;width:min(330px,calc(100vw - 28px));max-height:calc(100vh - 100px);overflow:auto;background:#fff;border:1.5px solid var(--ink);box-shadow:6px 6px 0 var(--blue);padding:16px 18px 14px;display:none;font-family:var(--sans);opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s}
+.fxpanel.on{display:block;animation:fxIn .3s ease-out forwards}
+@keyframes fxIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fxpanel h2{font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:28px;line-height:1;margin:0 0 10px;letter-spacing:.02em}
+.fxpanel .x{position:absolute;top:8px;right:8px;width:34px;height:34px;border:0;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--ink)}
+.fxpanel .x:hover{color:var(--red)}
+.fxrow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin:10px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.fxrow .v{color:var(--red);text-transform:none;letter-spacing:0;font-size:13px}
+.fxrow input{grid-column:1/-1;width:100%;margin:4px 0 0;accent-color:var(--red);cursor:pointer}
+.fxrow input.mix{-webkit-appearance:none;appearance:none;height:10px;border:1.5px solid var(--ink);background:linear-gradient(90deg,var(--red),var(--blue));border-radius:0}
+.fxrow input.mix::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:22px;background:#fff;border:1.5px solid var(--ink);cursor:pointer}
+.fxrow input.mix::-moz-range-thumb{width:14px;height:20px;background:#fff;border:1.5px solid var(--ink);border-radius:0;cursor:pointer}
+.fxcheck{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.08em;cursor:pointer}
+.fxcheck input{width:18px;height:18px;accent-color:var(--red);margin:0}
+.fxbtns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.fxbtns button{font:inherit;font-size:12px;text-transform:uppercase;letter-spacing:.08em;background:#fff;color:var(--ink);border:1.5px solid var(--ink);padding:8px 12px;cursor:pointer}
+.fxbtns button:first-child{background:var(--ink);color:#fff}
+.fxbtns button:hover{background:var(--red);border-color:var(--red);color:#fff}
+.fxnote{font-size:11px;line-height:1.35;color:var(--grey);margin:12px 0 0;text-transform:none;letter-spacing:0}
+.comicpage ~ .fxknob{box-shadow:3px 3px 0 var(--blue)}
+@media (max-width:600px){.fxknob{width:40px;height:40px;left:10px;bottom:10px}.fxpanel{left:10px;bottom:60px;width:calc(100vw - 20px)}}
+@media print{.fxknob,.fxpanel{display:none!important}}
+/* Newsletter */
+.nlform{margin-top:28px;border:2px solid var(--ink);padding:18px 20px;max-width:720px;box-shadow:6px 6px 0 var(--blue)}
+.nlform h2{font-size:clamp(22px,2.6vw,36px);line-height:1;margin:0 0 8px}
+.nlform .n{font-family:var(--sans);font-size:12px;line-height:1.45;color:var(--grey);margin:8px 0 0}
+.nlrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.nlrow input{flex:1 1 220px;min-width:0;padding:9px 10px;font:inherit;font-size:16px;border:1.5px solid var(--ink);border-radius:0;background:#fff;color:var(--ink)}
+.nlrow input:focus{outline:2px solid var(--red);outline-offset:0}
+.nlrow button{font:inherit;font-family:var(--sans);text-transform:uppercase;letter-spacing:.08em;font-size:14px;background:var(--ink);color:#fff;border:2px solid var(--ink);padding:10px 18px;cursor:pointer}
+.nlrow button:hover{background:var(--red);border-color:var(--red)}
+.nlok{font-family:var(--head);font-size:clamp(18px,2vw,26px);line-height:1.15;margin:10px 0 0;color:var(--red)}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

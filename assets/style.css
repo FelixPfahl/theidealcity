@@ -225,7 +225,8 @@ footer{border-top:2px solid var(--line);padding:0 0 30px;background:var(--paper)
 /* Sichtbar werden beim Scrollen */
 .reveal{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
 .reveal.in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.ticker span{animation:none;padding-left:0}.bigtabs a{transition:none}#pfahlface.on{animation:none}}
+/* Bewegung ruhig (Systemeinstellung "weniger Bewegung" oder Regler) und aus: Klassen calm/still auf <html>, vom Regler überschreibbar */
+html.calm .reveal{opacity:1;transform:none;transition:none}html.calm .ticker span{animation:none;padding-left:0}html.calm .bigtabs a{transition:none}html.calm #pfahlface.on{animation:none}
 a.wl{color:inherit;text-decoration:none;border-bottom:.08em solid var(--accent)}
 a.wl:hover{color:var(--accent);background:none}
 .sound ul{list-style:none;padding:0;margin:0}
@@ -337,7 +338,7 @@ a.reflink:hover img{filter:none}
 .lb.lb.show img{transform:translate(-50%,-52%) scale(1)}
 .lb.lb .cap,.lb.lb .cap *{font-size:11.5px!important;line-height:1.35!important;letter-spacing:0!important}
 .lb.lb .cap{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);margin:0;max-width:min(80ch,92vw);text-align:center;padding:4px 10px;background:rgba(255,255,255,.88);box-shadow:none;font-family:var(--body)}
-@media (prefers-reduced-motion:reduce){.lb.lb,.lb.lb img{transition:none}}
+html.still .lb.lb,html.still .lb.lb img{transition:none}
 .lb.lb img{max-height:calc(100vh - 160px);transform:translate(-50%,calc(-50% - 24px)) scale(.96)}
 .lb.lb.show img{transform:translate(-50%,calc(-50% - 24px)) scale(1)}
 /* Schrift-Knaller: Dürer-Schrift, verzerrt wie bei Erik Carter (Design Harder) */
@@ -411,7 +412,8 @@ a.reflink:hover img{filter:none}
 @keyframes tpCutB{0%,30%{transform:none}100%{transform:translate(.4em,.12em) rotate(4deg)}}
 @keyframes tpRing{0%{opacity:1;transform:translate(-50%,-50%) scale(.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(14)}}
 @keyframes tpRing2{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
-@media (prefers-reduced-motion:reduce){.tp,.tp *{animation-duration:.01s!important}}
+html.calm .tp{animation:tpFade 1.9s ease-in-out forwards!important}html.calm .tp *{animation:none!important}
+@keyframes tpFade{0%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}22%,74%{opacity:1;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}100%{opacity:0;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(var(--sx,1),var(--sy,1))}}
 /* Regler (Knopf unten links, Panel) */
 .fxknob{position:fixed;left:14px;bottom:14px;z-index:90;width:46px;height:46px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:3px 3px 0 var(--red);transition:transform .25s,box-shadow .25s}
 .fxknob:hover,.fxknob[aria-expanded=true]{transform:rotate(-8deg);box-shadow:3px 3px 0 var(--blue);color:var(--red)}

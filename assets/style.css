@@ -919,3 +919,17 @@ html[data-mode=rot] h1,html[data-mode=rot] h2,html[data-mode=rot] .fat,html[data
 .landing .herohand .plot{stroke:#000}
 .landing .herohand em{font-size:1em}
 .landing .hero.plotted .plotsrc{display:none}
+
+/* Konstruktionsnetz beim Hover über große Titel (Fierung, Zirkelschläge), Josef 28.10. */
+.pagehead h1,.serhead h2,.bigtabs a,.opener h2{position:relative}
+svg.net{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;fill:none;stroke:var(--accent,#E2231A);stroke-width:1;opacity:0;animation:netfade 1.6s ease-out forwards;z-index:3}
+svg.net .f{stroke-dasharray:2 3;opacity:.7}
+@keyframes netfade{0%{opacity:0}18%{opacity:.85}70%{opacity:.6}100%{opacity:0}}
+/* geplottete Trenner zwischen den Serien: leicht unregelmäßige Linie, wird beim Scrollen gezogen */
+.divider{height:34px;margin:40px 0 10px;position:relative}
+.divider canvas{position:absolute;left:0;top:0;width:100%;height:100%}
+@media (prefers-reduced-motion:reduce){svg.net{display:none}}
+/* Bildunterschriften: eine Größe, grau, Werktitel in der Handschrift in der Bereichsfarbe (Josef 28.10.) */
+.work figcaption,.figs figcaption,.powlead figcaption,.powinfo figcaption,.powgrid figcaption,.powtiles figcaption,.cover figcaption,.grid.wild .work figcaption,.lb.lb .cap,.lb.lb .cap *{font-size:12.5px!important;line-height:1.35!important;color:var(--grey)!important}
+.work figcaption i,.cover figcaption i,.powtiles figcaption i,.lb.lb .cap i,.figs figcaption i,.powgrid figcaption i{font-family:var(--acc);color:var(--accent,#E2231A)!important;font-size:1.25em!important}
+.grid.wild .work figcaption{font-size:12.5px!important}

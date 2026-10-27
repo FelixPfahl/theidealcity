@@ -79,6 +79,35 @@
   window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad;
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
   var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
+
+  /* Konstruktionsnetz: beim Hover über große Titel erscheint kurz Dürers Fierung (Quadrat, Diagonalen, Zirkelschläge) über jedem Buchstaben, dazu der Zirkel */
+  (function(){ if (REDUCED) return; var NS = 'http://www.w3.org/2000/svg';
+    function el(n, a){ var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); return e; }
+    function net(h, ev){ if (h.querySelector('svg.net')) return; var hr = h.getBoundingClientRect(); if (!hr.width) return;
+      var svg = el('svg', {class:'net', viewBox:'0 0 ' + hr.width + ' ' + hr.height, preserveAspectRatio:'none'});
+      var ls = h.querySelectorAll('.fat .l'); if (!ls.length) ls = [h];
+      var n = 0; Array.prototype.forEach.call(ls, function(l){ if (n++ > 40) return; var r = l.getBoundingClientRect(); if (r.width < 4) return;
+        var x = r.left - hr.left, y = r.top - hr.top, w = r.width, hh = r.height, s = Math.max(w, hh * .78), cx = x + w / 2, cy = y + hh / 2;
+        var g = el('g', {}); g.appendChild(el('rect', {x:cx - s / 2, y:cy - s / 2, width:s, height:s}));
+        g.appendChild(el('line', {x1:cx - s / 2, y1:cy - s / 2, x2:cx + s / 2, y2:cy + s / 2, class:'f'})); g.appendChild(el('line', {x1:cx + s / 2, y1:cy - s / 2, x2:cx - s / 2, y2:cy + s / 2, class:'f'}));
+        g.appendChild(el('line', {x1:cx, y1:cy - s / 2, x2:cx, y2:cy + s / 2, class:'f'})); g.appendChild(el('line', {x1:cx - s / 2, y1:cy, x2:cx + s / 2, y2:cy, class:'f'}));
+        g.appendChild(el('circle', {cx:cx, cy:cy, r:s / 2})); if (Math.random() < .5) g.appendChild(el('circle', {cx:cx, cy:cy, r:s * .3}));
+        for (var i = 1; i < 10; i++){ g.appendChild(el('line', {x1:cx - s / 2 + s * i / 10, y1:cy - s / 2, x2:cx - s / 2 + s * i / 10, y2:cy - s / 2 + s * .04})); }
+        svg.appendChild(g); });
+      h.appendChild(svg); spritePlay('zirkel', {vol:.55, max:.3, x:ev.clientX, force:true}); setTimeout(function(){ if (svg.parentNode) svg.parentNode.removeChild(svg); }, 1700); }
+    function hook(){ document.querySelectorAll('.pagehead h1, .serhead h2, .opener h2, .bigtabs a').forEach(function(h){ if (h._net) return; h._net = 1; h.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; net(h, e); }); }); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook(); })();
+  /* geplottete Trenner: eine leicht unregelmäßige Linie, die der Plotter zieht, sobald der Trenner ins Bild kommt */
+  (function(){ var divs = document.querySelectorAll('.divider canvas'); if (!divs.length) return;
+    function draw(cv, f){ var W = cv.clientWidth, H = cv.clientHeight, d = Math.min(2, window.devicePixelRatio || 1); if (cv.width !== W * d){ cv.width = W * d; cv.height = H * d; }
+      var c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, W, H); c.strokeStyle = getComputedStyle(cv).color; c.lineWidth = 1.3; c.lineCap = 'round'; c.globalAlpha = .9;
+      var pts = cv._pts; if (!pts){ pts = []; var y = H / 2, n = Math.max(12, Math.round(W / 18)); for (var i = 0; i <= n; i++){ y += (Math.random() - .5) * 2.2; y = Math.max(H * .3, Math.min(H * .7, y)); pts.push([W * i / n, y]); } cv._pts = pts; }
+      c.beginPath(); var k = Math.max(1, Math.floor(pts.length * f)); c.moveTo(pts[0][0], pts[0][1]); for (var j = 1; j < k; j++) c.lineTo(pts[j][0], pts[j][1]); c.stroke();
+      if (f < 1){ c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(pts[k - 1][0], pts[k - 1][1], 2.2, 0, 6.283); c.fill(); } }
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ var cv = e.target; if (!e.isIntersecting || cv._done) return; cv._done = 1; io.unobserve(cv);
+      if (REDUCED){ draw(cv, 1); return; } var t0 = performance.now(), dur = 700 + Math.random() * 500; spritePlay('plotter', {vol:.4, max:.25});
+      (function step(now){ var f = Math.min(1, (now - t0) / dur); draw(cv, f); if (f < 1) requestAnimationFrame(step); })(t0); }); }, {rootMargin:'0px 0px -10% 0px'});
+    divs.forEach(function(cv){ io.observe(cv); }); })();
   ['pointerdown', 'keydown', 'touchstart'].forEach(function(ev){ window.addEventListener(ev, unlock, {passive:true, once:true}); });
   function vary(){ V.cents = (Math.random()*1000-500); V.len = .75+Math.random()*.6; V.vol = .7+Math.random()*.45; }
   function osc(ac, type, f, t, d, vol, env){ d*=V.len; vol*=V.vol; var o=ac.createOscillator(), g=ac.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); o.detune.value=V.cents;

@@ -415,3 +415,7 @@ sup.fn:hover,sup.fn:focus-visible,sup.fn.on{background:var(--red);color:#fff;out
 .landing .cover{max-width:200px;margin-top:24px}.landing .cover .greensq{max-width:200px;padding-bottom:min(100%,200px)}
 .landing .bigtabs small{display:none}
 @media (min-width:900px){.landing .peek{width:min(26vw,320px);opacity:.6}}
+/* Schlagworte im Fließtext: Akzentschrift kursiv in der Akzentfarbe (Josef, 27.10.) */
+em.kw{font-family:var(--acc);font-style:italic;font-weight:400;color:var(--accent);font-size:1.04em}
+.comicpage em.kw{color:var(--blue-ink)}
+.nlform em.kw,.legal em.kw{font:inherit;color:inherit}

@@ -25,7 +25,7 @@ img{max-width:100%;height:auto;display:block}
 ::selection{background:var(--red);color:#fff}
 h1,h2,h3,.hero,.mark{font-family:var(--head);font-weight:700;letter-spacing:.01em;text-transform:uppercase}
 i,em,cite{font-family:var(--acc);font-style:italic}
-sup{font-size:.62em;line-height:0;color:var(--red);font-family:var(--sans)}
+sup{font-size:.72em;line-height:0;vertical-align:super;color:var(--red);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:700}   /* Duerer Sans hat keine Ziffern: Ziffern ausdrücklich aus einer Schrift mit Ziffern */
 .n{color:var(--grey)}
 
 /* Kopf */
@@ -462,7 +462,7 @@ section[id],.series[id],[id].powlead{scroll-margin-top:calc(var(--headh,70px) + 
 @media print{.subnav{position:static}}
 
 /* Fußnoten: kleines Fenster mit der Quelle beim Drüberfahren oder Antippen (Josef, 27.10.) */
-sup.fn{cursor:help;padding:0 .15em;border-radius:2px}
+sup.fn{cursor:help;padding:0 .18em;margin-left:.05em;border-radius:2px;box-shadow:inset 0 -1px 0 currentColor}
 sup.fn:hover,sup.fn:focus-visible,sup.fn.on{background:var(--red);color:#fff;outline:none}
 .comicpage sup.fn:hover,.comicpage sup.fn.on{background:#000;color:var(--blue)}
 .fnpop{position:fixed;z-index:120;max-width:min(340px,calc(100vw - 24px));background:#fff;color:var(--ink);border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--blue);padding:10px 12px 11px;font-family:var(--body);font-size:14px;line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none}

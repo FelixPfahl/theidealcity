@@ -24,6 +24,7 @@
   function nextGap(){ var r = TON_RANGE[FX.ton]; return r ? r[0] + Math.floor(Math.random()*(r[1]-r[0]+1)) : Infinity; }
 
   /* ---------- Klickzähler (nur diese Seite, nichts gespeichert) ---------- */
+  try { localStorage.removeItem('jk_visits'); } catch(e){}   /* alter Besucherzähler: Rest aus früheren Besuchen entfernen */
   var clickCount = 0, counterEl = document.querySelector('[data-counter]');
   document.addEventListener('pointerdown', function(){ clickCount++; if(counterEl) counterEl.textContent = String(clickCount).padStart(6,'0'); }, true);
 

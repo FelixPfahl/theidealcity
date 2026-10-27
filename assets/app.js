@@ -17,7 +17,7 @@
      (localStorage jk_fx, vom Nutzer ausdrücklich gewünscht, § 25 Abs. 2 Nr. 2 TDDDG). Sonst speichert die Seite nichts. ---------- */
   var REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
-  var FX_DEFAULT = {ton:3, vol:80, anim:25, bild:65, farbe:50, bewegung:(REDUCED ? 1 : 2), modem:true};
+  var FX_DEFAULT = {ton:3, vol:80, bewegung:(REDUCED ? 1 : 2), modem:true};
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
   try { var saved = JSON.parse(localStorage.getItem('jk_fx') || 'null'); if (saved){ for (var k1 in saved) if (k1 in FX) FX[k1] = saved[k1]; if (saved.still === true && !('bewegung' in saved)) FX.bewegung = 0; } } catch(e){}
   function applyMotion(){ var h = document.documentElement; h.classList.toggle('calm', FX.bewegung < 2); h.classList.toggle('still', FX.bewegung === 0); }
@@ -216,85 +216,16 @@
     if (list.length > 1 && name === lastName) name = list[(list.indexOf(name)+1) % list.length];   /* nie zweimal hintereinander derselbe */
     lastName = name; play(name);
   }
-  /* Zufall je Klick (Josef, 27.10.): Ton nach FX.ton (Standard alle 2 bis 5 Klicks, nie zweimal direkt hintereinander),
-     sonst Animation mit FX.anim Prozent, Rest nichts. Bilder, die sich öffnen, haben ihren eigenen Knaller (workPop). */
+  /* Ton je Klick nach FX.ton (Standard alle 2 bis 5 Klicks, nie zweimal direkt hintereinander). Keine aufploppenden Schriften (Josef, 27.10., 15:20). */
   var untilSound = nextGap();
-  var WORKSEL = '.work a[data-full], .powgrid a[data-full], .powtiles a[data-full], .powinfo a[data-full], .powlead a[data-full]';
   document.addEventListener('pointerdown', function(e){ if(e.button!==0) return; if(e.target.closest && e.target.closest('.modem, iframe, .pfahl, .lb, .fxpanel, .fxknob, .nlform, sup.fn, .fnpop')) return;
-    var isWork = e.target.closest && e.target.closest(WORKSEL);
-    if (--untilSound <= 0){ untilSound = nextGap(); clickSound(e.target); return; }
-    if (!isWork && FX.bewegung > 0 && Math.random()*100 < FX.anim) randomAnim(e); }, true);
+    if (--untilSound <= 0){ untilSound = nextGap(); clickSound(e.target); } }, true);
   /* Schnelles Mehrfachklicken (wegen der Klänge) markiert keinen Text außerhalb von Fließtext */
   document.addEventListener('mousedown', function(e){ if(e.detail>1 && !(e.target.closest && e.target.closest('p, li, pre, blockquote, input, textarea, .sertext, .notes'))) e.preventDefault(); });
   /* Handy: Audio beim ersten Antippen freischalten (iOS) */
   ['touchend','click'].forEach(function(ev){ document.addEventListener(ev, function(){ ctx(); }, {passive:true}); });
-  var ANIMS = [function(e){ textPop(e, e.target); }];
-  function randomAnim(e){ try{ ANIMS[Math.floor(Math.random()*ANIMS.length)](e); }catch(err){} }
   /* Spotify erst auf Klick laden (Datenschutz) */
   document.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('.spot button'); if(!b) return; var box = b.parentNode; var f = document.createElement('iframe'); f.src = box.getAttribute('data-src'); f.title = box.getAttribute('data-title')||'Spotify'; f.setAttribute('allow','autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'); f.setAttribute('loading','lazy'); box.innerHTML=''; box.appendChild(f); });
-
-  /* ---------- Schrift-Knaller in Dürer-Schrift, frei nach Erik Carter (Design Harder): gestreckt, gestaucht, gespiegelt, Kontur, Echo;
-     dazu Comicsprache (Explosionsstern, Rasterpunkte, Speedlines), Fehldruck, fliegende, fallende und wellende Buchstaben, Schnitt, Zoom, Druckwelle.
-     Farben: Zinnoberrot und Non-Photo-Blau (Mischung über den Regler), selten Schwarz (Josef, 27.10.) ---------- */
-  var BOOMS = ['BOOM','KA-BOOM','KRAWUMM','BAMM','PENG','RUMMS','PAFF','BUMM','BLAM','PUFF','ZISCH','WUMMS','KABUMM','KNALL','KRACH','KLICK'];
-  var WORDS = {
-    lickitcutit:['LICK','CUT','SNIP','SCHNITT','LICK IT','CUT IT','RITSCH','SCHNIPP'],
-    clickclickboom:['CLICK','KLICK','BOOM','PENG','KA-BOOM','KLICK KLICK','BOOM?','PFFT','RATTATA','BAMM','PUFF','KRAWUMM','ZONK','KLICK?','DUD','BOOM!!!'],
-    suchbilder:['AHA!','WO?','DA!','GEFUNDEN','HM?','HIER!','NEIN','DOCH'], cowboykaugummi:['PLOPP','YEEHAW','BLUBB','KAU KAU','SPUCK','BLOPP','HUI'],
-    egoshooter:['PEW','PEW PEW','RELOAD','GAME OVER','1UP','LEVEL UP','HEADSHOT','RESPAWN'], weitere:['RATSCH','KRITZEL','RADIER','SPITZ','SCHRAFF','WISCH'],
-    praxis:['PUNKT','LINIE','FLUCHT','PUNKT.','RASTER','LOT','MASS'], draugr:['GRAAH','HEL','KNACK','UUUH','WALHALL','RAAH'],
-    idealcity:['TUUT','PLATSCH','WUSCH','AHOI','BLUBB'], prozess:['SKIZZE','TUSCHE','RADIER','FERTIG?','NOCHMAL','LAYOUT'],
-    pinakothek2025:['PSST','SCHAU','AH','OH','HUCH','WOW'], beckmann2022:['TJA','TJA.','HM','AHOI','TJA?','ABFAHRT'],
-    huelshoff2022:['KNARZ','UHU','PSST','HUI','KNISTER'], streaming:['LIVE','PING','HI CHAT','GG','POG'], schule:['RUHE!','PAUSE','HA!','NOCHMAL','GONG'],
-    princeofwales:['QUAK','QUAK QUAK','PRINCE','QUAAAK','PLATSCH'], texte:['TAPP','TAPP TAPP','WEITER','PUH','SCHRITT'],
-    _:['CLICK','BOOM','ZACK','BÄM','WUMM','HUI','PENG','KNALL','KRACH','ZONK','PFFT','RUMMS','HOPPLA','UFF','TADA']
-  };
-  var STYLES = ['tall','wide','mirror','outline','echo','stack','skew','giant','block','turn','squash','tilt',
-                'burst','dots','lines','misreg','vertical','zoom','scatter','rain','wave','split','ring'];
-  var RED = '#E2231A', NPB = '#A4DDED';
-  var lastW = '', lastSt = '';
-  function pickOne(a, not){ var v = a[Math.floor(Math.random()*a.length)]; if (a.length > 1 && v === not) v = a[(a.indexOf(v)+1) % a.length]; return v; }
-  function secOf(el){ var s = el && el.closest ? el.closest('section.series, .powlead, main') : null; if(s && s.id) return s.id; if(document.querySelector('main.comicpage')) return 'draugr'; return '_'; }
-  function colours(){ /* [Hauptfarbe, Gegenfarbe, Schrift auf Fläche] */
-    var r = Math.random(); if (r < .08) return ['#000', RED, '#fff'];
-    return (Math.random()*100 < FX.farbe) ? [NPB, RED, '#000'] : [RED, NPB, '#fff'];
-  }
-  function textPop(ev, el, word, boomy){
-    if (FX.bewegung === 0) return;
-    var list = WORDS[secOf(el)] || WORDS._;
-    if (boomy) list = list.concat(BOOMS);
-    var w = word || pickOne(list, lastW); lastW = w;
-    var st = pickOne(STYLES, lastSt); lastSt = st;
-    var c = colours();
-    var tag = document.createElement('div'); tag.className = 'tp tp-'+st; tag.setAttribute('aria-hidden','true');
-    tag.style.setProperty('--c1', c[0]); tag.style.setProperty('--c2', c[1]); tag.style.setProperty('--bt', c[2]);
-    var life = 1650;
-    function span(txt){ var s = document.createElement('span'); s.textContent = txt; tag.appendChild(s); return s; }
-    if (st==='stack'){ for (var i=0;i<4;i++) span(w); }
-    else if (st==='split'){ span(w); span(w); }
-    else if (st==='scatter' || st==='rain' || st==='wave'){
-      w.split('').forEach(function(ch, k){ var s = span(ch===' ' ? ' ' : ch);
-        if (st==='scatter'){ var a = Math.random()*Math.PI*2, d = 1.4 + Math.random()*2.6;
-          s.style.setProperty('--dx', (Math.cos(a)*d).toFixed(2)+'em'); s.style.setProperty('--dy', (Math.sin(a)*d).toFixed(2)+'em'); s.style.setProperty('--rr', ((Math.random()*2-1)*540).toFixed(0)+'deg'); }
-        else s.style.animationDelay = (k*(st==='rain' ? .07 : .1)).toFixed(2)+'s'; });
-      if (st==='rain'){ life = 1900 + w.length*70; tag.style.animationDuration = (life/1000)+'s'; }
-      if (st==='wave') life = 2050;
-    }
-    else if (st==='ring'){ life = 1300; }
-    else tag.textContent = w;
-    var x = (ev && ev.clientX) || (window.innerWidth/2), y = (ev && ev.clientY) || (window.innerHeight/2);
-    /* manchmal größer (Josef, 27.10.): meist etwas größer als früher, jedes vierte Mal groß, selten riesig in der Bildmitte */
-    var kr = Math.random(), k = kr < .08 ? 2.6 : (kr < .3 ? 1.7 : 1);
-    if (st==='giant' || st==='zoom'){ k = 1; }
-    if (st==='giant' || st==='zoom' || k > 2){ x = window.innerWidth/2; y = window.innerHeight/2; }
-    if (st!=='ring') tag.style.setProperty('--k', k);
-    tag.style.left = x+'px'; tag.style.top = y+'px'; tag.style.setProperty('--r', ((Math.random()*28)-14).toFixed(1)+'deg');
-    if (FX.bewegung < 2) life = Math.max(life, 1950);
-    document.body.appendChild(tag); setTimeout(function(){ tag.remove(); }, life);
-    if (FX.bewegung === 2 && st!=='ring' && (k > 1.5 || /BOOM|KNALL|PENG|GAME OVER|KRAWUMM|KABUMM|BAMM|RUMMS|KRACH/.test(w)) && Math.random() < .6){ var sh = document.querySelector('main') || document.body; sh.classList.add('shake'); setTimeout(function(){ sh.classList.remove('shake'); }, 950); }
-  }
-  /* Knaller beim Öffnen eines Bildes: mit FX.bild Prozent, sonst gar nichts; Wörter aus dem Abschnitt plus Comic-Knallwörter */
-  function workPop(ev, el){ if (Math.random()*100 >= FX.bild) return; textPop(ev, el, null, true); }
 
   /* sanftes Ein- und Ausblenden der Großansicht */
   function lbOpen(el){ el.classList.add('on'); document.body.style.overflow='hidden'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); }); }
@@ -308,7 +239,7 @@
     var img = lb.querySelector('img'), cap = lb.querySelector('.cap');
     function show(a){ img.src=a.getAttribute('data-full'); img.alt=a.getAttribute('data-alt')||''; var fc=a.parentNode.querySelector('figcaption'); cap.innerHTML=fc? fc.innerHTML : ''; lbOpen(lb); }
     function hide(){ lbClose(lb, function(){ img.removeAttribute('src'); }); }
-    works.forEach(function(a){ a.addEventListener('click', function(ev){ ev.preventDefault(); workPop(ev, a); show(a); }); });
+    works.forEach(function(a){ a.addEventListener('click', function(ev){ ev.preventDefault(); show(a); }); });
     lb.querySelector('.x').onclick=hide;
     lb.addEventListener('click', function(e){ if(e.target===lb || e.target===img) hide(); });
     document.addEventListener('keydown', function(e){ if(lb.classList.contains('on') && e.key==='Escape') hide(); });
@@ -427,19 +358,16 @@
   /* ---------- Zufällige Neigung der Werke (dezent) ---------- */
   document.querySelectorAll('.work.rot').forEach(function(w,i){ w.style.setProperty('--tilt', (((i*7919)%7)-3)*0.5+'deg'); });
 
-  /* ---------- Regler (Josef, 27.10.): Besucher*innen stellen Töne, Lautstärke, Animationen, Farben und Modem-Intro selbst ein ---------- */
+  /* ---------- Regler (Josef, 27.10.): Besucher*innen stellen Töne, Lautstärke, Bewegung und Modem-Intro selbst ein ---------- */
   (function(){
     var TON_TXT = ['aus','selten','manchmal','normal','oft','immer'];
     var ROWS = [
       {k:'ton',  label:'Töne',        min:0, max:5,   step:1, txt:function(v){ return TON_TXT[v]; }},
       {k:'vol',  label:'Lautstärke',  min:0, max:100, step:5, txt:function(v){ return v+' %'; }},
-      {k:'anim', label:'Animationen', min:0, max:100, step:5, txt:function(v){ return v+' %'; }},
-      {k:'bild', label:'Bild-Knaller',min:0, max:100, step:5, txt:function(v){ return v+' %'; }},
-      {k:'bewegung',label:'Bewegung', min:0, max:2, step:1, txt:function(v){ return ['aus','ruhig','voll'][v]; }},
-      {k:'farbe',label:'Farbe',       min:0, max:100, step:5, cls:'mix', txt:function(v){ return v<=10 ? 'Rot' : (v>=90 ? 'Blau' : (v==50 ? 'halb, halb' : (v<50 ? 'mehr Rot' : 'mehr Blau'))); }}
+      {k:'bewegung',label:'Bewegung', min:0, max:2, step:1, txt:function(v){ return ['aus','ruhig','voll'][v]; }}
     ];
     var ICON = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3v18M12 3v18M19 3v18"/><rect x="2.5" y="13" width="5" height="3.2" fill="currentColor"/><rect x="9.5" y="6" width="5" height="3.2" fill="currentColor"/><rect x="16.5" y="15.5" width="5" height="3.2" fill="currentColor"/></svg>';
-    var knob = document.createElement('button'); knob.type='button'; knob.className='fxknob'; knob.setAttribute('aria-label','Regler: Töne und Animationen einstellen'); knob.setAttribute('aria-expanded','false'); knob.title='Regler'; knob.innerHTML=ICON;
+    var knob = document.createElement('button'); knob.type='button'; knob.className='fxknob'; knob.setAttribute('aria-label','Regler: Töne und Bewegung einstellen'); knob.setAttribute('aria-expanded','false'); knob.title='Regler'; knob.innerHTML=ICON;
     var panel = document.createElement('div'); panel.className='fxpanel'; panel.id='fxpanel'; panel.setAttribute('role','dialog'); panel.setAttribute('aria-label','Regler'); knob.setAttribute('aria-controls','fxpanel');
     var h = '<button type="button" class="x" aria-label="Schließen" title="Schließen">&times;</button><h2>Regler</h2>';
     ROWS.forEach(function(r){ h += '<label class="fxrow"><span class="l">'+r.label+'</span><span class="v" data-v="'+r.k+'"></span><input type="range" min="'+r.min+'" max="'+r.max+'" step="'+r.step+'" data-k="'+r.k+'"'+(r.cls?' class="'+r.cls+'"':'')+'></label>'; });
@@ -463,8 +391,8 @@
       var r = ROWS.filter(function(x){ return x.k===k; })[0]; if (r) panel.querySelector('[data-v="'+k+'"]').textContent = r.txt(FX[k]); });
     panel.addEventListener('change', function(e){ var k = e.target.getAttribute('data-k'); if (k==='vol' || k==='ton'){ if (FX.ton > 0) clickSound(knob); } });
     panel.addEventListener('click', function(e){ var b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
-      if (b.getAttribute('data-a')==='test'){ var rc = b.getBoundingClientRect(); var ev = {clientX: rc.left + rc.width/2, clientY: rc.top - 60};
-        if (FX.ton > 0) clickSound(document.querySelector('main') || knob); textPop(ev, document.querySelector('main')); }
+      if (b.getAttribute('data-a')==='test'){
+        if (FX.ton > 0) clickSound(document.querySelector('main') || knob); }
       else { try { localStorage.removeItem('jk_fx'); } catch(err){} for (var k in FX_DEFAULT) FX[k] = FX_DEFAULT[k]; apply('vol'); apply('ton'); apply('bewegung'); show(); } });
   })();
 

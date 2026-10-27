@@ -21,6 +21,7 @@
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
   var FX_DEFAULT = {ton:5, vol:100, bewegung:2, modem:true};   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
+  if (REDUCED){ FX.vol = 0; FX.ton = 0; FX.bewegung = 1; FX.modem = false; }   /* Reduced Motion (Josef, 27.10.): Text sofort komplett, kein Einflug, Ton aus */
   try { localStorage.removeItem('jk_fx'); } catch(e){}   /* Regler abgeschafft (Josef, 27.10., 18:30): nichts mehr gespeichert */
   function applyMotion(){ var h = document.documentElement; h.classList.toggle('calm', FX.bewegung < 2); h.classList.toggle('still', FX.bewegung === 0); }
   applyMotion();
@@ -80,6 +81,20 @@
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
   var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
 
+  /* Idle (Josef, 27.10.): 20 s ohne Eingabe, dann zieht der Plotter am linken Rand eine Linie nach unten, die Atmo wird lauter; die erste Bewegung beendet es */
+  (function(){ if (REDUCED) return; var T = null, cv = null, raf = null, y = 0, x = 0, pts = [];
+    function stop(){ clearTimeout(T); T = setTimeout(start, 20000); if (!cv) return; var c = cv; cv = null; cancelAnimationFrame(raf); c.style.opacity = 0; setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 600);
+      plotterLoop(false); if (BUS && BUS.atmos) BUS.atmos.gain.setTargetAtTime(.5, BUS.ctx.currentTime, .4); }
+    function start(){ if (cv || document.hidden) return; cv = document.createElement('canvas'); cv.className = 'idleline'; document.body.appendChild(cv);
+      var d = Math.min(2, window.devicePixelRatio || 1), W = 48, H = window.innerHeight; cv.width = W * d; cv.height = H * d; var c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0);
+      c.strokeStyle = getComputedStyle(document.body).color; c.lineWidth = 1.2; c.lineCap = 'round'; x = 24; y = 0; pts = [[x, y]]; var t0 = performance.now(), last = t0;
+      if (BUS && BUS.atmos) BUS.atmos.gain.setTargetAtTime(.9, BUS.ctx.currentTime, 1.5);
+      (function step(now){ if (!cv) return; var dt = now - last; last = now; y += dt * .035; x += (Math.random() - .5) * 2.4; x = Math.max(8, Math.min(40, x)); pts.push([x, y]);
+        if (y > H){ y = 0; x = 24; pts = [[x, y]]; c.clearRect(0, 0, W, H); }
+        c.clearRect(0, 0, W, H); c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.stroke();
+        c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(x, y, 2, 0, 6.283); c.fill(); if (Math.random() < .08) plotterLoop(true); raf = requestAnimationFrame(step); })(t0); }
+    ['pointermove', 'pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(function(ev){ window.addEventListener(ev, stop, {passive:true}); });
+    document.addEventListener('visibilitychange', stop); T = setTimeout(start, 20000); })();
   /* Konstruktionsnetz: beim Hover über große Titel erscheint kurz Dürers Fierung (Quadrat, Diagonalen, Zirkelschläge) über jedem Buchstaben, dazu der Zirkel */
   (function(){ if (REDUCED) return; var NS = 'http://www.w3.org/2000/svg';
     function el(n, a){ var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); return e; }
@@ -1088,6 +1103,7 @@
         var f;
         if (b.hero){ f = Math.min(1, (now - b.t0) / (b.ms || 2800)); if (f < 1) moved = true; }
         else { f = Math.min(1, Math.max(0, (vh * .92 - r.top) / (r.height + vh * .3))); }
+        if (REDUCED) f = 1;
         if (f !== b.f || b.dirty){ b.fwd = f > b.f; moved = moved || f !== b.f; b.f = f; b.dirty = false; if (r.bottom > -vh && r.top < vh * 2) draw(b); else b.dirty = true; } });
       if (moved && AC){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
       if (built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }

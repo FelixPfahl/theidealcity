@@ -933,3 +933,12 @@ svg.net .f{stroke-dasharray:2 3;opacity:.7}
 .work figcaption,.figs figcaption,.powlead figcaption,.powinfo figcaption,.powgrid figcaption,.powtiles figcaption,.cover figcaption,.grid.wild .work figcaption,.lb.lb .cap,.lb.lb .cap *{font-size:12.5px!important;line-height:1.35!important;color:var(--grey)!important}
 .work figcaption i,.cover figcaption i,.powtiles figcaption i,.lb.lb .cap i,.figs figcaption i,.powgrid figcaption i{font-family:var(--acc);color:var(--accent,#E2231A)!important;font-size:1.25em!important}
 .grid.wild .work figcaption{font-size:12.5px!important}
+
+/* Info: Werkzeugtext; 404 als Brief; Modem-Satz in Versalien; Handabsatz (zwei Stimmen) */
+.info .sertext{max-width:62ch;margin:0 0 18px}
+.nf .brief p{margin:0 0 .9em}
+.modem small{font-family:var(--head);text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:#9c9}
+p.handp{line-height:1.9}
+p.handp em{font-size:1.15em}
+.idleline{position:fixed;left:0;top:0;width:48px;height:100vh;pointer-events:none;z-index:4;opacity:.8;transition:opacity .6s}
+@media (max-width:700px){.idleline{display:none}}

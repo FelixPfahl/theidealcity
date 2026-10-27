@@ -197,7 +197,7 @@
   var works = Array.prototype.slice.call(document.querySelectorAll('.work a[data-full], .powgrid a[data-full], .powtiles a[data-full], .powinfo a[data-full], .powlead a[data-full]'));
   if (works.length){
     var lb = document.createElement('div'); lb.className='lb';
-    lb.innerHTML = '<button class="x">'+(T.close||'Schließen')+'</button><img alt=""><div class="cap"></div>';
+    lb.innerHTML = '<button class="x" aria-label="'+(T.close||'Schließen')+'" title="'+(T.close||'Schließen')+'">&times;</button><img alt=""><div class="cap"></div>';
     document.body.appendChild(lb);
     var img = lb.querySelector('img'), cap = lb.querySelector('.cap');
     function show(a){ img.src=a.getAttribute('data-full'); img.alt=a.getAttribute('data-alt')||''; var fc=a.parentNode.querySelector('figcaption'); cap.innerHTML=fc? fc.innerHTML : ''; lb.classList.add('on'); document.body.style.overflow='hidden'; }
@@ -212,7 +212,7 @@
   var refs = document.querySelectorAll('a.reflink');
   if (refs.length){
     var rb = document.createElement('div'); rb.className='lb lbref';
-    rb.innerHTML = '<button class="x">'+(T.close||'Schließen')+'</button><img alt=""><div class="cap"></div>';
+    rb.innerHTML = '<button class="x" aria-label="'+(T.close||'Schließen')+'" title="'+(T.close||'Schließen')+'">&times;</button><img alt=""><div class="cap"></div>';
     document.body.appendChild(rb);
     var rimg = rb.querySelector('img'), rcap = rb.querySelector('.cap');
     function rhide(){ rb.classList.remove('on'); document.body.style.overflow=''; rimg.removeAttribute('src'); }

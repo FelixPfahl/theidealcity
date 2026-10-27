@@ -314,3 +314,10 @@ a.reflink:hover img{filter:none}
 .lbref img{cursor:zoom-out}
 @media (min-width:900px){.figs figure{width:210px}.figs.small figure{width:170px}.einzel .side{max-width:none}}
 .lb img{cursor:zoom-out}
+/* Großansicht: Seite bleibt sichtbar, Bild schwebt darüber, X zum Schließen */
+.lb{background:rgba(255,255,255,.5)}
+.lb img{box-shadow:0 12px 48px rgba(0,0,0,.35);background:#fff;max-height:calc(100vh - 140px)}
+.lb .cap{background:#fff;padding:8px 12px;box-shadow:0 4px 16px rgba(0,0,0,.15);align-self:center;padding-left:12px;max-width:min(90ch,92vw)}
+.lb .cap:empty{display:none}
+.lb button.x{top:14px;right:14px;left:auto;width:48px;height:48px;padding:0;font:400 34px/44px var(--body);border:2px solid #000;background:#fff;text-align:center;z-index:2}
+.lb button.x:hover{background:var(--red);border-color:var(--red);color:#fff}

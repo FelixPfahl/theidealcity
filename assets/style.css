@@ -260,7 +260,7 @@ a.wl:hover{color:var(--accent);background:none}
 .einzel .side p{margin:0 0 12px}
 .figs.small figure{width:128px}
 .figs.small img{filter:grayscale(1) contrast(.85) brightness(1.05)}
-.greensq{width:100%;aspect-ratio:1/1;background:#00A651;max-width:520px}
+.greensq{width:100%;max-width:520px;height:0;padding-bottom:min(100%,520px);background:#00A651;box-sizing:content-box}
 @media (max-width:700px){.einzelgrid{grid-template-columns:1fr}.einzel{grid-template-columns:1fr;grid-column:span 1}.einzel:nth-child(even) .work{order:0}.scriptbody{columns:1}}
 .cover{margin:32px 0 0;max-width:260px}
 .cover .greensq{max-width:260px}
@@ -297,3 +297,4 @@ a.wl:hover{color:var(--accent);background:none}
 .cform button:hover{background:var(--red);border-color:var(--red)}
 .cfoot .n{font-size:13px}
 .landing .cta{margin-top:24px}
+.cover .greensq{padding-bottom:min(100%,260px)}

@@ -313,3 +313,4 @@ a.reflink img{transition:filter .2s}
 a.reflink:hover img{filter:none}
 .lbref img{cursor:zoom-out}
 @media (min-width:900px){.figs figure{width:210px}.figs.small figure{width:170px}.einzel .side{max-width:none}}
+.lb img{cursor:zoom-out}

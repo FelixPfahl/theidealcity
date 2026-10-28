@@ -17,7 +17,11 @@
   var ti = 0; setInterval(function(){ if(document.hidden){ ti=(ti+1)%titles.length; document.title = titles[ti]; } else { document.title = titles[0]; } }, 1500);
 
   /* ---------- Feste Werte (Regler abgeschafft, Josef, 27.10.): Ton alle 2 bis 5 Klicks, Bewegung voll, bei Systemeinstellung "weniger Bewegung" ruhig ---------- */
-  var REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  /* Josef, 28.10., 00:53: auf dem Cloud-PC (Remotedesktop) meldet Windows "weniger Bewegung", dadurch waren Plotter-Animation und Ton aus.
+     Darum wird die Systemeinstellung nicht mehr ausgewertet; "Ruhig" ist ein eigener Schalter in der Fußzeile (localStorage jk_calm). */
+  var REDUCED = false; try { REDUCED = localStorage.getItem('jk_calm') === '1'; } catch(e){}
+  window.JK_CALM = REDUCED;
+  document.addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('.calmtoggle'); if (!t) return; e.preventDefault(); try { localStorage.setItem('jk_calm', REDUCED ? '0' : '1'); } catch(x){} location.reload(); });
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
   var FX_DEFAULT = {ton:5, vol:100, bewegung:2, modem:true};   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
@@ -77,7 +81,7 @@
         var g = ac.createGain(); g.gain.value = 0; src.connect(g); g.connect(bus(ac, 'tools')); src.start(ac.currentTime, c[0]); LOOP = {src:src, g:g}; }
       LOOP.g.gain.setTargetAtTime(.5, ac.currentTime, .08); clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
     else if (LOOP){ LOOP.g.gain.setTargetAtTime(0, ac.currentTime, .15); var L = LOOP; LOOP = null; setTimeout(function(){ try { L.src.stop(); } catch(e){} }, 700); } }
-  window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad;
+  window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
   var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
 

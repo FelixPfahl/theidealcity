@@ -928,7 +928,7 @@ svg.net .f{stroke-dasharray:2 3;opacity:.7}
 /* geplottete Trenner zwischen den Serien: leicht unregelmäßige Linie, wird beim Scrollen gezogen */
 .divider{height:34px;margin:40px 0 10px;position:relative}
 .divider canvas{position:absolute;left:0;top:0;width:100%;height:100%}
-@media (prefers-reduced-motion:reduce){svg.net{display:none}}
+html.calm svg.net{display:none}
 /* Bildunterschriften: eine Größe, grau, Werktitel in der Handschrift in der Bereichsfarbe (Josef 28.10.) */
 .work figcaption,.figs figcaption,.powlead figcaption,.powinfo figcaption,.powgrid figcaption,.powtiles figcaption,.cover figcaption,.grid.wild .work figcaption,.lb.lb .cap,.lb.lb .cap *{font-size:12.5px!important;line-height:1.35!important;color:var(--grey)!important}
 .work figcaption i,.cover figcaption i,.powtiles figcaption i,.lb.lb .cap i,.figs figcaption i,.powgrid figcaption i{font-family:var(--acc);color:var(--accent,#E2231A)!important;font-size:1.25em!important}
@@ -942,3 +942,61 @@ p.handp{line-height:1.9}
 p.handp em{font-size:1.15em}
 .idleline{position:fixed;left:0;top:0;width:48px;height:100vh;pointer-events:none;z-index:4;opacity:.8;transition:opacity .6s}
 @media (max-width:700px){.idleline{display:none}}
+/* SUCHBILD (Spiel) */
+.sbcount{display:inline-flex;align-items:center;gap:3px;margin-right:12px;padding:3px 8px;border:1px solid var(--line);border-radius:999px;background:none;color:var(--ink);font:12px/1 var(--body);cursor:pointer;letter-spacing:.04em}
+.sbcount svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.sbcount b{font-weight:700}.sbcount span{color:var(--grey)}
+.sbcount.bump{animation:sbbump .4s ease}
+@keyframes sbbump{30%{transform:scale(1.25)}}
+.sbobj{position:absolute;z-index:5;cursor:help;height:auto;transition:transform .35s cubic-bezier(.2,.9,.3,1.5),opacity .4s;filter:drop-shadow(0 0 0 transparent)}
+.sbobj.d2{opacity:.85}.sbobj.d3{opacity:.62;mix-blend-mode:multiply}
+html[data-mode=dunkel] .sbobj.d3{mix-blend-mode:screen}
+.sbobj.found{opacity:.35;cursor:default;filter:grayscale(1)}
+.sbobj.pop{animation:sbpop .7s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes sbpop{0%{transform:scale(1)}35%{transform:scale(1.8) rotate(-6deg)}100%{transform:scale(1)}}
+.sbsplash{position:fixed;width:120px;height:120px;pointer-events:none;z-index:450;animation:sbsplash 1.3s ease-out forwards}
+@keyframes sbsplash{0%{transform:scale(.2);opacity:1}25%{transform:scale(1.1);opacity:.95}100%{transform:scale(1.3);opacity:0}}
+.sbnote{position:fixed;top:70px;right:16px;z-index:460;max-width:min(42ch,80vw);background:var(--paper);border:1px solid var(--line);padding:10px 14px;opacity:0;transform:translateY(-6px);transition:opacity .3s,transform .3s;pointer-events:none}
+.sbnote.on{opacity:1;transform:none}.sbnote p{margin:0;font-size:14px;line-height:1.5}
+.sbcert{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.sbcert .sq{position:relative;width:min(92vw,92vh,640px);aspect-ratio:1;background:#00A651;color:#000;padding:clamp(18px,5%,40px);display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.sbcert .ct{font-family:var(--head);font-weight:400;font-size:clamp(34px,8vmin,80px);margin:0;line-height:1}
+.sbcert .cp{margin:0;font-size:clamp(14px,2.4vmin,18px);line-height:1.5}
+.sbcert .x{position:absolute;right:10px;top:6px;background:none;border:0;font-size:28px;color:#000;cursor:pointer}
+.sbcert label{font-size:14px}.sbcert input{font:inherit;padding:4px 8px;border:1px solid #000;background:#fff;color:#000;margin-left:6px;width:14ch}
+.sbcert .cbtn{display:flex;flex-wrap:wrap;gap:8px}.sbcert .cbtn button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid #000;background:#fff;color:#000;cursor:pointer}
+.sbcert .cnote{font-size:11.5px;margin:auto 0 0;color:#003d1e}
+.sbcert svg.cm{position:absolute;right:5%;bottom:5%;width:14%;height:auto;color:#000;fill:#000;opacity:.9}
+.sbboard{margin:28px 0 8px;max-width:62ch}.sbboard h3{font-family:var(--head);font-weight:400;text-transform:uppercase;font-size:20px;margin:0 0 8px}
+.sbboard ol{padding-left:1.6em;margin:8px 0}.sbboard li{line-height:1.6}.sbboard li span{color:var(--grey);font-size:.9em;margin-left:.5em}
+.sbboard p{font-size:14px;line-height:1.5;margin:0 0 6px}.sbme{color:var(--grey)}
+html.calm .sbobj.pop,html.calm .sbsplash,html.calm .sbcount.bump{animation:none}
+/* Dialogfenster Felix Pfahl (SNES-Stil) */
+.sbdlg{position:fixed;left:0;right:0;bottom:0;z-index:480;display:flex;justify-content:center;padding:0 12px 18px;cursor:pointer;animation:sbdlgin .35s ease-out}
+.sbdlg.off{opacity:0;transform:translateY(12px);transition:opacity .3s,transform .3s}
+@keyframes sbdlgin{from{opacity:0;transform:translateY(16px)}}
+.sbdlg .win{display:flex;gap:14px;align-items:flex-start;width:min(720px,100%);background:var(--paper);color:var(--ink);border:3px double var(--line);box-shadow:6px 6px 0 var(--c,var(--accent,#E2231A));padding:14px 18px;min-height:120px}
+.sbdlg img{width:96px;height:96px;object-fit:cover;object-position:top;flex:none;border:1px solid var(--line)}
+.sbdlg .txt{flex:1;position:relative;font-family:var(--body);font-size:17px;line-height:1.5;min-height:96px}
+.sbdlg p{margin:0;padding-right:18px}
+.sbdlg .more{position:absolute;right:0;bottom:0;font-style:normal;font-size:11px;animation:sbmore 1s infinite}
+@keyframes sbmore{50%{transform:translateY(3px)}}
+@media (max-width:600px){.sbdlg .win{gap:10px;padding:10px 12px}.sbdlg img{width:52px;height:52px}.sbdlg .txt{font-size:14px}}
+.sbdlg .who{display:block;font-family:var(--head);font-weight:400;letter-spacing:.08em;font-size:17px;margin:0 0 4px;line-height:1}
+/* Fensterstile je Figur */
+.sbdlg .win{border-color:var(--c,var(--ink))}
+.sbdlg .who{color:var(--c,var(--ink))}
+.sbdlg img{border-color:var(--c,var(--ink))}
+.sbdlg.c-inka .win{background-image:radial-gradient(var(--c) .9px,transparent 1px);background-size:6px 6px;background-color:var(--paper)}
+.sbdlg.c-inka .txt{background:var(--paper);padding:4px 6px}
+.sbdlg.c-wagner .win{border-width:3px;border-radius:14px;box-shadow:4px 4px 0 var(--c)}
+.sbdlg.c-xae .win{border-width:1px;box-shadow:none;background:#f2f2f2;color:#000;font-variant-numeric:tabular-nums}
+html[data-mode=dunkel] .sbdlg.c-xae .win{background:#151515;color:#fff}
+.sbdlg.c-sigma .win{border-style:dashed;border-radius:20px 8px 18px 10px/10px 18px 8px 20px;filter:drop-shadow(0 0 6px rgba(0,166,81,.35))}
+.sbdlg.c-sigma p{letter-spacing:.02em}
+.sbdlg.c-gojira .win{border-width:5px;background:#00A651;color:#000}
+.sbdlg.c-gojira .who{color:#000}
+.sbdlg.c-gojira p{font-size:28px;letter-spacing:.3em}
+html.beben{animation:beben 2.2s ease-in-out}
+@keyframes beben{10%,30%,50%,70%{transform:translate(1px,-1px)}20%,40%,60%,80%{transform:translate(-1px,1px)}}
+html.calm.beben{animation:none}

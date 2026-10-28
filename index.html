@@ -117,15 +117,25 @@ function renderToday(){
   renderApps(live);
 }
 
+/* Tagesdaten kommen aus Pult (ein Morgenlauf für beide Apps), sonst aus heute.json, sonst Ersatz */
+const PULT_DATA = "https://raw.githack.com/FelixPfahl/theidealcity/pult/daten/heute.json";
+async function getJson(u){ const r = await fetch(u, {cache:"no-cache"}); if (!r.ok) throw new Error(r.status); return r.json(); }
+function fromPult(p){
+  return {datum:p.date, label:p.label, termine:(p.items||[]).map(it => ({start:it.start, ende:it.end,
+    titel:(it.type==="lesson" ? it.klasse + " " : "") + it.titel, unterricht:it.type==="lesson"}))};
+}
 async function load(){
-  try {
-    const r = await fetch("heute.json", {cache:"no-cache"});
-    if (!r.ok) throw new Error(r.status);
-    DAY = await r.json();
-  } catch(e){ DAY = FALLBACK; }
+  try { DAY = fromPult(await getJson(PULT_DATA)); }
+  catch(e){
+    try { DAY = await getJson("heute.json"); }
+    catch(e2){ DAY = FALLBACK; }
+  }
+  try { localStorage.setItem("atelier-last", JSON.stringify(DAY)); } catch(e){}
   renderToday();
 }
+try { const c = JSON.parse(localStorage.getItem("atelier-last") || "null"); if (c && c.termine) DAY = c; } catch(e){}
 renderApps(false);
+if (DAY) renderToday();
 load();
 setInterval(renderToday, 30000);
 </script>

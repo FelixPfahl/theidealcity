@@ -1,6 +1,6 @@
 Testtag laut Daten: 2026-10-28
 FEHLER  Update über die vorige Fassung (anderer Signaturschlüssel)
-FEHLER  Start während der Stunde öffnet Pult (erwartet: Mini-Skizzen)
+OK      Start während der Stunde öffnet Pult
 OK      Reiter Heute
 OK      Reiter Morgenrunde
 OK      Reiter Pult
@@ -16,8 +16,9 @@ OK      Phase wechselt nach Uhrzeit
 OK      Vibration beim Phasenwechsel ausgelöst
 OK      Zurück-Taste führt zu Heute
 OK      Zweites Zurück schließt die App
-FEHLER  Ohne Netz: Pult mit gespeichertem Stand (erwartet: Zwischenhalt|Stern und Wunsch)
+OK      Ohne Netz: Pult mit gespeichertem Stand
 OK      Ohne Netz: Morgenrunde
-FEHLER  Ohne Netz: Heute (erwartet: Auf dem Schulweg)
+OK      Ohne Netz: Heute
+OK      Heute bleibt Heute, auch während der Stunde
 ---
-Fehler insgesamt: 4
+Fehler insgesamt: 1

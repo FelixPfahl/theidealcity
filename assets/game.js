@@ -150,7 +150,7 @@
   function place(){ PLACES.filter(function(p){ return p.p === PAGE; }).forEach(function(p){ var all = document.querySelectorAll(p.sel); if (!all.length) all = document.querySelectorAll('footer .footgrid'); if (!all.length) return; var a = all[(p.i - 1) % all.length];
       if (getComputedStyle(a).position === 'static') a.style.position = 'relative';
       var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false;
-      var sz = SIZE[p.d]; img.style.width = sz + 'px'; img.style.left = 'calc(' + p.x + '% - ' + (sz / 2) + 'px)'; img.style.top = 'calc(' + p.y + '% - ' + (sz / 2) + 'px)';
+      var sz = SIZE[p.d]; img.style.width = sz + 'px'; img.style.left = 'clamp(0px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))'; img.style.top = 'clamp(0px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))';   /* nie über den Anker hinaus */
       img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); a.appendChild(img); }); }
   function splash(x, y, col){ var NS = 'http://www.w3.org/2000/svg'; var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'sbsplash'); svg.setAttribute('viewBox', '-50 -50 100 100'); svg.style.left = (x - 60) + 'px'; svg.style.top = (y - 60) + 'px';
     var d = 'M'; var n = 14; for (var i = 0; i < n; i++){ var a = i / n * 6.283, r = 18 + Math.random() * 22; d += (i ? 'L' : '') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1); } d += 'Z';

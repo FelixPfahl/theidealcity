@@ -865,7 +865,7 @@ html[data-mode=dunkel] .plot path.cool,html[data-mode=dunkel] .plot .dots circle
 .minititle .atmo{margin:0 0 0 12px;vertical-align:middle;font-size:10px;padding:3px 7px}
 .sticky-head.small .minititle .atmo{opacity:1;pointer-events:auto}
 .sticky-head:not(.small) .minititle .atmo{display:none}
-.plotted{contain:layout paint}
+.plotted{contain:none;overflow:visible} /* Josef, 28.10., 01:37: paint-Containment hat die rote Schrift oben abgeschnitten */
 .plot path{transition:none}
 
 .plotted .plotlink{position:absolute;display:block;cursor:pointer;background:none}

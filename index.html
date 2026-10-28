@@ -1,5 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>[hidden]{display:none!important}body{margin:0}</style>
-<title>Pult</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0b0c10"><style>[hidden]{display:none!important}body{margin:0}</style><title>Pult</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
@@ -75,8 +74,7 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .pill.warn{background:rgba(226,176,74,.15);color:var(--warn)}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
-</style>
-</head><body>
+</style></head><body>
 
 <div class="wrap">
   <header>
@@ -84,7 +82,7 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
     <div><span class="clock" id="clock">--.--</span><span class="sim" id="simTag" hidden>Test</span></div>
   </header>
   <main id="view"></main>
-  <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). Daten: Memo Mittwoch 28.10.2026, Kalender.</p>
+  <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
 </div>
 
 <nav class="nav" aria-label="Ansichten">
@@ -96,109 +94,7 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 
 <script>
 /* ===== Tagesdaten (später vom Morgenlauf befüllt) ===== */
-const DAY = {
-  date: "2026-10-28", label: "Mittwoch, 28.10.",
-  drucken: [
-    "5: Arbeitsblatt 01 Dreieck und Skizzen, A4 beidseitig, Klassensatz",
-    "5: Handout 06 Kriterien und Rückmeldung, A4, Klassensatz",
-    "5: Karton A6 hoch zuschneiden, Klassensatz plus Reserve",
-    "9a: Handout Figur 4 Komposition 01, A4, 13 Stück; A3-Papier, mindestens 13 Bogen",
-    "12: Konzeptblatt 01, Merkblatt Bewertung 02, Arbeitsblatt 03 Drei Werke, je A4, Klassensatz; Anhang 2 als Reserve"
-  ],
-  bewertung: [
-    {k:"6a", t:"Weihnachtskarte (Einheit endet heute)"},
-    {k:"5", t:"Weihnachtskarte (einzige Doppelstunde)"},
-    {k:"9a", t:"Figur 4 von 4 (Einheit endet heute)"}
-  ],
-  bewertungHinweis: "Die Karten der 6a und 5 gehen an die Schulleitung: vorher bewerten oder fotografieren.",
-  items: [
-    {type:"lesson", id:"6a", klasse:"6a", titel:"Weihnachtskarte 2 von 2", start:"8:00", end:"9:30",
-     ziel:"Die Karte wird fertig, mit klarer Grundform und einer Hauptsache, die man sofort findet.",
-     mitnehmen:["Handout 05 und 06","Aquarell, Acryl, Pinsel, Wasserbecher","Restpapier für Farbproben","Skizzen vom 14.10.","Dokumentenkamera prüfen"],
-     phases:[
-      ["8:00",5,"Partnerarbeit","Horsley raten","Kapiteltitel, dann die erste Weihnachtskarte (Horsley 1843): „Diese Karte war ein Skandal. Was hat die Leute aufgeregt?“ Zu zweit raten. Dabei Skizzen vom 14.10. austeilen."],
-      ["8:05",5,"Hinschauen und mitdenken","Auflösung, Kriterien, Abstimmung","Auflösung: Kinder trinken Wein, Alkoholgegner empört. Ablauf mit Ziel, fünf Kriterien, Abstimmung per Handzeichen (eine Minute reicht). Handouts 05 und 06 austeilen."],
-      ["8:10",10,"Partnerarbeit","Skizze wählen","Arbeitsauftrag 4: Partner zeigt auf die stärkste Skizze, eigene Wahl ankreuzen, Satz und Farbplan (höchstens fünf Farben) auf Handout 05."],
-      ["8:20",20,"Einzelarbeit","Karte beginnen","Arbeitsauftrag 5: erst Grundform, dann Figuren, mit den hellsten Flächen anfangen. Name gleich hinten drauf."],
-      ["8:40",5,"Gemeinsam besprechen","Zwischenhalt","Dokumentenkamera: zwei bis drei Karten, Leitfragen von der Folie. Über das Bild, nicht über die Person; niemand muss zeigen."],
-      ["8:45",25,"Einzelarbeit","Weitermalen","Arbeitsauftrag 6: Hauptsache hervorheben, Details zuletzt. Darin 10 Min. Puffer.",10],
-      ["9:10",5,"Partnerarbeit","Stern und Wunsch","Handout 06 Teil 2."],
-      ["9:15",10,"Einzelarbeit","Fertigstellen","Arbeitsauftrag 7: Selbstcheck mit den fünf Kriterien. Abgabe 9.25."],
-      ["9:25",5,"Gemeinsam besprechen","Rundgang","Kurzer Museumsrundgang, Schlusssatz, Karten ins Fach der Klasse. Danach 9.30 Aufsicht Halle."]
-     ],
-     werke:[{w:"John Callcott Horsley, <em>Weihnachtskarte</em> (für Henry Cole), 1843", f:["Gilt als erste kommerzielle Weihnachtskarte.","Auftrag von Henry Cole, gedruckt und handkoloriert.","Empörung: Kinder trinken am Familientisch Wein, Kritik aus der Abstinenzbewegung."]}],
-     fragen:[{q:"Diese Karte war ein Skandal. Was hat die Leute aufgeregt?",a:"Kinder trinken Wein mit am Tisch; Alkoholgegner waren empört."}],
-     hilfen:{schnell:"Innenseite mit Gruß oder zweite Komposition auf einem kleinen Blatt.",haengt:"Wer keine Skizze gewählt hat, nimmt die, auf die der Partner gezeigt hat."},
-     planB:{technik:"PDF 06_Screen_Weihnachtskarte_2_von_2 aus dem Schultagsordner im Vollbild.",unruhe:"Zwischenhalt auf zwei Karten kürzen, den Rundgang nicht streichen.",frueh:"Innenseite gestalten oder zweite Komposition."}},
-    {type:"other", start:"9:30", end:"9:45", titel:"Aufsicht Halle"},
-    {type:"other", start:"9:45", end:"10:30", titel:"Präsenzstunde"},
-    {type:"other", start:"10:15", end:"11:15", titel:"Drucken und Bereitlegen", sub:"Druckliste unter „Tag“"},
-    {type:"lesson", id:"5", klasse:"5", titel:"Weihnachtskarte", start:"11:30", end:"13:00",
-     ziel:"Die Karte als Dreieck gebaut, so dass man Mutter und Kind sofort findet.",
-     mitnehmen:["Arbeitsblatt 01 und Handout 06","Karton A6 hoch","Farbmaterial, Pinsel, Wasser","Dokumentenkamera"],
-     phases:[
-      ["11:30",5,"Partnerarbeit","Horsley raten","Zu zweit raten, was die Leute 1843 aufgeregt hat. Dabei Arbeitsblatt und Handout 06 austeilen."],
-      ["11:35",10,"Hinschauen und mitdenken","Auflösung, Costa, Schema, Kriterien","Auflösung Horsley. Costa: nur drei Figuren, Symmetrie und Fenster; zu zweit 30 Sekunden mit dem Finger das Dreieck zeigen. Schema, Kriterien mit Abstimmung. Um 11.45 hart stoppen."],
-      ["11:45",5,"Partnerarbeit","Findet das Dreieck","Arbeitsauftrag 1: im Nolde die drei wichtigsten Figuren suchen, Köpfe auf Arbeitsblatt Teil 1 zum Dreieck verbinden, mit dem Nachbarpaar vergleichen. Auflösung höchstens eine Minute."],
-      ["11:50",35,"Einzelarbeit","Mini-Skizzen und Karte","Arbeitsauftrag 2: zwei Mini-Skizzen, je höchstens 3 Min. (laut takten), eine wählen, dünn auf die Karte, große Flächen hell nach dunkel, höchstens fünf Farben. Darin 10 Min. Puffer.",10],
-      ["12:25",5,"Gemeinsam besprechen","Zwischenhalt","Dokumentenkamera: zwei Karten, Leitfragen von der Folie, Regeln gelten."],
-      ["12:30",5,"Partnerarbeit","Stern und Wunsch","Handout 06 Teil 2."],
-      ["12:35",15,"Einzelarbeit","Fertigstellen","Arbeitsauftrag 3: Selbstcheck mit den fünf Kriterien, Name hinten drauf. Abgabe 12.50."],
-      ["12:50",10,"Gemeinsam besprechen","Rundgang, aufräumen","Museumsrundgang, Schlusssatz „Meine Karte ist als Dreieck gebaut. Das Wichtigste ist ..., weil ...“, Daumen hoch, aufräumen."]
-     ],
-     werke:[{w:"John Callcott Horsley, <em>Weihnachtskarte</em> (für Henry Cole), 1843", f:["Gilt als erste kommerzielle Weihnachtskarte.","Empörung: Kinder trinken am Familientisch Wein."]}],
-     fragen:[{q:"Was hat die Leute 1843 an dieser Karte aufgeregt?",a:"Kinder trinken Wein mit am Tisch."},{q:"Wo ist das Dreieck?",a:"Die drei Köpfe der wichtigsten Figuren, Mutter und Kind an der Spitze oder in der Mitte."}],
-     hilfen:{schnell:"Licht von einem Punkt, dann Stall, Tiere, Hirten.",haengt:"Details weglassen, nur die drei Figuren fertig malen."},
-     planB:{technik:"PDF 05_Screen_Weihnachtskarte_Geburt_Christi aus dem Schultagsordner im Vollbild.",unruhe:"Input um 11.45 abbrechen, sofort malen lassen.",frueh:"Licht und Hintergrund ausbauen, Innenseite mit Gruß."}},
-    {type:"lesson", id:"9a", klasse:"9a", titel:"Figur 4 von 4", start:"13:15", end:"14:45",
-     ziel:"Eine Szene mit mindestens drei Figuren, die ohne Worte erzählt.",
-     mitnehmen:["Handout Figur 4 (13 Stück)","A3-Papier","Skizzen vom 14.10.","Bleistifte, Lineale, Farbstifte"],
-     phases:[
-      ["13:15",5,"Hinschauen und mitdenken","Steht der oder fällt der?","Moebius groß zeigen, erst schweigen lassen. Abstimmung per Handzeichen, dann alle aufstehen und die Haltung zehn Sekunden halten. Auflösung: das Lot. Polyklet und Bruegel je 15 Sekunden: Wo fängt das Fallen an? Ablauf laut vorlesen, Skizzen und Handout austeilen."],
-      ["13:20",20,"Einzelarbeit mit Modellen","Runde 2: Posen in Bewegung","Vier Posen zu je 5 Min. (bücken, tragen, ziehen, schieben, werfen). Zeit laut ansagen. Freiwillig und bekleidet; kommentiert wird nur die Zeichnung."],
-      ["13:40",5,"Partnerarbeit","Lot-Probe","Blätter tauschen, Lineal vom Schwerpunkt senkrecht nach unten, S oder F. Zwei Blätter für die Kamera merken und fragen, ob das ok ist."],
-      ["13:45",10,"Hinschauen und mitdenken","So baut man eine Szene","Die zwei Blätter unter die Kamera. Tafel: drei Figuren, zwei Thumbnails, Überschneidung, Größenstaffelung. Hokusai, Caravaggio, Géricault, Rubens je 20 bis 30 Sek. mit Daumen-Abstimmung."],
-      ["13:55",30,"Einzelarbeit","Drei Figuren auf A3","Thumbnails wirklich zuerst einfordern. Kriterien kurz zeigen, während die Arbeit läuft."],
-      ["14:25",5,"Partnerarbeit","Tipp zu zweit","Handout Abschnitt 4. Bridgman: das Lot als senkrechte Linie mit Gewicht."],
-      ["14:30",10,"Einzelarbeit","Tipp umsetzen","Überschneidungen und Hell-Dunkel verstärken. Darin der Puffer. Abgabe 14.40.",5],
-      ["14:40",5,"Gemeinsam besprechen","Galerie","Welche Szene erzählt ohne Worte am meisten? Lieber zwei Blätter genau als alle kurz. Abgabe mit Namen."]
-     ],
-     werke:[
-      {w:"Moebius, <em>40 Days dans le désert B</em>, 1999", f:["Wortloses Zeichnungsbuch voller kippender, schwebender Figuren."]},
-      {w:"Polyklet, <em>Doryphoros</em>, um 440 v. Chr.", f:["Römische Marmorkopie, Neapel, Museo Archeologico Nazionale.","Musterbeispiel für Kontrapost: Stand- und Spielbein, das Lot fällt ins Standbein."]},
-      {w:"Pieter Bruegel d. Ä., <em>Der Blindensturz</em>, 1568", f:["Neapel, Museo di Capodimonte.","Sechs Blinde, von links nach rechts immer weiter aus dem Lot bis zum Sturz."]},
-      {w:"Caravaggio, <em>Kreuzigung des Petrus</em>, 1601", f:["Rom, Santa Maria del Popolo.","Drei Helfer stemmen das Kreuz: Diagonale, Arbeit, Gewicht."]},
-      {w:"Théodore Géricault, <em>Das Floß der Medusa</em>, 1818/19", f:["Paris, Louvre.","Figurenpyramide von den Toten unten bis zum winkenden Mann oben."]},
-      {w:"Peter Paul Rubens, <em>Die Kreuzaufrichtung</em>, 1610/11", f:["Antwerpen, Liebfrauenkathedrale.","Viele Körper in einer gemeinsamen Diagonale, Kraft wird sichtbar."]}
-     ],
-     fragen:[{q:"Steht sie, oder fällt sie?",a:"Entscheidend ist das Lot vom Schwerpunkt: liegt es außerhalb der Standfläche, fällt die Figur."},{q:"Wo fängt das Fallen an?",a:"Dort, wo das Lot die Standfläche verlässt."},{q:"Welche Szene erzählt ohne Worte am meisten?",a:"Klare Handlung, Überschneidung, Größenstaffelung, eine Hauptfigur."}],
-     hilfen:{schnell:"Zweite Szene als Thumbnail mit einer anderen Handlung.",haengt:"Zwei Figuren, die an einem Seil ziehen, gehen immer."},
-     planB:{technik:"PDF 09_Screen_Figur_4_Komposition aus dem Schultagsordner im Vollbild.",unruhe:"Modellrunde auf drei Posen kürzen, direkt in die Lot-Probe.",frueh:"Zweite Szene als Thumbnail, andere Handlung."}},
-    {type:"lesson", id:"12", klasse:"12", titel:"Eigenes Objekt 1 von 3", start:"15:00", end:"16:30",
-     ziel:"Ein schlüssiges Konzept für das eigene Objekt.",
-     mitnehmen:["Konzeptblatt, Merkblatt Bewertung, Arbeitsblatt 03","Anhang 2 als Reserve","Wäscheklammer-Blätter vom 14.10.","Zettel für die Schätzung"],
-     mb:"Deine Oberstufenstunde: Stundenziel auf der Ablauffolie, Methodenwechsel, Kriterien in Punkten offengelegt, Sicherung im Plenum.",
-     phases:[
-      ["15:00",5,"Plenum","Wie hoch ist diese Wäscheklammer?","Alle schätzen in Metern auf einem Zettel und halten gleichzeitig hoch. Kleine Pause, dann Auflösung: 13,7 Meter. „Oldenburg ändert nur eines: die Größe.“ Ablauf mit Ziel."],
-      ["15:05",20,"Einzelarbeit","Funktionsstudien abschließen","Phasenzeichnungen vom 14.10. fertig, wer fertig ist: Explosionszeichnung. Abgabe 15.25. Darin etwa 10 Min. Puffer.",10],
-      ["15:25",10,"Partnerarbeit","Drei Werke, drei Strategien","Oppenheim, Man Ray, Sisson mit Anhang 2 einer Strategie zuordnen, Stichwort auf Arbeitsblatt 03."],
-      ["15:35",10,"Plenum","Systematik, Termine, Kriterien","Transformation, De- und Rekontextualisierung; Zuordnungen abfragen. Praktische Leistung 2: bis 11.11. Konzept und Material, 11.11. Umsetzung, 13.01.2027 Präsentation. 30 Punkte, je 10 für Prozess, Konzept, Umsetzung. Konzeptblatt und Merkblatt austeilen."],
-      ["15:45",20,"Einzelarbeit","Konzeptblatt","Gegenstand wählen, Strategie festlegen und begründen, zwei bis drei Skizzen, Material, Maße, Technik. Wer nach 5 Min. keinen Gegenstand hat: Wäscheklammer als Notlösung."],
-      ["16:05",10,"Partnerarbeit","Konzept zu zweit prüfen","Vorstellen ohne die Strategie zu nennen, Gegenüber benennt sie, nennt eine Stärke und stellt eine Frage. Rollen tauschen."],
-      ["16:15",10,"Plenum","Zwei Konzepte, Ausblick","Zwei Freiwillige. Schlusssatz „Ein Alltagsgegenstand wird zum Kunstobjekt, wenn ...“. Frist 11.11. laut, ins Hausaufgabenheft; Arbeitsfenster 29. und 30.10., 9. und 10.11."],
-      ["16:25",5,"Aufräumen","Aufräumen","Blätter mit Namen abgeben, Tische frei."]
-     ],
-     werke:[
-      {w:"Claes Oldenburg, <em>Clothespin</em>, 1976", f:["Cortenstahl, 13,7 m hoch (45 Fuß).","Philadelphia, Centre Square.","Einzige Veränderung gegenüber dem Original: die Größe."]},
-      {w:"Meret Oppenheim, <em>Frühstück im Pelz</em>, 1936", f:["New York, Museum of Modern Art.","Tasse, Untertasse und Löffel mit Pelz bezogen: Material verfremdet."]},
-      {w:"Man Ray, <em>Cadeau</em>, 1921", f:["Bügeleisen mit einer Reihe Nägel auf der Sohle: Funktion ins Gegenteil verkehrt."]}
-     ],
-     fragen:[{q:"Wie hoch ist diese Wäscheklammer?",a:"13,7 Meter."},{q:"Welche Strategie steckt in Oppenheims Tasse?",a:"Materialverfremdung (Transformation)."},{q:"Ein Alltagsgegenstand wird zum Kunstobjekt, wenn ...",a:"... er verfremdet, aus dem Kontext gelöst oder neu kontextualisiert wird und dadurch Fragen stellt."}],
-     hilfen:{schnell:"Zweites Konzept mit einer anderen Strategie skizzieren.",haengt:"Wäscheklammer als Gegenstand nehmen, eine Strategie aus Anhang 2 wählen."},
-     planB:{technik:"PDF 12_Screen_Eigenes_Objekt_01 aus dem Schultagsordner im Vollbild.",unruhe:"Partnerprüfung schriftlich: Frage aufs Konzeptblatt des anderen.",frueh:"Zweites Konzept mit anderer Strategie, Materialliste für den 11.11."}},
-    {type:"other", start:"18:00", end:"19:00", titel:"Vorbereitung Klassenstunde 6a", sub:"Medaillen, Würdigungen, Terminliste"}
-  ]
-};
+const EMBED = /*EMBED*/{"heute": {"date": "2026-10-28", "label": "Mittwoch, 28.10.", "drucken": ["5: Arbeitsblatt 01 Dreieck und Skizzen, A4 beidseitig, Klassensatz", "5: Handout 06 Kriterien und Rückmeldung, A4, Klassensatz", "5: Karton A6 hoch zuschneiden, Klassensatz plus Reserve", "9a: Handout Figur 4 Komposition 01, A4, 13 Stück; A3-Papier, mindestens 13 Bogen", "12: Konzeptblatt 01, Merkblatt Bewertung 02, Arbeitsblatt 03 Drei Werke, je A4, Klassensatz; Anhang 2 als Reserve"], "bewertung": [{"k": "6a", "t": "Weihnachtskarte (Einheit endet heute)"}, {"k": "5", "t": "Weihnachtskarte (einzige Doppelstunde)"}, {"k": "9a", "t": "Figur 4 von 4 (Einheit endet heute)"}], "bewertungHinweis": "Die Karten der 6a und 5 gehen an die Schulleitung: vorher bewerten oder fotografieren.", "items": [{"type": "lesson", "id": "6a", "klasse": "6a", "titel": "Weihnachtskarte 2 von 2", "start": "8:00", "end": "9:30", "ziel": "Die Karte wird fertig, mit klarer Grundform und einer Hauptsache, die man sofort findet.", "mitnehmen": ["Handout 05 und 06", "Aquarell, Acryl, Pinsel, Wasserbecher", "Restpapier für Farbproben", "Skizzen vom 14.10.", "Dokumentenkamera prüfen"], "phases": [["8:00", 5, "Partnerarbeit", "Horsley raten", "Kapiteltitel, dann die erste Weihnachtskarte (Horsley 1843): „Diese Karte war ein Skandal. Was hat die Leute aufgeregt?“ Zu zweit raten. Dabei Skizzen vom 14.10. austeilen."], ["8:05", 5, "Hinschauen und mitdenken", "Auflösung, Kriterien, Abstimmung", "Auflösung: Kinder trinken Wein, Alkoholgegner empört. Ablauf mit Ziel, fünf Kriterien, Abstimmung per Handzeichen (eine Minute reicht). Handouts 05 und 06 austeilen."], ["8:10", 10, "Partnerarbeit", "Skizze wählen", "Arbeitsauftrag 4: Partner zeigt auf die stärkste Skizze, eigene Wahl ankreuzen, Satz und Farbplan (höchstens fünf Farben) auf Handout 05."], ["8:20", 20, "Einzelarbeit", "Karte beginnen", "Arbeitsauftrag 5: erst Grundform, dann Figuren, mit den hellsten Flächen anfangen. Name gleich hinten drauf."], ["8:40", 5, "Gemeinsam besprechen", "Zwischenhalt", "Dokumentenkamera: zwei bis drei Karten, Leitfragen von der Folie. Über das Bild, nicht über die Person; niemand muss zeigen."], ["8:45", 25, "Einzelarbeit", "Weitermalen", "Arbeitsauftrag 6: Hauptsache hervorheben, Details zuletzt. Darin 10 Min. Puffer.", 10], ["9:10", 5, "Partnerarbeit", "Stern und Wunsch", "Handout 06 Teil 2."], ["9:15", 10, "Einzelarbeit", "Fertigstellen", "Arbeitsauftrag 7: Selbstcheck mit den fünf Kriterien. Abgabe 9.25."], ["9:25", 5, "Gemeinsam besprechen", "Rundgang", "Kurzer Museumsrundgang, Schlusssatz, Karten ins Fach der Klasse. Danach 9.30 Aufsicht Halle."]], "werke": [{"w": "John Callcott Horsley, <em>Weihnachtskarte<\/em> (für Henry Cole), 1843", "f": ["Gilt als erste kommerzielle Weihnachtskarte.", "Auftrag von Henry Cole, gedruckt und handkoloriert.", "Empörung: Kinder trinken am Familientisch Wein, Kritik aus der Abstinenzbewegung."]}], "fragen": [{"q": "Diese Karte war ein Skandal. Was hat die Leute aufgeregt?", "a": "Kinder trinken Wein mit am Tisch; Alkoholgegner waren empört."}], "hilfen": {"schnell": "Innenseite mit Gruß oder zweite Komposition auf einem kleinen Blatt.", "haengt": "Wer keine Skizze gewählt hat, nimmt die, auf die der Partner gezeigt hat."}, "planB": {"technik": "PDF 06_Screen_Weihnachtskarte_2_von_2 aus dem Schultagsordner im Vollbild.", "unruhe": "Zwischenhalt auf zwei Karten kürzen, den Rundgang nicht streichen.", "frueh": "Innenseite gestalten oder zweite Komposition."}}, {"type": "other", "start": "9:30", "end": "9:45", "titel": "Aufsicht Halle"}, {"type": "other", "start": "9:45", "end": "10:30", "titel": "Präsenzstunde"}, {"type": "other", "start": "10:15", "end": "11:15", "titel": "Drucken und Bereitlegen", "sub": "Druckliste unter „Tag“"}, {"type": "lesson", "id": "5", "klasse": "5", "titel": "Weihnachtskarte", "start": "11:30", "end": "13:00", "ziel": "Die Karte als Dreieck gebaut, so dass man Mutter und Kind sofort findet.", "mitnehmen": ["Arbeitsblatt 01 und Handout 06", "Karton A6 hoch", "Farbmaterial, Pinsel, Wasser", "Dokumentenkamera"], "phases": [["11:30", 5, "Partnerarbeit", "Horsley raten", "Zu zweit raten, was die Leute 1843 aufgeregt hat. Dabei Arbeitsblatt und Handout 06 austeilen."], ["11:35", 10, "Hinschauen und mitdenken", "Auflösung, Costa, Schema, Kriterien", "Auflösung Horsley. Costa: nur drei Figuren, Symmetrie und Fenster; zu zweit 30 Sekunden mit dem Finger das Dreieck zeigen. Schema, Kriterien mit Abstimmung. Um 11.45 hart stoppen."], ["11:45", 5, "Partnerarbeit", "Findet das Dreieck", "Arbeitsauftrag 1: im Nolde die drei wichtigsten Figuren suchen, Köpfe auf Arbeitsblatt Teil 1 zum Dreieck verbinden, mit dem Nachbarpaar vergleichen. Auflösung höchstens eine Minute."], ["11:50", 35, "Einzelarbeit", "Mini-Skizzen und Karte", "Arbeitsauftrag 2: zwei Mini-Skizzen, je höchstens 3 Min. (laut takten), eine wählen, dünn auf die Karte, große Flächen hell nach dunkel, höchstens fünf Farben. Darin 10 Min. Puffer.", 10], ["12:25", 5, "Gemeinsam besprechen", "Zwischenhalt", "Dokumentenkamera: zwei Karten, Leitfragen von der Folie, Regeln gelten."], ["12:30", 5, "Partnerarbeit", "Stern und Wunsch", "Handout 06 Teil 2."], ["12:35", 15, "Einzelarbeit", "Fertigstellen", "Arbeitsauftrag 3: Selbstcheck mit den fünf Kriterien, Name hinten drauf. Abgabe 12.50."], ["12:50", 10, "Gemeinsam besprechen", "Rundgang, aufräumen", "Museumsrundgang, Schlusssatz „Meine Karte ist als Dreieck gebaut. Das Wichtigste ist ..., weil ...“, Daumen hoch, aufräumen."]], "werke": [{"w": "John Callcott Horsley, <em>Weihnachtskarte<\/em> (für Henry Cole), 1843", "f": ["Gilt als erste kommerzielle Weihnachtskarte.", "Empörung: Kinder trinken am Familientisch Wein."]}], "fragen": [{"q": "Was hat die Leute 1843 an dieser Karte aufgeregt?", "a": "Kinder trinken Wein mit am Tisch."}, {"q": "Wo ist das Dreieck?", "a": "Die drei Köpfe der wichtigsten Figuren, Mutter und Kind an der Spitze oder in der Mitte."}], "hilfen": {"schnell": "Licht von einem Punkt, dann Stall, Tiere, Hirten.", "haengt": "Details weglassen, nur die drei Figuren fertig malen."}, "planB": {"technik": "PDF 05_Screen_Weihnachtskarte_Geburt_Christi aus dem Schultagsordner im Vollbild.", "unruhe": "Input um 11.45 abbrechen, sofort malen lassen.", "frueh": "Licht und Hintergrund ausbauen, Innenseite mit Gruß."}}, {"type": "lesson", "id": "9a", "klasse": "9a", "titel": "Figur 4 von 4", "start": "13:15", "end": "14:45", "ziel": "Eine Szene mit mindestens drei Figuren, die ohne Worte erzählt.", "mitnehmen": ["Handout Figur 4 (13 Stück)", "A3-Papier", "Skizzen vom 14.10.", "Bleistifte, Lineale, Farbstifte"], "phases": [["13:15", 5, "Hinschauen und mitdenken", "Steht der oder fällt der?", "Moebius groß zeigen, erst schweigen lassen. Abstimmung per Handzeichen, dann alle aufstehen und die Haltung zehn Sekunden halten. Auflösung: das Lot. Polyklet und Bruegel je 15 Sekunden: Wo fängt das Fallen an? Ablauf laut vorlesen, Skizzen und Handout austeilen."], ["13:20", 20, "Einzelarbeit mit Modellen", "Runde 2: Posen in Bewegung", "Vier Posen zu je 5 Min. (bücken, tragen, ziehen, schieben, werfen). Zeit laut ansagen. Freiwillig und bekleidet; kommentiert wird nur die Zeichnung."], ["13:40", 5, "Partnerarbeit", "Lot-Probe", "Blätter tauschen, Lineal vom Schwerpunkt senkrecht nach unten, S oder F. Zwei Blätter für die Kamera merken und fragen, ob das ok ist."], ["13:45", 10, "Hinschauen und mitdenken", "So baut man eine Szene", "Die zwei Blätter unter die Kamera. Tafel: drei Figuren, zwei Thumbnails, Überschneidung, Größenstaffelung. Hokusai, Caravaggio, Géricault, Rubens je 20 bis 30 Sek. mit Daumen-Abstimmung."], ["13:55", 30, "Einzelarbeit", "Drei Figuren auf A3", "Thumbnails wirklich zuerst einfordern. Kriterien kurz zeigen, während die Arbeit läuft."], ["14:25", 5, "Partnerarbeit", "Tipp zu zweit", "Handout Abschnitt 4. Bridgman: das Lot als senkrechte Linie mit Gewicht."], ["14:30", 10, "Einzelarbeit", "Tipp umsetzen", "Überschneidungen und Hell-Dunkel verstärken. Darin der Puffer. Abgabe 14.40.", 5], ["14:40", 5, "Gemeinsam besprechen", "Galerie", "Welche Szene erzählt ohne Worte am meisten? Lieber zwei Blätter genau als alle kurz. Abgabe mit Namen."]], "werke": [{"w": "Moebius, <em>40 Days dans le désert B<\/em>, 1999", "f": ["Wortloses Zeichnungsbuch voller kippender, schwebender Figuren."]}, {"w": "Polyklet, <em>Doryphoros<\/em>, um 440 v. Chr.", "f": ["Römische Marmorkopie, Neapel, Museo Archeologico Nazionale.", "Musterbeispiel für Kontrapost: Stand- und Spielbein, das Lot fällt ins Standbein."]}, {"w": "Pieter Bruegel d. Ä., <em>Der Blindensturz<\/em>, 1568", "f": ["Neapel, Museo di Capodimonte.", "Sechs Blinde, von links nach rechts immer weiter aus dem Lot bis zum Sturz."]}, {"w": "Caravaggio, <em>Kreuzigung des Petrus<\/em>, 1601", "f": ["Rom, Santa Maria del Popolo.", "Drei Helfer stemmen das Kreuz: Diagonale, Arbeit, Gewicht."]}, {"w": "Théodore Géricault, <em>Das Floß der Medusa<\/em>, 1818/19", "f": ["Paris, Louvre.", "Figurenpyramide von den Toten unten bis zum winkenden Mann oben."]}, {"w": "Peter Paul Rubens, <em>Die Kreuzaufrichtung<\/em>, 1610/11", "f": ["Antwerpen, Liebfrauenkathedrale.", "Viele Körper in einer gemeinsamen Diagonale, Kraft wird sichtbar."]}], "fragen": [{"q": "Steht sie, oder fällt sie?", "a": "Entscheidend ist das Lot vom Schwerpunkt: liegt es außerhalb der Standfläche, fällt die Figur."}, {"q": "Wo fängt das Fallen an?", "a": "Dort, wo das Lot die Standfläche verlässt."}, {"q": "Welche Szene erzählt ohne Worte am meisten?", "a": "Klare Handlung, Überschneidung, Größenstaffelung, eine Hauptfigur."}], "hilfen": {"schnell": "Zweite Szene als Thumbnail mit einer anderen Handlung.", "haengt": "Zwei Figuren, die an einem Seil ziehen, gehen immer."}, "planB": {"technik": "PDF 09_Screen_Figur_4_Komposition aus dem Schultagsordner im Vollbild.", "unruhe": "Modellrunde auf drei Posen kürzen, direkt in die Lot-Probe.", "frueh": "Zweite Szene als Thumbnail, andere Handlung."}}, {"type": "lesson", "id": "12", "klasse": "12", "titel": "Eigenes Objekt 1 von 3", "start": "15:00", "end": "16:30", "ziel": "Ein schlüssiges Konzept für das eigene Objekt.", "mitnehmen": ["Konzeptblatt, Merkblatt Bewertung, Arbeitsblatt 03", "Anhang 2 als Reserve", "Wäscheklammer-Blätter vom 14.10.", "Zettel für die Schätzung"], "mb": "Deine Oberstufenstunde: Stundenziel auf der Ablauffolie, Methodenwechsel, Kriterien in Punkten offengelegt, Sicherung im Plenum.", "phases": [["15:00", 5, "Plenum", "Wie hoch ist diese Wäscheklammer?", "Alle schätzen in Metern auf einem Zettel und halten gleichzeitig hoch. Kleine Pause, dann Auflösung: 13,7 Meter. „Oldenburg ändert nur eines: die Größe.“ Ablauf mit Ziel."], ["15:05", 20, "Einzelarbeit", "Funktionsstudien abschließen", "Phasenzeichnungen vom 14.10. fertig, wer fertig ist: Explosionszeichnung. Abgabe 15.25. Darin etwa 10 Min. Puffer.", 10], ["15:25", 10, "Partnerarbeit", "Drei Werke, drei Strategien", "Oppenheim, Man Ray, Sisson mit Anhang 2 einer Strategie zuordnen, Stichwort auf Arbeitsblatt 03."], ["15:35", 10, "Plenum", "Systematik, Termine, Kriterien", "Transformation, De- und Rekontextualisierung; Zuordnungen abfragen. Praktische Leistung 2: bis 11.11. Konzept und Material, 11.11. Umsetzung, 13.01.2027 Präsentation. 30 Punkte, je 10 für Prozess, Konzept, Umsetzung. Konzeptblatt und Merkblatt austeilen."], ["15:45", 20, "Einzelarbeit", "Konzeptblatt", "Gegenstand wählen, Strategie festlegen und begründen, zwei bis drei Skizzen, Material, Maße, Technik. Wer nach 5 Min. keinen Gegenstand hat: Wäscheklammer als Notlösung."], ["16:05", 10, "Partnerarbeit", "Konzept zu zweit prüfen", "Vorstellen ohne die Strategie zu nennen, Gegenüber benennt sie, nennt eine Stärke und stellt eine Frage. Rollen tauschen."], ["16:15", 10, "Plenum", "Zwei Konzepte, Ausblick", "Zwei Freiwillige. Schlusssatz „Ein Alltagsgegenstand wird zum Kunstobjekt, wenn ...“. Frist 11.11. laut, ins Hausaufgabenheft; Arbeitsfenster 29. und 30.10., 9. und 10.11."], ["16:25", 5, "Aufräumen", "Aufräumen", "Blätter mit Namen abgeben, Tische frei."]], "werke": [{"w": "Claes Oldenburg, <em>Clothespin<\/em>, 1976", "f": ["Cortenstahl, 13,7 m hoch (45 Fuß).", "Philadelphia, Centre Square.", "Einzige Veränderung gegenüber dem Original: die Größe."]}, {"w": "Meret Oppenheim, <em>Frühstück im Pelz<\/em>, 1936", "f": ["New York, Museum of Modern Art.", "Tasse, Untertasse und Löffel mit Pelz bezogen: Material verfremdet."]}, {"w": "Man Ray, <em>Cadeau<\/em>, 1921", "f": ["Bügeleisen mit einer Reihe Nägel auf der Sohle: Funktion ins Gegenteil verkehrt."]}], "fragen": [{"q": "Wie hoch ist diese Wäscheklammer?", "a": "13,7 Meter."}, {"q": "Welche Strategie steckt in Oppenheims Tasse?", "a": "Materialverfremdung (Transformation)."}, {"q": "Ein Alltagsgegenstand wird zum Kunstobjekt, wenn ...", "a": "... er verfremdet, aus dem Kontext gelöst oder neu kontextualisiert wird und dadurch Fragen stellt."}], "hilfen": {"schnell": "Zweites Konzept mit einer anderen Strategie skizzieren.", "haengt": "Wäscheklammer als Gegenstand nehmen, eine Strategie aus Anhang 2 wählen."}, "planB": {"technik": "PDF 12_Screen_Eigenes_Objekt_01 aus dem Schultagsordner im Vollbild.", "unruhe": "Partnerprüfung schriftlich: Frage aufs Konzeptblatt des anderen.", "frueh": "Zweites Konzept mit anderer Strategie, Materialliste für den 11.11."}}, {"type": "other", "start": "18:00", "end": "19:00", "titel": "Vorbereitung Klassenstunde 6a", "sub": "Medaillen, Würdigungen, Terminliste"}]}, "morgen": null}/*EMBED_END*/;
 
 /* ===== Hilfsfunktionen ===== */
 const $ = s => document.querySelector(s);
@@ -209,8 +105,19 @@ const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
 };
-const KEY = "pult-" + DAY.date;
-let state = store.get(KEY, {adj:{}, notes:{}, sim:null});
+const todayIso = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+let DAY = null, MORGEN = null, KEY = "", state = {adj:{}, notes:{}, sim:null}, lessons = [];
+function setDay(d){
+  DAY = d && d.items ? d : {date:"", label:"", items:[], drucken:[], bewertung:[], bewertungHinweis:""};
+  DAY.drucken = DAY.drucken || []; DAY.bewertung = DAY.bewertung || []; DAY.bewertungHinweis = DAY.bewertungHinweis || "";
+  KEY = "pult-" + DAY.date;
+  state = store.get(KEY, {adj:{}, notes:{}, sim:null});
+  state.adj = state.adj || {}; state.notes = state.notes || {};
+  lessons = DAY.items.filter(i => i.type === "lesson");
+}
+const fresh = () => DAY && DAY.date === todayIso();
+/* nur <em> aus den Daten zulassen */
+const rich = s => esc(s).replace(/&lt;(\/?)em&gt;/g, "<$1em>");
 const save = () => store.set(KEY, state);
 
 function nowSec(){
@@ -220,7 +127,6 @@ function nowSec(){
   return s;
 }
 
-const lessons = DAY.items.filter(i => i.type === "lesson");
 
 /* Phasen mit Verzug neu berechnen: die aktuelle Phase wird länger oder kürzer,
    der Ausgleich kommt aus der nächsten Phase mit Puffer, sonst aus der längsten späteren Phase. */
@@ -229,7 +135,7 @@ function plan(lesson){
   const durs = base.map(p => p.d);
   const notes = [];
   for (const a of (state.adj[lesson.id] || [])){
-    durs[a.at] = Math.max(1, durs[a.at] + a.delta);
+    durs[a.at] = Math.max(0, durs[a.at] + a.delta);
     let target = -1;
     for (let j = a.at+1; j < base.length; j++) if (base[j].puffer > 0){ target = j; break; }
     if (target < 0){
@@ -272,6 +178,11 @@ let selected = null;
 let lastKey = null;
 
 function renderJetzt(){
+  if (!fresh()) return `
+    <div class="eyebrow">Heute</div>
+    <div class="form">Noch keine Daten</div>
+    <div class="regie">${DAY.label ? "Letzter Stand: " + esc(DAY.label) + " Der Morgenlauf bringt die Stunden von heute." : "Der Morgenlauf bringt die Stunden von heute."}</div>
+    <div class="next">Unter „Tag“ siehst du den letzten Stand.</div>`;
   const sec = nowSec(), loc = locate(sec);
   if (loc){
     const {lesson, plan:p, idx} = loc;
@@ -298,7 +209,7 @@ function renderJetzt(){
       ${nx ? `<div class="next">Danach <strong>${fmt(nx.s)} ${esc(nx.form)}</strong>, ${nx.d} Min.: ${esc(nx.titel)}</div>` : `<div class="next">Letzte Phase. Danach: Kurzcheck unter „Notiz“.</div>`}
       <div class="ctrl">
         <button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>
-        <button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>
+        ${nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : ""}
         ${adjs.length ? `<button class="btn" data-act="undo" data-id="${lesson.id}">Zurück</button>` : ""}
       </div>
       <div class="status">${esc(status)}</div>
@@ -331,7 +242,12 @@ function renderTag(){
   const sec = nowSec(), min = sec/60, loc = locate(sec);
   const morgen = selected === "__morgen";
   const seg = `<div class="chips seg"><button class="chip" data-day="heute" aria-pressed="${!morgen}">Heute</button><button class="chip" data-day="morgen" aria-pressed="${morgen}">Morgen</button></div>`;
-  if (morgen) return seg + `<div class="card"><p><strong>Donnerstag, 29.10.</strong></p><p class="small">Kommt mit dem Morgenlauf. In dieser Probe ist nur heute befüllt.</p></div>`;
+  if (morgen){
+    if (!MORGEN || !MORGEN.items || !MORGEN.items.length) return seg + `<div class="card"><p><strong>Morgen</strong></p><p class="small">Noch keine Daten. Kommt mit dem Morgenlauf.</p></div>`;
+    return seg + `<div class="eyebrow">${esc(MORGEN.label)}</div>` + MORGEN.items.map(it => `
+      <div class="item"><time>${fmt(toMin(it.start))}</time><div><div class="t">${it.type==="lesson" ? esc(it.klasse)+" · " : ""}${esc(it.titel)}</div>${it.ziel ? `<div class="s">${esc(it.ziel)}</div>` : ""}${it.mitnehmen ? `<div class="s">Mitnehmen: ${it.mitnehmen.map(esc).join(", ")}</div>` : ""}</div></div>`).join("")
+      + (MORGEN.drucken && MORGEN.drucken.length ? `<h2>Für morgen drucken</h2><ul class="list">${MORGEN.drucken.map(d => `<li>${esc(d)}</li>`).join("")}</ul>` : "");
+  }
   const rows = DAY.items.map(it => {
     const s = toMin(it.start), e = toMin(it.end);
     const cls = e <= min ? "past" : (s <= min && min < e ? "now" : "");
@@ -359,18 +275,21 @@ function lessonChips(){
   return `<div class="chips">${lessons.map(l => `<button class="chip" data-sel="${l.id}" aria-pressed="${l.id===selected}">${esc(l.klasse)}</button>`).join("")}</div>`;
 }
 function defaultSel(){
+  if (!lessons.length) return null;
   const sec = nowSec(), loc = locate(sec);
   return loc ? loc.lesson.id : (nextLesson(sec) || lessons[lessons.length-1]).id;
 }
+const noLessons = () => `<div class="eyebrow">Heute</div><div class="regie">Keine Stunden in den Daten.</div>`;
 
 function renderSpick(){
   if (!lessons.find(l => l.id === selected)) selected = defaultSel();
+  if (!lessons.length) return noLessons();
   const l = lessons.find(x => x.id === selected);
   return lessonChips() + `
     <div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div>
     <div class="regie">${esc(l.ziel)}</div>
     <h2>Werke</h2>
-    ${l.werke.map(w => `<div class="card"><p class="work">${w.w}</p>${w.f.map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}
+    ${l.werke.map(w => `<div class="card"><p class="work">${rich(w.w)}</p>${w.f.map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}
     <h2>Impulsfragen</h2>
     ${l.fragen.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}
     <h2>Hilfen in Arbeitsphasen</h2>
@@ -385,6 +304,7 @@ function renderSpick(){
 
 function renderNotiz(){
   if (!lessons.find(l => l.id === selected)) selected = defaultSel();
+  if (!lessons.length) return noLessons();
   const l = lessons.find(x => x.id === selected);
   const n = state.notes[l.id] || {text:"", zeit:"", ziel:"", aendern:""};
   const seg = (name, opts) => `<div class="seg">${opts.map(o => `<button class="chip" data-check="${name}" data-val="${o}" aria-pressed="${n[name]===o}">${o}</button>`).join("")}</div>`;
@@ -448,9 +368,8 @@ document.addEventListener("click", e => {
     let delta = 5;
     if (act === "weiter"){
       const l = lessons.find(x => x.id === id), p = plan(l), ph = p.phases[i];
-      const ran = Math.max(1, Math.floor(nowSec()/60 - ph.s));
+      const ran = Math.max(0, nowSec()/60 - ph.s);
       delta = ran - ph.d;
-      if (delta === 0) delta = -1;
     }
     (state.adj[id] = state.adj[id] || []).push({at:i, delta});
     save(); lastKey = null; render(); return;
@@ -479,8 +398,34 @@ document.addEventListener("input", e => {
   }
 });
 
-$("#date").textContent = DAY.label;
-render(); tick(); keepAwake();
-setInterval(tick, 1000);
+function showDay(){
+  $("#date").textContent = DAY.label || "Pult";
+  const st = $("#stand"); if (st) st.textContent = DAY.date ? "Stand der Daten: " + DAY.label : "";
+  lastKey = null; render(); tick();
+}
+async function getJson(path){
+  const r = await fetch(path, {cache:"no-cache"});
+  if (!r.ok) throw new Error(path + " " + r.status);
+  return r.json();
+}
+async function init(){
+  const emb = EMBED || {};
+  let cached = store.get("pult-last", null);
+  let best = emb.heute || null;
+  if (cached && cached.heute && (!best || cached.heute.date > best.date)) best = cached.heute;
+  setDay(best); MORGEN = (cached && cached.morgen) || emb.morgen || null;
+  showDay(); keepAwake();
+  setInterval(tick, 1000);
+  try {
+    const h = await getJson("daten/heute.json");
+    let m = null; try { m = await getJson("daten/morgen.json"); } catch(e){}
+    if (h && h.items && (!DAY.date || h.date >= DAY.date)){
+      setDay(h); MORGEN = m;
+      store.set("pult-last", {heute:h, morgen:m});
+      showDay();
+    }
+  } catch(e){ /* offline oder in Claude: eingebettete bzw. letzte Daten bleiben */ }
+}
+init();
 </script>
 </body></html>

@@ -1,0 +1,430 @@
+<title>Pult</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<style>
+/* Layout: eine Hand, ein Blick. Oben die Uhr, Mitte die laufende Phase riesig, unten vier Daumentasten. Dunkel, ruhig, ein Blau. */
+:root{
+  --bg:#0b0c10; --surface:#15171d; --line:#262a33; --fg:#eceef3; --muted:#8b91a0;
+  --accent:#0028ff; --accent-text:#8296ff; --warn:#e2b04a; --ok:#6fcf97;
+  --f:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:18px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 120px;max-width:640px;margin:0 auto}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 10px;border-bottom:1px solid var(--line)}
+.date{color:var(--muted);font-size:15px;letter-spacing:.04em;text-transform:uppercase}
+.clock{font-variant-numeric:tabular-nums;font-weight:700;font-size:22px;font-stretch:80%}
+.sim{color:var(--warn);font-size:13px;margin-left:6px}
+.eyebrow{color:var(--muted);font-size:15px;letter-spacing:.05em;text-transform:uppercase;margin:18px 0 6px}
+.form{color:var(--accent-text);font-weight:800;font-stretch:75%;font-size:clamp(34px,10vw,52px);line-height:1;text-wrap:balance}
+.ptitle{font-size:24px;font-weight:600;margin-top:6px;text-wrap:balance}
+.count{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:14px;min-width:0}
+.count b{font-size:clamp(72px,26vw,140px);font-weight:800;font-stretch:62%;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.count span{color:var(--muted);font-size:18px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0}
+.regie{font-size:21px;line-height:1.45;margin-top:18px}
+.next{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:17px}
+.next strong{color:var(--fg);font-weight:600}
+.ctrl{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{flex:1 1 30%;min-height:58px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:18px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible,.nav button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+.status{margin-top:10px;font-size:15px;color:var(--warn);min-height:1.2em}
+.hint{margin-top:16px;font-size:15px;color:var(--muted);border-left:2px solid var(--accent);padding-left:10px}
+h2{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:26px 0 10px}
+.item{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.item time{font-variant-numeric:tabular-nums;font-weight:700;font-stretch:80%}
+.item .t{font-weight:600}
+.item .s{color:var(--muted);font-size:15px}
+.item.past{opacity:.45}
+.item.now time,.item.now .t{color:var(--accent-text)}
+.phases{grid-column:1/-1;margin:6px 0 0;padding:0;list-style:none}
+.phases li{display:grid;grid-template-columns:92px 1fr;gap:12px;font-size:16px;padding:4px 0;color:var(--muted)}
+.phases li.cur{color:var(--fg);font-weight:600}
+.phases li span{font-variant-numeric:tabular-nums}
+.list{margin:0;padding-left:20px}
+.list li{margin:6px 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 16px;font-weight:600;font-size:16px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:10px}
+.card p{margin:4px 0}
+.work{font-weight:600}
+.work em{font-style:italic}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-top:10px}
+summary{font-weight:600;cursor:pointer;min-height:32px}
+details p{color:var(--muted);margin:8px 0 2px}
+label{display:block;font-size:15px;color:var(--muted);margin:16px 0 6px}
+textarea{width:100%;box-sizing:border-box;min-height:120px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:12px;font:inherit;font-size:18px}
+textarea:focus{outline:2px solid var(--accent-text)}
+.seg{display:flex;gap:8px}
+.seg .chip{flex:1;text-align:center}
+.saved{color:var(--ok);font-size:14px;min-height:1.2em;margin-top:6px}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:6px}
+.nav button{min-height:60px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:17px;color:var(--muted)}
+.nav button[aria-current="page"]{background:var(--surface);color:var(--fg)}
+.small{font-size:14px;color:var(--muted)}
+input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+.pill{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--line);color:var(--muted);margin-left:6px;vertical-align:2px}
+.pill.warn{background:rgba(226,176,74,.15);color:var(--warn)}
+.ki{margin-top:30px;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="date" id="date"></div>
+    <div><span class="clock" id="clock">--.--</span><span class="sim" id="simTag" hidden>Test</span></div>
+  </header>
+  <main id="view"></main>
+  <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
+</div>
+
+<nav class="nav" aria-label="Ansichten">
+  <button data-v="jetzt">Jetzt</button>
+  <button data-v="tag">Tag</button>
+  <button data-v="spick">Spick</button>
+  <button data-v="notiz">Notiz</button>
+</nav>
+
+<script>
+/* ===== Tagesdaten (später vom Morgenlauf befüllt) ===== */
+const EMBED = /*EMBED*/{"heute": {"date": "2026-10-28", "label": "Mittwoch, 28.10.", "drucken": ["5: Arbeitsblatt 01 Dreieck und Skizzen, A4 beidseitig, Klassensatz", "5: Handout 06 Kriterien und Rückmeldung, A4, Klassensatz", "5: Karton A6 hoch zuschneiden, Klassensatz plus Reserve", "9a: Handout Figur 4 Komposition 01, A4, 13 Stück; A3-Papier, mindestens 13 Bogen", "12: Konzeptblatt 01, Merkblatt Bewertung 02, Arbeitsblatt 03 Drei Werke, je A4, Klassensatz; Anhang 2 als Reserve"], "bewertung": [{"k": "6a", "t": "Weihnachtskarte (Einheit endet heute)"}, {"k": "5", "t": "Weihnachtskarte (einzige Doppelstunde)"}, {"k": "9a", "t": "Figur 4 von 4 (Einheit endet heute)"}], "bewertungHinweis": "Die Karten der 6a und 5 gehen an die Schulleitung: vorher bewerten oder fotografieren.", "items": [{"type": "lesson", "id": "6a", "klasse": "6a", "titel": "Weihnachtskarte 2 von 2", "start": "8:00", "end": "9:30", "ziel": "Die Karte wird fertig, mit klarer Grundform und einer Hauptsache, die man sofort findet.", "mitnehmen": ["Handout 05 und 06", "Aquarell, Acryl, Pinsel, Wasserbecher", "Restpapier für Farbproben", "Skizzen vom 14.10.", "Dokumentenkamera prüfen"], "phases": [["8:00", 5, "Partnerarbeit", "Horsley raten", "Kapiteltitel, dann die erste Weihnachtskarte (Horsley 1843): „Diese Karte war ein Skandal. Was hat die Leute aufgeregt?“ Zu zweit raten. Dabei Skizzen vom 14.10. austeilen."], ["8:05", 5, "Hinschauen und mitdenken", "Auflösung, Kriterien, Abstimmung", "Auflösung: Kinder trinken Wein, Alkoholgegner empört. Ablauf mit Ziel, fünf Kriterien, Abstimmung per Handzeichen (eine Minute reicht). Handouts 05 und 06 austeilen."], ["8:10", 10, "Partnerarbeit", "Skizze wählen", "Arbeitsauftrag 4: Partner zeigt auf die stärkste Skizze, eigene Wahl ankreuzen, Satz und Farbplan (höchstens fünf Farben) auf Handout 05."], ["8:20", 20, "Einzelarbeit", "Karte beginnen", "Arbeitsauftrag 5: erst Grundform, dann Figuren, mit den hellsten Flächen anfangen. Name gleich hinten drauf."], ["8:40", 5, "Gemeinsam besprechen", "Zwischenhalt", "Dokumentenkamera: zwei bis drei Karten, Leitfragen von der Folie. Über das Bild, nicht über die Person; niemand muss zeigen."], ["8:45", 25, "Einzelarbeit", "Weitermalen", "Arbeitsauftrag 6: Hauptsache hervorheben, Details zuletzt. Darin 10 Min. Puffer.", 10], ["9:10", 5, "Partnerarbeit", "Stern und Wunsch", "Handout 06 Teil 2."], ["9:15", 10, "Einzelarbeit", "Fertigstellen", "Arbeitsauftrag 7: Selbstcheck mit den fünf Kriterien. Abgabe 9.25."], ["9:25", 5, "Gemeinsam besprechen", "Rundgang", "Kurzer Museumsrundgang, Schlusssatz, Karten ins Fach der Klasse. Danach 9.30 Aufsicht Halle."]], "werke": [{"w": "John Callcott Horsley, <em>Weihnachtskarte<\/em> (für Henry Cole), 1843", "f": ["Gilt als erste kommerzielle Weihnachtskarte.", "Auftrag von Henry Cole, gedruckt und handkoloriert.", "Empörung: Kinder trinken am Familientisch Wein, Kritik aus der Abstinenzbewegung."]}], "fragen": [{"q": "Diese Karte war ein Skandal. Was hat die Leute aufgeregt?", "a": "Kinder trinken Wein mit am Tisch; Alkoholgegner waren empört."}], "hilfen": {"schnell": "Innenseite mit Gruß oder zweite Komposition auf einem kleinen Blatt.", "haengt": "Wer keine Skizze gewählt hat, nimmt die, auf die der Partner gezeigt hat."}, "planB": {"technik": "PDF 06_Screen_Weihnachtskarte_2_von_2 aus dem Schultagsordner im Vollbild.", "unruhe": "Zwischenhalt auf zwei Karten kürzen, den Rundgang nicht streichen.", "frueh": "Innenseite gestalten oder zweite Komposition."}}, {"type": "other", "start": "9:30", "end": "9:45", "titel": "Aufsicht Halle"}, {"type": "other", "start": "9:45", "end": "10:30", "titel": "Präsenzstunde"}, {"type": "other", "start": "10:15", "end": "11:15", "titel": "Drucken und Bereitlegen", "sub": "Druckliste unter „Tag“"}, {"type": "lesson", "id": "5", "klasse": "5", "titel": "Weihnachtskarte", "start": "11:30", "end": "13:00", "ziel": "Die Karte als Dreieck gebaut, so dass man Mutter und Kind sofort findet.", "mitnehmen": ["Arbeitsblatt 01 und Handout 06", "Karton A6 hoch", "Farbmaterial, Pinsel, Wasser", "Dokumentenkamera"], "phases": [["11:30", 5, "Partnerarbeit", "Horsley raten", "Zu zweit raten, was die Leute 1843 aufgeregt hat. Dabei Arbeitsblatt und Handout 06 austeilen."], ["11:35", 10, "Hinschauen und mitdenken", "Auflösung, Costa, Schema, Kriterien", "Auflösung Horsley. Costa: nur drei Figuren, Symmetrie und Fenster; zu zweit 30 Sekunden mit dem Finger das Dreieck zeigen. Schema, Kriterien mit Abstimmung. Um 11.45 hart stoppen."], ["11:45", 5, "Partnerarbeit", "Findet das Dreieck", "Arbeitsauftrag 1: im Nolde die drei wichtigsten Figuren suchen, Köpfe auf Arbeitsblatt Teil 1 zum Dreieck verbinden, mit dem Nachbarpaar vergleichen. Auflösung höchstens eine Minute."], ["11:50", 35, "Einzelarbeit", "Mini-Skizzen und Karte", "Arbeitsauftrag 2: zwei Mini-Skizzen, je höchstens 3 Min. (laut takten), eine wählen, dünn auf die Karte, große Flächen hell nach dunkel, höchstens fünf Farben. Darin 10 Min. Puffer.", 10], ["12:25", 5, "Gemeinsam besprechen", "Zwischenhalt", "Dokumentenkamera: zwei Karten, Leitfragen von der Folie, Regeln gelten."], ["12:30", 5, "Partnerarbeit", "Stern und Wunsch", "Handout 06 Teil 2."], ["12:35", 15, "Einzelarbeit", "Fertigstellen", "Arbeitsauftrag 3: Selbstcheck mit den fünf Kriterien, Name hinten drauf. Abgabe 12.50."], ["12:50", 10, "Gemeinsam besprechen", "Rundgang, aufräumen", "Museumsrundgang, Schlusssatz „Meine Karte ist als Dreieck gebaut. Das Wichtigste ist ..., weil ...“, Daumen hoch, aufräumen."]], "werke": [{"w": "John Callcott Horsley, <em>Weihnachtskarte<\/em> (für Henry Cole), 1843", "f": ["Gilt als erste kommerzielle Weihnachtskarte.", "Empörung: Kinder trinken am Familientisch Wein."]}], "fragen": [{"q": "Was hat die Leute 1843 an dieser Karte aufgeregt?", "a": "Kinder trinken Wein mit am Tisch."}, {"q": "Wo ist das Dreieck?", "a": "Die drei Köpfe der wichtigsten Figuren, Mutter und Kind an der Spitze oder in der Mitte."}], "hilfen": {"schnell": "Licht von einem Punkt, dann Stall, Tiere, Hirten.", "haengt": "Details weglassen, nur die drei Figuren fertig malen."}, "planB": {"technik": "PDF 05_Screen_Weihnachtskarte_Geburt_Christi aus dem Schultagsordner im Vollbild.", "unruhe": "Input um 11.45 abbrechen, sofort malen lassen.", "frueh": "Licht und Hintergrund ausbauen, Innenseite mit Gruß."}}, {"type": "lesson", "id": "9a", "klasse": "9a", "titel": "Figur 4 von 4", "start": "13:15", "end": "14:45", "ziel": "Eine Szene mit mindestens drei Figuren, die ohne Worte erzählt.", "mitnehmen": ["Handout Figur 4 (13 Stück)", "A3-Papier", "Skizzen vom 14.10.", "Bleistifte, Lineale, Farbstifte"], "phases": [["13:15", 5, "Hinschauen und mitdenken", "Steht der oder fällt der?", "Moebius groß zeigen, erst schweigen lassen. Abstimmung per Handzeichen, dann alle aufstehen und die Haltung zehn Sekunden halten. Auflösung: das Lot. Polyklet und Bruegel je 15 Sekunden: Wo fängt das Fallen an? Ablauf laut vorlesen, Skizzen und Handout austeilen."], ["13:20", 20, "Einzelarbeit mit Modellen", "Runde 2: Posen in Bewegung", "Vier Posen zu je 5 Min. (bücken, tragen, ziehen, schieben, werfen). Zeit laut ansagen. Freiwillig und bekleidet; kommentiert wird nur die Zeichnung."], ["13:40", 5, "Partnerarbeit", "Lot-Probe", "Blätter tauschen, Lineal vom Schwerpunkt senkrecht nach unten, S oder F. Zwei Blätter für die Kamera merken und fragen, ob das ok ist."], ["13:45", 10, "Hinschauen und mitdenken", "So baut man eine Szene", "Die zwei Blätter unter die Kamera. Tafel: drei Figuren, zwei Thumbnails, Überschneidung, Größenstaffelung. Hokusai, Caravaggio, Géricault, Rubens je 20 bis 30 Sek. mit Daumen-Abstimmung."], ["13:55", 30, "Einzelarbeit", "Drei Figuren auf A3", "Thumbnails wirklich zuerst einfordern. Kriterien kurz zeigen, während die Arbeit läuft."], ["14:25", 5, "Partnerarbeit", "Tipp zu zweit", "Handout Abschnitt 4. Bridgman: das Lot als senkrechte Linie mit Gewicht."], ["14:30", 10, "Einzelarbeit", "Tipp umsetzen", "Überschneidungen und Hell-Dunkel verstärken. Darin der Puffer. Abgabe 14.40.", 5], ["14:40", 5, "Gemeinsam besprechen", "Galerie", "Welche Szene erzählt ohne Worte am meisten? Lieber zwei Blätter genau als alle kurz. Abgabe mit Namen."]], "werke": [{"w": "Moebius, <em>40 Days dans le désert B<\/em>, 1999", "f": ["Wortloses Zeichnungsbuch voller kippender, schwebender Figuren."]}, {"w": "Polyklet, <em>Doryphoros<\/em>, um 440 v. Chr.", "f": ["Römische Marmorkopie, Neapel, Museo Archeologico Nazionale.", "Musterbeispiel für Kontrapost: Stand- und Spielbein, das Lot fällt ins Standbein."]}, {"w": "Pieter Bruegel d. Ä., <em>Der Blindensturz<\/em>, 1568", "f": ["Neapel, Museo di Capodimonte.", "Sechs Blinde, von links nach rechts immer weiter aus dem Lot bis zum Sturz."]}, {"w": "Caravaggio, <em>Kreuzigung des Petrus<\/em>, 1601", "f": ["Rom, Santa Maria del Popolo.", "Drei Helfer stemmen das Kreuz: Diagonale, Arbeit, Gewicht."]}, {"w": "Théodore Géricault, <em>Das Floß der Medusa<\/em>, 1818/19", "f": ["Paris, Louvre.", "Figurenpyramide von den Toten unten bis zum winkenden Mann oben."]}, {"w": "Peter Paul Rubens, <em>Die Kreuzaufrichtung<\/em>, 1610/11", "f": ["Antwerpen, Liebfrauenkathedrale.", "Viele Körper in einer gemeinsamen Diagonale, Kraft wird sichtbar."]}], "fragen": [{"q": "Steht sie, oder fällt sie?", "a": "Entscheidend ist das Lot vom Schwerpunkt: liegt es außerhalb der Standfläche, fällt die Figur."}, {"q": "Wo fängt das Fallen an?", "a": "Dort, wo das Lot die Standfläche verlässt."}, {"q": "Welche Szene erzählt ohne Worte am meisten?", "a": "Klare Handlung, Überschneidung, Größenstaffelung, eine Hauptfigur."}], "hilfen": {"schnell": "Zweite Szene als Thumbnail mit einer anderen Handlung.", "haengt": "Zwei Figuren, die an einem Seil ziehen, gehen immer."}, "planB": {"technik": "PDF 09_Screen_Figur_4_Komposition aus dem Schultagsordner im Vollbild.", "unruhe": "Modellrunde auf drei Posen kürzen, direkt in die Lot-Probe.", "frueh": "Zweite Szene als Thumbnail, andere Handlung."}}, {"type": "lesson", "id": "12", "klasse": "12", "titel": "Eigenes Objekt 1 von 3", "start": "15:00", "end": "16:30", "ziel": "Ein schlüssiges Konzept für das eigene Objekt.", "mitnehmen": ["Konzeptblatt, Merkblatt Bewertung, Arbeitsblatt 03", "Anhang 2 als Reserve", "Wäscheklammer-Blätter vom 14.10.", "Zettel für die Schätzung"], "mb": "Deine Oberstufenstunde: Stundenziel auf der Ablauffolie, Methodenwechsel, Kriterien in Punkten offengelegt, Sicherung im Plenum.", "phases": [["15:00", 5, "Plenum", "Wie hoch ist diese Wäscheklammer?", "Alle schätzen in Metern auf einem Zettel und halten gleichzeitig hoch. Kleine Pause, dann Auflösung: 13,7 Meter. „Oldenburg ändert nur eines: die Größe.“ Ablauf mit Ziel."], ["15:05", 20, "Einzelarbeit", "Funktionsstudien abschließen", "Phasenzeichnungen vom 14.10. fertig, wer fertig ist: Explosionszeichnung. Abgabe 15.25. Darin etwa 10 Min. Puffer.", 10], ["15:25", 10, "Partnerarbeit", "Drei Werke, drei Strategien", "Oppenheim, Man Ray, Sisson mit Anhang 2 einer Strategie zuordnen, Stichwort auf Arbeitsblatt 03."], ["15:35", 10, "Plenum", "Systematik, Termine, Kriterien", "Transformation, De- und Rekontextualisierung; Zuordnungen abfragen. Praktische Leistung 2: bis 11.11. Konzept und Material, 11.11. Umsetzung, 13.01.2027 Präsentation. 30 Punkte, je 10 für Prozess, Konzept, Umsetzung. Konzeptblatt und Merkblatt austeilen."], ["15:45", 20, "Einzelarbeit", "Konzeptblatt", "Gegenstand wählen, Strategie festlegen und begründen, zwei bis drei Skizzen, Material, Maße, Technik. Wer nach 5 Min. keinen Gegenstand hat: Wäscheklammer als Notlösung."], ["16:05", 10, "Partnerarbeit", "Konzept zu zweit prüfen", "Vorstellen ohne die Strategie zu nennen, Gegenüber benennt sie, nennt eine Stärke und stellt eine Frage. Rollen tauschen."], ["16:15", 10, "Plenum", "Zwei Konzepte, Ausblick", "Zwei Freiwillige. Schlusssatz „Ein Alltagsgegenstand wird zum Kunstobjekt, wenn ...“. Frist 11.11. laut, ins Hausaufgabenheft; Arbeitsfenster 29. und 30.10., 9. und 10.11."], ["16:25", 5, "Aufräumen", "Aufräumen", "Blätter mit Namen abgeben, Tische frei."]], "werke": [{"w": "Claes Oldenburg, <em>Clothespin<\/em>, 1976", "f": ["Cortenstahl, 13,7 m hoch (45 Fuß).", "Philadelphia, Centre Square.", "Einzige Veränderung gegenüber dem Original: die Größe."]}, {"w": "Meret Oppenheim, <em>Frühstück im Pelz<\/em>, 1936", "f": ["New York, Museum of Modern Art.", "Tasse, Untertasse und Löffel mit Pelz bezogen: Material verfremdet."]}, {"w": "Man Ray, <em>Cadeau<\/em>, 1921", "f": ["Bügeleisen mit einer Reihe Nägel auf der Sohle: Funktion ins Gegenteil verkehrt."]}], "fragen": [{"q": "Wie hoch ist diese Wäscheklammer?", "a": "13,7 Meter."}, {"q": "Welche Strategie steckt in Oppenheims Tasse?", "a": "Materialverfremdung (Transformation)."}, {"q": "Ein Alltagsgegenstand wird zum Kunstobjekt, wenn ...", "a": "... er verfremdet, aus dem Kontext gelöst oder neu kontextualisiert wird und dadurch Fragen stellt."}], "hilfen": {"schnell": "Zweites Konzept mit einer anderen Strategie skizzieren.", "haengt": "Wäscheklammer als Gegenstand nehmen, eine Strategie aus Anhang 2 wählen."}, "planB": {"technik": "PDF 12_Screen_Eigenes_Objekt_01 aus dem Schultagsordner im Vollbild.", "unruhe": "Partnerprüfung schriftlich: Frage aufs Konzeptblatt des anderen.", "frueh": "Zweites Konzept mit anderer Strategie, Materialliste für den 11.11."}}, {"type": "other", "start": "18:00", "end": "19:00", "titel": "Vorbereitung Klassenstunde 6a", "sub": "Medaillen, Würdigungen, Terminliste"}]}, "morgen": null}/*EMBED_END*/;
+
+/* ===== Hilfsfunktionen ===== */
+const $ = s => document.querySelector(s);
+const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
+const fmt = m => { m = Math.round(m); const h = Math.floor(m/60), mm = m%60; return h + "." + String(mm).padStart(2,"0"); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+};
+const todayIso = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+let DAY = null, MORGEN = null, KEY = "", state = {adj:{}, notes:{}, sim:null}, lessons = [];
+function setDay(d){
+  DAY = d && d.items ? d : {date:"", label:"", items:[], drucken:[], bewertung:[], bewertungHinweis:""};
+  DAY.drucken = DAY.drucken || []; DAY.bewertung = DAY.bewertung || []; DAY.bewertungHinweis = DAY.bewertungHinweis || "";
+  KEY = "pult-" + DAY.date;
+  state = store.get(KEY, {adj:{}, notes:{}, sim:null});
+  state.adj = state.adj || {}; state.notes = state.notes || {};
+  lessons = DAY.items.filter(i => i.type === "lesson");
+}
+const fresh = () => DAY && DAY.date === todayIso();
+/* nur <em> aus den Daten zulassen */
+const rich = s => esc(s).replace(/&lt;(\/?)em&gt;/g, "<$1em>");
+const save = () => store.set(KEY, state);
+
+function nowSec(){
+  const d = new Date();
+  let s = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
+  if (state.sim != null) s += state.sim;
+  return s;
+}
+
+
+/* Phasen mit Verzug neu berechnen: die aktuelle Phase wird länger oder kürzer,
+   der Ausgleich kommt aus der nächsten Phase mit Puffer, sonst aus der längsten späteren Phase. */
+function plan(lesson){
+  const base = lesson.phases.map(p => ({t:p[0], d:p[1], form:p[2], titel:p[3], regie:p[4], puffer:p[5]||0}));
+  const durs = base.map(p => p.d);
+  const notes = [];
+  for (const a of (state.adj[lesson.id] || [])){
+    durs[a.at] = Math.max(0, durs[a.at] + a.delta);
+    let target = -1;
+    for (let j = a.at+1; j < base.length; j++) if (base[j].puffer > 0){ target = j; break; }
+    if (target < 0){
+      let best = 0;
+      for (let j = a.at+1; j < base.length; j++) if (durs[j] > best){ best = durs[j]; target = j; }
+    }
+    if (target >= 0) durs[target] = Math.max(5, durs[target] - a.delta);
+    notes.push({a, target});
+  }
+  let t = toMin(base[0].t);
+  const out = base.map((p,i) => { const o = {...p, s:t, d:durs[i]}; t += durs[i]; return o; });
+  return {phases:out, end:t, planEnd:toMin(lesson.end), notes};
+}
+
+function locate(sec){
+  const min = sec/60;
+  for (const l of lessons){
+    const p = plan(l);
+    const s = toMin(l.start);
+    if (min >= s && min < Math.max(p.end, toMin(l.end))){
+      let idx = p.phases.length-1;
+      for (let i = 0; i < p.phases.length; i++){ if (min < p.phases[i].s + p.phases[i].d){ idx = i; break; } }
+      return {lesson:l, plan:p, idx};
+    }
+  }
+  return null;
+}
+function nextLesson(sec){ return lessons.find(l => toMin(l.start)*60 > sec) || null; }
+
+/* ===== Bildschirm wach halten ===== */
+let wake = null;
+async function keepAwake(){
+  try { if ("wakeLock" in navigator && document.visibilityState === "visible") wake = await navigator.wakeLock.request("screen"); } catch(e){ wake = null; }
+}
+document.addEventListener("visibilitychange", keepAwake);
+
+/* ===== Ansichten ===== */
+let view = "jetzt";
+let selected = null;
+let lastKey = null;
+
+function renderJetzt(){
+  if (!fresh()) return `
+    <div class="eyebrow">Heute</div>
+    <div class="form">Noch keine Daten</div>
+    <div class="regie">${DAY.label ? "Letzter Stand: " + esc(DAY.label) + " Der Morgenlauf bringt die Stunden von heute." : "Der Morgenlauf bringt die Stunden von heute."}</div>
+    <div class="next">Unter „Tag“ siehst du den letzten Stand.</div>`;
+  const sec = nowSec(), loc = locate(sec);
+  if (loc){
+    const {lesson, plan:p, idx} = loc;
+    const ph = p.phases[idx];
+    const endSec = (ph.s + ph.d)*60;
+    const left = Math.max(0, endSec - sec);
+    const prog = Math.min(1, 1 - left/(ph.d*60));
+    const nx = p.phases[idx+1];
+    const verzug = p.end - p.planEnd;
+    const adjs = state.adj[lesson.id] || [];
+    let status = "";
+    if (adjs.length){
+      const last = p.notes[p.notes.length-1];
+      const tgt = last && last.target >= 0 ? p.phases[last.target].titel : null;
+      status = (verzug > 0 ? "Stunde endet " + verzug + " Min. später. " : "") + (tgt ? "Ausgleich in: " + tgt + "." : "");
+    }
+    return `
+      <div class="eyebrow">${esc(lesson.klasse)} · ${esc(lesson.titel)} · ${fmt(toMin(lesson.start))} bis ${fmt(toMin(lesson.end))}</div>
+      <div class="form">${esc(ph.form)}</div>
+      <div class="ptitle">${esc(ph.titel)}</div>
+      <div class="count"><b id="cd">${String(Math.floor(left/60)).padStart(2,"0")}:${String(left%60).padStart(2,"0")}</b><span>bis ${fmt(ph.s+ph.d)}</span></div>
+      <div class="bar"><i id="pg" style="width:${(prog*100).toFixed(1)}%"></i></div>
+      <div class="regie">${esc(ph.regie)}</div>
+      ${nx ? `<div class="next">Danach <strong>${fmt(nx.s)} ${esc(nx.form)}</strong>, ${nx.d} Min.: ${esc(nx.titel)}</div>` : `<div class="next">Letzte Phase. Danach: Kurzcheck unter „Notiz“.</div>`}
+      <div class="ctrl">
+        <button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>
+        ${nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : ""}
+        ${adjs.length ? `<button class="btn" data-act="undo" data-id="${lesson.id}">Zurück</button>` : ""}
+      </div>
+      <div class="status">${esc(status)}</div>
+      ${lesson.mb ? `<div class="hint">${esc(lesson.mb)}</div>` : ""}`;
+  }
+  const nl = nextLesson(sec);
+  if (nl){
+    const inMin = Math.round(toMin(nl.start) - sec/60);
+    const first = nl.phases[0];
+    return `
+      <div class="eyebrow">Als Nächstes in ${inMin} Min.</div>
+      <div class="form">${esc(nl.klasse)}</div>
+      <div class="ptitle">${esc(nl.titel)}, ${fmt(toMin(nl.start))} bis ${fmt(toMin(nl.end))}</div>
+      <div class="regie">${esc(nl.ziel)}</div>
+      <div class="next">Start <strong>${fmt(toMin(first[0]))} ${esc(first[2])}</strong>, ${first[1]} Min.: ${esc(first[3])}</div>
+      <h2>Mitnehmen</h2>
+      <ul class="list">${nl.mitnehmen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>
+      ${nl.mb ? `<div class="hint">${esc(nl.mb)}</div>` : ""}`;
+  }
+  return `
+    <div class="eyebrow">Unterricht vorbei</div>
+    <div class="form">Feierabend für die Klassen</div>
+    <h2>Bewertung offen</h2>
+    <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
+    <p class="small">${esc(DAY.bewertungHinweis)}</p>
+    <div class="next">Kurzcheck je Stunde unter „Notiz“.</div>`;
+}
+
+function renderTag(){
+  const sec = nowSec(), min = sec/60, loc = locate(sec);
+  const morgen = selected === "__morgen";
+  const seg = `<div class="chips seg"><button class="chip" data-day="heute" aria-pressed="${!morgen}">Heute</button><button class="chip" data-day="morgen" aria-pressed="${morgen}">Morgen</button></div>`;
+  if (morgen){
+    if (!MORGEN || !MORGEN.items || !MORGEN.items.length) return seg + `<div class="card"><p><strong>Morgen</strong></p><p class="small">Noch keine Daten. Kommt mit dem Morgenlauf.</p></div>`;
+    return seg + `<div class="eyebrow">${esc(MORGEN.label)}</div>` + MORGEN.items.map(it => `
+      <div class="item"><time>${fmt(toMin(it.start))}</time><div><div class="t">${it.type==="lesson" ? esc(it.klasse)+" · " : ""}${esc(it.titel)}</div>${it.ziel ? `<div class="s">${esc(it.ziel)}</div>` : ""}${it.mitnehmen ? `<div class="s">Mitnehmen: ${it.mitnehmen.map(esc).join(", ")}</div>` : ""}</div></div>`).join("")
+      + (MORGEN.drucken && MORGEN.drucken.length ? `<h2>Für morgen drucken</h2><ul class="list">${MORGEN.drucken.map(d => `<li>${esc(d)}</li>`).join("")}</ul>` : "");
+  }
+  const rows = DAY.items.map(it => {
+    const s = toMin(it.start), e = toMin(it.end);
+    const cls = e <= min ? "past" : (s <= min && min < e ? "now" : "");
+    let extra = "";
+    if (it.type === "lesson"){
+      const p = plan(it);
+      const cur = loc && loc.lesson.id === it.id ? loc.idx : -1;
+      extra = `<ul class="phases">${p.phases.map((ph,i) => `<li class="${i===cur?"cur":""}"><span>${fmt(ph.s)}</span><div>${esc(ph.form)}, ${ph.d} Min.</div></li>`).join("")}</ul>`;
+    }
+    return `<div class="item ${cls}"><time>${fmt(s)}</time><div><div class="t">${it.type==="lesson" ? esc(it.klasse)+" · " : ""}${esc(it.titel)}</div>${it.sub ? `<div class="s">${esc(it.sub)}</div>` : ""}${it.type==="lesson" ? `<div class="s">bis ${fmt(e)}</div>` : ""}</div>${extra}</div>`;
+  }).join("");
+  return seg + `
+    <h2>Ablauf</h2>${rows}
+    <h2>Noch zu drucken</h2>
+    <ul class="list">${DAY.drucken.map(d => `<li>${esc(d)}</li>`).join("")}</ul>
+    <h2>Bewertung offen</h2>
+    <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
+    <p class="small">${esc(DAY.bewertungHinweis)}</p>
+    <h2>Uhrzeit testen</h2>
+    <p class="small">Zum Ausprobieren eine andere Uhrzeit einstellen.</p>
+    <div class="ctrl"><input type="time" id="simTime" aria-label="Testuhrzeit"><button class="btn" data-act="simreset">Echte Zeit</button></div>`;
+}
+
+function lessonChips(){
+  return `<div class="chips">${lessons.map(l => `<button class="chip" data-sel="${l.id}" aria-pressed="${l.id===selected}">${esc(l.klasse)}</button>`).join("")}</div>`;
+}
+function defaultSel(){
+  if (!lessons.length) return null;
+  const sec = nowSec(), loc = locate(sec);
+  return loc ? loc.lesson.id : (nextLesson(sec) || lessons[lessons.length-1]).id;
+}
+const noLessons = () => `<div class="eyebrow">Heute</div><div class="regie">Keine Stunden in den Daten.</div>`;
+
+function renderSpick(){
+  if (!lessons.find(l => l.id === selected)) selected = defaultSel();
+  if (!lessons.length) return noLessons();
+  const l = lessons.find(x => x.id === selected);
+  return lessonChips() + `
+    <div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div>
+    <div class="regie">${esc(l.ziel)}</div>
+    <h2>Werke</h2>
+    ${l.werke.map(w => `<div class="card"><p class="work">${rich(w.w)}</p>${w.f.map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}
+    <h2>Impulsfragen</h2>
+    ${l.fragen.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}
+    <h2>Hilfen in Arbeitsphasen</h2>
+    <div class="card"><p><strong>Früher fertig?</strong></p><p class="small">${esc(l.hilfen.schnell)}</p></div>
+    <div class="card"><p><strong>Hängt jemand?</strong></p><p class="small">${esc(l.hilfen.haengt)}</p></div>
+    <h2>Plan B <span class="pill warn">Vorschlag</span></h2>
+    <div class="card"><p><strong>Technik fällt aus</strong></p><p class="small">${esc(l.planB.technik)}</p></div>
+    <div class="card"><p><strong>Klasse unruhig</strong></p><p class="small">${esc(l.planB.unruhe)}</p></div>
+    <div class="card"><p><strong>Zu früh fertig</strong></p><p class="small">${esc(l.planB.frueh)}</p></div>
+    ${l.mb ? `<div class="hint">${esc(l.mb)}</div>` : ""}`;
+}
+
+function renderNotiz(){
+  if (!lessons.find(l => l.id === selected)) selected = defaultSel();
+  if (!lessons.length) return noLessons();
+  const l = lessons.find(x => x.id === selected);
+  const n = state.notes[l.id] || {text:"", zeit:"", ziel:"", aendern:""};
+  const seg = (name, opts) => `<div class="seg">${opts.map(o => `<button class="chip" data-check="${name}" data-val="${o}" aria-pressed="${n[name]===o}">${o}</button>`).join("")}</div>`;
+  return lessonChips() + `
+    <div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div>
+    <label for="nText">Notiz während der Stunde</label>
+    <textarea id="nText" data-field="text" placeholder="z. B. zwei fehlen, Pinsel knapp, Zwischenhalt hat gut funktioniert">${esc(n.text)}</textarea>
+    <h2>Kurzcheck nach der Stunde</h2>
+    <label>Zeit gehalten?</label>${seg("zeit", ["Ja","Knapp","Nein"])}
+    <label>Ziel erreicht?</label>${seg("ziel", ["Ja","Teilweise","Nein"])}
+    <label for="nAendern">Was ändern fürs Material?</label>
+    <textarea id="nAendern" data-field="aendern" placeholder="z. B. Input zu lang, Kriterien früher zeigen">${esc(n.aendern)}</textarea>
+    <div class="saved" id="saved"></div>
+    <p class="small">Gespeichert nur auf diesem Handy. Im Ausbau lese ich die Notizen im Morgenlauf mit. Bitte keine Noten eintragen.</p>`;
+}
+
+function render(){
+  const v = $("#view");
+  const map = {jetzt:renderJetzt, tag:renderTag, spick:renderSpick, notiz:renderNotiz};
+  const focusId = document.activeElement && document.activeElement.id;
+  v.innerHTML = map[view]();
+  document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
+  if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
+}
+
+/* ===== Uhr ===== */
+function tick(){
+  const sec = nowSec();
+  const h = Math.floor(sec/3600)%24, m = Math.floor(sec/60)%60;
+  $("#clock").textContent = h + "." + String(m).padStart(2,"0");
+  $("#simTag").hidden = state.sim == null;
+  const loc = locate(sec);
+  const key = loc ? loc.lesson.id + ":" + loc.idx : "none";
+  if (lastKey !== null && key !== lastKey && loc){
+    try { navigator.vibrate && navigator.vibrate([180, 80, 180]); } catch(e){}
+  }
+  const changed = key !== lastKey;
+  lastKey = key;
+  if (view === "jetzt"){
+    if (changed || !loc) render();
+    else {
+      const ph = loc.plan.phases[loc.idx];
+      const left = Math.max(0, (ph.s+ph.d)*60 - sec);
+      const cd = $("#cd"), pg = $("#pg");
+      if (cd) cd.textContent = String(Math.floor(left/60)).padStart(2,"0") + ":" + String(left%60).padStart(2,"0");
+      if (pg) pg.style.width = (Math.min(1, 1 - left/(ph.d*60))*100).toFixed(1) + "%";
+    }
+  } else if (changed && view === "tag") render();
+}
+
+/* ===== Bedienung ===== */
+document.addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.v){ view = b.dataset.v; if (view !== "tag" && selected === "__morgen") selected = null; render(); window.scrollTo(0,0); keepAwake(); return; }
+  if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
+  if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
+  const act = b.dataset.act;
+  if (act === "plus" || act === "weiter"){
+    const id = b.dataset.id, i = Number(b.dataset.i);
+    let delta = 5;
+    if (act === "weiter"){
+      const l = lessons.find(x => x.id === id), p = plan(l), ph = p.phases[i];
+      const ran = Math.max(0, nowSec()/60 - ph.s);
+      delta = ran - ph.d;
+    }
+    (state.adj[id] = state.adj[id] || []).push({at:i, delta});
+    save(); lastKey = null; render(); return;
+  }
+  if (act === "undo"){ const a = state.adj[b.dataset.id]; if (a) a.pop(); save(); lastKey = null; render(); return; }
+  if (act === "simreset"){ state.sim = null; save(); lastKey = null; render(); tick(); return; }
+  if (b.dataset.check){
+    const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
+    n[b.dataset.check] = n[b.dataset.check] === b.dataset.val ? "" : b.dataset.val;
+    const ok = save(); render(); const s = $("#saved"); if (s) s.textContent = ok ? "Gespeichert." : "Speichern nicht möglich (Browser blockiert).";
+  }
+});
+let saveTimer;
+document.addEventListener("input", e => {
+  const f = e.target.dataset && e.target.dataset.field;
+  if (f){
+    const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
+    n[f] = e.target.value;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { const ok = save(); const s = $("#saved"); if (s) s.textContent = ok ? "Gespeichert." : "Speichern nicht möglich (Browser blockiert)."; }, 400);
+  }
+  if (e.target.id === "simTime" && e.target.value){
+    const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
+    state.sim = toMin(e.target.value)*60 - real;
+    save(); lastKey = null; tick();
+  }
+});
+
+function showDay(){
+  $("#date").textContent = DAY.label || "Pult";
+  const st = $("#stand"); if (st) st.textContent = DAY.date ? "Stand der Daten: " + DAY.label : "";
+  lastKey = null; render(); tick();
+}
+async function getJson(path){
+  const r = await fetch(path, {cache:"no-cache"});
+  if (!r.ok) throw new Error(path + " " + r.status);
+  return r.json();
+}
+async function init(){
+  const emb = EMBED || {};
+  let cached = store.get("pult-last", null);
+  let best = emb.heute || null;
+  if (cached && cached.heute && (!best || cached.heute.date > best.date)) best = cached.heute;
+  setDay(best); MORGEN = (cached && cached.morgen) || emb.morgen || null;
+  showDay(); keepAwake();
+  setInterval(tick, 1000);
+  try {
+    const h = await getJson("daten/heute.json");
+    let m = null; try { m = await getJson("daten/morgen.json"); } catch(e){}
+    if (h && h.items && (!DAY.date || h.date >= DAY.date)){
+      setDay(h); MORGEN = m;
+      store.set("pult-last", {heute:h, morgen:m});
+      showDay();
+    }
+  } catch(e){ /* offline oder in Claude: eingebettete bzw. letzte Daten bleiben */ }
+}
+init();
+</script>

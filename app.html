@@ -72,6 +72,9 @@ textarea:focus{outline:2px solid var(--accent-text)}
 input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 .pill{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--line);color:var(--muted);margin-left:6px;vertical-align:2px}
 .pill.warn{background:rgba(226,176,74,.15);color:var(--warn)}
+.remote{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.remote .btn{min-height:64px}
+@media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
 .keys{display:none;font-size:13px;color:var(--muted);margin-top:8px}
 @media (max-height:520px){
@@ -345,7 +348,7 @@ function render(){
   const v = $("#view");
   const map = {jetzt:renderJetzt, tag:renderTag, spick:renderSpick, notiz:renderNotiz};
   const focusId = document.activeElement && document.activeElement.id;
-  v.innerHTML = map[view]();
+  v.innerHTML = map[view]() + (view === "jetzt" ? remoteHtml() : "");
   document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
   if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
 }
@@ -391,6 +394,7 @@ document.addEventListener("keydown", e => {
 document.addEventListener("click", e => {
   const b = e.target.closest("button");
   if (!b) return;
+  if (b.dataset.fern){ sendFern(b.dataset.fern); return; }
   if (b.dataset.v){ view = b.dataset.v; if (view !== "tag" && selected === "__morgen") selected = null; render(); window.scrollTo(0,0); keepAwake(); return; }
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
   if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
@@ -488,6 +492,24 @@ function applySync(m){
   pairLast = l.klasse + ", Folie " + m.page;
   lastKey = null; render(); tick();
 }
+/* Fernbedienung: Befehle an den Schul-PC (eigener Kanal, keine Inhalte) */
+let fernMsg = "";
+function remoteHtml(){
+  if (!pair.code) return "";
+  return `<h2>Schul-PC</h2><div class="remote">
+    <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
+    <button class="btn primary" data-fern="next" aria-label="Folie weiter">Folie ›</button>
+    <button class="btn" data-fern="black">Schwarz</button>
+    <button class="btn" data-fern="timer">Timer</button></div>
+    <div class="small" id="fernState">${esc(fernMsg)}</div>`;
+}
+function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textContent = t; }
+function sendFern(cmd){
+  try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
+  fetch(NTFY + "/atelier-pult-" + pair.code + "-fern", {method:"POST", body: JSON.stringify({v:1, cmd, at: Date.now()})})
+    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer"}[cmd] || cmd)); })
+    .catch(() => setFern("Nicht gesendet: kein Netz. Am PC mit Tasten weiter."));
+}
 function connectPair(){
   if (pairES){ try { pairES.close(); } catch(e){} pairES = null; }
   pairLive = false; showPairState();
@@ -502,6 +524,14 @@ function connectPair(){
   } catch(e){}
 }
 
+/* Koppeln per QR-Code: Link mit ?koppeln=<code> */
+(function(){
+  const k = new URLSearchParams(location.search).get("koppeln");
+  if (!k) return;
+  const v = k.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (v.length >= 6){ pair = {code: v}; store.set("pult-kopplung", pair); fernMsg = "Gekoppelt per QR-Code."; }
+  try { const u = new URL(location.href); u.searchParams.delete("koppeln"); history.replaceState(null, "", u.toString()); } catch(e){}
+})();
 init();
 connectPair();
 </script>

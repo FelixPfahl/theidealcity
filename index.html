@@ -59,7 +59,8 @@ h1{margin:0;font-size:clamp(44px,14vw,72px);font-weight:800;font-stretch:70%;let
 /* Neue Apps hier eintragen: Name, wofür, Link ohne Anmeldung, Link in Claude */
 const APPS = [
   {id:"pult", n:"Pult", d:"Im Unterricht: Phase, Restzeit, Spickzettel", web:"https://raw.githack.com/FelixPfahl/theidealcity/pult/index.html", claude:"https://claude.ai/artifact/PtrmwGZWHN8FpjA8t6w5cP"},
-  {id:"morgenrunde", n:"Morgenrunde", d:"Auf dem Schulweg: Quiz zum Tag", web:"https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html", claude:"https://claude.ai/artifact/ERAHwi2MdJkdHW2Unc5inF"}
+  {id:"morgenrunde", n:"Morgenrunde", d:"Auf dem Schulweg: Quiz zum Tag", web:"https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html", claude:"https://claude.ai/artifact/ERAHwi2MdJkdHW2Unc5inF"},
+  {id:"folien", n:"Folien", d:"Am PC: Präsentationen bauen, prüfen, vorführen", web:"https://raw.githack.com/FelixPfahl/theidealcity/folien/index.html"}
 ];
 /* Ersatz, falls heute.json nicht geladen werden kann */
 const FALLBACK = {"datum":"2026-10-28","label":"Mittwoch, 28.10.","termine":[
@@ -84,7 +85,7 @@ function renderApps(live){
         ${live && a.id==="pult" ? '<span class="badge">Läuft</span>' : ""}
         <div class="n">${esc(a.n)}</div><div class="d">${esc(a.d)}</div>
       </a>
-      ${IN_APP ? "" : `<a class="alt" href="${esc(a.claude)}" target="_blank" rel="noopener">${esc(a.n)} in Claude öffnen</a>`}
+      ${IN_APP || !a.claude ? "" : `<a class="alt" href="${esc(a.claude)}" target="_blank" rel="noopener">${esc(a.n)} in Claude öffnen</a>`}
     </div>`).join("");
 }
 

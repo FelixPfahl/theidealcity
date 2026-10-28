@@ -627,6 +627,15 @@ function boot(){ const claude=window.claude;
     db.doc("meta/profile").onSnapshot(d=>{ const v=d.exists?d.data():null; if(v&&(!S.profile||(v.rev||0)>(S.profile.rev||0))) S.profile=Object.assign(emptyProfile(),v); got.p=1; if(!S.ready) settle(); },onErr);
   }).catch(()=>{ S.failed="Der Speicher hat nicht geantwortet."; render(); });
   setInterval(()=>{ const t=todayStr(); if(t!==S.today){ S.today=t; if(S.view==="cover"){ S.date=pickDate(S.quizzes,t); render(); } } },60000); }
+/* Tastatur am PC: A bis D oder 1 bis 4 antworten, Enter oder Leertaste weiter */
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||e.repeat) return; const t=e.target; if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable)) return;
+  const k=e.key.toLowerCase(); const click=sel=>{ const el=document.querySelector(sel); if(el&&!el.disabled){ e.preventDefault(); el.click(); return true; } return false; };
+  const pos="abcd".indexOf(k)>=0? "abcd".indexOf(k) : "1234".indexOf(k);
+  if(S.view==="play"&&pos>=0){ const b=document.querySelectorAll(".opt")[pos]; if(b&&!b.disabled){ e.preventDefault(); b.click(); } return; }
+  if(S.view==="boss"&&pos>=0&&S.bossOpen){ click('.check[data-pt="'+pos+'"]'); return; }
+  if(k==="enter"||k===" "||k==="arrowright"){ if(t&&t.tagName==="BUTTON"&&k!=="arrowright") return; click("#next")||click("#bossReveal")||click("#bossDone")||(S.view==="cover"&&click("#start")); }
+});
 window.MR._state=S; window.MR._render=render;
 boot();
 })();

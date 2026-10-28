@@ -1,0 +1,41 @@
+<script>
+/* Webversion ohne Claude: Hefte kommen als JSON-Dateien von der Website, Spielstände bleiben im Browser dieses Handys. */
+(function(){
+  if (window.claude && typeof window.claude.use === "function") return;
+  var KEY = "morgenrunde-web-v1", QKEY = "morgenrunde-web-hefte-v1";
+  function load(k){ try { return JSON.parse(localStorage.getItem(k) || "{}"); } catch(e){ return {}; } }
+  function save(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+  var store = load(KEY), quizzes = load(QKEY), listeners = [];
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function all(){ var o = {}; Object.keys(quizzes).forEach(function(d){ o["quizzes/"+d] = quizzes[d]; }); Object.keys(store).forEach(function(p){ o[p] = store[p]; }); return o; }
+  function snapDoc(id, d){ return { id: id, exists: d !== undefined, data: function(){ return d === undefined ? undefined : clone(d); }, metadata: { fromCache: false, hasPendingWrites: false } }; }
+  function fire(){ listeners.forEach(function(l){ setTimeout(l, 0); }); }
+  function query(col, filters){
+    var q = {
+      where: function(f, op, v){ return query(col, filters.concat([[f, op, v]])); },
+      orderBy: function(){ return q; }, limit: function(){ return q; },
+      get: function(){ return Promise.resolve(run()); },
+      onSnapshot: function(next){ var l = function(){ next(run()); }; listeners.push(l); setTimeout(l, 0); return function(){ listeners = listeners.filter(function(x){ return x !== l; }); }; }
+    };
+    function run(){ var docs = [], a = all();
+      Object.keys(a).sort().forEach(function(p){ var parts = p.split("/"); if (parts.slice(0, -1).join("/") !== col) return; var d = a[p];
+        var ok = filters.every(function(f){ var x = d[f[0]]; return f[1] === ">=" ? x >= f[2] : f[1] === "==" ? x === f[2] : true; });
+        if (ok) docs.push(snapDoc(parts[parts.length - 1], d)); });
+      return { docs: docs, size: docs.length, empty: !docs.length, docChanges: function(){ return []; }, metadata: {} }; }
+    return q; }
+  var db = {
+    collection: function(p){ return query(p, []); },
+    doc: function(p){ return {
+      set: function(d){ store[p] = clone(d); if (!save(KEY, store)) return Promise.reject({ code: "quota_exceeded" }); fire(); return Promise.resolve(); },
+      get: function(){ return Promise.resolve(snapDoc(p.split("/").pop(), all()[p])); },
+      onSnapshot: function(next){ var l = function(){ next(snapDoc(p.split("/").pop(), all()[p])); }; listeners.push(l); setTimeout(l, 0); return function(){}; } }; }
+  };
+  var ready = fetch("hefte/index.json", { cache: "no-store" }).then(function(r){ if (!r.ok) throw 0; return r.json(); })
+    .then(function(list){ var dates = (list.hefte || []).slice(-45);
+      return Promise.all(dates.map(function(d){ if (quizzes[d] && d < (list.heute || "")) return null;
+        return fetch("hefte/" + d + ".json", { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(q){ if (q) quizzes[d] = q; }).catch(function(){}); }))
+        .then(function(){ save(QKEY, quizzes); }); })
+    .catch(function(){ /* Funkloch: zuletzt geladene Hefte aus dem Speicher */ });
+  window.claude = { use: function(n){ return n === "db" ? ready.then(function(){ return db; }) : Promise.resolve(null); } };
+})();
+</script>

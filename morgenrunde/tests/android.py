@@ -45,6 +45,10 @@ CASES = [
  ("Galaxy Tab S9", "Firefox-Kennung", "light", {}),
  ("Galaxy S24 landscape", "Claude-App (WebView)", "light", {}),
  ("Galaxy S24", "Claude-App (WebView)", "light", {"width": 320, "note": "große Anzeige (320 px)"}),
+ ("Desktop Chrome", "Chrome", "light", {"kb": True, "note": "PC, Tastatur"}),
+ ("Desktop Chrome HiDPI", "Chrome", "dark", {"kb": True, "note": "PC 1920, Tastatur"}),
+ ("Desktop Firefox", "Chrome", "light", {"kb": True, "note": "PC, Firefox-Kennung, Tastatur"}),
+ ("Desktop Edge", "Chrome", "light", {"kb": False, "note": "PC, Maus"}),
 ]
 
 def check(page, label, probs):
@@ -62,6 +66,9 @@ with sync_playwright() as p:
         probs = []; d = dict(p.devices[dev]); d.pop("default_browser_type", None)
         if UA[br]: d["user_agent"] = UA[br]
         if extra.get("width"): d["viewport"] = {"width": extra["width"], "height": 700}; d["device_scale_factor"] = 3.375
+        if dev == "Desktop Chrome HiDPI": d["viewport"] = {"width": 1920, "height": 1080}
+        kb = extra.get("kb"); desk = dev.startswith("Desktop")
+        tap = (lambda pg, sel: pg.click(sel)) if desk else (lambda pg, sel: pg.tap(sel))
         ctx = b.new_context(**d, color_scheme=scheme, locale="de-DE", timezone_id="Europe/Berlin")
         page = ctx.new_page()
         page.on("pageerror", lambda e: probs.append(f"Skriptfehler: {e}"))
@@ -71,7 +78,7 @@ with sync_playwright() as p:
         label = f"{dev} · {br} · {scheme}" + (f" · {extra['note']}" if extra.get("note") else "") + (" · Funkloch" if extra.get("offline") else "")
         try:
             page.goto("https://app.test/"); page.wait_for_selector("#start", timeout=6000); check(page, label + " Titel", probs)
-            page.tap("#start"); rnd = random.Random(dev)
+            (page.keyboard.press("Enter") if kb else tap(page, "#start")); rnd = random.Random(dev)
             for i in range(20):
                 page.wait_for_selector(".opt")
                 if extra.get("offline") and i == 5: ctx.set_offline(True)
@@ -79,20 +86,24 @@ with sync_playwright() as p:
                     st = page.text_content("#savestate") or ""
                     if not st.startswith("Offline"): probs.append(f"{label}: kein Offline-Hinweis ({st})")
                     ctx.set_offline(False); page.wait_for_timeout(300)
-                opts = page.query_selector_all(".opt"); opts[rnd.randrange(len(opts))].tap(); page.wait_for_selector(".reveal")
+                if kb: page.keyboard.press(str(rnd.randrange(4) + 1)); page.wait_for_selector(".reveal")
+                else:
+                    opts = page.query_selector_all(".opt"); o = opts[rnd.randrange(len(opts))]; (o.click() if desk else o.tap()); page.wait_for_selector(".reveal")
                 if i in (0, 12): check(page, f"{label} Frage {i+1}", probs)
                 nb = page.query_selector("#next").bounding_box(); vh = page.viewport_size["height"]
                 if nb["y"] + nb["height"] > vh + 1: probs.append(f"{label} Frage {i+1}: Weiter-Knopf außerhalb des Bildschirms")
-                page.tap("#next")
-            page.wait_for_selector("#bossReveal"); check(page, label + " Boss", probs); page.tap("#bossReveal")
-            page.tap(".check[data-pt='1']"); page.tap("#bossDone"); page.wait_for_selector(".big"); page.wait_for_timeout(1500)
+                (page.keyboard.press("Enter") if kb else tap(page, "#next"))
+            page.wait_for_selector("#bossReveal"); check(page, label + " Boss", probs)
+            if kb: page.keyboard.press("Enter"); page.wait_for_selector(".check"); page.keyboard.press("2"); page.keyboard.press("Enter")
+            else: tap(page, "#bossReveal"); tap(page, ".check[data-pt='1']"); tap(page, "#bossDone")
+            page.wait_for_selector(".big"); page.wait_for_timeout(1500)
             check(page, label + " Auswertung", probs)
             res = page.evaluate("() => window.__docs.get('results/2026-10-29')")
             if not res or not res.get("finished") or len(res.get("answers", {})) != 20: probs.append(f"{label}: Ergebnis unvollständig gespeichert ({len((res or {}).get('answers',{}))} Antworten)")
             for v in ("#toWeek",):
-                page.tap(v); page.wait_for_timeout(100); check(page, label + " Woche", probs)
-            page.tap("text=Zum Titel"); page.tap("#toAlbum"); page.wait_for_timeout(100); check(page, label + " Album", probs)
-            page.tap("text=Zum Titel"); page.tap("#toBadges"); page.wait_for_timeout(100); check(page, label + " Abzeichen", probs)
+                tap(page, v); page.wait_for_timeout(100); check(page, label + " Woche", probs)
+            tap(page, "text=Zum Titel"); tap(page, "#toAlbum"); page.wait_for_timeout(100); check(page, label + " Album", probs)
+            tap(page, "text=Zum Titel"); tap(page, "#toBadges"); page.wait_for_timeout(100); check(page, label + " Abzeichen", probs)
         except Exception as e:
             probs.append(f"{label}: Abbruch {str(e).splitlines()[0]}")
         ctx.close()

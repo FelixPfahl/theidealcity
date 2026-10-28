@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0028ff">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Morgenrunde</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;600&family=Shantell+Sans:wght@400;600;700&display=swap">
+<style>
+/* Layout: ein Comicheft fürs Android-Handy. Jede Frage ist ein Panel mit Sprecherfigur, Antworten sitzen in der Daumenzone,
+   der MB ist der Endgegner auf einer Splash-Page. Eine Akzentfarbe, sonst Tusche auf Papier. */
+:root{
+  --paper:#f3f4f8; --panel:#ffffff; --ink:#111218; --ink-soft:#4a4d5c; --rule:#c9ccd8;
+  --accent:#0028ff; --on-accent:#ffffff; --dot:rgba(0,40,255,.16);
+  --night:#0b0c12; --night-fg:#f3f4f8; --night-soft:#9ea3b8;
+  --f-display:"Anton","Impact","Arial Narrow Bold","Arial Narrow",sans-serif;
+  --f-letter:"Shantell Sans","Comic Sans MS","Segoe Print",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Roboto Mono",Menlo,monospace;
+  --border:3px; --gutter:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0e0f15;--panel:#191b25;--ink:#eceef6;--ink-soft:#a5a9bb;--rule:#343849;
+  --accent:#5b7bff;--on-accent:#0b0c12;--dot:rgba(91,123,255,.22);
+  --night:#000000;--night-fg:#f3f4f8;--night-soft:#9ea3b8;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0e0f15;--panel:#191b25;--ink:#eceef6;--ink-soft:#a5a9bb;--rule:#343849;
+  --accent:#5b7bff;--on-accent:#0b0c12;--dot:rgba(91,123,255,.22);
+  --night:#000000;--night-fg:#f3f4f8;--night-soft:#9ea3b8;color-scheme:dark}
+
+html,body{min-height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 28px}
+#app{max-width:560px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+.stack{display:flex;flex-direction:column;gap:var(--gutter)}
+.stack>*{min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gutter)}
+.panel{background:var(--panel);border:var(--border) solid var(--ink);padding:16px;position:relative;min-width:0}
+.mono{font-family:var(--f-mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.kicker{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.notice{font-size:14px;color:var(--ink-soft)}
+.hyph{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+
+.mast{font-family:var(--f-display);font-weight:400;font-size:clamp(46px,15vw,84px);line-height:.9;letter-spacing:.01em;text-transform:uppercase}
+.mast span{color:var(--accent)}
+.mast.stacked span{display:block}
+.cover{overflow:hidden}
+.cover::after{content:"";position:absolute;right:-30px;bottom:-30px;width:170px;height:170px;border-radius:50%;
+  background-image:radial-gradient(var(--dot) 28%,transparent 30%);background-size:10px 10px;pointer-events:none}
+.issue{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;border-block:2px solid var(--ink);padding-block:6px;margin-block:12px 14px}
+.coverhead{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+.coverart{margin:4px 0 14px;position:relative;z-index:1}
+.coverart img{display:block;width:100%;max-height:260px;object-fit:contain;background:var(--paper);border:2px solid var(--ink)}
+.coverart figcaption{font-size:12px;color:var(--ink-soft);margin-top:6px}
+.hook{font-family:var(--f-letter);font-size:19px;line-height:1.3;font-weight:600;position:relative;z-index:1}
+.contents{display:flex;flex-direction:column;gap:10px;margin-top:14px;position:relative;z-index:1}
+.contents ul{margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.contents li{list-style:none;display:grid;grid-template-columns:48px 1fr;gap:8px;align-items:baseline}
+.time{font-family:var(--f-mono);font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums}
+.also{font-size:14px;color:var(--ink-soft)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--panel);border:var(--border) solid var(--ink);padding:8px 10px;min-width:0}
+.stat b{display:block;font-family:var(--f-display);font-size:30px;line-height:1.05;font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .mono{font-size:10.5px;letter-spacing:.03em;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat.hot b{color:var(--accent)}
+.rank{display:flex;flex-direction:column;gap:6px}
+.rank .line{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.rank b{font-family:var(--f-display);font-weight:400;font-size:24px;text-transform:uppercase;line-height:1.05}
+.track{height:12px;border:2px solid var(--ink);position:relative;background:var(--panel)}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;min-height:58px;padding:12px 16px;border:var(--border) solid var(--ink);
+  background:var(--panel);font-family:var(--f-display);font-size:22px;letter-spacing:.04em;text-transform:uppercase;width:100%;text-align:center}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.small{min-height:50px;font-size:17px;letter-spacing:.03em;padding:8px}
+.btn:active{transform:translate(2px,2px)}
+.sticky{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 0 0 6px var(--paper)}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.link{background:none;border:0;padding:8px 0;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px}
+.strip{display:grid;gap:3px}
+.cell{height:12px;border:2px solid var(--ink);background:var(--panel)}
+.cell.ok{background:var(--accent)}
+.cell.no{background:repeating-linear-gradient(45deg,var(--ink) 0 2px,transparent 2px 5px)}
+.cell.now{outline:2px solid var(--accent);outline-offset:1px}
+.cell.bosscell{border-style:double;border-width:4px}
+.hud{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hud b{font-family:var(--f-display);font-weight:400;font-size:22px;font-variant-numeric:tabular-nums}
+.combo{font-family:var(--f-display);font-size:18px;color:var(--accent);letter-spacing:.04em}
+.chapter{background:var(--ink);color:var(--paper);border:var(--border) solid var(--ink);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.chapter h2{font-family:var(--f-display);font-weight:400;font-size:clamp(22px,7vw,30px);line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
+.chapter .goal{font-size:14px;opacity:.85}
+.stage{display:flex;flex-direction:column;gap:var(--gutter);min-height:calc(100svh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:2px solid var(--ink);padding:2px 6px;white-space:nowrap}
+.chip.acc{border-color:var(--accent);color:var(--accent)}
+.lvl{display:inline-flex;gap:3px;margin-left:auto}
+.lvl i{width:10px;height:10px;border:2px solid var(--ink);display:block}
+.lvl i.on{background:var(--ink)}
+.speaker{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:end;margin-top:12px}
+.who{display:flex;flex-direction:column;align-items:center;gap:2px}
+.who svg{width:64px;height:64px;display:block}
+.who span{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.1}
+.balloon{font-family:var(--f-letter);font-size:19px;line-height:1.3;font-weight:600;border:var(--border) solid var(--ink);border-radius:20px;
+  padding:14px 16px;background:var(--panel);position:relative;margin-bottom:14px}
+.balloon::after{content:"";position:absolute;left:-12px;bottom:14px;width:18px;height:18px;background:var(--panel);
+  border-left:var(--border) solid var(--ink);border-bottom:var(--border) solid var(--ink);transform:skewY(30deg) rotate(20deg)}
+.opts{display:flex;flex-direction:column;gap:9px;margin-top:auto}
+.opt{display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;text-align:left;min-height:60px;padding:10px 12px;
+  border:var(--border) solid var(--ink);background:var(--panel);font-size:16px;line-height:1.32;width:100%}
+.opt .key{font-family:var(--f-display);font-size:20px;width:32px;height:32px;border:2px solid var(--ink);display:grid;place-items:center}
+.opt.right{background:var(--accent);color:var(--on-accent)}
+.opt.right .key{border-color:var(--on-accent)}
+.opt.wrong{background:repeating-linear-gradient(45deg,transparent 0 6px,var(--dot) 6px 9px),var(--panel);text-decoration:line-through;text-decoration-thickness:2px}
+.opt[disabled]{cursor:default}
+.reveal{display:flex;flex-direction:column;gap:6px;position:relative}
+.verdict{font-family:var(--f-display);font-size:26px;text-transform:uppercase;line-height:1;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.verdict.ok{color:var(--accent)}
+.verdict small{font-family:var(--f-mono);font-size:12px;color:var(--ink-soft);letter-spacing:.04em}
+details.src{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+details.src summary{cursor:pointer;text-transform:uppercase;letter-spacing:.06em;padding:4px 0}
+.burst{position:absolute;right:10px;top:-22px;font-family:var(--f-display);font-size:30px;letter-spacing:.03em;padding:2px 12px;
+  border:var(--border) solid var(--ink);background:var(--panel);transform:rotate(-7deg);pointer-events:none;animation:burst .45s cubic-bezier(.2,1.6,.4,1) both}
+.burst.ok{background:var(--accent);color:var(--on-accent)}
+@keyframes burst{from{transform:rotate(-7deg) scale(.3);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:1}}
+.shake{animation:shake .32s ease-in-out}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.splash{background:var(--night);color:var(--night-fg);border:var(--border) solid var(--night);overflow:hidden;padding:18px 16px}
+.splash::before{content:"";position:absolute;inset:-20%;background:repeating-conic-gradient(from 0deg at 78% 30%,rgba(255,255,255,.07) 0 5deg,transparent 5deg 12deg);pointer-events:none}
+.splash>*{position:relative}
+.splash .mast{color:var(--night-fg);font-size:clamp(58px,19vw,96px)}
+.splash .mast span{color:var(--accent);display:inline}
+.bossart{display:grid;grid-template-columns:1fr 128px;gap:8px;align-items:end}
+.bossart svg{width:128px;height:150px;display:block;color:var(--night-fg)}
+.fp{fill:var(--panel)}.fa{fill:var(--accent)}.sa{stroke:var(--accent)}
+.bossart svg .fp{fill:var(--night)}
+.splash .balloon{color:#111218;background:#ffffff;border-color:#ffffff;margin-top:6px}
+.splash .balloon::after{display:none}
+.splash .sit{color:var(--night-soft);font-size:15px}
+.checks{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.check{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;text-align:left;padding:10px 12px;border:2px solid var(--night-fg);
+  background:transparent;color:var(--night-fg);font-size:15px;line-height:1.4;width:100%}
+.check .box{width:24px;height:24px;border:2px solid var(--night-fg);display:grid;place-items:center;font-family:var(--f-display);font-size:16px}
+.check.on{background:var(--night-fg);color:#111218}
+.check.on .box{background:var(--accent);border-color:var(--accent);color:#ffffff}
+.judge{font-family:var(--f-display);font-size:28px;text-transform:uppercase;line-height:1.05;color:var(--accent)}
+
+.big{font-family:var(--f-display);font-size:64px;line-height:.9;font-variant-numeric:tabular-nums}
+.big small{font-size:28px;color:var(--ink-soft)}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:88px 1fr 44px;gap:8px;align-items:center;font-size:14px}
+.bar .n{font-family:var(--f-mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.week{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.day{border:var(--border) solid var(--ink);background:var(--panel);padding:8px 2px;text-align:center;min-width:0}
+.day b{display:block;font-family:var(--f-display);font-size:24px;font-weight:400;line-height:1.05;font-variant-numeric:tabular-nums}
+.day .mono{font-size:10px;letter-spacing:0}
+.day.today{outline:3px solid var(--accent);outline-offset:2px}
+.day.empty b{color:var(--ink-soft)}
+.list{display:flex;flex-direction:column;gap:10px;margin:0;padding:0}
+.list li{list-style:none;border-top:2px solid var(--rule);padding-top:10px;display:flex;flex-direction:column;gap:3px}
+.finding{border-style:dashed}
+.badgehit{border-color:var(--accent);border-width:4px}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{border:var(--border) solid var(--ink);background:var(--panel);padding:10px;display:flex;flex-direction:column;gap:4px;min-height:132px;position:relative}
+.card .era{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.card b{font-family:var(--f-letter);font-size:15px;line-height:1.2}
+.card .by{font-size:13px;color:var(--ink-soft)}
+.card .x{position:absolute;right:8px;top:6px;font-family:var(--f-display);font-size:16px}
+.card.locked{border-style:dashed;color:var(--ink-soft);display:grid;place-items:center;text-align:center}
+.badges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.badge{border:var(--border) solid var(--ink);background:var(--panel);padding:10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.badge b{font-family:var(--f-display);font-weight:400;font-size:19px;text-transform:uppercase;line-height:1.05}
+.badge span{font-size:13px;color:var(--ink-soft)}
+.badge.off{border-style:dashed;opacity:.55}
+.badge.on b{color:var(--accent)}
+.archive{display:flex;flex-direction:column;gap:8px}
+.archive button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:12px;border:var(--border) solid var(--ink);background:var(--panel)}
+.archive .meta{font-family:var(--f-mono);font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.pop{animation:pop .22s ease-out}
+@keyframes pop{from{transform:scale(.98);opacity:.6}to{transform:none;opacity:1}}
+@media (max-width:370px){.balloon{font-size:18px}.stat b{font-size:26px}.bar{grid-template-columns:78px 1fr 40px}.speaker{grid-template-columns:54px 1fr}.who svg{width:54px;height:54px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.btn:active{transform:none}}
+</style>
+
+</head>
+<body>
+<script>
+/* Webversion ohne Claude: Hefte kommen als JSON-Dateien von der Website, Spielstände bleiben im Browser dieses Handys. */
+(function(){
+  if (window.claude && typeof window.claude.use === "function") return;
+  var KEY = "morgenrunde-web-v1", QKEY = "morgenrunde-web-hefte-v1";
+  function load(k){ try { return JSON.parse(localStorage.getItem(k) || "{}"); } catch(e){ return {}; } }
+  function save(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+  var store = load(KEY), quizzes = load(QKEY), listeners = [];
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function all(){ var o = {}; Object.keys(quizzes).forEach(function(d){ o["quizzes/"+d] = quizzes[d]; }); Object.keys(store).forEach(function(p){ o[p] = store[p]; }); return o; }
+  function snapDoc(id, d){ return { id: id, exists: d !== undefined, data: function(){ return d === undefined ? undefined : clone(d); }, metadata: { fromCache: false, hasPendingWrites: false } }; }
+  function fire(){ listeners.forEach(function(l){ setTimeout(l, 0); }); }
+  function query(col, filters){
+    var q = {
+      where: function(f, op, v){ return query(col, filters.concat([[f, op, v]])); },
+      orderBy: function(){ return q; }, limit: function(){ return q; },
+      get: function(){ return Promise.resolve(run()); },
+      onSnapshot: function(next){ var l = function(){ next(run()); }; listeners.push(l); setTimeout(l, 0); return function(){ listeners = listeners.filter(function(x){ return x !== l; }); }; }
+    };
+    function run(){ var docs = [], a = all();
+      Object.keys(a).sort().forEach(function(p){ var parts = p.split("/"); if (parts.slice(0, -1).join("/") !== col) return; var d = a[p];
+        var ok = filters.every(function(f){ var x = d[f[0]]; return f[1] === ">=" ? x >= f[2] : f[1] === "==" ? x === f[2] : true; });
+        if (ok) docs.push(snapDoc(parts[parts.length - 1], d)); });
+      return { docs: docs, size: docs.length, empty: !docs.length, docChanges: function(){ return []; }, metadata: {} }; }
+    return q; }
+  var db = {
+    collection: function(p){ return query(p, []); },
+    doc: function(p){ return {
+      set: function(d){ store[p] = clone(d); if (!save(KEY, store)) return Promise.reject({ code: "quota_exceeded" }); fire(); return Promise.resolve(); },
+      get: function(){ return Promise.resolve(snapDoc(p.split("/").pop(), all()[p])); },
+      onSnapshot: function(next){ var l = function(){ next(snapDoc(p.split("/").pop(), all()[p])); }; listeners.push(l); setTimeout(l, 0); return function(){}; } }; }
+  };
+  var ready = fetch("hefte/index.json", { cache: "no-store" }).then(function(r){ if (!r.ok) throw 0; return r.json(); })
+    .then(function(list){ var dates = (list.hefte || []).slice(-45);
+      return Promise.all(dates.map(function(d){ if (quizzes[d] && d < (list.heute || "")) return null;
+        return fetch("hefte/" + d + ".json", { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(q){ if (q) quizzes[d] = q; }).catch(function(){}); }))
+        .then(function(){ save(QKEY, quizzes); }); })
+    .catch(function(){ /* Funkloch: zuletzt geladene Hefte aus dem Speicher */ });
+  window.claude = { use: function(n){ return n === "db" ? ready.then(function(){ return db; }) : Promise.resolve(null); } };
+})();
+</script>
+<main id="app" lang="de" aria-live="polite">
+  <section class="panel cover">
+    <h1 class="mast stacked">Morgen<span>runde</span></h1>
+    <div class="issue mono"><span>Kunst · Lehrinstitut Derksen</span><span>lädt</span></div>
+    <p class="hook">Das heutige Heft wird geholt.</p>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= Reine Logik (testbar, ohne DOM) ================= */
+const AREAS={fach:"Fachwissen",didaktik:"Didaktik",methodik:"Methodik",paedagogik:"Pädagogik"};
+const SPEAKER={fach:"erzaehler",methodik:"kollegin",paedagogik:"schueler",didaktik:"mb"};
+const SPEAKER_NAME={erzaehler:"Erzähler",kollegin:"Kollegin",schueler:"Schülerin",mb:"Der MB"};
+const WD=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const WD2=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const REVIEW_STEPS=[1,3,7], MAX_REVIEWS=4, FINALE_MAX=5;
+const RANKS=[[0,"Frisch im Kollegium"],[1500,"Kopierer-Flüsterer"],[4000,"Die Fachschaft nickt"],[8000,"Seminarreif"],[14000,"Oberstufenwürdig"],[22000,"Der MB nickt"],[32000,"Ministerialreif"]];
+const BADGES=[
+  ["erste","Erstes Heft","Ein Heft komplett gespielt"],["serie5","Fünf am Stück","Serie von 5 Schultagen"],["serie10","Zehn am Stück","Serie von 10 Schultagen"],
+  ["serie25","Unaufhaltsam","Serie von 25 Schultagen"],["perfekt","Fehlerfrei","Alle Fragen eines Hefts richtig"],["combo10","Kettenreaktion","10 richtige Antworten am Stück"],
+  ["boss","Genehmigung in Sicht","MB-Gespräch mit mindestens 80 %"],["sammler10","Sammler","10 Werke im Album"],["sammler25","Kurator","25 Werke im Album"],
+  ["sammler50","Sammlungsleitung","50 Werke im Album"],["comeback","Comeback","Eine Wiederholung ganz gelernt"],["finale","Wochensieger","Wochenfinale ohne Fehler"],
+  ["fach100","100 × Fachwissen","100 Fachfragen beantwortet"],["didaktik100","100 × Didaktik","100 Didaktikfragen beantwortet"],
+  ["methodik100","100 × Methodik","100 Methodikfragen beantwortet"],["paedagogik100","100 × Pädagogik","100 Pädagogikfragen beantwortet"]];
+
+function todayStr(now){ const d=now||new Date();
+  try{ return new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Berlin",year:"numeric",month:"2-digit",day:"2-digit"}).format(d); }catch(e){ return d.toISOString().slice(0,10); } }
+function toUTC(s){ const [y,m,d]=s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); }
+function fmt(dt){ return dt.toISOString().slice(0,10); }
+function addDays(s,n){ const d=toUTC(s); d.setUTCDate(d.getUTCDate()+n); return fmt(d); }
+function weekday(s){ return toUTC(s).getUTCDay(); }
+function addSchoolDays(s,n){ let d=s,k=0; while(k<n){ d=addDays(d,1); const w=weekday(d); if(w!==0&&w!==6) k++; } return d; }
+function weekStart(s){ const w=weekday(s); return addDays(s,w===0?-6:1-w); }
+function isoWeek(s){ const d=toUTC(s); const day=(d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-day+3);
+  const first=new Date(Date.UTC(d.getUTCFullYear(),0,4)); return 1+Math.round(((d-first)/864e5-3+((first.getUTCDay()+6)%7))/7); }
+function niceDate(s){ const [y,m,d]=s.split("-"); return WD[weekday(s)]+", "+Number(d)+"."+Number(m)+"."+y; }
+function shortDate(s){ const [,m,d]=s.split("-"); return Number(d)+"."+Number(m)+"."; }
+function hash(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+function order(n,seed){ const a=[...Array(n).keys()]; let s=hash(seed)||1;
+  for(let i=n-1;i>0;i--){ s=(Math.imul(s,1103515245)+12345)>>>0; const j=s%(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function slugify(s){ return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80)||"werk"; }
+function validQuiz(q){ return !!q&&typeof q==="object"&&typeof q.date==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(q.date)&&
+  (q.status==="frei"||(q.status==="ready"&&Array.isArray(q.questions)&&q.questions.length>0)); }
+function validQ(x){ return !!x&&typeof x.q==="string"&&Array.isArray(x.options)&&x.options.length>=2&&x.options.length<=6&&
+  x.options.every(o=>typeof o==="string")&&Number.isInteger(x.correct)&&x.correct>=0&&x.correct<x.options.length&&typeof x.id==="string"; }
+function cleanQuestions(q){ return ((q&&q.questions)||[]).filter(validQ); }
+function basePoints(x){ const l=Number(x&&x.level)||1; return 10*Math.min(3,Math.max(1,l)); }
+function multiplier(c){ return 1+0.25*Math.min(c,4); }
+function comboBefore(quiz,res,idx){ const qs=cleanQuestions(quiz); const a=(res&&res.answers)||{}; let c=0;
+  for(let i=0;i<Math.min(idx,qs.length);i++){ const s=a[qs[i].id]; if(!s) continue; c=s.correct?c+1:0; } return c; }
+function scoreOf(quiz,res){ const qs=cleanQuestions(quiz); const a=(res&&res.answers)||{}; let ok=0,done=0,pts=0,run=0,maxRun=0;
+  qs.forEach(x=>{ const s=a[x.id]; if(!s) return; done++; if(s.correct){ ok++; run++; maxRun=Math.max(maxRun,run); pts+=(Number(s.pts)||0); } else run=0; });
+  return {ok,done,total:qs.length,points:pts,comboMax:maxRun}; }
+function streakWalk(dates,results,today){ let n=0; const used=new Set();
+  for(const d of dates){ const r=results[d]; if(r&&r.finished){ n++; continue; } if(d===today) continue;
+    const wk=weekStart(d); if(!used.has(wk)){ used.add(wk); continue; } break; }
+  return {n,shieldUsed:used.has(weekStart(today))}; }
+function readyDesc(quizzes,today){ return Object.keys(quizzes).filter(d=>quizzes[d].status==="ready"&&d<=today).sort().reverse(); }
+function computeStreak(quizzes,results,today){ return streakWalk(readyDesc(quizzes,today),results,today).n; }
+function shieldUsedThisWeek(quizzes,results,today){ return streakWalk(readyDesc(quizzes,today),results,today).shieldUsed; }
+function bestStreak(quizzes,results){ const dates=Object.keys(quizzes).filter(d=>quizzes[d].status==="ready").sort(); let best=0,cur=0; const used=new Set();
+  for(const d of dates){ const r=results[d]; if(r&&r.finished){ cur++; best=Math.max(best,cur); } else { const wk=weekStart(d); if(!used.has(wk)) used.add(wk); else cur=0; } }
+  return best; }
+function dueReviews(reviews,today,max){ return Object.values(reviews).filter(r=>r&&!r.done&&typeof r.due==="string"&&r.due<=today&&r.q&&validQ(r.q))
+  .sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:(a.id<b.id?-1:1)).slice(0,max==null?MAX_REVIEWS:max); }
+function nextReview(rev,correct,today){ const r=Object.assign({},rev); r.lastSeen=today; r.seen=(r.seen||0)+1;
+  if(correct){ r.step=(r.step||0)+1; if(r.step>=REVIEW_STEPS.length){ r.done=true; r.due=null; } else r.due=addSchoolDays(today,REVIEW_STEPS[r.step]); }
+  else { r.step=0; r.due=addSchoolDays(today,REVIEW_STEPS[0]); } return r; }
+function newReview(date,quiz,q){ const lesson=(quiz.lessons||[]).find(l=>l.id===q.lesson);
+  return {id:date+"_"+q.id,from:date,lessonLabel:lesson?(lesson.label+" · "+lesson.topic):"",
+    q:{id:q.id,area:q.area,level:q.level||1,q:q.q,options:q.options.slice(),correct:q.correct,explain:q.explain||"",source:q.source||"",work:q.work||null},
+    step:0,due:addSchoolDays(date,REVIEW_STEPS[0]),done:false,seen:0}; }
+function areaStats(list){ const s={}; Object.keys(AREAS).forEach(k=>s[k]={ok:0,total:0});
+  list.forEach(({q,ans})=>{ const k=AREAS[q.area]?q.area:null; if(!k||!ans) return; s[k].total++; if(ans.correct) s[k].ok++; }); return s; }
+function weekSummary(quizzes,results,today){ const mon=weekStart(today); const days=[],pairs=[],wrong=[];
+  for(let i=0;i<5;i++){ const d=addDays(mon,i); const q=quizzes[d]; const r=results[d]; let st="none",sc=null;
+    if(q&&q.status==="frei") st="frei";
+    else if(q&&q.status==="ready"){ sc=scoreOf(q,r); st=r&&r.finished?"done":(sc.done>0?"open":(d<today?"missed":"ready"));
+      cleanQuestions(q).forEach(x=>{ const ans=r&&r.answers&&r.answers[x.id]; if(ans){ pairs.push({q:x,ans}); if(!ans.correct) wrong.push({date:d,q:x}); } }); }
+    days.push({date:d,status:st,score:sc}); }
+  const stats=areaStats(pairs); let weakest=null;
+  Object.keys(stats).forEach(k=>{ const v=stats[k]; if(v.total>=2){ const p=v.ok/v.total; if(!weakest||p<weakest.p) weakest={area:k,p}; } });
+  return {monday:mon,days,stats,wrong,weakest}; }
+function finaleCandidates(quizzes,results,date){ return weekSummary(quizzes,results,date).wrong.filter(x=>x.date<=date).slice(-FINALE_MAX); }
+function pickDate(quizzes,today){ if(quizzes[today]) return today; const ds=Object.keys(quizzes).sort(); const fut=ds.filter(d=>d>today);
+  if(fut.length) return fut[0]; return ds.length?ds[ds.length-1]:null; }
+function firstOpen(quiz,res){ const qs=cleanQuestions(quiz); const a=(res&&res.answers)||{}; const i=qs.findIndex(x=>!a[x.id]); return i<0?qs.length:i; }
+function rankOf(points){ let i=0; for(let k=0;k<RANKS.length;k++) if(points>=RANKS[k][0]) i=k; const next=RANKS[i+1];
+  return {name:RANKS[i][1],index:i,next:next?next[1]:null,nextAt:next?next[0]:null,pct:next?Math.floor(100*(points-RANKS[i][0])/(next[0]-RANKS[i][0])):100}; }
+function bossJudge(checked,total){ if(!total) return ""; const p=checked/total;
+  if(p>=.8) return "Genehmigung in Sicht."; if(p>=.5) return "Solide, mit Auflagen."; if(p>=.25) return "Er macht sich Notizen."; return "Nachbesuch angekündigt."; }
+function emptyProfile(){ return {totalPoints:0,quizzes:0,answers:0,right:0,byArea:{fach:{ok:0,total:0},didaktik:{ok:0,total:0},methodik:{ok:0,total:0},paedagogik:{ok:0,total:0}},
+  badges:{},comboBest:0,perfect:0,bossBest:0,mastered:0,finaleWins:0,rev:0}; }
+function earnedBadges(p,albumCount,best){ const e=[]; const A=p.byArea||{};
+  if(p.quizzes>=1) e.push("erste"); if(best>=5) e.push("serie5"); if(best>=10) e.push("serie10"); if(best>=25) e.push("serie25");
+  if(p.perfect>=1) e.push("perfekt"); if(p.comboBest>=10) e.push("combo10"); if(p.bossBest>=.8) e.push("boss");
+  if(albumCount>=10) e.push("sammler10"); if(albumCount>=25) e.push("sammler25"); if(albumCount>=50) e.push("sammler50");
+  if(p.mastered>=1) e.push("comeback"); if(p.finaleWins>=1) e.push("finale");
+  Object.keys(AREAS).forEach(k=>{ if(A[k]&&A[k].total>=100) e.push(k+"100"); }); return e; }
+function grant(p,albumCount,best,today){ const nb=[]; p.badges=p.badges||{}; earnedBadges(p,albumCount,best).forEach(id=>{ if(!p.badges[id]){ p.badges[id]=today; nb.push(id); } }); return {profile:p,newBadges:nb}; }
+function applyFinish(profile,quiz,res,albumCount,best,today){ const p=JSON.parse(JSON.stringify(profile||emptyProfile()));
+  if(res.counted) return {profile:p,newBadges:[]};
+  const sc=scoreOf(quiz,res); p.totalPoints+=sc.points; p.quizzes++; p.answers+=sc.done; p.right+=sc.ok;
+  cleanQuestions(quiz).forEach(x=>{ const a=res.answers[x.id]; if(!a||!AREAS[x.area]) return; p.byArea[x.area]=p.byArea[x.area]||{ok:0,total:0}; p.byArea[x.area].total++; if(a.correct) p.byArea[x.area].ok++; });
+  if(sc.total&&sc.ok===sc.total) p.perfect++; p.comboBest=Math.max(p.comboBest||0,sc.comboMax);
+  const bt=(quiz.boss&&quiz.boss.points||[]).length; if(bt) p.bossBest=Math.max(p.bossBest||0,(res.boss||[]).length/bt);
+  return grant(p,albumCount,best,today); }
+
+window.MR={AREAS,RANKS,BADGES,todayStr,addDays,weekday,addSchoolDays,weekStart,isoWeek,order,slugify,validQuiz,validQ,cleanQuestions,basePoints,multiplier,comboBefore,scoreOf,
+  computeStreak,shieldUsedThisWeek,bestStreak,dueReviews,nextReview,newReview,areaStats,weekSummary,finaleCandidates,pickDate,firstOpen,rankOf,bossJudge,emptyProfile,earnedBadges,grant,applyFinish};
+
+/* ================= Figuren, mit Code getuscht ================= */
+const NS="http://www.w3.org/2000/svg";
+function svgEl(tag,attrs){ const e=document.createElementNS(NS,tag); const cls=[];
+  for(const k in attrs){ const v=attrs[k];
+    if(k==="fill"&&v==="var(--panel)") cls.push("fp"); else if(k==="fill"&&v==="var(--accent)") cls.push("fa"); else if(k==="stroke"&&v==="var(--accent)") cls.push("sa");
+    else if(k!=="data-fill") e.setAttribute(k,v); }
+  if(cls.length) e.setAttribute("class",cls.join(" ")); return e; }
+function figure(kind,big){
+  const s=svgEl("svg",{viewBox:big?"0 0 128 150":"0 0 64 64","aria-hidden":"true",focusable:"false"});
+  const g=svgEl("g",{fill:"none",stroke:"currentColor","stroke-width":big?"2.2":"2.6","stroke-linecap":"round","stroke-linejoin":"round"});
+  if(big) g.setAttribute("transform","translate(0 22) scale(2)");
+  const add=(t,a)=>{ const e=svgEl(t,a); g.appendChild(e); return e; };
+  const acc={stroke:"var(--accent)"};
+  add("path",{d:"M9 64 C11 49 21 43 32 43 C43 43 53 49 55 64",fill:"var(--panel)","data-fill":"panel"});
+  add("circle",{cx:"32",cy:"26",r:"13",fill:"var(--panel)","data-fill":"panel"});
+  const eye=x=>add("circle",{cx:String(x),cy:"26",r:"1.5",fill:"currentColor",stroke:"none"});
+  if(kind==="erzaehler"){
+    add("path",{d:"M18 19 C19 9 45 9 46 19 C40 16 24 16 18 19 Z",fill:"currentColor"}); add("path",{d:"M32 9 L33 6"});
+    add("circle",{cx:"27",cy:"26",r:"3.8"}); add("circle",{cx:"37",cy:"26",r:"3.8"}); add("path",{d:"M30.8 26 L33.2 26"});
+    eye(27); eye(37); add("path",{d:"M27 33 Q32 37 37 33"}); add("path",Object.assign({d:"M44 16 L53 7","stroke-width":"3.4"},acc));
+  } else if(kind==="kollegin"){
+    add("circle",{cx:"32",cy:"11",r:"5",fill:"currentColor"}); add("path",{d:"M19 25 C19 13 45 13 45 25 C41 19 23 19 19 25 Z",fill:"currentColor"});
+    eye(27); eye(37); add("path",{d:"M28 33 Q32 35 36 33"}); add("path",{d:"M24 44 L32 52 L40 44"});
+    add("rect",Object.assign({x:"44",y:"50",width:"9",height:"10",rx:"1"},acc)); add("path",Object.assign({d:"M53 53 C57 53 57 58 53 58"},acc));
+  } else if(kind==="schueler"){
+    add("path",{d:"M19 23 L21 14 L25 18 L28 11 L32 17 L36 10 L40 17 L43 13 L45 23"});
+    eye(27); eye(37); add("path",{d:"M29 33 Q32 36 35 33"}); add("path",{d:"M20 50 C24 46 40 46 44 50"});
+    add("path",Object.assign({d:"M28 47 L28 56 M36 47 L36 56"},acc));
+  } else {
+    add("path",{d:"M19 23 C19 12 30 10 40 12 C44 13 45 17 45 23 C41 18 33 16 28 18 Z",fill:"currentColor"});
+    add("rect",{x:"23",y:"23",width:"8",height:"6",rx:"1"}); add("rect",{x:"33",y:"23",width:"8",height:"6",rx:"1"}); add("path",{d:"M31 25 L33 25"});
+    eye(27); eye(37); add("path",{d:"M28 34 L36 34"}); add("path",{d:"M24 45 L32 55 L40 45"});
+    add("path",Object.assign({d:"M32 45 L29.5 49 L32 60 L34.5 49 Z",fill:"var(--accent)"},acc));
+    if(big){ add("rect",Object.assign({x:"40",y:"48",width:"18",height:"13",rx:"1",fill:"var(--accent)"},acc)); add("path",{d:"M46 48 L46 45 L52 45 L52 48"}); }
+  }
+  s.appendChild(g); return s; }
+
+/* ================= Zustand und Speicher ================= */
+const S={db:null,ready:false,failed:"",today:todayStr(),quizzes:{},results:{},reviews:{},album:{},profile:null,
+  view:"cover",date:null,phase:"main",idx:0,rq:[],ri:0,fq:[],fi:0,picked:null,bossOpen:false,saving:0,saveError:"",newBadges:[],burst:null};
+const app=document.getElementById("app");
+function h(tag,attrs,...kids){ const el=document.createElement(tag);
+  if(attrs) for(const k in attrs){ const v=attrs[k]; if(v==null||v===false) continue;
+    if(k==="class") el.className=v; else if(k.startsWith("on")) el.addEventListener(k.slice(2),v); else el.setAttribute(k,v===true?"":v); }
+  kids.flat().forEach(c=>{ if(c==null||c===false) return; el.appendChild(typeof c==="string"||typeof c==="number"?document.createTextNode(String(c)):c); });
+  return el; }
+
+const chains={},pending={};
+function write(path,data){ if(!S.db) return Promise.resolve();
+  pending[path]=data; S.saving++; renderSaving();
+  const run=()=>{ const d=pending[path]; if(!d) return Promise.resolve();
+    return S.db.doc(path).set(d).catch(e=>{ if(e&&e.code==="unavailable") return new Promise(r=>setTimeout(r,400+Math.random()*600)).then(()=>S.db.doc(path).set(pending[path]||d)); throw e; })
+      .then(()=>{ if(pending[path]===d) delete pending[path]; }); };
+  const p=(chains[path]||Promise.resolve()).then(run,run)
+    .then(()=>{ if(!Object.keys(pending).length) S.saveError=""; })
+    .catch(e=>{ S.saveError=(e&&e.code==="quota_exceeded")?"Speicher voll. Bitte Claude Bescheid geben.":OFFLINE_TEXT; })
+    .finally(()=>{ S.saving--; renderSaving(); });
+  chains[path]=p;
+  if(!S._flushing) Object.keys(pending).forEach(k=>{ if(k!==path) flushOne(k); });
+  return p; }
+function flushOne(k){ if(!pending[k]) return; S._flushing=true; try{ write(k,pending[k]); }finally{ S._flushing=false; } }
+function flushAll(){ Object.keys(pending).forEach(flushOne); }
+window.addEventListener("online",flushAll);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") flushAll(); });
+const OFFLINE_TEXT="Offline: Antworten sind vorgemerkt und gehen raus, sobald wieder Netz da ist.";
+function saveText(){ if(S.saveError) return S.saveError; if(S.saving>0) return (navigator.onLine===false)? OFFLINE_TEXT : "sichert"; return "gesichert"; }
+window.addEventListener("offline",renderSaving);
+function renderSaving(){ const el=document.getElementById("savestate"); if(!el) return; el.textContent=saveText(); }
+
+function resultFor(date){ return S.results[date]||{date,answers:{},finished:false,boss:[]}; }
+function bump(prev,obj){ return Object.assign({},obj,{rev:Math.max((prev&&prev.rev)||0,obj.rev||0)+1}); }
+function saveResult(date,res){ const r=bump(S.results[date],Object.assign({},res,{date,updatedAt:new Date().toISOString()})); S.results[date]=r; return write("results/"+date,r); }
+function saveReview(rev){ const r=bump(S.reviews[rev.id],rev); S.reviews[r.id]=r; return write("review/"+r.id,r); }
+function saveProfile(p){ const r=bump(S.profile,p); S.profile=r; return write("meta/profile",r); }
+function saveAlbum(card){ const r=bump(S.album[card.slug],card); S.album[r.slug]=r; return write("album/"+r.slug,r); }
+function collect(q,date){ if(!q||!q.work||!q.work.title) return; const slug=slugify(q.work.slug||(q.work.artist+" "+q.work.title)); const old=S.album[slug];
+  saveAlbum({slug,artist:q.work.artist||"",title:q.work.title,year:String(q.work.year||""),era:q.work.era||"Ohne Epoche",first:old?old.first:date,count:(old?old.count:0)+1}); }
+function profile(){ return S.profile||emptyProfile(); }
+function streakBest(){ return Math.max(bestStreak(S.quizzes,S.results),computeStreak(S.quizzes,S.results,S.today)); }
+
+/* ================= Ansichten ================= */
+function render(){ app.textContent="";
+  if(S.failed){ app.appendChild(viewFailed()); return; }
+  if(!S.ready){ app.appendChild(viewLoading()); return; }
+  const v={cover:viewCover,play:viewPlay,boss:viewBoss,result:viewResult,week:viewWeek,archive:viewArchive,album:viewAlbum,badges:viewBadges}[S.view]||viewCover;
+  app.appendChild(v()); if(window.scrollTo) window.scrollTo(0,0); }
+function mast(){ return h("h1",{class:"mast stacked"},"Morgen",h("span",null,"runde")); }
+function viewLoading(){ return h("section",{class:"panel cover"},mast(),h("div",{class:"issue mono"},h("span",null,"Kunst · Lehrinstitut Derksen"),h("span",null,"lädt")),
+  h("p",{class:"hook"},S.slow?"Funkloch? Das Heft kommt, sobald wieder Netz da ist.":"Das heutige Heft wird geholt.")); }
+function viewFailed(){ return h("section",{class:"panel stack"},mast(),h("p",{class:"hook"},"Die Hefte lassen sich gerade nicht laden."),h("p",{class:"notice"},S.failed),h("button",{class:"btn small",onclick:()=>location.reload()},"Neu laden")); }
+function topbar(right){ return h("div",{class:"topbar"},h("button",{class:"link",onclick:()=>goto("cover")},"Zum Titel"),right||h("span",{class:"mono",id:"savestate"},saveText())); }
+function goto(v){ S.view=v; S.picked=null; S.burst=null; render(); }
+
+function statsRow(){ const streak=computeStreak(S.quizzes,S.results,S.today); const due=dueReviews(S.reviews,S.today,99).length;
+  return h("div",{class:"stats"},
+    h("div",{class:"stat hot"},h("b",null,String(streak)),h("span",{class:"mono"},"Serie")),
+    h("div",{class:"stat"},h("b",null,String(profile().totalPoints)),h("span",{class:"mono"},"Punkte")),
+    h("div",{class:"stat"},h("b",null,String(due)),h("span",{class:"mono"},"Fällig"))); }
+function rankPanel(){ const r=rankOf(profile().totalPoints); const fill=h("span",{class:"fill"}); fill.style.width=r.pct+"%";
+  return h("section",{class:"panel rank"},h("div",{class:"line"},h("span",{class:"kicker"},"Rang"),h("span",{class:"mono"},r.next?("nächster ab "+r.nextAt+" P"):"höchster Rang")),
+    h("b",{class:"hyph"},r.name),h("div",{class:"track"},fill),r.next?h("span",{class:"notice"},"Als Nächstes: "+r.next):null,
+    h("span",{class:"notice",id:"shield"},shieldUsedThisWeek(S.quizzes,S.results,S.today)?"Schutzschild diese Woche verbraucht. Der nächste verpasste Tag bricht die Serie.":"Schutzschild diese Woche noch da: ein verpasster Schultag bricht die Serie nicht.")); }
+function navGrid(){ return h("div",{class:"grid2"},h("button",{class:"btn small",id:"toWeek",onclick:()=>goto("week")},"Woche"),h("button",{class:"btn small",id:"toAlbum",onclick:()=>goto("album")},"Album"),
+  h("button",{class:"btn small",id:"toBadges",onclick:()=>goto("badges")},"Abzeichen"),h("button",{class:"btn small",id:"toArchive",onclick:()=>goto("archive")},"Archiv")); }
+
+function viewCover(){ const wrap=h("div",{class:"stack"}); const date=S.date; const q=date?S.quizzes[date]:null;
+  if(!q){ wrap.appendChild(h("section",{class:"panel cover stack"},mast(),h("p",{class:"hook"},"Noch kein Heft da."),
+      h("p",null,"An jedem Schultag liegt hier um 6.30 Uhr ein Heft zu deinen Stunden: 20 Fragen, Wiederholungen und am Ende das Gespräch mit dem MB.")));
+    wrap.appendChild(statsRow()); wrap.appendChild(navGrid()); return wrap; }
+  const res=resultFor(date); const sc=q.status==="ready"?scoreOf(q,res):null;
+  const cover=h("section",{class:"panel cover pop"});
+  cover.appendChild(h("div",{class:"coverhead"},mast(),h("div",{class:"who"},figure("erzaehler"))));
+  cover.appendChild(h("div",{class:"issue mono"},h("span",null,"KW "+isoWeek(date)+" · "+WD[weekday(date)]),h("span",null,shortDate(date)+date.slice(0,4))));
+  if(date>S.today) cover.appendChild(h("p",{class:"chip acc",style:"display:inline-block;margin-bottom:10px"},"Vorschau auf "+WD[weekday(date)]));
+  if(date<S.today) cover.appendChild(h("p",{class:"chip",style:"display:inline-block;margin-bottom:10px"},"Aus dem Archiv"));
+  if(q.cover&&typeof q.cover.url==="string"&&/^(\/|https:\/\/[a-z0-9.-]*claude\.ai\/|data:image\/)/.test(q.cover.url)){
+    const img=h("img",{src:q.cover.url,alt:q.cover.caption||"Werk des Tages",loading:"lazy"});
+    img.addEventListener("error",()=>{ const f=img.closest("figure"); if(f) f.remove(); });
+    cover.appendChild(h("figure",{class:"coverart"},img,q.cover.caption?h("figcaption",null,q.cover.caption):null)); }
+  if(q.status==="frei"){ cover.appendChild(h("p",{class:"hook"},q.hook||"Heute kein Kunstunterricht.")); if(q.reason) cover.appendChild(h("p",{class:"notice",style:"margin-top:8px"},q.reason)); }
+  else { cover.appendChild(h("p",{class:"hook"},q.hook||""));
+    const ul=h("ul"); (q.lessons||[]).forEach(l=>ul.appendChild(h("li",null,h("span",{class:"time"},l.time||""),h("span",null,h("b",null,(l.label||"")+" "),l.topic||""))));
+    if(q.boss) ul.appendChild(h("li",null,h("span",{class:"time"},"Boss"),h("span",null,"Das Gespräch mit dem MB")));
+    const box=h("div",{class:"contents"},h("span",{class:"kicker"},"In diesem Heft"),ul);
+    if(Array.isArray(q.alsoToday)&&q.alsoToday.length) box.appendChild(h("p",{class:"also"},"Außerdem heute: "+q.alsoToday.join(", ")));
+    cover.appendChild(box); }
+  wrap.appendChild(cover); wrap.appendChild(statsRow());
+  if(q.status==="ready"){ const due=dueReviews(S.reviews,S.today).length; let label="Los geht's",sub="";
+    if(res.finished){ label="Heft ansehen"; sub=sc.ok+" von "+sc.total+" richtig · "+sc.points+" Punkte"; }
+    else if(sc.done>0){ label="Weiterlesen"; sub="Frage "+(sc.done+1)+" von "+sc.total; }
+    else if(due>0&&date===S.today) sub="Vorher "+due+" Wiederholung"+(due>1?"en":"")+" aus früheren Heften";
+    wrap.appendChild(h("button",{class:"btn primary",id:"start",onclick:()=>res.finished?goto("result"):startPlay()},label));
+    if(sub) wrap.appendChild(h("p",{class:"notice",style:"text-align:center"},sub)); }
+  wrap.appendChild(rankPanel()); wrap.appendChild(navGrid()); return wrap; }
+
+function startPlay(){ const q=S.quizzes[S.date]; const res=resultFor(S.date);
+  S.rq=(S.date===S.today&&!res.reviewDone&&firstOpen(q,res)===0)?dueReviews(S.reviews,S.today):[];
+  S.ri=0; S.phase=S.rq.length?"review":"main"; S.idx=firstOpen(q,res); S.picked=null; S.burst=null;
+  if(S.phase==="main"&&S.idx>=cleanQuestions(q).length){ if(q.boss&&!res.finished){ S.view="boss"; S.bossOpen=false; render(); } else finish(); return; }
+  try{ if(navigator.wakeLock) navigator.wakeLock.request("screen").catch(()=>{}); }catch(e){}
+  S.view="play"; render(); }
+function strip(q,res,curIdx){ const qs=cleanQuestions(q); const a=res.answers||{}; const el=h("div",{class:"strip","aria-label":"Fortschritt"});
+  el.style.gridTemplateColumns="repeat("+(qs.length+(q.boss?1:0))+",1fr)";
+  qs.forEach((x,i)=>{ const s=a[x.id]; el.appendChild(h("span",{class:"cell"+(s?(s.correct?" ok":" no"):"")+(i===curIdx?" now":"")})); });
+  if(q.boss) el.appendChild(h("span",{class:"cell bosscell"+(res.finished?" ok":"")+(curIdx===qs.length?" now":"")})); return el; }
+function levelDots(n){ const l=h("span",{class:"lvl","aria-label":"Stufe "+n}); for(let i=1;i<=3;i++) l.appendChild(h("i",{class:i<=n?"on":""})); return l; }
+function questionBlock(x,seed,picked,onPick,extraChips,pts){
+  const kind=SPEAKER[x.area]||"erzaehler"; const ord=order(x.options.length,seed); const keys="ABCDEF"; const out=[];
+  const panel=h("section",{class:"panel pop"});
+  panel.appendChild(h("div",{class:"chips"},extraChips||[],h("span",{class:"chip"},AREAS[x.area]||"Frage"),x.frame?h("span",{class:"chip acc"},x.frame):null,x.level?levelDots(x.level):null));
+  panel.appendChild(h("div",{class:"speaker"},h("div",{class:"who"},figure(kind),h("span",null,SPEAKER_NAME[kind])),h("p",{class:"balloon hyph"},x.q)));
+  out.push(panel);
+  const opts=h("div",{class:"opts"});
+  ord.forEach((oi,pos)=>{ let cls="opt"; if(picked!=null){ if(oi===x.correct) cls+=" right"; else if(oi===picked) cls+=" wrong shake"; }
+    opts.appendChild(h("button",{class:cls,"data-opt":String(oi),disabled:picked!=null,onclick:()=>onPick(oi)},h("span",{class:"key"},keys[pos]),h("span",{class:"hyph"},x.options[oi]))); });
+  out.push(opts);
+  if(picked!=null){ const ok=picked===x.correct; const rev=h("section",{class:"panel reveal"});
+    if(S.burst) rev.appendChild(h("span",{class:"burst"+(ok?" ok":"")},S.burst));
+    rev.appendChild(h("p",{class:"verdict"+(ok?" ok":"")},ok?"Richtig!":"Knapp daneben.",pts!=null?h("small",null,ok?"+"+pts+" Punkte":"Combo weg"):null));
+    if(x.explain) rev.appendChild(h("p",null,x.explain));
+    if(x.source) rev.appendChild(h("details",{class:"src"},h("summary",null,"Quelle"),h("span",null,x.source)));
+    out.push(rev); }
+  return out; }
+function viewPlay(){ const q=S.quizzes[S.date]; const res=resultFor(S.date); const qs=cleanQuestions(q); const st=h("div",{class:"stage"}); st.appendChild(topbar()); let showNext=false;
+  if(S.phase==="review"){ const r=S.rq[S.ri];
+    st.appendChild(h("div",{class:"chapter"},h("span",{class:"kicker"},"Aufwärmen · "+(S.ri+1)+" von "+S.rq.length),h("h2",{class:"hyph"},"Wiederholung"),h("p",{class:"goal"},"Aus dem Heft vom "+shortDate(r.from)+(r.lessonLabel?", "+r.lessonLabel:""))));
+    questionBlock(r.q,r.id+"#"+(r.seen||0),S.picked,pickReview,[h("span",{class:"chip acc"},"Runde "+((r.step||0)+1)+" von 3")]).forEach(e=>st.appendChild(e));
+    showNext=S.picked!=null;
+  } else if(S.phase==="finale"){ const f=S.fq[S.fi]; const fr=(res.finale&&res.finale.answers)||{}; const key=f.date+"_"+f.q.id;
+    st.appendChild(h("div",{class:"chapter"},h("span",{class:"kicker"},"Freitag · "+(S.fi+1)+" von "+S.fq.length),h("h2",{class:"hyph"},"Wochenfinale"),h("p",{class:"goal"},"Die Fragen, die diese Woche danebengingen. Doppelte Punkte.")));
+    const picked=S.picked!=null?S.picked:(fr[key]?fr[key].chosen:null);
+    questionBlock(f.q,"finale#"+key,picked,pickFinale,[h("span",{class:"chip acc"},"Finale")],fr[key]?(fr[key].correct?fr[key].pts:0):null).forEach(e=>st.appendChild(e));
+    showNext=picked!=null;
+  } else { const x=qs[S.idx]; const lesson=(q.lessons||[]).find(l=>l.id===x.lesson); const sc=scoreOf(q,res); const a=res.answers[x.id];
+    const combo=comboBefore(q,res,S.idx+(a?1:0));
+    st.appendChild(strip(q,res,S.idx));
+    st.appendChild(h("div",{class:"hud"},h("b",null,sc.points+" P"),combo>=2?h("span",{class:"combo"},"Combo ×"+multiplier(combo).toLocaleString("de-DE")):h("span",{class:"mono"},"Frage "+(S.idx+1)+" von "+qs.length)));
+    const prev=qs[S.idx-1];
+    if(lesson&&(!prev||prev.lesson!==x.lesson)) st.appendChild(h("div",{class:"chapter"},h("span",{class:"kicker"},(lesson.time||"")+" Uhr · Klasse "+(lesson.label||"")),h("h2",{class:"hyph"},lesson.topic||""),lesson.goal?h("p",{class:"goal"},"Ziel: "+lesson.goal):null));
+    const picked=S.picked!=null?S.picked:(a?a.chosen:null);
+    questionBlock(x,S.date+"#"+x.id,picked,pickMain,[h("span",{class:"chip"},(S.idx+1)+"/"+qs.length)],a?(a.correct?a.pts:0):null).forEach(e=>st.appendChild(e));
+    showNext=picked!=null; }
+  if(showNext) st.appendChild(h("button",{class:"btn primary sticky",id:"next",onclick:next},nextLabel()));
+  setTimeout(renderSaving,0); return st; }
+function nextLabel(){ const q=S.quizzes[S.date]; const qs=cleanQuestions(q);
+  if(S.phase==="review") return S.ri+1<S.rq.length?"Weiter":"Zum Heft";
+  if(S.phase==="finale") return S.fi+1<S.fq.length?"Weiter":"Finale werten";
+  if(S.idx+1<qs.length) return "Weiter"; return q.boss?"Zum Endgegner":"Auswertung"; }
+const HIT=["ZACK!","BÄM!","TREFFER!","WUSCH!"],MISS=["PLONK.","UFF.","KNIRSCH.","HUCH."];
+function burstFor(ok,seed){ const a=ok?HIT:MISS; return a[hash(String(seed))%a.length]; }
+function pickReview(oi){ if(S.picked!=null) return; const r=S.rq[S.ri]; S.picked=oi; const ok=oi===r.q.correct; S.burst=burstFor(ok,r.id+r.seen);
+  const upd=nextReview(r,ok,S.today); saveReview(upd);
+  if(upd.done){ const p=JSON.parse(JSON.stringify(profile())); p.mastered=(p.mastered||0)+1; const g=grant(p,Object.keys(S.album).length,streakBest(),S.today); S.newBadges=S.newBadges.concat(g.newBadges); saveProfile(g.profile); }
+  if(ok) collect(r.q,S.today); render(); }
+function pickMain(oi){ const q=S.quizzes[S.date]; const x=cleanQuestions(q)[S.idx]; const res=resultFor(S.date);
+  if(S.picked!=null||res.answers[x.id]) return; S.picked=oi; const ok=oi===x.correct; const pts=ok?Math.round(basePoints(x)*multiplier(comboBefore(q,res,S.idx))):0;
+  S.burst=burstFor(ok,S.date+x.id);
+  saveResult(S.date,Object.assign({},res,{answers:Object.assign({},res.answers,{[x.id]:{chosen:oi,correct:ok,pts,at:new Date().toISOString()}})}));
+  if(!ok){ const id=S.date+"_"+x.id; if(!S.reviews[id]) saveReview(newReview(S.date,q,x)); } else collect(x,S.date);
+  render(); }
+function pickFinale(oi){ const res=resultFor(S.date); const f=S.fq[S.fi]; const key=f.date+"_"+f.q.id; const fr=(res.finale&&res.finale.answers)||{};
+  if(S.picked!=null||fr[key]) return; S.picked=oi; const ok=oi===f.q.correct; const pts=ok?basePoints(f.q)*2:0; S.burst=burstFor(ok,"f"+key);
+  saveResult(S.date,Object.assign({},res,{finale:{answers:Object.assign({},fr,{[key]:{chosen:oi,correct:ok,pts}}),done:false}}));
+  if(ok) collect(f.q,S.date); render(); }
+function next(){ const q=S.quizzes[S.date]; const qs=cleanQuestions(q); S.picked=null; S.burst=null;
+  if(S.phase==="review"){ S.ri++; if(S.ri>=S.rq.length){ S.phase="main"; saveResult(S.date,Object.assign({},resultFor(S.date),{reviewDone:true})); } render(); return; }
+  if(S.phase==="finale"){ S.fi++; if(S.fi>=S.fq.length){ finishFinale(); return; } render(); return; }
+  S.idx++; if(S.idx>=qs.length){ if(q.boss){ S.view="boss"; S.bossOpen=false; render(); } else finish(); return; }
+  render(); }
+
+function viewBoss(){ const q=S.quizzes[S.date]; const b=q.boss; const res=resultFor(S.date); const checked=new Set(res.boss||[]); const total=(b.points||[]).length;
+  const wrap=h("div",{class:"stack"}); wrap.appendChild(topbar()); wrap.appendChild(strip(q,res,cleanQuestions(q).length));
+  const p=h("section",{class:"panel splash pop"},
+    h("div",{class:"bossart"},h("div",null,h("span",{class:"kicker"},"Endgegner"),h("h2",{class:"mast"},"Der ",h("span",null,"MB"))),figure("mb",true)),
+    h("p",{class:"sit",style:"margin-top:10px"},b.situation||""),h("p",{class:"balloon hyph"},b.question||""));
+  if(!S.bossOpen&&!res.finished){ p.appendChild(h("p",{style:"margin-top:14px"},"Antworte laut oder im Kopf, als säße er vor dir. Erst dann aufdecken."));
+    wrap.appendChild(p); wrap.appendChild(h("button",{class:"btn primary sticky",id:"bossReveal",onclick:()=>{ S.bossOpen=true; render(); }},"Aufdecken")); return wrap; }
+  const list=h("div",{class:"checks",style:"margin-top:16px"}); list.appendChild(h("p",{class:"kicker"},"Was hattest du drin? Antippen"));
+  (b.points||[]).forEach((pt,i)=>{ const on=checked.has(i);
+    list.appendChild(h("button",{class:"check"+(on?" on":""),"data-pt":String(i),"aria-pressed":on?"true":"false",disabled:res.finished,onclick:()=>toggleBoss(i)},h("span",{class:"box"},on?"✓":""),h("span",{class:"hyph"},pt))); });
+  p.appendChild(list); p.appendChild(h("p",{class:"judge",style:"margin-top:14px"},bossJudge(checked.size,total)));
+  if(b.source) p.appendChild(h("details",{class:"src",style:"margin-top:8px;color:var(--night-soft)"},h("summary",null,"Quelle"),h("span",null,b.source)));
+  wrap.appendChild(p);
+  wrap.appendChild(h("button",{class:"btn primary sticky",id:"bossDone",onclick:()=>res.finished?goto("result"):finish()},res.finished?"Zur Auswertung":"Fertig, Auswertung"));
+  return wrap; }
+function toggleBoss(i){ const res=resultFor(S.date); if(res.finished) return; const set=new Set(res.boss||[]); set.has(i)?set.delete(i):set.add(i);
+  saveResult(S.date,Object.assign({},res,{boss:[...set].sort((a,b)=>a-b)})); render(); }
+function finish(){ const q=S.quizzes[S.date]; const res=resultFor(S.date); const sc=scoreOf(q,res);
+  const done=Object.assign({},res,{finished:true,finishedAt:res.finishedAt||new Date().toISOString(),score:sc.ok,total:sc.total,points:sc.points,comboMax:sc.comboMax});
+  if(!res.counted){ const tmp=Object.assign({},S.results,{[S.date]:done}); const best=Math.max(bestStreak(S.quizzes,tmp),computeStreak(S.quizzes,tmp,S.today));
+    const g=applyFinish(profile(),q,done,Object.keys(S.album).length,best,S.today); done.counted=true; saveProfile(g.profile); S.newBadges=S.newBadges.concat(g.newBadges); }
+  saveResult(S.date,done); S.view="result"; render(); }
+function startFinale(){ S.fq=finaleCandidates(S.quizzes,S.results,S.date); S.fi=0; S.picked=null; S.burst=null;
+  const fr=(resultFor(S.date).finale||{}).answers||{}; while(S.fi<S.fq.length&&fr[S.fq[S.fi].date+"_"+S.fq[S.fi].q.id]) S.fi++;
+  if(S.fi>=S.fq.length){ finishFinale(); return; } S.phase="finale"; S.view="play"; render(); }
+function finishFinale(){ const res=resultFor(S.date); const fr=(res.finale&&res.finale.answers)||{}; const keys=Object.keys(fr);
+  const pts=keys.reduce((s,k)=>s+(fr[k].pts||0),0); const allRight=keys.length>0&&keys.every(k=>fr[k].correct);
+  if(!(res.finale&&res.finale.done)){ const p=JSON.parse(JSON.stringify(profile())); p.totalPoints+=pts; if(allRight) p.finaleWins=(p.finaleWins||0)+1;
+    const g=grant(p,Object.keys(S.album).length,streakBest(),S.today); S.newBadges=S.newBadges.concat(g.newBadges); saveProfile(g.profile);
+    saveResult(S.date,Object.assign({},res,{finale:{answers:fr,done:true,points:pts}})); }
+  S.phase="main"; S.view="result"; render(); }
+
+function barsFor(stats){ const el=h("div",{class:"bars"});
+  Object.keys(AREAS).forEach(k=>{ const v=stats[k]; const p=v.total?Math.round(100*v.ok/v.total):0; const fill=h("span",{class:"fill"}); fill.style.width=p+"%";
+    el.appendChild(h("div",{class:"bar"},h("span",null,AREAS[k]),h("span",{class:"track"},fill),h("span",{class:"n"},v.ok+"/"+v.total))); }); return el; }
+function badgeName(id){ const b=BADGES.find(x=>x[0]===id); return b?b[1]:id; }
+function verdictLine(sc){ const p=sc.total?sc.ok/sc.total:0;
+  if(p>=.9) return "Der MB packt seine Mappe wieder ein."; if(p>=.75) return "Solide. Die Stunde kann kommen.";
+  if(p>=.5) return "Halbe Miete. Die Wiederholungen holen den Rest."; return "Gut, dass das Quiz und nicht der MB gefragt hat."; }
+function viewResult(){ const q=S.quizzes[S.date]; const res=resultFor(S.date); const qs=cleanQuestions(q); const sc=scoreOf(q,res);
+  const wrap=h("div",{class:"stack"}); wrap.appendChild(topbar());
+  const pairs=qs.map(x=>({q:x,ans:res.answers[x.id]})); const bt=(q.boss&&q.boss.points||[]).length; const bo=(res.boss||[]).length;
+  wrap.appendChild(h("section",{class:"panel cover pop"},h("span",{class:"kicker"},"Auswertung · "+niceDate(S.date)),
+    h("p",{class:"big",style:"margin-top:8px"},String(sc.ok),h("small",null," / "+sc.total)),
+    h("p",{class:"mono",style:"margin-top:4px;position:relative;z-index:1"},sc.points+" Punkte · längste Combo "+sc.comboMax+(res.finale&&res.finale.done?" · Finale +"+(res.finale.points||0):"")),
+    h("p",{class:"hook",style:"margin-top:8px"},verdictLine(sc)),
+    bt?h("p",{class:"notice",style:"margin-top:8px;position:relative;z-index:1"},"MB-Gespräch: "+bo+" von "+bt+" Punkten. "+bossJudge(bo,bt)):null));
+  if(S.newBadges.length){ const ul=h("ul",{class:"list"}); [...new Set(S.newBadges)].forEach(id=>ul.appendChild(h("li",null,h("b",null,badgeName(id)))));
+    wrap.appendChild(h("section",{class:"panel badgehit pop",id:"newBadges"},h("span",{class:"kicker"},"Neues Abzeichen"),ul)); }
+  const cands=weekday(S.date)===5&&res.finished?finaleCandidates(S.quizzes,S.results,S.date):[];
+  if(cands.length&&!(res.finale&&res.finale.done)) wrap.appendChild(h("button",{class:"btn primary",id:"finale",onclick:startFinale},"Wochenfinale: "+cands.length+" Fragen"));
+  wrap.appendChild(statsRow());
+  wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:12px"},"Nach Bereichen"),barsFor(areaStats(pairs))));
+  const wrong=pairs.filter(p=>p.ans&&!p.ans.correct);
+  if(wrong.length){ const ul=h("ul",{class:"list"}); wrong.forEach(p=>ul.appendChild(h("li",null,h("span",{class:"mono"},AREAS[p.q.area]||""),h("b",{class:"hyph"},p.q.q),h("span",null,"Richtig: "+p.q.options[p.q.correct]))));
+    wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:6px"},"Kommt wieder in 1, 3 und 7 Schultagen"),ul)); }
+  if(Array.isArray(q.findings)&&q.findings.length){ const ul=h("ul",{class:"list"}); q.findings.forEach(f=>ul.appendChild(h("li",null,h("span",{class:"mono hyph"},f.where||""),h("span",null,f.text||""))));
+    wrap.appendChild(h("section",{class:"panel finding"},h("h3",{class:"kicker",style:"margin-bottom:6px"},"Beim Fragenbauen aufgefallen"),ul,h("p",{class:"notice",style:"margin-top:10px"},"Nur ein Hinweis. Geändert wurde nichts."))); }
+  wrap.appendChild(h("div",{class:"grid2"},h("button",{class:"btn small",id:"toWeek",onclick:()=>goto("week")},"Woche"),
+    h("button",{class:"btn small",id:"review",onclick:()=>{ S.phase="main"; S.idx=0; S.picked=null; S.burst=null; S.view="play"; render(); }},"Nachlesen")));
+  setTimeout(renderSaving,0); return wrap; }
+function viewWeek(){ const w=weekSummary(S.quizzes,S.results,S.today); const wrap=h("div",{class:"stack"}); wrap.appendChild(topbar(h("span",{class:"mono"},"KW "+isoWeek(w.monday))));
+  const grid=h("div",{class:"week"});
+  w.days.forEach(d=>{ let big="·",cls="day"; const small=WD2[weekday(d.date)]+" "+shortDate(d.date);
+    if(d.status==="done") big=String(d.score.ok); else if(d.status==="open") big=d.score.ok+"…"; else { cls+=" empty"; if(d.status==="frei") big="frei"; else if(d.status==="missed") big="×"; else if(d.status==="ready") big="•"; }
+    if(d.date===S.today) cls+=" today"; grid.appendChild(h("div",{class:cls},h("b",null,big),h("span",{class:"mono"},small))); });
+  wrap.appendChild(h("section",{class:"panel"},h("h2",{class:"mast",style:"font-size:clamp(40px,12vw,60px)"},"Die ",h("span",null,"Woche")),h("p",{class:"notice",style:"margin-block:6px 14px"},"Richtige Antworten pro Schultag"),grid));
+  wrap.appendChild(statsRow());
+  wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:12px"},"Nach Bereichen, ganze Woche"),barsFor(w.stats),
+    w.weakest?h("p",{style:"margin-top:12px"},"Schwächster Bereich: ",h("b",null,AREAS[w.weakest.area])," ("+Math.round(w.weakest.p*100)+" %). Die Fragen dazu kommen als Wiederholung zurück."):h("p",{class:"notice",style:"margin-top:12px"},"Noch zu wenig Antworten für einen Trend.")));
+  if(w.wrong.length){ const ul=h("ul",{class:"list"}); w.wrong.slice(0,8).forEach(p=>ul.appendChild(h("li",null,h("span",{class:"mono"},shortDate(p.date)+" · "+(AREAS[p.q.area]||"")),h("b",{class:"hyph"},p.q.q),h("span",null,"Richtig: "+p.q.options[p.q.correct]))));
+    wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:6px"},"Daneben diese Woche"+(w.wrong.length>8?", die ersten 8":"")),ul)); }
+  return wrap; }
+const ERA_ORDER=["Antike","Mittelalter","Romanik","Gotik","Renaissance","Manierismus","Barock","Rokoko","Klassizismus","Romantik","19. Jahrhundert","Realismus","Impressionismus","Jugendstil","Klassische Moderne","Nachkriegsmoderne","Gegenwart","Comic","Ohne Epoche"];
+function viewAlbum(){ const wrap=h("div",{class:"stack"}); const cards=Object.values(S.album); wrap.appendChild(topbar(h("span",{class:"mono"},cards.length+" Werke")));
+  wrap.appendChild(h("section",{class:"panel"},h("h2",{class:"mast",style:"font-size:clamp(40px,12vw,60px)"},"Al",h("span",null,"bum")),h("p",{class:"notice",style:"margin-top:6px"},"Jedes Werk, zu dem du richtig liegst, kommt als Karte hierher. Nach Epochen sortiert.")));
+  if(!cards.length){ wrap.appendChild(h("div",{class:"cards"},h("div",{class:"card locked"},h("span",null,"Noch leer. Die erste Karte gibt es im nächsten Heft.")),h("div",{class:"card locked"},h("span",null,"?")))); return wrap; }
+  const eras={}; cards.forEach(c=>{ (eras[c.era]=eras[c.era]||[]).push(c); });
+  Object.keys(eras).sort((a,b)=>{ const ia=ERA_ORDER.indexOf(a),ib=ERA_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib)||a.localeCompare(b); }).forEach(e=>{
+    const grid=h("div",{class:"cards"});
+    eras[e].sort((a,b)=>String(a.year).localeCompare(String(b.year))).forEach(c=>grid.appendChild(h("div",{class:"card"},h("span",{class:"era"},e),h("b",{class:"hyph"},c.title),h("span",{class:"by"},c.artist+(c.year?", "+c.year:"")),c.count>1?h("span",{class:"x"},"×"+c.count):null)));
+    wrap.appendChild(h("section",{class:"stack"},h("h3",{class:"kicker"},e),grid)); });
+  return wrap; }
+function viewBadges(){ const p=profile(); const wrap=h("div",{class:"stack"}); wrap.appendChild(topbar(h("span",{class:"mono"},Object.keys(p.badges||{}).length+" von "+BADGES.length)));
+  wrap.appendChild(rankPanel()); const grid=h("div",{class:"badges"});
+  BADGES.forEach(([id,name,desc])=>{ const got=p.badges&&p.badges[id]; grid.appendChild(h("div",{class:"badge "+(got?"on":"off")},h("b",{class:"hyph"},name),h("span",null,desc),got?h("span",{class:"mono"},"seit "+shortDate(got)):null)); });
+  wrap.appendChild(h("section",{class:"panel"},h("h2",{class:"mast",style:"font-size:clamp(36px,11vw,56px)"},"Abzei",h("span",null,"chen")),h("div",{style:"margin-top:12px"},grid)));
+  return wrap; }
+function viewArchive(){ const wrap=h("div",{class:"stack"}); wrap.appendChild(topbar(h("span",{class:"mono"},"letzte 6 Wochen")));
+  const ds=Object.keys(S.quizzes).sort().reverse(); const list=h("div",{class:"archive"});
+  if(!ds.length) list.appendChild(h("p",{class:"notice"},"Noch keine Hefte."));
+  ds.forEach(d=>{ const q=S.quizzes[d]; const r=S.results[d]; let meta="";
+    if(q.status==="frei") meta="frei"; else { const sc=scoreOf(q,r); meta=r&&r.finished?(sc.ok+"/"+sc.total):(d>S.today?"Vorschau":(sc.done?"angefangen":"offen")); }
+    list.appendChild(h("button",{"data-date":d,onclick:()=>{ S.date=d; goto("cover"); }},h("span",null,niceDate(d)),h("span",{class:"meta"},meta))); });
+  wrap.appendChild(h("section",{class:"panel"},h("h2",{class:"mast",style:"font-size:clamp(40px,12vw,60px)"},"Ar",h("span",null,"chiv")),h("div",{style:"margin-top:12px"},list)));
+  return wrap; }
+
+/* ================= Start ================= */
+function boot(){ const claude=window.claude;
+  if(!claude||typeof claude.use!=="function"){ S.failed="Die Hefte lassen sich gerade nicht laden."; render(); return; }
+  claude.use("db").then(db=>{
+    if(!db){ S.failed="Speicher nicht verfügbar. Bitte den privaten Modus ausschalten."; render(); return; }
+    S.db=db; const since=addDays(S.today,-45); const got={q:0,r:0,v:0,a:0,p:0};
+    let late=false;
+    const settle=()=>{ if(!S.ready&&got.q&&((got.r&&got.v&&got.a&&got.p)||late)){ S.ready=true; S.slow=false; S.date=pickDate(S.quizzes,S.today); render(); } };
+    setTimeout(()=>{ late=true; if(!S.ready){ if(got.q) settle(); else { S.slow=true; render(); } } },8000);
+    const onErr=e=>{ if(!S.ready){ S.failed="Laden fehlgeschlagen ("+((e&&e.code)||"unbekannt")+")."; render(); } };
+    const mergeRev=(remote,local)=>{ Object.keys(local).forEach(k=>{ const l=local[k]; if(!l) return; if(!remote[k]||(l.rev||0)>=(remote[k].rev||0)) remote[k]=l; }); return remote; };
+    db.collection("quizzes").where("date",">=",since).onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ const v=d.data(); if(validQuiz(v)) o[v.date]=v; }); S.quizzes=o; got.q=1;
+      if(S.ready){ if(!S.date||!o[S.date]) S.date=pickDate(o,S.today); if(S.view==="cover"||S.view==="archive") render(); } else settle(); },onErr);
+    db.collection("results").where("date",">=",since).onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ const v=d.data(); if(v&&v.date) o[v.date]=Object.assign({answers:{},boss:[]},v); });
+      S.results=mergeRev(o,S.results); got.r=1; if(!S.ready) settle(); },onErr);
+    db.collection("review").where("done","==",false).onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ const v=d.data(); if(v&&v.id) o[v.id]=v; });
+      Object.keys(S.reviews).forEach(k=>{ const l=S.reviews[k]; if(!l) return; if(l.done){ delete o[k]; return; } if(!o[k]||(l.rev||0)>=(o[k].rev||0)) o[k]=l; });
+      S.reviews=o; got.v=1; if(!S.ready) settle(); },onErr);
+    db.collection("album").onSnapshot(snap=>{ const o={}; snap.docs.forEach(d=>{ const v=d.data(); if(v&&v.slug&&v.title) o[v.slug]=v; }); S.album=mergeRev(o,S.album); got.a=1; if(!S.ready) settle(); },onErr);
+    db.doc("meta/profile").onSnapshot(d=>{ const v=d.exists?d.data():null; if(v&&(!S.profile||(v.rev||0)>(S.profile.rev||0))) S.profile=Object.assign(emptyProfile(),v); got.p=1; if(!S.ready) settle(); },onErr);
+  }).catch(()=>{ S.failed="Der Speicher hat nicht geantwortet."; render(); });
+  setInterval(()=>{ const t=todayStr(); if(t!==S.today){ S.today=t; if(S.view==="cover"){ S.date=pickDate(S.quizzes,t); render(); } } },60000); }
+/* Tastatur am PC: A bis D oder 1 bis 4 antworten, Enter oder Leertaste weiter */
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||e.repeat) return; const t=e.target; if(t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable)) return;
+  const k=e.key.toLowerCase(); const click=sel=>{ const el=document.querySelector(sel); if(el&&!el.disabled){ e.preventDefault(); el.click(); return true; } return false; };
+  const pos="abcd".indexOf(k)>=0? "abcd".indexOf(k) : "1234".indexOf(k);
+  if(S.view==="play"&&pos>=0){ const b=document.querySelectorAll(".opt")[pos]; if(b&&!b.disabled){ e.preventDefault(); b.click(); } return; }
+  if(S.view==="boss"&&pos>=0&&S.bossOpen){ click('.check[data-pt="'+pos+'"]'); return; }
+  if(k==="enter"||k===" "||k==="arrowright"){ if(t&&t.tagName==="BUTTON"&&k!=="arrowright") return; click("#next")||click("#bossReveal")||click("#bossDone")||(S.view==="cover"&&click("#start")); }
+});
+window.MR._state=S; window.MR._render=render;
+boot();
+})();
+</script>
+
+</body>
+</html>

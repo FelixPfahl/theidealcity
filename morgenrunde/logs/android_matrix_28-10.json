@@ -1,0 +1,62 @@
+[
+ {
+  "fall": "Pixel 7 · Claude-App (WebView) · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Pixel 7 · Chrome · dark",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Pixel 5 · Chrome · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy S24 · Samsung Internet · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy S24 · Samsung Internet · dark",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy A55 · Chrome · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy S8 · Chrome · light · Funkloch",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy Z Fold 7 Cover · Claude-App (WebView) · dark",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy Z Fold 7 · Chrome · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy Tab S9 · Firefox-Kennung · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy S24 landscape · Claude-App (WebView) · light",
+  "ok": true,
+  "probleme": []
+ },
+ {
+  "fall": "Galaxy S24 · Claude-App (WebView) · light · große Anzeige (320 px)",
+  "ok": true,
+  "probleme": []
+ }
+]

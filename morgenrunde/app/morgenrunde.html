@@ -353,7 +353,7 @@ function write(path,data){ if(!S.db) return Promise.resolve();
       .then(()=>{ if(pending[path]===d) delete pending[path]; }); };
   const p=(chains[path]||Promise.resolve()).then(run,run)
     .then(()=>{ if(!Object.keys(pending).length) S.saveError=""; })
-    .catch(e=>{ S.saveError=(e&&e.code==="quota_exceeded")?"Speicher voll. Bitte Claude Bescheid geben.":"Offline: Antworten sind vorgemerkt und gehen raus, sobald wieder Netz da ist."; })
+    .catch(e=>{ S.saveError=(e&&e.code==="quota_exceeded")?"Speicher voll. Bitte Claude Bescheid geben.":OFFLINE_TEXT; })
     .finally(()=>{ S.saving--; renderSaving(); });
   chains[path]=p;
   if(!S._flushing) Object.keys(pending).forEach(k=>{ if(k!==path) flushOne(k); });
@@ -362,7 +362,10 @@ function flushOne(k){ if(!pending[k]) return; S._flushing=true; try{ write(k,pen
 function flushAll(){ Object.keys(pending).forEach(flushOne); }
 window.addEventListener("online",flushAll);
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") flushAll(); });
-function renderSaving(){ const el=document.getElementById("savestate"); if(!el) return; el.textContent=S.saveError?S.saveError:(S.saving>0?"sichert":"gesichert"); }
+const OFFLINE_TEXT="Offline: Antworten sind vorgemerkt und gehen raus, sobald wieder Netz da ist.";
+function saveText(){ if(S.saveError) return S.saveError; if(S.saving>0) return (navigator.onLine===false)? OFFLINE_TEXT : "sichert"; return "gesichert"; }
+window.addEventListener("offline",renderSaving);
+function renderSaving(){ const el=document.getElementById("savestate"); if(!el) return; el.textContent=saveText(); }
 
 function resultFor(date){ return S.results[date]||{date,answers:{},finished:false,boss:[]}; }
 function bump(prev,obj){ return Object.assign({},obj,{rev:Math.max((prev&&prev.rev)||0,obj.rev||0)+1}); }
@@ -385,7 +388,7 @@ function mast(){ return h("h1",{class:"mast stacked"},"Morgen",h("span",null,"ru
 function viewLoading(){ return h("section",{class:"panel cover"},mast(),h("div",{class:"issue mono"},h("span",null,"Kunst · Lehrinstitut Derksen"),h("span",null,"lädt")),
   h("p",{class:"hook"},S.slow?"Funkloch? Das Heft kommt, sobald wieder Netz da ist.":"Das heutige Heft wird geholt.")); }
 function viewFailed(){ return h("section",{class:"panel stack"},mast(),h("p",{class:"hook"},"Die Hefte lassen sich gerade nicht laden."),h("p",{class:"notice"},S.failed),h("button",{class:"btn small",onclick:()=>location.reload()},"Neu laden")); }
-function topbar(right){ return h("div",{class:"topbar"},h("button",{class:"link",onclick:()=>goto("cover")},"Zum Titel"),right||h("span",{class:"mono",id:"savestate"},"gesichert")); }
+function topbar(right){ return h("div",{class:"topbar"},h("button",{class:"link",onclick:()=>goto("cover")},"Zum Titel"),right||h("span",{class:"mono",id:"savestate"},saveText())); }
 function goto(v){ S.view=v; S.picked=null; S.burst=null; render(); }
 
 function statsRow(){ const streak=computeStreak(S.quizzes,S.results,S.today); const due=dueReviews(S.reviews,S.today,99).length;

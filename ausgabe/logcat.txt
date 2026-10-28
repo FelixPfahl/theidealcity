@@ -1,0 +1,435 @@
+--------- beginning of main
+10-28 14:03:23.676  6305  6451 I Pay     : Wallet install state NOT_INSTALLED [CONTEXT service_id=198 ]
+10-28 14:03:23.686  6305  6451 I Pay     : Migration flag not enabled. [CONTEXT service_id=198 ]
+--------- beginning of system
+10-28 14:03:23.722   487   503 W JobScheduler: Job didn't exist in JobStore: ae36148 #u0a121/7 com.google.android.contacts/com.google.android.apps.contacts.shortcut.ShortcutJobService
+10-28 14:03:23.752  3113  3214 W BugleAction: Null config in BugleSharedPrefs
+10-28 14:03:23.752  3113  3214 W BugleAction: Failed to get msisdn from Bugle
+10-28 14:03:23.756   284   876 I netd    : tetherGetStats() -> {[]} <1.70ms>
+10-28 14:03:23.758  6285  6982 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.pay.gcmtask.PayGcmTaskService started execution. cause:5 exec_start_elapsed_seconds: 142 [CONTEXT service_id=218 ]
+10-28 14:03:23.758  6285  6982 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.pay.gcmtask.PayGcmTaskService finished executing. cause:5 result: 1 elapsed_millis: 33 uptime_millis: 33 exec_start_elapsed_seconds: 142 [CONTEXT service_id=218 ]
+10-28 14:03:23.762  2570  3650 I CarrierServices: [62] fjp.f: No RCS Configuration was found in Bugle for simID: redacted-pii:sim_id[chars:20,last3:897]
+10-28 14:03:23.763  3113  3214 W BugleRcsEngine: [47] RcsProfileService.g: Result is null when getting value for id:4
+10-28 14:03:23.763  3113  3214 W Bugle   : SubscriptionMetadataUtils get: invalid subId = -2
+10-28 14:03:23.764  3113  3214 W Bugle   : SubscriptionMetadataUtils get: invalid subId = -2
+10-28 14:03:23.764  3113  3214 W Bugle   : SubscriptionMetadataUtils get: invalid subId = -2
+10-28 14:03:23.765  3113  3214 W Bugle   : SubscriptionMetadataUtils get: invalid subId = -2
+10-28 14:03:23.765  3113  3214 W Bugle   : SubscriptionUtilsAsOfLMR1: getSelfRawNumber: subInfo is null for subscription{id:-1}
+10-28 14:03:23.766  3113  3214 W BugleAction: No default number, returning empty msisdn
+10-28 14:03:23.770  3113  3274 W BugleUsageStatistics: InstallReferrerFetcher: Bad response code: 2
+10-28 14:03:23.776  2570  3650 I CarrierServices: [62] fjp.f: No RCS Configuration was found in Bugle for simID: redacted-pii:sim_id[chars:20,last3:897]
+10-28 14:03:23.777  6285  6982 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.pay.gcmtask.PayGcmTaskService started execution. cause:5 exec_start_elapsed_seconds: 143 [CONTEXT service_id=218 ]
+10-28 14:03:23.777  6305  6713 I Pay     : Device does not support HCE. [CONTEXT service_id=198 ]
+10-28 14:03:23.778  6285  6982 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.pay.gcmtask.PayGcmTaskService finished executing. cause:5 result: 1 elapsed_millis: 39 uptime_millis: 39 exec_start_elapsed_seconds: 143 [CONTEXT service_id=218 ]
+10-28 14:03:23.781  6285  6982 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.pay.gcmtask.PayGcmTaskService started execution. cause:5 exec_start_elapsed_seconds: 143 [CONTEXT service_id=218 ]
+10-28 14:03:23.781  6285  6982 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.pay.gcmtask.PayGcmTaskService finished executing. cause:5 result: 2 elapsed_millis: 6 uptime_millis: 6 exec_start_elapsed_seconds: 143 [CONTEXT service_id=218 ]
+10-28 14:03:24.117   773   825 D EGL_emulation: app_time_stats: avg=191.72ms min=171.81ms max=200.28ms count=6
+10-28 14:03:24.304   487   699 D WifiNl80211Manager: Scan result ready event
+10-28 14:03:24.304   487   699 D WifiNative: Scan result ready event
+10-28 14:03:24.603   419  7163 D CCodecBufferChannel: [c2.android.vorbis.decoder#261] buffers after EOS ignored (0 us)
+10-28 14:03:24.603   419  7163 D CCodecBufferChannel: [c2.android.vorbis.decoder#261] buffers after EOS ignored (0 us)
+10-28 14:03:24.604   419  7161 D AudioTrack: stop(15): called with 82980 frames delivered
+10-28 14:03:25.063   284  7182 I resolv  : GetAddrInfoHandler::run: {0 786432 0 983040 10120 0}
+10-28 14:03:25.066  6285  6982 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 14:03:25.066  6285  6982 W WakeLock: GCM_HB_ALARM counter does not exist
+10-28 14:03:25.066  6285  6982 I AlarmManager: setExactAndAllowWhileIdle [name: GCM_CONN_ALARM type: 2 triggerAtMillis: 152222]
+10-28 14:03:25.080   487  1891 I MediaFocusControl: abandonAudioFocus() from uid/pid 10157/773 clientId=android.media.AudioManager@3825ea1
+10-28 14:03:25.080   773  7119 V MediaPlayer: resetDrmState:  mDrmInfo=null mDrmProvisioningThread=null mPrepareDrmInProgress=false mActiveDrmScheme=false
+10-28 14:03:25.080   773  7119 V MediaPlayer: cleanDrmObj: mDrmObj=null mDrmSessionId=null
+10-28 14:03:25.080   419  3260 D NuPlayerDriver: reset(0x7b0d123758d0) at state 6
+10-28 14:03:25.081   419  7163 I hw-BpHwBinder: onLastStrongRef automatically unlinking death recipients
+10-28 14:03:25.081   429   453 I hw-BpHwBinder: onLastStrongRef automatically unlinking death recipients
+10-28 14:03:25.081   429   453 I hw-BpHwBinder: onLastStrongRef automatically unlinking death recipients
+10-28 14:03:25.081   429   453 V C2Store : in ~ComponentModule
+10-28 14:03:25.081   429   453 V C2Store : unloading dll
+10-28 14:03:25.082   419  7162 D MediaCodec: flushMediametrics
+10-28 14:03:25.083   419  7128 D NuPlayerDriver: notifyResetComplete(0x7b0d123758d0)
+10-28 14:03:25.083   419  3260 W AMessage: failed to post message as target looper for handler 0 is gone.
+10-28 14:03:25.267  1702  1702 I BgTaskExecutorImpl: Starting EXCLUSIVE background task INTERNAL_PERIODIC_TASK_SYNC.
+10-28 14:03:25.273  2003  7184 W DiskBasedLogger: Disk-based log buffer doesn't exist, so there's nothing to clean up.
+10-28 14:03:25.279  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task ACTIVITY_LEVEL_TASK.
+10-28 14:03:25.280  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task AWARE_TIP_WORKER_PROCESS_TIPS.
+10-28 14:03:25.281  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task CHROME_EXPERIMENT_SYNC.
+10-28 14:03:25.282  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task CLEAR_DATA_DETECTOR.
+10-28 14:03:25.283  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task CONTACT_AFFINITY_MODEL_CONTACTS_CHANGE_REFRESH.
+10-28 14:03:25.285  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task CONTACT_AFFINITY_MODEL_PERIODIC_REFRESH.
+10-28 14:03:25.293  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.293  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.293  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.294  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.294  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.294  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.294  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.294  1702  2539 I FirstRunClassifier: First run of com.google.android.googlequicksearchbox on this device detected
+10-28 14:03:25.294   487   503 D PackageManager: Instant App installer not found with android.intent.action.INSTALL_INSTANT_APP_PACKAGE
+10-28 14:03:25.294   487   503 D PackageManager: Clear ephemeral installer activity
+10-28 14:03:25.295  1702  2466 W CAMPeriodicRefresh: Refreshing not complete, unable to upload top contacts.
+10-28 14:03:25.296  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task FETCH_ADVERTISING_INFO.
+10-28 14:03:25.297  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.297  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.298  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.298  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.298  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.298  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.312  1702  2434 E TipSharedPrefManager: invalid tip 40070019: tip does not need conditions checked only once
+10-28 14:03:25.312  1702  2434 E TipSharedPrefManager: invalid tip 40070055: tip does not need conditions checked only once
+10-28 14:03:25.313  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.313  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.314  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.314  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.314  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.314  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.314  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.314  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.314  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.315  1702  2434 E TipSharedPrefManager: invalid tip 40070197: tip does not need conditions checked only once
+10-28 14:03:25.315  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.315  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.315  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.315  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.315  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.315  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.315  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.315  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.315  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.316  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.316  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.316  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.316  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.316  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.316  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.316  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.316  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.317  1702  2434 E TipSharedPrefManager: invalid tip 40070251: tip does not need conditions checked only once
+10-28 14:03:25.318   773   825 D EGL_emulation: app_time_stats: avg=200.11ms min=199.32ms max=200.75ms count=6
+10-28 14:03:25.319  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.319  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.319  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.319  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.319  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.319  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.319  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.319  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.319  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.320  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.320  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.320  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.320  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.320  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.320  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.320  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.320  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.320  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.320  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.320  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.320  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.320  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.320  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.320  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.320  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.320  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.321  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.321  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.321  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.321  1702  2434 I A       : Using proto config with mendel
+10-28 14:03:25.321  1702  2434 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.321  1702  2434 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.321  1702  2434 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.322  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.322  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.322  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.322  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.322  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.325  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.325  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.325  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.325  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.330  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task GELLER_PKG_ENTITIES_REFRESH_TASK.
+10-28 14:03:25.330  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.330  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.330  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.350  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task MDD_CHARGING_TASK.
+10-28 14:03:25.351  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task MDD_MAINTENANCE_TASK.
+10-28 14:03:25.352  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task NGA_READ_ONLY_LOGS_BASED_TOP_CONTACTS_NGA_PUSH.
+10-28 14:03:25.353  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task PCP_V1_BACKGROUND_REFRESH.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.356  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.362  1702  7189 I A       : No accounts found for [PKG_ENTITIES], not syncing anything.
+10-28 14:03:25.364  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task SYNC_TAPAS_ZERO_PREFIX_CACHE.
+10-28 14:03:25.364  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.365  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.365  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.365  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.365  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.365  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.367  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task UPDATE_GSERVICES_CONFIG.
+10-28 14:03:25.367  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.367  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.368  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.368  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.368  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.368  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.368  1702  2539 I A       : Updating Gservices keys
+10-28 14:03:25.369  1702  1702 I BgTaskExecutorImpl: Starting PERIODIC background task UPDATE_LAUNCHER_SHORTCUT.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.372  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.375  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.375  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.375  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.375  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.375  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.375  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.376  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.376  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.376  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.376  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.376  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.377   487   699 W JobScheduler: Job didn't exist in JobStore: 75b8cd0 #u0a114/-49 com.google.android.googlequicksearchbox/com.google.android.apps.gsa.tasks.BackgroundTasksJobService
+10-28 14:03:25.386  1702  7192 E PCP.BackgroundTask: Missing PCP TNG entry point binding, or zero state response to PCP is not enabled.
+10-28 14:03:25.387  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.387  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.387  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.387  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.396  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.396  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.396  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.410  1702  7187 E SingleDataFileGroupPop: Failed to add file group 
+10-28 14:03:25.422  1702  2083 I A       : NGA Sync: MDD Task: MDD.MAINTENANCE.PERIODIC.GCM.TASK done.
+10-28 14:03:25.422  1702  2083 I A       : NGA Sync: isNgaSyncEnabled: false; enableFileGroupPopulator: false; requiresMddAssets: false
+10-28 14:03:25.423  1702  2065 I A       : Refresh account policy.
+10-28 14:03:25.424  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.424  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:25.433  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.433  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.433  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.433  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.434  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.435  1702  7187 E d       : RuntimeException while executing runnable cb{com.google.apps.tiktok.tracing.ej@c8e789d} with executor MoreExecutors.directExecutor()
+10-28 14:03:25.435  1702  7187 E d       : java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.ae.b' on a null object reference in method 'void com.google.android.libraries.mdi.download.h.bq.gH(java.lang.Object)'
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.mdi.download.h.bq.gH(PG:2)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.apps.tiktok.tracing.ej.gH(PG:2)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.cb.run(PG:7)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.bf.execute(PG:1)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.d.i(PG:1)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.d.iq(PG:5)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.ci.t(PG:1)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.mdi.download.h.bu.b(PG:26)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.mdi.download.gs.p(PG:3)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.mdi.download.gs.g(PG:4)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.apps.gsa.staticplugins.bw.a.a(PG:1)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.gsa.k.a.i.apply(PG:2)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.h.e(PG:2)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.common.util.concurrent.j.run(PG:9)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.i.ae.run(PG:1)
+10-28 14:03:25.435  1702  7187 E d       : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
+10-28 14:03:25.435  1702  7187 E d       : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.i.i.run(PG:2)
+10-28 14:03:25.435  1702  7187 E d       : 	at com.google.android.libraries.i.p.run(PG:4)
+10-28 14:03:25.435  1702  7187 E d       : 	at java.lang.Thread.run(Thread.java:1012)
+10-28 14:03:25.436  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.436  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.436  1702  7187 E PhFileGroupPop: Failed to add file group 
+10-28 14:03:25.438  1702  2417 I A       : Starting new batch; batchId=1 corpus=1004
+10-28 14:03:25.438  1702  7191 I A       : Joining existing batch; batchId=1 corpus=1008
+10-28 14:03:25.438  1702  7197 I A       : Joining existing batch; batchId=1 corpus=1015
+10-28 14:03:25.438  1702  7195 D PhFileGroupPop: Added file groups assistant_appintegration_appactions_config
+10-28 14:03:25.439  1702  2055 I A       : Joining existing batch; batchId=1 corpus=1014
+10-28 14:03:25.440  1702  7187 I A       : Download file group for language pack: en-US
+10-28 14:03:25.440  1702  7187 W A       : Locale en-US is not compatible, please check manifest exists
+10-28 14:03:25.441  1702  7187 I A       : Using proto config with mendel
+10-28 14:03:25.441  1702  7187 I A       : Using proto config with mendel
+10-28 14:03:25.441  1702  7195 D PhFileGroupPop: Added file groups fedass_policy_config_group
+10-28 14:03:25.441  1702  7187 I A       : Using proto config with mendel
+10-28 14:03:25.442  1702  7187 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.442  1702  7187 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.442  1702  7187 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.442  1702  7187 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.442  1702  7187 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
+10-28 14:03:25.442  1702  7187 I A       : Skipping. Expected model: 1 Found: 2
+10-28 14:03:25.442  1702  7187 I HotwordModelPopulator: #updateHotwordFileGroup group name: hotword_model_en-US_okg, raw locale: en-US, locale: en-US
+10-28 14:03:25.443  1702  7187 I A       : Using proto config with mendel
+10-28 14:03:25.443  1702  7187 I A       : Using proto config with mendel
+10-28 14:03:25.443  1702  7187 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.443  1702  7187 I A       : Adding from config to map. Locale: cmn-Hant-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
+10-28 14:03:25.443  1702  7187 I A       : Adding from config to map. Locale: id-ID modelPrefix: x_google Location:cfffcc1a4c1c084c003c8eb27f73d770 isSpeakerIdSupported: true
+10-28 14:03:25.443  1702  7187 I A       : Adding from config to map. Locale: ko-KR modelPrefix: x_google Location:0b132163a2eb2c1194b202067475724b isSpeakerIdSupported: true
+10-28 14:03:25.444  1702  7187 I A       : Skipping. Expected model: 2 Found: 1
+10-28 14:03:25.444  1702  7187 I A       : Adding from config to map. Locale: zh-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
+10-28 14:03:25.444  1702  7187 I HotwordModelPopulator: #updateHotwordFileGroup group name: hotword_model_en-US_okhey, raw locale: en-US, locale: en-US
+10-28 14:03:25.445  1702  7187 I A       : Using proto config with mendel
+10-28 14:03:25.445  1702  7187 I A       : Merging legacy hotword config map with new proto.
+10-28 14:03:25.445  1702  7187 I A       : Adding from config to map. Locale: cmn-Hant-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
+10-28 14:03:25.445  1702  7187 I A       : Adding from config to map. Locale: id-ID modelPrefix: x_google Location:cfffcc1a4c1c084c003c8eb27f73d770 isSpeakerIdSupported: true
+10-28 14:03:25.445  1702  7187 I A       : Adding from config to map. Locale: ko-KR modelPrefix: x_google Location:0b132163a2eb2c1194b202067475724b isSpeakerIdSupported: true
+10-28 14:03:25.445  1702  7187 I A       : Skipping. Expected model: 2 Found: 1
+10-28 14:03:25.445  1702  7187 I A       : Adding from config to map. Locale: zh-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
+10-28 14:03:25.445  1702  7187 I HotwordModelPopulator: #updateHotwordFileGroup group name: hotword_model_en-US_okhey, raw locale: en-US, locale: en-US
+10-28 14:03:25.449  1702  7195 D PhFileGroupPop: Added file groups tapas_cortex
+10-28 14:03:25.451  1702  2059 E HotwordModelPopulator: Failed to add hotword file group for 'hotword_model_en-US_okg' from location: https://www.gstatic.com/android-search/hotword/x_google/975058821313279e27b2c3f04de0beef/hotword.data
+10-28 14:03:25.451  1702  2062 E HotwordModelPopulator: Failed to add hotword file group for 'hotword_model_en-US_okhey' from location: https://www.gstatic.com/android-search/hotword/x_google/975058821313279e27b2c3f04de0beef/hotword.data
+10-28 14:03:25.451  1702  2065 E HotwordModelPopulator: Failed to add hotword file group for 'hotword_model_en-US_okhey' from location: https://www.gstatic.com/android-search/hotword/x_google/975058821313279e27b2c3f04de0beef/hotword.data
+10-28 14:03:25.604  5768  5768 W rules.WifiRx: FenceState currentState is not true
+10-28 14:03:25.785  1471  4002 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor$WorkerThreadHandler.handleMessage:221 executing task com.android.voicemail.impl.ActivationTask@ed4fe53 [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.789  1471  1471 I DialerLogcatLoggingBindings: com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_ACTIVATION_STARTED
+10-28 14:03:25.790  1471  4002 I DialerPreOMigrationHandler: com.android.voicemail.impl.PreOMigrationHandler.migrate:76 ComponentInfo{com.android.phone/com.android.services.telephony.TelephonyConnectionService}, 1, UserHandle{0} already migrated [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.794  1471  4002 I DialerOmtpVvmCarrierConfigHelper: com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.isCarrierAppInstalled:637 carrier app not installed in this device [CONTEXT ratelimit_period="1 MINUTES [skipped: 11]" ]
+10-28 14:03:25.795  1471  4002 I DialerVoicemailStatus: com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-28 14:03:25.795  1471  4002 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-28 14:03:25.803  1471  1729 I DialerRestVoicemailEnabledFn: com.android.dialer.voicemail.service.impl.vvmclients.rest.RestVoicemailEnabledFn.isEnabled:51 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 281]" ]
+10-28 14:03:25.803  1471  1729 I DialerCvvmEnabledFn: com.android.dialer.voicemail.service.impl.vvmclients.omtp.protocol.cvvm.CvvmEnabledFn.isEnabled:37 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 152]" ]
+10-28 14:03:25.808  1471  1729 W Settings: Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-28 14:03:25.808  1471  1729 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-28 14:03:25.809  1471  4002 I DialerActivationTask: com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:292 VVM content provider configured - vvm_type_cvvm PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.809  1471  4002 I DialerActivationTask: com.android.voicemail.impl.ActivationTask.updateVoicemailsWithIccId:477 conversion disabled [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.809  1471  4002 I DialerOmtpVvmCarrierConfigHelper: com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_ACTIVATING PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.809  1471  4002 I DialerVoicemailStatus: com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-28 14:03:25.810  1471  4002 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-28 14:03:25.815  1471  1729 W Settings: Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-28 14:03:25.815  1471  1729 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-28 14:03:25.817  1471  4002 I DialerActivationTask: com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:339 sending an activation request [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.823  1000  1212 D SmsNumberUtils: enter filterDestAddr. destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-28 14:03:25.823  1000  1212 D SmsNumberUtils: destAddr is not formatted.
+10-28 14:03:25.823  1000  1212 D SmsNumberUtils: leave filterDestAddr, new destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-28 14:03:25.828  1471  4002 I DialerLogcatLoggingBindings: com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:46 Impression: CVVM_SEND_VVM_SMS
+10-28 14:03:25.836  1471  1471 I DialerStatusSmsFetcher: com.android.voicemail.impl.sms.StatusSmsFetcher.onReceive:106 Request SMS successfully sent [CONTEXT enable_persistent_logger=true ]
+10-28 14:03:25.952   487   487 E PermissionControllerManager: Error updating user_sensitive flags for uid 10159
+10-28 14:03:25.952   487   487 E PermissionControllerManager: java.util.concurrent.TimeoutException
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at com.android.internal.infra.AndroidFuture.triggerTimeout(AndroidFuture.java:289)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at com.android.internal.infra.AndroidFuture$$ExternalSyntheticLambda1.run(Unknown Source:2)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at android.os.Handler.handleCallback(Handler.java:942)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at android.os.Looper.loopOnce(Looper.java:201)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at android.os.Looper.loop(Looper.java:288)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at com.android.server.SystemServer.run(SystemServer.java:962)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at com.android.server.SystemServer.main(SystemServer.java:647)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at java.lang.reflect.Method.invoke(Native Method)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+10-28 14:03:25.952   487   487 E PermissionControllerManager: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:914)
+10-28 14:03:26.297   487   487 I Telecom : DefaultDialerCache: Refreshing default dialer for user 0: now com.google.android.dialer: DDC.oR@Ad4
+10-28 14:03:26.297   972   972 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+10-28 14:03:26.298   972   972 D MediaPlayerList: Name of package changed: com.google.android.googlequicksearchbox
+10-28 14:03:26.298  4827  5047 I PermissionControllerServiceImpl: Updating user sensitive for uid 10114
+10-28 14:03:26.301   972   972 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+10-28 14:03:26.301   972   972 D MediaPlayerList: Name of package changed: com.google.android.googlequicksearchbox
+10-28 14:03:26.301   773   773 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 0
+10-28 14:03:26.304   487   589 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS | 
+10-28 14:03:26.304   487   571 D CompatibilityChangeReporter: Compat change id reported: 171306433; UID 10114; state: ENABLED
+10-28 14:03:26.304   487   571 D CompatibilityChangeReporter: Compat change id reported: 226439802; UID 10114; state: DISABLED
+10-28 14:03:26.304   487   580 I RoleService: Granting default roles...
+10-28 14:03:26.307  3113  3412 I Bugle   : BroadcastReceiverAsyncWorkTracker: Acknowledging broadcast of atsi@bd4cffa
+10-28 14:03:26.318   773   825 D EGL_emulation: app_time_stats: avg=200.03ms min=199.19ms max=200.86ms count=5
+10-28 14:03:26.318  4005  7204 I ProvidersCache: Provider returned no roots. Possibly naughty: com.google.android.apps.docs.storage
+10-28 14:03:26.322  1000  1000 D CarrierSvcBindHelper: onPackageModified: com.google.android.googlequicksearchbox
+10-28 14:03:26.327  1000  1000 D CarrierSvcBindHelper: No carrier app for: 0
+10-28 14:03:26.329  6305  6381 W Icing   : Package com.google.android.googlequicksearchbox targets Android P and isn't allowed to use AppDataSearch indexing API
+10-28 14:03:26.331  6285  6358 W ChimeraUtils: Module com.google.android.gms.nearby_en missing resource null(0)
+10-28 14:03:26.331  6285  7034 I Fitness : OnPackageChangedOperation got intent: Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x45000010 pkg=com.google.android.gms cmp=com.google.android.gms/.chimera.PersistentIntentOperationService (has extras) } [CONTEXT service_id=17 ]
+10-28 14:03:26.338  4827  7086 W Role    : Default holder doesn't have required signing certificate: com.google.android.apps.work.clouddpc:23962F4B43B9857638EA66F4D419518EAE282491ACDA4B94707BD59003C45E58
+10-28 14:03:26.338  6285  6358 W ChimeraUtils: Module com.google.android.gms.nearby_en missing resource null(0)
+10-28 14:03:26.338  1000  1000 D ImsResolver: maybeAddedImsService, packageName: com.google.android.googlequicksearchbox
+10-28 14:03:26.342  6285  7034 I Fitness : FitCleanupIntentOperation received Intent android.intent.action.PACKAGE_CHANGED [CONTEXT service_id=17 ]
+10-28 14:03:26.349  6305  6381 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+10-28 14:03:26.356  6305  6381 I Icing   : Indexing done com.google.android.gms-apps
+10-28 14:03:26.359   487   517 D AppWidgetServiceImpl: Provider info from ComponentInfo{com.google.android.googlequicksearchbox/com.google.android.googlequicksearchbox.SearchWidgetProvider} won't be persisted.
+10-28 14:03:26.359   487   517 D AppWidgetServiceImpl: Provider info from ComponentInfo{com.google.android.googlequicksearchbox/com.google.android.apps.gsa.staticplugins.smartspace.widget.SmartspaceWidgetProvider} won't be persisted.
+10-28 14:03:26.441  1702  7195 I A       : Scheduled one-off task for batch; batchId=1 taskId=-1000006 corpora=[1004,1008,1014,1015]
+10-28 14:03:26.441  1702  7195 I A       : Pending callbacks: 1
+10-28 14:03:26.441  1702  1702 I BgTaskExecutorImpl: Starting NONEXCLUSIVE background task MDD_CELLULAR_CHARGING_TASK.
+10-28 14:03:26.446  1702  2065 W A       : Corpus: GDD_APA_LIGHTWEIGHT_TOKENS is disabled
+10-28 14:03:26.446  1702  2059 I A       : Starting batch sync for corpora: [1014]
+10-28 14:03:26.450  1702  2062 I A       : Starting batch sync for corpora: [1004]
+10-28 14:03:26.451  1702  2064 I A       : Starting batch sync for corpora: [1015]
+10-28 14:03:26.459  1702  2059 I A       : Setting isLegacySQLite mode to false.
+10-28 14:03:26.490  1702  7195 I DeviceCapHelper: Adding surface identity to the device capabilities for surface OPA_AGSA.
+10-28 14:03:26.494  1702  7197 I DeviceCapHelper: Adding surface identity to the device capabilities for surface OPA_AGSA.
+10-28 14:03:26.499  1702  7197 I A       : The GellerConfig is not present, defaulting isUploadEnabled for corpus GDD_APA_SMART_ACTION_MODELS to true.
+10-28 14:03:26.499  1702  2055 I DeviceCapHelper: Adding surface identity to the device capabilities for surface OPA_AGSA.
+10-28 14:03:26.505  1702  2083 I A       : There are 0 elements to be updated on the server for corpus GDD_APA_SMART_ACTION_MODELS.
+10-28 14:03:26.505  1702  2083 I A       : There are 0 elements to delete from the server for corpus GDD_APA_SMART_ACTION_MODELS.
+10-28 14:03:26.505  1702  2055 I A       : No previous syncToken for corpus GDD_APA_SMART_ACTION_MODELS found.
+10-28 14:03:26.506  1702  7197 I A       : The GellerConfig is not present, defaulting isUploadEnabled for corpus GDD_APA_HEAD_SUGGEST to true.
+10-28 14:03:26.506  1702  2083 I A       : There are 0 elements to be updated on the server for corpus GDD_APA_HEAD_SUGGEST.
+10-28 14:03:26.506  1702  2083 I A       : There are 0 elements to delete from the server for corpus GDD_APA_HEAD_SUGGEST.
+10-28 14:03:26.507  1702  2055 I A       : No previous syncToken for corpus GDD_APA_HEAD_SUGGEST found.
+10-28 14:03:26.508  1702  7197 I A       : The GellerConfig is not present, defaulting isUploadEnabled for corpus GDD_APA_BISTO to true.
+10-28 14:03:26.508  1702  2082 I A       : There are 0 elements to be updated on the server for corpus GDD_APA_BISTO.
+10-28 14:03:26.508  1702  2082 I A       : There are 0 elements to delete from the server for corpus GDD_APA_BISTO.
+10-28 14:03:26.509  1702  7197 I A       : No previous syncToken for corpus GDD_APA_BISTO found.
+10-28 14:03:26.512   284  7211 I resolv  : GetAddrInfoHandler::run: {0 262144 0 983040 10114 0}
+10-28 14:03:26.513  1702  7209 W io.grpc.e.gx: [{0}] Failed to resolve name. status={1}
+10-28 14:03:26.513  1702  7212 W io.grpc.e.gx: [{0}] Failed to resolve name. status={1}
+10-28 14:03:26.513   284  7213 I resolv  : GetAddrInfoHandler::run: {0 262144 0 983040 10114 0}
+10-28 14:03:26.513  1702  7210 W io.grpc.e.gx: [{0}] Failed to resolve name. status={1}
+10-28 14:03:26.515  1702  2062 E MDD     : GddFileGroupPopulator: GDD Sync failed for corpus: GDD_APA_HEAD_SUGGEST, configuration: GddAgsaApaHeadSuggest
+10-28 14:03:26.515  1702  2064 E MDD     : GddFileGroupPopulator: GDD Sync failed for corpus: GDD_APA_SMART_ACTION_MODELS, configuration: GddAgsaApaSmartActionModels
+10-28 14:03:26.516  1702  2062 E MDD     : GddFileGroupPopulator: GDD Sync failed for corpus: GDD_APA_BISTO, configuration: GddAgsaApaBisto
+10-28 14:03:26.516  1702  2082 I A       : Batch succeeded; batchId=1 taskId=-1000006
+10-28 14:03:26.517  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:26.517  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:26.519   487  1891 W JobScheduler: Job didn't exist in JobStore: 6cb97ac #u0a114/-1000006 com.google.android.googlequicksearchbox/com.google.android.apps.gsa.tasks.BackgroundTasksJobService
+10-28 14:03:26.522  1702  2082 I A       : NGA Sync: MDD Task: MDD.CHARGING.PERIODIC.TASK done.
+10-28 14:03:26.522  1702  2082 I A       : NGA Sync: isNgaSyncEnabled: false; enableFileGroupPopulator: false; requiresMddAssets: false
+10-28 14:03:26.522  1702  2065 I A       : Refresh account policy.
+10-28 14:03:26.522  1702  2434 W SearchServiceCore: Abort, client detached.
+10-28 14:03:26.949  3113  3200 W Bugle   : TextClassifierLibManagerImpl: Reclaiming memory at level: 40
+10-28 14:03:27.401  1012  1012 D MainContentCaptureSession: Flushing 19 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=TEXT_CHANGE
+10-28 14:03:27.517   773   825 D EGL_emulation: app_time_stats: avg=199.82ms min=199.38ms max=200.38ms count=6
+10-28 14:03:27.633   487   517 D OomAdjuster: Not killing cached processes
+10-28 14:03:28.297   773  1130 D BufferPoolAccessor2.0: evictor expired: 3, evicted: 0
+10-28 14:03:28.298   487   886 D BufferPoolAccessor2.0: evictor expired: 4, evicted: 0
+10-28 14:03:28.517   773   825 D EGL_emulation: app_time_stats: avg=200.01ms min=199.53ms max=200.43ms count=5
+10-28 14:03:29.298   487   886 D BufferPoolAccessor2.0: evictor expired: 2, evicted: 0
+10-28 14:03:29.717   773   825 D EGL_emulation: app_time_stats: avg=199.98ms min=199.47ms max=200.28ms count=6
+10-28 14:03:30.295   419  7166 D BufferPoolAccessor2.0: bufferpool2 0x7b0d323787e8 : 0(0 size) total buffers - 0(0 size) used buffers - 95/103 (recycle/alloc) - 8/198 (fetch/transfer)
+10-28 14:03:30.295   419  7166 D BufferPoolAccessor2.0: evictor expired: 1, evicted: 1
+10-28 14:03:30.297   429   819 D BufferPoolAccessor2.0: bufferpool2 0x7e065a94cc88 : 0(0 size) total buffers - 0(0 size) used buffers - 93/97 (recycle/alloc) - 4/96 (fetch/transfer)
+10-28 14:03:30.297   429   819 D BufferPoolAccessor2.0: evictor expired: 1, evicted: 1
+10-28 14:03:30.717   773   825 D EGL_emulation: app_time_stats: avg=200.04ms min=197.93ms max=202.65ms count=5
+10-28 14:03:31.917   773   825 D EGL_emulation: app_time_stats: avg=199.93ms min=199.55ms max=200.60ms count=6
+10-28 14:03:32.695   487   518 D OomAdjuster: Not killing cached processes
+10-28 14:03:32.697   284  7218 I resolv  : GetAddrInfoHandler::run: {0 786432 0 983040 10120 0}
+10-28 14:03:32.697  6285  6982 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 14:03:32.697  6285  6982 W WakeLock: GCM_HB_ALARM counter does not exist
+10-28 14:03:32.698  6285  6982 I AlarmManager: setExactAndAllowWhileIdle [name: GCM_CONN_ALARM type: 2 triggerAtMillis: 167481]
+10-28 14:03:32.722  1862  1862 V ContactsProvider: Scheduled notifyChange started.
+10-28 14:03:32.722   972   972 D BluetoothPbapService:  onChange on contact uri 
+10-28 14:03:32.726   972  7219 D BluetoothPbapUtils: primaryVersionCounter = 0, secondaryVersionCounter=0
+10-28 14:03:32.917   773   825 D EGL_emulation: app_time_stats: avg=199.99ms min=199.88ms max=200.17ms count=5
+10-28 14:03:33.727   487   698 W JobScheduler: Job didn't exist in JobStore: 221921d #u0a121/7 com.google.android.contacts/com.google.android.apps.contacts.shortcut.ShortcutJobService
+10-28 14:03:34.117   773   825 D EGL_emulation: app_time_stats: avg=199.99ms min=199.74ms max=200.16ms count=6
+10-28 14:03:35.317   773   825 D EGL_emulation: app_time_stats: avg=199.95ms min=199.40ms max=200.17ms count=6
+10-28 14:03:36.406  6305  6305 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.safetynet.service.START pkg=com.google.android.gms }
+10-28 14:03:36.517   773   825 D EGL_emulation: app_time_stats: avg=199.98ms min=199.63ms max=200.20ms count=6
+10-28 14:03:36.967  7223  7223 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-28 14:03:36.981   127   127 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-28 14:03:36.981  7223  7224 I Gralloc4: mapper 4.x is not supported
+10-28 14:03:37.010  7223  7224 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 

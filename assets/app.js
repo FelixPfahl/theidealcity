@@ -79,7 +79,7 @@
   function plotterLoop(on){ var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR.plotter; if (!st){ spriteLoad('plotter'); return; } if (!st.buf) return;
     if (on){ if (!LOOP){ var src = ac.createBufferSource(); src.buffer = st.buf; src.loop = true; var c = st.clips[Math.floor(Math.random() * st.clips.length)]; src.loopStart = c[0]; src.loopEnd = c[0] + c[1]; src.playbackRate.value = .9 + Math.random() * .2;
         var g = ac.createGain(); g.gain.value = 0; src.connect(g); g.connect(bus(ac, 'tools')); src.start(ac.currentTime, c[0]); LOOP = {src:src, g:g}; }
-      LOOP.g.gain.setTargetAtTime(.8, ac.currentTime, .08); clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
+      LOOP.g.gain.setTargetAtTime(.27, ac.currentTime, .08);   /* Josef, 28.10., 01:45: ein Drittel */ clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
     else if (LOOP){ LOOP.g.gain.setTargetAtTime(0, ac.currentTime, .15); var L = LOOP; LOOP = null; setTimeout(function(){ try { L.src.stop(); } catch(e){} }, 700); } }
   window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
@@ -1111,7 +1111,7 @@
         if (b.done - done > 400){ c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); b.done = 0; }
         else { c.setTransform(DPR, 0, 0, DPR, 0, 0); for (var k = b.done - 1; k >= done; k--){ var g = items[k]; if (g.gap) continue; c.clearRect(g.x - 4, g.y - b.sc * F.asc - 6, g.adv + 8, b.sc * (F.asc - F.desc) + 12); }
           for (var m = Math.max(0, done - 3); m < done; m++){ if (!items[m].gap){ travelTo(c, b, m); strokeItem(c, b, items[m], items[m].len); } } b.done = done; } }
-      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35) spritePlay('feder', {vol:.9, max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
+      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35) spritePlay('feder', {vol:.3, max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
       b.done = done;
       if (b.cleared.length){ c.setTransform(DPR, 0, 0, DPR, 0, 0); b.cleared.forEach(function(q){ c.clearRect(q[0], q[1], q[2], q[3]); }); }
       L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lv.width, lv.height);
@@ -1138,7 +1138,7 @@
       if (moved && AC){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
       if (lag || built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }
     function penSound(kind){ var ac = ctx(); if (!ac) return; var t = ac.currentTime + .01; vary(); V.len = 1; V.vol = .8;
-      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:1.1, force:true}); spritePlay('plotter', {vol:.6, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
+      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:.4, force:true}); spritePlay('plotter', {vol:.2, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
       if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8, max:.3, force:true}); return; }
       if (kind === 'swap'){ [0, .09].forEach(function(dt){ noise(ac, t + dt, .025, .5, 'lowpass', 900, 1, .025); osc(ac, 'square', 180, t + dt, .03, .25); }); }
       else if (kind === 'feder'){ /* Feder wird aufgenommen und eingetaucht: Klirren, Tropfen, Kratzen */ noise(ac, t, .05, .35, 'highpass', 2600, 1, .05); osc(ac, 'triangle', 1900, t + .06, .05, .12, .002); noise(ac, t + .18, .22, .4, 'bandpass', 3200, 3, .1); }

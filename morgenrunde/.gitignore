@@ -1,0 +1,4 @@
+node_modules/
+*.png
+last_log.json
+loop_log.txt

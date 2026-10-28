@@ -1,0 +1,422 @@
+{
+ "date": "2026-10-29",
+ "status": "ready",
+ "title": "Donnerstag, 29. Oktober",
+ "hook": "Letzter Doppelschlag vor den Ferien: Weihnachten in der 7a, ein Bauplan ohne Fluchtpunkt in der 8.",
+ "alsoToday": [
+  "7.45 Aufsicht Halle",
+  "12.15 Klassenstunde 6a"
+ ],
+ "lessons": [
+  {
+   "id": "7a",
+   "time": "8.00",
+   "label": "7a",
+   "topic": "Weihnachtskarte 2 von 2",
+   "goal": "Eure Weihnachtskarte wird heute fertig, mit einer klaren Grundform und einer Hauptsache, die man sofort findet."
+  },
+  {
+   "id": "8",
+   "time": "9.45",
+   "label": "8",
+   "topic": "Arbeitsräume 6 von 10, Möbel isometrisch",
+   "goal": "Ihr baut euer eigenes Möbel aus Grundriss und Aufriss als Körper auf dem Isometrie-Raster."
+  }
+ ],
+ "questions": [
+  {
+   "id": "q01",
+   "lesson": "7a",
+   "area": "fach",
+   "level": 1,
+   "q": "Die erste kommerzielle Weihnachtskarte (1843, John Callcott Horsley für Henry Cole) sorgte für Ärger. Warum?",
+   "options": [
+    "Auf dem Bild stößt die Familie mit Wein an, auch ein Kind trinkt mit",
+    "Die Heilige Familie fehlt, das galt als gottlos",
+    "Sie wurde in Paris gedruckt und galt als unpatriotisch",
+    "Sie kostete einen ganzen Monatslohn"
+   ],
+   "correct": 0,
+   "explain": "Cole ließ 1.000 Stück zu je einem Shilling drucken, die Temperenzbewegung war empört. Genau das ist euer Ratemoment um 8.00.",
+   "source": "Deck Weihnachtskarte, S. Die Auflösung; Associated Press via breakingnews.ie (2020), abgerufen 28.10.2026",
+   "work": {
+    "slug": "horsley-weihnachtskarte-1843",
+    "artist": "John Callcott Horsley",
+    "title": "Weihnachtskarte für Henry Cole",
+    "year": "1843",
+    "era": "19. Jahrhundert"
+   }
+  },
+  {
+   "id": "q02",
+   "lesson": "7a",
+   "area": "methodik",
+   "level": 1,
+   "q": "Die Malphase ab 8.45 steht auf der Folie mit 25 Minuten. Was steckt laut Verlaufsplan darin?",
+   "options": [
+    "Nur Malzeit, der Puffer liegt in der Schlussrunde",
+    "10 Minuten Puffer, Abgabe bleibt fest um 9.25",
+    "5 Minuten Aufräumen",
+    "Die Besprechung an der Dokumentenkamera"
+   ],
+   "correct": 1,
+   "explain": "Puffer steckt in der Arbeitsphase, auf der Folie steht nur die runde Abgabezeit. Die Karten gehen danach an die Schulleitung, also kein Verschieben.",
+   "source": "Kalendereintrag 7a, 29.10.; Projektanweisungen, Unterrichtsmaterial"
+  },
+  {
+   "id": "q03",
+   "lesson": "7a",
+   "area": "paedagogik",
+   "level": 1,
+   "q": "Zwischenhalt 8.40 an der Dokumentenkamera. Welche Regel auf der Folie schützt am direktesten vor Bloßstellung?",
+   "options": [
+    "Wir sprechen über das Bild",
+    "Wer zeigt, sagt zuerst selbst etwas",
+    "Niemand muss seine Karte zeigen",
+    "Ein Tipp, freundlich gesagt"
+   ],
+   "correct": 2,
+   "explain": "Freiwilligkeit ist die Grundbedingung, die anderen Regeln greifen erst unter der Kamera. Mit 12 oder 13 ist der Blick der Mitschüler besonders scharf.",
+   "source": "Deck Weihnachtskarte, Teil V, Zwischenhalt"
+  },
+  {
+   "id": "q04",
+   "lesson": "7a",
+   "area": "didaktik",
+   "level": 1,
+   "q": "Warum trägt Horsleys Karte als Aufhänger für eine Stunde, in der die Klasse nur malt?",
+   "options": [
+    "Weil der Lehrplan Horsley für Jgst. 7 nennt",
+    "Weil sie zeigt, wie man Wein malt",
+    "Weil sie die Bewertungskriterien ersetzt",
+    "Weil sie das eigene Medium Karte als Bild mit Wirkung zeigt und als Rätsel sofort aktiviert"
+   ],
+   "correct": 3,
+   "explain": "Das Medium der Stunde wird selbst zum Gegenstand, das Raten zu zweit aktiviert sofort. Danach folgen direkt die Kriterien, Aufhänger und Arbeit hängen zusammen.",
+   "source": "Deck Weihnachtskarte, S. Die erste Weihnachtskarte der Welt"
+  },
+  {
+   "id": "q05",
+   "lesson": "7a",
+   "area": "fach",
+   "level": 2,
+   "q": "In welchem Bild aus eurer Reihe macht nicht Größe, sondern eine Kerze, die Josef mit der Hand abschirmt, die Hauptsache sichtbar?",
+   "options": [
+    "Georges de La Tour, Anbetung der Hirten, um 1644",
+    "Duccio, Geburt Christi, 1308 bis 1311",
+    "Botticelli, Mystische Geburt, um 1500",
+    "Piero della Francesca, Die Geburt Christi, um 1470 bis 1475"
+   ],
+   "correct": 0,
+   "explain": "Bei La Tour sind alle etwa gleich groß, das Licht macht die Mitte. Duccio ist das Gegenstück mit Bedeutungsgröße, genau dieses Paar steht in Kapitel III.",
+   "source": "Deck Weihnachtskarte, Kapitel III, Was macht die Mitte?",
+   "work": {
+    "slug": "la-tour-anbetung-der-hirten",
+    "artist": "Georges de La Tour",
+    "title": "Anbetung der Hirten",
+    "year": "um 1644",
+    "era": "Barock"
+   }
+  },
+  {
+   "id": "q06",
+   "lesson": "7a",
+   "area": "didaktik",
+   "level": 2,
+   "frame": "LehrplanPLUS",
+   "q": "Wo nennt der LehrplanPLUS Kunst 7 die Geburt Christi ausdrücklich?",
+   "options": [
+    "Ku7 LB 2 Architektur und Produktdesign",
+    "Ku7 LB 1 Bildende Kunst, bei den Inhalten als Bildmotiv",
+    "Gar nicht, nur in Ku 6",
+    "Ku7 LB 3, bei den Kompetenzerwartungen"
+   ],
+   "correct": 1,
+   "explain": "LB 1 nennt bei den Inhalten Bildmotive wie Verkündigung und Christi Geburt. Gut für die Begründung der Werkauswahl im MB-Gespräch (B1).",
+   "source": "lehrplanplus.bayern.de, Gymnasium Kunst 7, abgerufen 28.10.2026"
+  },
+  {
+   "id": "q07",
+   "lesson": "7a",
+   "area": "methodik",
+   "level": 2,
+   "q": "Was macht \"Ein Stern und ein Wunsch\" um 9.10 methodisch stark?",
+   "options": [
+    "Die Mitschüler vergeben eine Vornote",
+    "Es ersetzt die Abschlussrunde",
+    "Satzanfänge strukturieren das Feedback, der Wunsch wird auf Handout 6 notiert und um 9.15 umgesetzt",
+    "Es ist vor allem eine Pause zum Trocknen"
+   ],
+   "correct": 2,
+   "explain": "Feedback ohne Folgephase ist Deko. Hier hat der Wunsch einen Ort (Handout 6) und eine Zeit (ab 9.15).",
+   "source": "Deck Weihnachtskarte, Teil V, Arbeitsauftrag 7"
+  },
+  {
+   "id": "q08",
+   "lesson": "7a",
+   "area": "methodik",
+   "level": 3,
+   "q": "Warum gilt beim Aquarell \"von hell nach dunkel\"?",
+   "options": [
+    "Dunkle Farben trocknen schneller",
+    "Aquarell ist lasierend: Das Weiß kommt vom Papier, Helles lässt sich nicht über Dunkles legen",
+    "Helle Pigmente sind teurer und sollen zuerst verbraucht werden",
+    "Es ist reine Geschmackssache der Lehrkraft"
+   ],
+   "correct": 1,
+   "explain": "Lasierend heißt: Schichten addieren sich, Weiß kommt vom Papier. Bei deckendem Acryl ist es weniger streng, die Trocknungszeit spricht trotzdem dafür.",
+   "source": "Deck Weihnachtskarte, So gehst du vor, Schritt 3; Fachwissen Maltechnik"
+  },
+  {
+   "id": "q09",
+   "lesson": "7a",
+   "area": "fach",
+   "level": 3,
+   "q": "Caravaggios Geburt Christi mit den Heiligen Franziskus und Laurentius aus Palermo: Was ist ihr Schicksal?",
+   "options": [
+    "1969 aus dem Oratorio di San Lorenzo gestohlen, bis heute verschollen",
+    "Im Zweiten Weltkrieg zerstört",
+    "2019 restituiert und jetzt in den Uffizien",
+    "Von Caravaggio selbst übermalt"
+   ],
+   "correct": 0,
+   "explain": "Gestohlen im Oktober 1969, bis heute einer der bekanntesten ungeklärten Kunstdiebstähle. Die Datierung (1600 oder 1609) ist umstritten, so steht es auch im Deck.",
+   "source": "Deck Weihnachtskarte, Teil I, Ein Bild verschwindet",
+   "work": {
+    "slug": "caravaggio-geburt-christi-palermo",
+    "artist": "Caravaggio",
+    "title": "Geburt Christi mit den Heiligen Franziskus und Laurentius",
+    "year": "1600 (umstritten)",
+    "era": "Barock"
+   }
+  },
+  {
+   "id": "q10",
+   "lesson": "7a",
+   "area": "paedagogik",
+   "level": 3,
+   "q": "9.15: Eine Schülerin hat erst die Hälfte ihrer Karte. Was ist die beste Reaktion?",
+   "options": [
+    "Sie darf die Karte über die Ferien zu Hause fertigmalen",
+    "Sie gibt ab wie sie ist, ohne Kommentar",
+    "Du malst schnell den Hintergrund mit",
+    "Mit ihr priorisieren: Hauptsache und Grundform fertig, Details weglassen, Abgabe 9.25 bleibt"
+   ],
+   "correct": 3,
+   "explain": "Die Karten gehen vor den Ferien an die Schulleitung, die Ferien bleiben frei. Reduktion auf Grundform und Hauptsache ist Differenzierung nach unten.",
+   "source": "Ablaufplan, Weihnachtskarten; Deck Kriterien \"Darauf kommt es an\""
+  },
+  {
+   "id": "q11",
+   "lesson": "8",
+   "area": "fach",
+   "level": 1,
+   "q": "Chris Ware, Building History (2013): Was passiert mit den Kanten, die nach hinten laufen?",
+   "options": [
+    "Sie treffen sich in einem Fluchtpunkt",
+    "Sie treffen sich in zwei Fluchtpunkten am Horizont",
+    "Sie bleiben parallel und treffen sich nie",
+    "Sie werden nach hinten dünner"
+   ],
+   "correct": 2,
+   "explain": "Kein Fluchtpunkt, hinten ist nichts kleiner als vorne. Das Haus stammt aus Wares Comic Building Stories (2012).",
+   "source": "Deck 8_screen_Arbeitsraum, S. Kein Fluchtpunkt",
+   "work": {
+    "slug": "ware-building-history",
+    "artist": "Chris Ware",
+    "title": "Building History",
+    "year": "2013",
+    "era": "Gegenwart"
+   }
+  },
+  {
+   "id": "q12",
+   "lesson": "8",
+   "area": "methodik",
+   "level": 1,
+   "q": "Woher kommen die drei Maße für das isometrische Möbel?",
+   "options": [
+    "Breite und Tiefe aus dem Grundriss, Höhe aus dem Aufriss",
+    "Alle drei aus dem Grundriss",
+    "Breite aus dem Aufriss, Tiefe und Höhe geschätzt",
+    "Aus der Maßtabelle, ohne eigene Zeichnung"
+   ],
+   "correct": 0,
+   "explain": "Darum müssen Grundriss und Aufriss vom 01.10. heute auf dem Tisch liegen. Dann Grundfläche, Höhen senkrecht, Deckfläche, Details.",
+   "source": "Deck 8_screen_Arbeitsraum, Arbeitsauftrag 1"
+  },
+  {
+   "id": "q13",
+   "lesson": "8",
+   "area": "paedagogik",
+   "level": 1,
+   "q": "Beim Partner-Check sollen Fehler als Punkt an den Rand, nicht in die Zeichnung. Pädagogisch warum?",
+   "options": [
+    "Damit du später leichter bewerten kannst",
+    "Die Zeichnung bleibt Eigentum der Urheberin, sie korrigiert selbst",
+    "Weil Bleistift schlecht radierbar ist",
+    "Damit niemand merkt, wer geprüft hat"
+   ],
+   "correct": 1,
+   "explain": "Respekt vor fremder Arbeit plus Selbstkorrektur ab 10.45. In der Pubertät wiegt das Peer-Urteil schwer, darum zuerst sagen, was stimmt.",
+   "source": "Deck 8_screen_Arbeitsraum, Arbeitsauftrag 2"
+  },
+  {
+   "id": "q14",
+   "lesson": "8",
+   "area": "paedagogik",
+   "level": 2,
+   "q": "Vorletzter Schultag vor den Ferien, die Klasse ist unruhig. Was hilft am meisten?",
+   "options": [
+    "Die Stunde in eine freie Zeichenstunde umwandeln",
+    "Strenger werden und Strafarbeiten ankündigen",
+    "Klare sichtbare Zeitvorgaben, feste Abgabe 11.00, Anschlussaufgabe für Schnelle",
+    "Den Partner-Check streichen, um Ruhe zu halten"
+   ],
+   "correct": 2,
+   "explain": "Struktur schlägt Strenge: jede Phase mit Uhrzeit, \"Schnell fertig?\" für die Schnellen. Passt zu deinem Vorsatz klarer Zeitvorgaben.",
+   "source": "Deck 8_screen_Arbeitsraum, Ablauffolie; Vorsätze 2026/27"
+  },
+  {
+   "id": "q15",
+   "lesson": "8",
+   "area": "fach",
+   "level": 2,
+   "q": "Was unterscheidet die Isometrie von der Kavalierperspektive aus Stunde 4?",
+   "options": [
+    "Isometrie: alle drei Richtungen unverkürzt, 30 Grad zur Waagerechten. Kavalier: Vorderansicht unverzerrt, Tiefe 45 Grad und halbiert",
+    "Isometrie hat einen Fluchtpunkt, Kavalier zwei",
+    "Isometrie halbiert die Tiefe, Kavalier nicht",
+    "Es gibt keinen Unterschied, nur zwei Namen"
+   ],
+   "correct": 0,
+   "explain": "So steht es im deutschen Schulgebrauch. Haken für den MB: International heißt die halbierte Variante meist Kabinettprojektion.",
+   "source": "Deck 8_screen_Arbeitsraum, Übung 1 und 2; lernhelfer.de, Projektionsarten, abgerufen 28.10.2026"
+  },
+  {
+   "id": "q16",
+   "lesson": "8",
+   "area": "didaktik",
+   "level": 2,
+   "frame": "LehrplanPLUS",
+   "q": "Der MB fragt: \"Wo steht Isometrie im Lehrplan 8?\" Was ist die präzise Antwort?",
+   "options": [
+    "Wörtlich in LB 1 als Pflichtinhalt",
+    "In LB 3 Interaktion, Inszenierung und Kommunikation",
+    "Nur im Mathematiklehrplan",
+    "Nicht wörtlich. Sie ist das Werkzeug für LB 2: Innenräume zeichnerisch oder im Modell entwerfen"
+   ],
+   "correct": 3,
+   "explain": "LB 2 Architektur und Produktdesign verlangt das Entwerfen von Innenräumen, zeichnerisch oder im Modell. Die Isometrie ist maßhaltig und führt direkt zum Modell 1:20.",
+   "source": "lehrplanplus.bayern.de, Gymnasium Kunst 8, abgerufen 28.10.2026"
+  },
+  {
+   "id": "q17",
+   "lesson": "8",
+   "area": "didaktik",
+   "level": 2,
+   "q": "Die Stunde endet mit \"Was ist gelungen?\". Was fehlt laut MB-Prüfraster für eine vollständige Sicherung?",
+   "options": [
+    "Eine Hausaufgabe",
+    "Ein Satz, den die Schüler selbst formulieren, mit Rückbezug aufs Stundenziel",
+    "Eine Notenansage",
+    "Eine zweite Demonstration"
+   ],
+   "correct": 1,
+   "explain": "Prüfraster A1: Die Sicherung endet mit einem Satz der Schüler, das Ziel wird am Ende überprüft. Die 7a hat das, die 8 noch nicht.",
+   "source": "Pruefraster_MB_Besuch, A1"
+  },
+  {
+   "id": "q18",
+   "lesson": "8",
+   "area": "methodik",
+   "level": 3,
+   "q": "Rundgang: Ein Schüler zieht die Höhen schräg statt senkrecht. Welche Reaktion ist am lernwirksamsten?",
+   "options": [
+    "Du korrigierst eine Kante vor",
+    "Du unterbrichst die Klasse und erklärst es allen",
+    "Ein Impuls: \"Leg das Lineal an deine Höhe. Läuft sie wie die senkrechten Rasterlinien?\"",
+    "Du notierst es für die Bewertung"
+   ],
+   "correct": 2,
+   "explain": "Vorbereitete Rundgang-Impulse stehen ausdrücklich im MB-Raster (A1). Der Schüler findet den Fehler selbst.",
+   "source": "Pruefraster_MB_Besuch, A1"
+  },
+  {
+   "id": "q19",
+   "lesson": "8",
+   "area": "paedagogik",
+   "level": 3,
+   "q": "Ein Schüler hat Grundriss und Aufriss vom 01.10. nicht dabei. Was tust du?",
+   "options": [
+    "Du gibst ihm ein Ersatzblatt mit Maßen (z. B. die Beispielkommode), damit er die Isometrie trotzdem übt",
+    "Er zeichnet zuerst alles neu in 1:20",
+    "Er schaut zu und holt es zu Hause nach",
+    "Er bekommt eine Ermahnung im Klassenbuch"
+   ],
+   "correct": 0,
+   "explain": "Ziel ist die Isometrie, nicht das Wiederfinden alter Blätter. Ein Ersatzmaß hält ihn in der Arbeit, ohne ihn vorzuführen.",
+   "source": "Deck 8_screen_Arbeitsraum, Beispiel Kommode"
+  },
+  {
+   "id": "q20",
+   "lesson": "8",
+   "area": "didaktik",
+   "level": 3,
+   "q": "Nach Chris Ware fehlt in der Stunde ein Beispiel aus der Kunstgeschichte. Welches passt fachlich und schlägt die Brücke zu Mondrian aus Stunde 1?",
+   "options": [
+    "Brunelleschis Perspektivexperiment am Baptisterium",
+    "Dürer, Der Zeichner der Laute",
+    "Theo van Doesburg und Cornelis van Eesteren, Contra-Construction Project, 1923",
+    "Vermeer und die Camera obscura"
+   ],
+   "correct": 2,
+   "explain": "Eine Axonometrie aus dem Kreis von De Stijl, heute im MoMA. Die anderen drei stehen für Zentralperspektive oder Optik, also genau das, was heute nicht gilt.",
+   "source": "moma.org, Contra-Construction Project, abgerufen 28.10.2026",
+   "work": {
+    "slug": "van-doesburg-contra-construction",
+    "artist": "Theo van Doesburg, Cornelis van Eesteren",
+    "title": "Contra-Construction Project",
+    "year": "1923",
+    "era": "Klassische Moderne"
+   }
+  }
+ ],
+ "boss": {
+  "lesson": "8",
+  "title": "Das Nachgespräch",
+  "situation": "Der MB saß unangekündigt in der 8. Nach dem Gong, Lehrerzimmer, Kaffee in der Hand:",
+  "question": "\"Begründen Sie, warum Sie die Isometrie vor dem Modellbau behandeln. Und wo war heute Differenzierung, nach oben und nach unten?\"",
+  "points": [
+   "Lehrplan: Ku8 LB 2 Architektur und Produktdesign, Innenräume zeichnerisch oder im Modell entwerfen. Isometrie ist das Werkzeug dafür.",
+   "Progression: Grundriss und Aufriss (01.10.), Parallelperspektive (08.10.), Raumgrundriss (15.10.), heute das Möbel, am 12.11. der ganze Raum, ab 19.11. das Modell.",
+   "Warum Isometrie: maßhaltig, Maße lassen sich direkt abtragen, deshalb Brücke zum Modell 1:20. Die Zentralperspektive (LB 1) kommt im Dezember als Kontrast: Bauplan gegen Seheindruck.",
+   "Nach oben: \"Schnell fertig?\" (Tür oder Schublade öffnen, Möbel von der anderen Ecke).",
+   "Nach unten: Beispiel Kommode als Schrittfolge, Raster auf dem Arbeitsblatt, Checkliste im Partner-Check, Ersatzmaße bei fehlenden Blättern.",
+   "Selbstkritik: Die Sicherung braucht noch einen Schlusssatz der Schüler mit Rückbezug aufs Ziel."
+  ],
+  "source": "Pruefraster_MB_Besuch A1, B1, B2; Ablaufplan Klasse 8; lehrplanplus.bayern.de"
+ },
+ "findings": [
+  {
+   "where": "Deck Screen_Weihnachtskarte_Geburt_Christi, Teil I, zweite Gontscharowa-Seite",
+   "text": "Auf der Folie steht noch die Zeile \"PRÜFEN: ... Bildinhalt eventuell Geburt Mariens\". Für die SuS sichtbar, und laut MB-Raster ein Platzhalter (A3, D)."
+  },
+  {
+   "where": "Klasse 8, Deck 8_screen_Arbeitsraum, S. 71 bis 82",
+   "text": "Die Sicherung \"Was ist gelungen?\" endet ohne Schlusssatz der Schüler (MB-Raster A1)."
+  },
+  {
+   "where": "Klasse 8, neue Stunde",
+   "text": "Nach Chris Ware folgt kein Beispiel aus der Kunstgeschichte. Kandidat: van Doesburg und van Eesteren, Contra-Construction Project, 1923 (MoMA)."
+  },
+  {
+   "where": "Ablaufplan, Klasse 7a",
+   "text": "Der Ablaufplan nennt Ku7 LB 1 und LB 2. Die Organisation der Bildfläche (Komposition) steht laut Lehrplanseite eher in LB 3. Bitte am Lehrplan prüfen."
+  }
+ ],
+ "coverWork": {
+  "lesson": "7a",
+  "caption": "John Callcott Horsley, Weihnachtskarte für Henry Cole, 1843"
+ }
+}

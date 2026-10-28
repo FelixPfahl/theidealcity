@@ -1,0 +1,10 @@
+Durchgang 1 (Seed 101): OK | jsdom: OK   Durchgang 1 (Seed 101): 7/7 Szenarien, 4446 ms | browser: {"seed": 101, "ok": true, "problems": []}
+Durchgang 2 (Seed 102): OK | jsdom: OK   Durchgang 1 (Seed 102): 7/7 Szenarien, 4479 ms | browser: {"seed": 102, "ok": true, "problems": []}
+Durchgang 3 (Seed 103): OK | jsdom: OK   Durchgang 1 (Seed 103): 7/7 Szenarien, 4430 ms | browser: {"seed": 103, "ok": true, "problems": []}
+Durchgang 4 (Seed 104): OK | jsdom: OK   Durchgang 1 (Seed 104): 7/7 Szenarien, 4503 ms | browser: {"seed": 104, "ok": true, "problems": []}
+Durchgang 5 (Seed 105): OK | jsdom: OK   Durchgang 1 (Seed 105): 7/7 Szenarien, 4444 ms | browser: {"seed": 105, "ok": true, "problems": []}
+Durchgang 6 (Seed 106): OK | jsdom: OK   Durchgang 1 (Seed 106): 7/7 Szenarien, 4459 ms | browser: {"seed": 106, "ok": true, "problems": []}
+Durchgang 7 (Seed 107): OK | jsdom: OK   Durchgang 1 (Seed 107): 7/7 Szenarien, 4527 ms | browser: {"seed": 107, "ok": true, "problems": []}
+Durchgang 8 (Seed 108): OK | jsdom: OK   Durchgang 1 (Seed 108): 7/7 Szenarien, 4435 ms | browser: {"seed": 108, "ok": true, "problems": []}
+Durchgang 9 (Seed 109): OK | jsdom: OK   Durchgang 1 (Seed 109): 7/7 Szenarien, 4471 ms | browser: {"seed": 109, "ok": true, "problems": []}
+Durchgang 10 (Seed 110): OK | jsdom: OK   Durchgang 1 (Seed 110): 7/7 Szenarien, 4466 ms | browser: {"seed": 110, "ok": true, "problems": []}

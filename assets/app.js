@@ -1128,7 +1128,7 @@
         else {
           /* Josef, 28.10., 01:26: geschrieben wird dort, wo man gerade ist, mit leichter Latenz; was einmal geschrieben wurde, bleibt */
           var ft = Math.min(1, Math.max(0, (vh * .88 - r.top) / (r.height + 40))); var cur = b.f < 0 ? 0 : b.f;   /* fertig, sobald das Absatzende bei 88 % der Höhe ist; dann kommt sofort der rote Nachtrag */
-          var step = Math.min(1, 3 / Math.max(1, b.items.length));   /* drei Buchstaben pro Bild: ein Absatz von 600 Zeichen braucht gut drei Sekunden */
+          var step = Math.min(1, 1.8 / Math.max(1, b.items.length));   /* knapp zwei Buchstaben pro Bild (Josef, 01:40: einen Ticken langsamer): 600 Zeichen in gut fünf Sekunden */
           f = ft > cur ? Math.min(ft, cur + step) : cur; if (f < ft) lag = true;
           if (f >= 1 && !b.fin){ b.fin = true; b.el.classList.add('plotdone'); } }
         if (REDUCED) f = 1;

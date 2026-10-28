@@ -1,0 +1,98 @@
+name: Atelier-App bauen
+
+on:
+  push:
+    branches: [app]
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Signaturschlüssel (falls als Secret hinterlegt)
+        env:
+          KS: ${{ secrets.ATELIER_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KS" ]; then
+            echo "$KS" | base64 -d > "$RUNNER_TEMP/atelier.jks"
+            echo "KEYSTORE_FILE=$RUNNER_TEMP/atelier.jks" >> "$GITHUB_ENV"
+            echo "Schlüssel: eigener (Secret)" > signatur.txt
+          else
+            echo "Schlüssel: Test-Schlüssel (kein Secret hinterlegt)" > signatur.txt
+          fi
+
+      - name: APK bauen
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ATELIER_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ATELIER_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ATELIER_KEY_PASSWORD }}
+          VERSION_CODE: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+
+      - name: KVM für den Emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          mkdir -p ausgabe
+
+      - name: Emulator-Test (Android 13, Pixel)
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            adb install -r android/app/build/outputs/apk/release/app-release.apk
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity
+            sleep 25
+            adb exec-out screencap -p > ausgabe/test_1_atelier.png
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://raw.githack.com/FelixPfahl/theidealcity/pult/index.html
+            sleep 20
+            adb exec-out screencap -p > ausgabe/test_2_pult.png
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html
+            sleep 20
+            adb exec-out screencap -p > ausgabe/test_3_morgenrunde.png
+            adb shell svc wifi disable
+            adb shell svc data disable
+            adb shell am force-stop de.theidealcity.atelier
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity
+            sleep 15
+            adb exec-out screencap -p > ausgabe/test_4_offline.png
+            adb logcat -d -t 400 > ausgabe/logcat.txt
+
+      - name: Ergebnis ins Repo
+        if: always()
+        run: |
+          mkdir -p ausgabe
+          cp android/app/build/outputs/apk/release/app-release.apk ausgabe/atelier.apk 2>/dev/null || true
+          tail -n 200 build.log > ausgabe/build.log 2>/dev/null || true
+          cp signatur.txt ausgabe/ 2>/dev/null || true
+          echo "Lauf ${{ github.run_number }}: ${{ job.status }} ($(date -u +%Y-%m-%dT%H:%MZ))" > ausgabe/status.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ausgabe
+          git commit -m "Atelier-App Lauf ${{ github.run_number }} [skip ci]" || exit 0
+          git pull --rebase origin app || true
+          git push origin HEAD:app

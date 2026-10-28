@@ -85,6 +85,13 @@
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
   var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
 
+  /* Diagnose (Josef, 28.10., 01:15: "es funktioniert so gut wie nichts"): mit ?debug in der Adresse erscheint unten links ein Kasten mit Browser, Fehlern und Zustand */
+  if (/[?&]debug/.test(location.search)){ (function(){ var box = document.createElement('pre'); box.id = 'jkdebug'; box.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9999;max-width:min(90vw,520px);max-height:45vh;overflow:auto;background:#000;color:#0f0;font:12px/1.4 monospace;padding:8px;margin:0;white-space:pre-wrap;border:2px solid #0f0';
+    var errs = []; window.addEventListener('error', function(e){ errs.push((e.message || 'Fehler') + ' @ ' + (e.filename || '').split('/').pop() + ':' + e.lineno); });
+    window.addEventListener('unhandledrejection', function(e){ errs.push('Promise: ' + (e.reason && e.reason.message || e.reason)); });
+    function show(){ var b = document.querySelectorAll('.plotted').length, cv = document.querySelectorAll('canvas.plot').length, drawn = 0; document.querySelectorAll('canvas.plot').forEach(function(c){ if (c.width > 0) drawn++; });
+      box.textContent = 'UA: ' + navigator.userAgent + '\nFenster: ' + innerWidth + 'x' + innerHeight + ' DPR ' + devicePixelRatio + '\nreduced-motion: ' + (matchMedia('(prefers-reduced-motion: reduce)').matches) + '  calm: ' + (window.JK_CALM) + '  Maus: ' + MOUSE + '\nFonts: Duerer1525 ' + document.fonts.check('20px Duerer1525') + ', DuererHand ' + document.fonts.check('20px DuererHand') + ', Relief ' + document.fonts.check('16px Relief') + '\nPlotter-Font geladen: ' + !!window.JK_PLOT_F + (window.JK_PLOT_ERR ? ' FEHLER ' + window.JK_PLOT_ERR : '') + '  geplottete Absätze: ' + b + '  Canvas: ' + cv + ' (aktiv ' + drawn + ')\nAudio: ' + (window.AudioContext ? 'ja' : 'nein') + '  Vol: ' + FX.vol + '\nSpiel: ' + (document.querySelectorAll('.sbobj').length) + ' Dinge, Zähler ' + !!document.querySelector('.sbcount') + '\nFehler (' + errs.length + '):\n' + errs.join('\n'); }
+    document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(box); show(); setInterval(show, 1500); }); })(); }
   /* Idle (Josef, 27.10.): 20 s ohne Eingabe, dann zieht der Plotter am linken Rand eine Linie nach unten, die Atmo wird lauter; die erste Bewegung beendet es */
   (function(){ if (REDUCED) return; var T = null, cv = null, raf = null, y = 0, x = 0, pts = [];
     function stop(){ clearTimeout(T); T = setTimeout(start, 20000); if (!cv) return; var c = cv; cv = null; cancelAnimationFrame(raf); c.style.opacity = 0; setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 600);
@@ -950,7 +957,7 @@
       var g = GL[ch]; if (g) return g; var d = F.g[ch] || F.g['?'] || {d:'',a:280}; if (!d.d){ g = {p:null, a:d.a}; GL[ch] = g; return g; }
       g = mk(d.d, d.a); GL[ch] = g; return g; }
     Promise.all([fetch('../assets/relief-lines.json').then(function(r){ return r.json(); }), fetch('../assets/duerer-hand.json').then(function(r){ return r.json(); }).catch(function(){ return null; })])
-      .then(function(fs){ F = fs[0]; FH = fs[1]; buildAll(); }).catch(function(){});
+      .then(function(fs){ F = fs[0]; FH = fs[1]; window.JK_PLOT_F = true; buildAll(); }).catch(function(e){ window.JK_PLOT_ERR = String(e && e.message || e); });
     function runsOf(node, st, out){
       Array.prototype.forEach.call(node.childNodes, function(c){
         if (c.nodeType === 3){ if (c.nodeValue) out.push({t:c.nodeValue, s:st}); return; }

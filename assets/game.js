@@ -151,7 +151,14 @@
       if (getComputedStyle(a).position === 'static') a.style.position = 'relative';
       var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false;
       var sz = SIZE[p.d]; img.style.width = sz + 'px'; img.style.left = 'clamp(0px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))'; img.style.top = 'clamp(0px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))';   /* nie über den Anker hinaus */
-      img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); a.appendChild(img); }); }
+      img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); a.appendChild(img); });
+    unstack(); window.addEventListener('load', unstack); window.addEventListener('resize', unstack); }
+  /* Zwei Dinge dürfen nie übereinander liegen (Test 28.10., 06:00: Bombe lag unter einem anderen Objekt): das spätere wird im Anker verschoben, bis es frei liegt */
+  function unstack(){ var objs = [].slice.call(document.querySelectorAll('.sbobj')); var done = [];
+    objs.forEach(function(o){ var a = o.offsetParent || o.parentNode; if (!a) return; var aw = a.clientWidth, ah = a.clientHeight; var sz = o.offsetWidth || 40; var tries = 0;
+      function hits(){ var r = o.getBoundingClientRect(); return done.some(function(d){ var q = d.getBoundingClientRect(); return r.left < q.right + 6 && r.right > q.left - 6 && r.top < q.bottom + 6 && r.bottom > q.top - 6; }); }
+      while (hits() && tries < 40){ tries++; var l = o.offsetLeft, t = o.offsetTop; var nl = l + sz + 10, nt = t; if (nl + sz > aw){ nl = 0; nt = t + sz + 10; } if (nt + sz > ah){ nt = 0; } o.style.left = nl + 'px'; o.style.top = nt + 'px'; }
+      done.push(o); }); }
   function splash(x, y, col){ var NS = 'http://www.w3.org/2000/svg'; var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'sbsplash'); svg.setAttribute('viewBox', '-50 -50 100 100'); svg.style.left = (x - 60) + 'px'; svg.style.top = (y - 60) + 'px';
     var d = 'M'; var n = 14; for (var i = 0; i < n; i++){ var a = i / n * 6.283, r = 18 + Math.random() * 22; d += (i ? 'L' : '') + (Math.cos(a) * r).toFixed(1) + ' ' + (Math.sin(a) * r).toFixed(1); } d += 'Z';
     var path = document.createElementNS(NS, 'path'); path.setAttribute('d', d); path.setAttribute('fill', col); svg.appendChild(path);

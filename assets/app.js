@@ -1041,9 +1041,11 @@
           var it = {g:{p:new Path2D(d), l:l, d:d, a:0}, x:mx, y:my, sc:msc, skew:0, rot:0, w:sw * 1.7, o:1, acc:false, hand:false, tone:0, scr:false, dash:null, len:l, cum:cum, start:st, end:en, d1:[st[0], st[1], sw * .9, .9], d2:[en[0], en[1], sw * .9, .9], bleed:null, pf:false, href:null, adv:0};
           items.push(it); cum += l; prev = it; });
         lines = 1; }
+      /* Josef, 28.10., 01:41: rot kam zu spät. Die Handschrift wird jetzt am Ende jeder Zeile nachgetragen (Federwechsel), nicht erst am Absatzende */
+      function flushHand(){ if (!hitems.length) return; items.push({gap:true, len:600, snd:'feder', at:prev ? prev.end : [0, 0], cum:cum}); cum += 600; var off = cum; hitems.forEach(function(h){ h.cum += off; items.push(h); }); cum += hcum; hitems = []; hcum = 0; prevH = null; }
       words.forEach(function(w){
-        if (w.br){ x = 0; lines++; lineOff = R(0, 1); return; }
-        if (x > 0 && x + w.w > W){ x = 0; lines++; lineOff = R(0, 1); }
+        if (w.br){ flushHand(); x = 0; lines++; lineOff = R(0, 1); return; }
+        if (x > 0 && x + w.w > W){ flushHand(); x = 0; lines++; lineOff = R(0, 1); }
         var wx0 = x + lineOff, wy = lines * lh;
         w.items.forEach(function(it){
           if (it.sup){ sups.push({el:it.sup, x:x + lineOff, y:wy}); x += fs * .55; return; }
@@ -1056,10 +1058,10 @@
       });
       lines++;
       /* Nachtrag: Federwechsel, dann alle Betonungen in Rot über dem Grau */
-      if (hitems.length){ items.push({gap:true, len:900, snd:'feder', at:prev ? prev.end : [0, 0], cum:cum}); cum += 900; var off = cum; hitems.forEach(function(h){ h.cum += off; items.push(h); }); cum += hcum; }
+      flushHand();
       var H = hero && window.JK_MONO ? lh * 2 + 4 : lines * lh;
       /* Kopf- und Fußrand (Josef, 28.10., 01:21: die rote Schrift clippt oben): Canvas ragt oben und unten über den Absatz hinaus, alle Einträge rutschen um PAD nach unten */
-      var PAD = hero ? 0 : Math.ceil(lh * (hitems.length ? 1.6 : .5));   /* Handschrift ragt mit Ober- und Unterschleifen weit über die Zeile (Josef, 01:35: Unterschriften oben geclippt) */
+      var PAD = hero ? 0 : Math.ceil(lh * (hwords.length ? 1.6 : .5));   /* Handschrift ragt mit Ober- und Unterschleifen weit über die Zeile (Josef, 01:35: Unterschriften oben geclippt) */
       if (PAD){ items.forEach(function(it){ if (it.gap){ if (it.at) it.at = [it.at[0], it.at[1] + PAD]; return; } it.y += PAD; it.start = [it.start[0], it.start[1] + PAD]; it.end = [it.end[0], it.end[1] + PAD]; it.d1[1] += PAD; it.d2[1] += PAD; if (it.bleed) it.bleed[1] += PAD; }); }
       var HC = H + 2 * PAD;
       var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = HC + 'px'; cv.style.marginTop = (-PAD) + 'px'; cv.style.marginBottom = (-PAD) + 'px'; cv.width = 0; cv.height = 0;
@@ -1071,7 +1073,8 @@
       /* Links und Felix Pfahl als unsichtbare Flächen über dem Canvas */
       overlays.forEach(function(o){ var a = document.createElement(o.href ? 'a' : 'span'); a.className = 'plotlink' + (o.pf ? ' pfahl2' : ''); if (o.href) a.href = o.href; a.style.left = o.x + 'px'; a.style.top = o.y + 'px'; a.style.width = o.w + 'px'; a.style.height = o.h + 'px'; el.appendChild(a);
         if (o.pf){ a.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.on(e); }); a.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.move(e); }); a.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.off(); }); a.addEventListener('click', function(e){ if (window.JK_PFAHL){ window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 8000); } }); } });
-      hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
+      /* Josef, 28.10., 01:42: die rote Schrift wird gar nicht mehr ersetzt, kein Hover-Wort */
+      if (false) hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
         var t = document.createElement('b'); t.className = 'plothand-w'; t.textContent = hw.txt; t.style.top = (lh * .55 + hw.base - fs * .78) + 'px'; a.appendChild(t); el.appendChild(a);
         /* Josef, 28.10., 01:36: beim Hovern verschwindet die rote Handschrift, nur das saubere Wort bleibt: der Bereich wird vom Canvas gelöscht und bleibt gelöscht */
         var rect = [hw.x - lh * .35, hw.y - lh * .7 + PAD, hw.w + lh * .7, lh * 2.1];
@@ -1126,10 +1129,9 @@
         var f;
         if (b.hero){ f = Math.min(1, (now - b.t0) / (b.ms || 2800)); if (f < 1) moved = true; }
         else {
-          /* Josef, 28.10., 01:26: geschrieben wird dort, wo man gerade ist, mit leichter Latenz; was einmal geschrieben wurde, bleibt */
-          var ft = Math.min(1, Math.max(0, (vh * .88 - r.top) / (r.height + 40))); var cur = b.f < 0 ? 0 : b.f;   /* fertig, sobald das Absatzende bei 88 % der Höhe ist; dann kommt sofort der rote Nachtrag */
-          var step = Math.min(1, 1.8 / Math.max(1, b.items.length));   /* knapp zwei Buchstaben pro Bild (Josef, 01:40: einen Ticken langsamer): 600 Zeichen in gut fünf Sekunden */
-          f = ft > cur ? Math.min(ft, cur + step) : cur; if (f < ft) lag = true;
+          /* Josef, 28.10., 01:41: nichts mehr mit dem Scrollen zu tun. Sobald der Absatz im Bild ist, schreibt der Plotter in eigenem Tempo bis zum Ende, nie rückwärts */
+          var cur = b.f < 0 ? 0 : b.f; var seen = r.top < vh * .9 && r.bottom > 0; f = cur;
+          if (seen || cur > 0){ var step = Math.min(1, 1.8 / Math.max(1, b.items.length)); f = Math.min(1, cur + step); if (f < 1) lag = true; }
           if (f >= 1 && !b.fin){ b.fin = true; b.el.classList.add('plotdone'); } }
         if (REDUCED) f = 1;
         if (f !== b.f || b.dirty){ b.fwd = f > b.f; moved = moved || f !== b.f; b.f = f; b.dirty = false; if (r.bottom > -vh && r.top < vh * 2) draw(b); else b.dirty = true; } });

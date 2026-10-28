@@ -741,10 +741,10 @@
         el._seen = true;
         var w = r.width / Math.max(.01, parseFloat(el.style.getPropertyValue('--s')) || 1);
         if (el._rk === undefined) el._rk = .9 + Math.random() * .2;   /* leicht zufällig (Interview 27.10.) */
-        var maxS = (el._huge ? Math.min(8, (vw * .92) / w) : Math.min(3, (vw * .5) / w)) * el._rk;
-        if (maxS < 1.35) maxS = 1.35;   /* auch am Handy sichtbar: mindestens ein Drittel größer */
+        /* Josef, 28.10., 01:33: viel ruhiger. Bilder kommen nur noch leicht vergrößert (12 %, große Bilder 40 %) und ohne seitliche Bewegung, dadurch kein Rein- und Rausclippen */
+        var maxS = (el._huge ? 1.4 : 1.12) * (.97 + (el._rk - 1) * .3);
         var e = ease(p), sc = maxS - (maxS - 1) * e;
-        var cx = r.left + r.width / 2, tx = (vw / 2 - cx) * (1 - e);
+        var tx = 0;
         el.classList.add('fly');
         el.style.setProperty('--s', sc.toFixed(3)); el.style.setProperty('--tx', tx.toFixed(1) + 'px'); el.style.setProperty('--z', Math.round(e * 19));
         if (el._huge) el.style.setProperty('--cap', (1 - e).toFixed(2));

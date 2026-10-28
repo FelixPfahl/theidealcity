@@ -1,0 +1,12 @@
+{
+  "datum": "2026-10-28",
+  "label": "Mittwoch, 28.10.",
+  "termine": [
+    {"start": "8:00", "ende": "9:30", "titel": "6a Weihnachtskarte 2 von 2", "unterricht": true},
+    {"start": "9:30", "ende": "9:45", "titel": "Aufsicht Halle"},
+    {"start": "9:45", "ende": "10:30", "titel": "Präsenzstunde"},
+    {"start": "11:30", "ende": "13:00", "titel": "5 Weihnachtskarte", "unterricht": true},
+    {"start": "13:15", "ende": "14:45", "titel": "9a Figur 4 von 4", "unterricht": true},
+    {"start": "15:00", "ende": "16:30", "titel": "12 Eigenes Objekt 1 von 3", "unterricht": true}
+  ]
+}

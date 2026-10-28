@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b0c10">
+<title>Atelier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<style>
+/* Layout: ein Blick auf heute, darunter große Kacheln für jede App. Dunkel, ein Blau. */
+:root{
+  --bg:#0b0c10; --surface:#15171d; --line:#262a33; --fg:#eceef3; --muted:#8b91a0;
+  --accent:#0028ff; --accent-text:#8296ff;
+  --f:"Archivo","Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f);font-size:18px;line-height:1.4;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+h1{margin:0;font-size:clamp(44px,14vw,72px);font-weight:800;font-stretch:70%;letter-spacing:-.01em;line-height:1}
+.clock{font-variant-numeric:tabular-nums;font-weight:700;font-stretch:80%;font-size:22px;color:var(--muted)}
+.date{color:var(--muted);font-size:15px;letter-spacing:.05em;text-transform:uppercase;margin-top:8px}
+.today{margin-top:22px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.today .k{color:var(--muted);font-size:14px;letter-spacing:.05em;text-transform:uppercase}
+.today .v{font-size:24px;font-weight:700;margin-top:4px;text-wrap:balance}
+.today .v b{color:var(--accent-text);font-variant-numeric:tabular-nums}
+.today .s{color:var(--muted);font-size:15px;margin-top:4px}
+.grid{display:grid;gap:12px;margin-top:22px}
+.tile{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 18px;min-height:96px;position:relative}
+.tile:focus-visible,.alt:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+.tile .n{font-size:32px;font-weight:800;font-stretch:75%;line-height:1}
+.tile .d{color:var(--muted);font-size:16px;margin-top:6px}
+.tile.live{border-color:var(--accent)}
+.tile .badge{position:absolute;top:16px;right:16px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
+.alt{display:inline-block;margin:8px 0 0 4px;color:var(--muted);font-size:14px}
+.foot{margin-top:32px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Atelier</h1><span class="clock" id="clock">--.--</span></div>
+  <div class="date" id="date"></div>
+  <section class="today" aria-live="polite">
+    <div class="k" id="tk">Heute</div>
+    <div class="v" id="tv">Lade den Tag ...</div>
+    <div class="s" id="ts"></div>
+  </section>
+  <nav class="grid" id="apps" aria-label="Apps"></nav>
+  <p class="foot">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).</p>
+</div>
+<script>
+/* Neue Apps hier eintragen: Name, wofür, Link ohne Anmeldung, Link in Claude */
+const APPS = [
+  {id:"pult", n:"Pult", d:"Im Unterricht: Phase, Restzeit, Spickzettel", web:"https://raw.githack.com/FelixPfahl/theidealcity/pult/index.html", claude:"https://claude.ai/artifact/PtrmwGZWHN8FpjA8t6w5cP"},
+  {id:"morgenrunde", n:"Morgenrunde", d:"Auf dem Schulweg: Quiz zum Tag", web:"https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html", claude:"https://claude.ai/artifact/ERAHwi2MdJkdHW2Unc5inF"}
+];
+/* Ersatz, falls heute.json nicht geladen werden kann */
+const FALLBACK = {"datum":"2026-10-28","label":"Mittwoch, 28.10.","termine":[
+  {"start":"8:00","ende":"9:30","titel":"6a Weihnachtskarte 2 von 2","unterricht":true},
+  {"start":"9:30","ende":"9:45","titel":"Aufsicht Halle"},
+  {"start":"9:45","ende":"10:30","titel":"Präsenzstunde"},
+  {"start":"11:30","ende":"13:00","titel":"5 Weihnachtskarte","unterricht":true},
+  {"start":"13:15","ende":"14:45","titel":"9a Figur 4 von 4","unterricht":true},
+  {"start":"15:00","ende":"16:30","titel":"12 Eigenes Objekt 1 von 3","unterricht":true}]};
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
+const fmt = t => t.replace(":", ".");
+const iso = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+let DAY = null;
+
+function renderApps(live){
+  document.getElementById("apps").innerHTML = APPS.map(a => `
+    <div>
+      <a class="tile${live && a.id==="pult" ? " live" : ""}" href="${esc(a.web)}">
+        ${live && a.id==="pult" ? '<span class="badge">Läuft</span>' : ""}
+        <div class="n">${esc(a.n)}</div><div class="d">${esc(a.d)}</div>
+      </a>
+      <a class="alt" href="${esc(a.claude)}" target="_blank" rel="noopener">${esc(a.n)} in Claude öffnen</a>
+    </div>`).join("");
+}
+
+function renderToday(){
+  const now = new Date();
+  const days = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+  document.getElementById("date").textContent = days[now.getDay()] + ", " + now.getDate() + "." + (now.getMonth()+1) + ".";
+  document.getElementById("clock").textContent = now.getHours() + "." + String(now.getMinutes()).padStart(2,"0");
+  const tk = document.getElementById("tk"), tv = document.getElementById("tv"), ts = document.getElementById("ts");
+  let live = false;
+  if (!DAY){ renderApps(false); return; }
+  if (DAY.datum !== iso(now)){
+    tk.textContent = "Heute";
+    tv.textContent = "Noch nicht aktualisiert";
+    ts.textContent = "Letzter Stand: " + DAY.label + " Kommt mit dem Morgenlauf.";
+  } else {
+    const min = now.getHours()*60 + now.getMinutes();
+    const cur = DAY.termine.find(t => toMin(t.start) <= min && min < toMin(t.ende));
+    const next = DAY.termine.find(t => toMin(t.start) > min);
+    if (cur){
+      live = !!cur.unterricht;
+      tk.textContent = "Jetzt";
+      tv.innerHTML = `<b>bis ${fmt(cur.ende)}</b> ${esc(cur.titel)}`;
+      ts.textContent = next ? "Danach " + fmt(next.start) + " " + next.titel : "Danach nichts mehr eingetragen.";
+    } else if (next){
+      tk.textContent = "Als Nächstes";
+      tv.innerHTML = `<b>${fmt(next.start)}</b> ${esc(next.titel)}`;
+      ts.textContent = "in " + (toMin(next.start) - min) + " Min.";
+    } else {
+      tk.textContent = "Heute";
+      tv.textContent = "Alle Termine vorbei";
+      ts.textContent = "";
+    }
+  }
+  renderApps(live);
+}
+
+async function load(){
+  try {
+    const r = await fetch("heute.json", {cache:"no-cache"});
+    if (!r.ok) throw new Error(r.status);
+    DAY = await r.json();
+  } catch(e){ DAY = FALLBACK; }
+  renderToday();
+}
+renderApps(false);
+load();
+setInterval(renderToday, 30000);
+</script>
+</body>
+</html>

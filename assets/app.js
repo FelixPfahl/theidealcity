@@ -1,7 +1,7 @@
 /* Josef Knoll, Portfolio: Spielereien. Kein Framework, keine Audiodateien (alles Web Audio). */
 (function(){
   /* Holzschnitt-Textur der Versalien: Seeds je Seitenaufruf neu, damit die Textur immer variiert */
-  try { if (window.innerWidth > 700){ document.querySelectorAll('feTurbulence').forEach(function(t){ t.setAttribute('seed', String(Math.floor(Math.random() * 1000))); }); document.documentElement.classList.add('woodcut'); } } catch(e){}
+  try { if (window.innerWidth > 700){ document.querySelectorAll('feTurbulence').forEach(function(t, i){ t.setAttribute('seed', String(137 + i * 41)); }); /* fest (Josef, 28.10., 01:53) */ document.documentElement.classList.add('woodcut'); } } catch(e){}
   var T = window.JK_STRINGS || {};
   function safe(f){ try { f(); } catch(e){ try { console.warn('jk', e); } catch(_){} } }   /* ein Fehler in einem Block legt nicht alles lahm (Firefox) */
   var lang = document.documentElement.lang || 'de';
@@ -93,7 +93,7 @@
       box.textContent = 'UA: ' + navigator.userAgent + '\nFenster: ' + innerWidth + 'x' + innerHeight + ' DPR ' + devicePixelRatio + '\nreduced-motion: ' + (matchMedia('(prefers-reduced-motion: reduce)').matches) + '  calm: ' + (window.JK_CALM) + '  Maus: ' + MOUSE + '\nFonts: Duerer1525 ' + document.fonts.check('20px Duerer1525') + ', DuererHand ' + document.fonts.check('20px DuererHand') + ', Relief ' + document.fonts.check('16px Relief') + '\nPlotter-Font geladen: ' + !!window.JK_PLOT_F + (window.JK_PLOT_ERR ? ' FEHLER ' + window.JK_PLOT_ERR : '') + '  geplottete Absätze: ' + b + '  Canvas: ' + cv + ' (aktiv ' + drawn + ')\nAudio: ' + (window.AudioContext ? 'ja' : 'nein') + '  Vol: ' + FX.vol + '\nSpiel: ' + (document.querySelectorAll('.sbobj').length) + ' Dinge, Zähler ' + !!document.querySelector('.sbcount') + '\nFehler (' + errs.length + '):\n' + errs.join('\n'); }
     document.addEventListener('DOMContentLoaded', function(){ document.body.appendChild(box); show(); setInterval(show, 1500); }); })(); }
   /* Idle (Josef, 27.10.): 20 s ohne Eingabe, dann zieht der Plotter am linken Rand eine Linie nach unten, die Atmo wird lauter; die erste Bewegung beendet es */
-  (function(){ if (REDUCED) return; var T = null, cv = null, raf = null, y = 0, x = 0, pts = [];
+  (function(){ if (true) return; /* Idle gestrichen (Josef, 28.10., 01:53) */ var T = null, cv = null, raf = null, y = 0, x = 0, pts = [];
     function stop(){ clearTimeout(T); T = setTimeout(start, 20000); if (!cv) return; var c = cv; cv = null; cancelAnimationFrame(raf); c.style.opacity = 0; setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 600);
       plotterLoop(false); if (BUS && BUS.atmos) BUS.atmos.gain.setTargetAtTime(.5, BUS.ctx.currentTime, .4); }
     function start(){ if (cv || document.hidden) return; cv = document.createElement('canvas'); cv.className = 'idleline'; document.body.appendChild(cv);
@@ -387,7 +387,7 @@
     document.body.appendChild(ov);
     var pre = ov.querySelector('pre'), bar = ov.querySelector('.bar i'), skipBtn = ov.querySelector('button');
     var lines = ['ATZ','OK','ATDT 0049 89 56000','',(T.connecting||'CONNECTING')+' ...','CARRIER 56000','PROTOCOL: LAP-M','COMPRESSION: V.42BIS','',(T.connected||'CONNECT 56000')];
-    var armed = true; window.JK_MODEM_ARMED = function(){ return armed; };
+    var armed = true; try { if (sessionStorage.getItem('jk_modem_done')) armed = false; } catch(e){} window.JK_MODEM_ARMED = function(){ return armed; };   /* einmal pro Besuch (Josef, 28.10., 01:53) */
     document.addEventListener('click', function(e){
       if (!armed) return;
       var a = e.target.closest && e.target.closest('a[href]'); if(!a) return;
@@ -395,7 +395,7 @@
       if (a.closest('.work, .powgrid, .powtiles, .powinfo, .powlead, .marg') || a.hasAttribute('data-full') || a.classList.contains('reflink')) return;   /* Bilder öffnen die Großansicht, nie das Modem */
       e.preventDefault(); armed = false;
       ov.classList.add('on'); pre.textContent='';
-      var go = function(){ window.location.href = href; };
+      var go = function(){ try { sessionStorage.setItem('jk_modem_done', '1'); } catch(e){} window.location.href = href; };
       var dur = dialup(go) || 9000; var start = Date.now();
       var li = 0; var step = function(){ if(li<lines.length){ pre.textContent += lines[li++] + '\n'; setTimeout(step, dur/lines.length); } };
       step();
@@ -723,7 +723,7 @@
   /* ---------- Einflug: Bilder kommen beim Scrollen riesig und schrumpfen an ihren Platz (scrollgekoppelt) ---------- */
   safe(function(){
     if (CALM) return;
-    var els = Array.prototype.slice.call(document.querySelectorAll('.grid .work, .powtiles figure, .einzelgrid .work, .marg figure'));
+    var els = [];   /* Einflug komplett gestrichen (Josef, 28.10., 01:48) */
     if (!els.length) return;
     var t = false, vw = window.innerWidth, vh = window.innerHeight;
     els.forEach(function(el){ el._landed = false; el._huge = el.classList.contains('huge'); });
@@ -991,7 +991,7 @@
           if (ch === ' '){ cur = null; continue; }
           if (ch === '\n'){ words.push({br:true}); cur = null; continue; }
           if (!cur){ cur = {items:[], w:0}; words.push(cur); }
-          var hand = !!r.s.acc && !hero && ch !== ' '; var g = glyph(ch, hand); var kk = g.hand ? R(.95, 1.05) : 1; var s1 = (g.hand ? sc * HAND : sc) * kk; var adv = g.a * s1 * (r.s.bold && !g.hand ? 1.04 : 1);
+          var hand = !!r.s.acc && !hero && ch !== ' '; var g = glyph(ch, hand); var kk = g.hand ? R(.95, 1.05) : 1; var s1 = (g.hand ? sc * HAND : sc) * kk; var adv = g.a * s1 * (r.s.bold && !g.hand ? 1.04 : 1) * (g.hand && el.classList.contains('handp') ? 1.14 : 1);
           cur.items.push({ch:ch, g:g, adv:adv, s:r.s, sc:s1, rot:g.hand ? R(-2, 2) : 0}); cur.w += adv; }
       });
       var nGl = words.reduce(function(n, w){ return n + (w.items ? w.items.length : 0); }, 0);
@@ -1013,7 +1013,7 @@
         /* Handschrift (Betonungen): wird ausgelassen und am Ende des Absatzes in Rot nachgetragen; Grundlinie wellt, Buchstaben verbunden */
         var list = g.hand ? hitems : items, pv = g.hand ? prevH : prev, cc = g.hand ? hcum : cum;
         var path = g.p, len = g.l, gs = g.s, ge = g.e;
-        if (g.hand){ py += (Math.sin(px / (fs * 2.2) + phase) * 70 + R(-45, 45)) * sc;
+        if (g.hand){ py += (Math.sin(px / (fs * 2.2) + phase) * 35 + R(-22, 22)) * sc;   /* Welle halbiert (Josef, 28.10., 01:53) */
           if (pv && !pv.wordEnd && g.ap && pv.exy > 180 && g.p2){ path = g.p2; len = g.l2; gs = g.s2; } }
         var start = [px + gs[0] * sc, py - gs[1] * sc], end = [px + ge[0] * sc, py - ge[1] * sc];
         if (g.hand && pv && !pv.wordEnd){

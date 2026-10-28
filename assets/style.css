@@ -1034,3 +1034,10 @@ html,html *{cursor:auto}
 html a,html button,html [role=button],html label,html summary,html .work a,html a.reflink,html sup.fn,html .sbobj,html .plothand,html .sbdlg,html input[type=range],html input[type=checkbox]{cursor:pointer}
 html input[type=text],html input[type=email],html textarea{cursor:text}
 .lb2{cursor:auto}
+/* Entscheidungen 28.10., 01:51 bis 01:54 */
+.progress i,.progress2 i{transition:width .45s cubic-bezier(.2,.7,.2,1)}   /* Balken weich, kein Springen */
+.hov{max-height:50vh;max-width:min(60vw,760px)}   /* Vorschau kleiner: halbe Bildschirmhöhe */
+.hov img{max-height:44vh}
+p.handp{font-size:1.25em;line-height:2.2}   /* Dank-Absatz größer und weiter gesetzt */
+.lb2 .cap a.src{display:inline-block;margin-left:.6em;font-size:.9em;color:var(--accent);text-decoration:underline}
+.marg a.src,.figs a.src{display:inline;font-size:11px;color:var(--accent)}

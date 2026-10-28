@@ -36,7 +36,8 @@
     return out; }
   var PLACES;
   var NAMES = {sonne:'Sonne', bombe:'Bombe', hai:'Hai', flamme:'Flamme', burger:'Burger', krokodil:'Krokodil', betonmischer:'Betonmischer', brief:'Alter Brief', ziegel:'Ziegel', maus:'Maus', schere:'Schere', sticker:'Sticker', kaese:'Käse', zigarette:'Zigarette', klopapier:'Klopapier', spiegel:'Spiegel', cocktail:'Cocktail', anker:'Anker', krabbe:'Krabbe', bier:'Bier'};
-  var SIZE = {1:64, 2:44, 3:30};
+  var TOUCH = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+  var SIZE = TOUCH ? {1:85, 2:58, 3:40} : {1:64, 2:44, 3:30};   /* am Handy ein Drittel größer (Josef, 28.10., 01:53) */
   var S = load(); if (!S.seed) S.seed = (Math.random() * 4294967295) >>> 0; PLACES = deal();
   function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
@@ -117,9 +118,18 @@
     function onkey(e){ if (e.key === 'Escape') close(); else if (e.key === ' ' || e.key === 'Enter') next(e); }
     dlg.addEventListener('click', next); document.addEventListener('keydown', onkey); show(0); }
   var dq = [];
-  function intro(){ var seen = false; try { seen = !!localStorage.getItem('jk_sb_intro'); } catch(e){} if (seen || S.done) return;
-    var start = function(){ try { localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(RULES); };
-    /* 1,5 s nach dem Laden, außer das Modem läuft gerade (dann nach dessen Ende) */
+  /* Josef, 28.10., 01:54: Inka kommt einmal pro Besuch von selbst, mit verschiedenen Ansprachen je Spielstand (mehrere je Stand, zufällig) */
+  function pickOne(a){ return a[Math.floor(Math.random() * a.length)]; }
+  function greet(){ var n = count(); var left = PLACES.filter(function(p){ return !S.found[p.id]; }); var here = left.filter(function(p){ return p.p === PAGE; }).length;
+    var hereTxt = here ? (here === 1 ? ' Auf dieser Seite liegt noch eins.' : ' Auf dieser Seite liegen noch ' + here + '.') : ' Hier ist nichts mehr, such auf den anderen Seiten.';
+    if (S.done) return [['inka', pickOne(['Du hast alle zwanzig. ' + points() + ' Punkte. Die Urkunde zeige ich dir über die Lupe. Neustart, wenn du willst, dann liegen die Dinge woanders.', 'Alles gefunden, ' + points() + ' Punkte. Sigma ist zurück hinter dem Glas und schweigt. Nochmal? Über die Lupe.'])]];
+    if (!n) return RULES;
+    if (n < 10) return [['inka', pickOne(['Da bist du wieder. ' + n + ' von zwanzig, ' + points() + ' Punkte. Die Uhr läuft weiter.' + hereTxt, 'Wieder da. ' + n + ' hast du. Wagner hat inzwischen die Koordinaten nachgerechnet, er ist unzufrieden.' + hereTxt, n + ' von zwanzig. Sigma fragt nach dir. Er sagt, du suchst zu weit oben.' + hereTxt])]];
+    if (n < 15) return [['inka', pickOne([n + ' von zwanzig, ' + points() + ' Punkte. Die Hälfte ist geschafft, der Rest ist kleiner.' + hereTxt, 'X Æ A-13 hat dir die Liste gegeben, ich weiß. Er hätte es in vier Sekunden gehabt, sagt er. ' + n + ' hast du.' + hereTxt])], ['wagner', 'Rohrschach. Ich lese mit. ' + (N - n) + ' Punkte fehlen im Raster.']];
+    if (n < N) return [['sigma', pickOne(['… du bist zurück. ' + (N - n) + ' fehlen noch. Ich warte hinter dem Glas.', 'Noch ' + (N - n) + '. Wagner hat heute nicht nach mir gesehen. Gut so.'])], ['inka', 'Die letzten liegen am Rand, in den Fußzeilen, tief in den langen Rastern.' + hereTxt]];
+    return RULES; }
+  function intro(){ var seen = false; try { seen = !!sessionStorage.getItem('jk_sb_seen'); } catch(e){} if (seen) return;
+    var start = function(){ try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet()); };
     (function wait(n){ if (document.querySelector('.modem.on') && n < 200) return setTimeout(function(){ wait(n + 1); }, 300); setTimeout(start, 1500); })(0); }
 
   /* ---------- Zähler im Kopf ---------- */
@@ -130,11 +140,7 @@
     btn.addEventListener('click', hint);
     /* Josef, 28.10., 01:10: ein Schalter, mit dem man das Spiel aktiv startet: "Inka rufen". Man weiß nicht, was das soll, und klickt drauf. Mit Spielstand: weiterspielen. */
     var call = document.createElement('button'); call.type = 'button'; call.className = 'sbcall'; call.textContent = 'Inka rufen'; call.title = 'Suchbild starten oder weiterspielen'; head.insertBefore(call, btn);
-    call.addEventListener('click', function(){ if (dlg) return; sp('g-kraehe', {vol:.5, max:.3});
-      if (S.done) { dialog([['inka', 'Du hast schon alle zwanzig. ' + points() + ' Punkte. Willst du die Urkunde noch mal sehen? Oder Neustart, dann liegen die Dinge woanders.']], cert); return; }
-      var n = count(); if (!n){ try { localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(RULES); return; }
-      var left = PLACES.filter(function(p){ return !S.found[p.id]; }); var here = left.filter(function(p){ return p.p === PAGE; }).length;
-      dialog([['inka', 'Da bist du wieder. ' + n + ' von ' + N + ' hast du, ' + points() + ' Punkte. Die Uhr läuft weiter.' + (here ? ' Auf dieser Seite ' + (here === 1 ? 'liegt noch eins.' : 'liegen noch ' + here + '.') : ' Auf dieser Seite ist nichts mehr, such woanders.') + ' Hinweis gefällig? Die Lupe. Wagner nimmt 50.']]); }); }
+    call.addEventListener('click', function(){ if (dlg) return; sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); }); }
   function refresh(){ if (num) num.textContent = count(); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return;
     var p = left[Math.floor(Math.random() * left.length)]; S.hints++; save(); tick();

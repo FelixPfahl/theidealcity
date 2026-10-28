@@ -80,10 +80,10 @@ jobs:
             adb shell am start -W -n de.theidealcity.atelier/.MainActivity
             sleep 20
             adb exec-out screencap -p > ausgabe/test_1_atelier.png
-            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://app.atelier/pult/index.html
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es tab pult
             sleep 20
             adb exec-out screencap -p > ausgabe/test_2_pult.png
-            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://app.atelier/morgenrunde/index.html
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es tab morgenrunde
             sleep 20
             adb exec-out screencap -p > ausgabe/test_3_morgenrunde.png
             adb shell svc wifi disable
@@ -92,7 +92,7 @@ jobs:
             adb shell am start -W -n de.theidealcity.atelier/.MainActivity
             sleep 15
             adb exec-out screencap -p > ausgabe/test_4_offline_atelier.png
-            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://app.atelier/pult/index.html
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es tab pult
             sleep 10
             adb exec-out screencap -p > ausgabe/test_5_offline_pult.png
             adb logcat -d -t 400 > ausgabe/logcat.txt

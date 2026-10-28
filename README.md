@@ -1,6 +1,6 @@
 # Atelier (Android-App)
 
-Hülle für Josefs Web-Apps: Atelier (Start), Pult (Unterricht), Morgenrunde (Quiz).
+Eine App mit drei Reitern: Heute (Atelier), Pult (Unterricht), Morgenrunde (Quiz). Während einer Stunde startet sie direkt in Pult; Pult läuft auch im Hintergrund weiter.
 Die Inhalte kommen aus den Zweigen `atelier`, `pult` und `morgenrunde`; die App lädt sie selbst, offline gilt der letzte Stand.
 
 - `android/`: App-Projekt (WebView, Bildschirm bleibt wach, Vibration über `window.AtelierApp.vibrate(ms)`).

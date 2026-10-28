@@ -8,7 +8,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.graphics.Typeface;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -46,31 +54,153 @@ public class MainActivity extends Activity {
         APPS.put("pult", new String[]{"pult", ""});
         APPS.put("morgenrunde", new String[]{"morgenrunde", "morgenrunde/web/"});
     }
-    private WebView web;
+    static final String[] TABS = {"atelier", "pult", "morgenrunde"};
+    static final String[] LABELS = {"Heute", "Pult", "Morgenrunde"};
+    static final int BG = 0xFF0B0C10, LINE = 0xFF262A33, FG = 0xFFECEEF3, MUTED = 0xFF8B91A0, ACCENT = 0xFF0028FF;
+    private final WebView[] views = new WebView[TABS.length];
+    private final TextView[] tabs = new TextView[TABS.length];
+    private FrameLayout stage;
+    private int current = 0;
+    private WebView web; // aktuelle Ansicht
 
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        web = new WebView(this);
-        web.setBackgroundColor(0xFF0B0C10);
-        setContentView(web);
 
-        WebSettings s = web.getSettings();
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(BG);
+
+        LinearLayout bar = new LinearLayout(this);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setBackgroundColor(BG);
+        for (int i = 0; i < TABS.length; i++) {
+            final int idx = i;
+            TextView t = new TextView(this);
+            t.setText(LABELS[i]);
+            t.setGravity(Gravity.CENTER);
+            t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+            t.setPadding(0, dp(12), 0, dp(10));
+            t.setOnClickListener(v -> show(idx));
+            t.setContentDescription(LABELS[i]);
+            tabs[i] = t;
+            bar.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        }
+        root.addView(bar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        View line = new View(this);
+        line.setBackgroundColor(LINE);
+        root.addView(line, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)));
+
+        stage = new FrameLayout(this);
+        root.addView(stage, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        setContentView(root);
+
+        int startTab = 0;
+        String wanted = getIntent() != null ? getIntent().getStringExtra("tab") : null;
+        if (state != null) startTab = state.getInt("tab", 0);
+        else if (wanted != null) startTab = Math.max(0, indexOf(wanted));
+        show(startTab);
+        String u = getIntent() != null ? getIntent().getStringExtra("url") : null;
+        if (state == null && u != null) open(startUrl(getIntent()));
+    }
+
+    private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
+
+    static int indexOf(String app) {
+        for (int i = 0; i < TABS.length; i++) if (TABS[i].equals(app)) return i;
+        return -1;
+    }
+
+    /** App-Name aus einer https://app.atelier/<app>/... Adresse */
+    static String appOf(String url) {
+        if (url == null || !url.startsWith(ORIGIN)) return null;
+        String rest = url.substring(ORIGIN.length());
+        int s = rest.indexOf('/');
+        return s > 0 ? rest.substring(0, s) : null;
+    }
+
+    private WebView view(int i) {
+        if (views[i] != null) return views[i];
+        WebView w = makeView(i);
+        views[i] = w;
+        stage.addView(w, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        w.loadUrl(ORIGIN + TABS[i] + "/index.html");
+        return w;
+    }
+
+    /** Reiter zeigen; die anderen Ansichten laufen im Hintergrund weiter (Pult-Uhr, Vibration). */
+    void show(int i) {
+        current = i;
+        web = view(i);
+        for (int k = 0; k < TABS.length; k++) {
+            if (views[k] != null) views[k].setVisibility(k == i ? View.VISIBLE : View.GONE);
+            tabs[k].setTextColor(k == i ? FG : MUTED);
+            tabs[k].setBackgroundColor(k == i ? 0xFF15171D : BG);
+        }
+        tabs[i].setSelected(true);
+        // blauer Strich unter dem aktiven Reiter
+        for (int k = 0; k < TABS.length; k++) {
+            android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+            g.setColor(k == i ? 0xFF15171D : BG);
+            android.graphics.drawable.LayerDrawable ld;
+            if (k == i) {
+                android.graphics.drawable.ColorDrawable u = new android.graphics.drawable.ColorDrawable(ACCENT);
+                ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{g, u});
+                ld.setLayerInset(1, dp(24), 0, dp(24), 0);
+                ld.setLayerGravity(1, Gravity.BOTTOM);
+                ld.setLayerHeight(1, dp(3));
+            } else {
+                ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{g});
+            }
+            tabs[k].setBackground(ld);
+        }
+    }
+
+    /** Adresse im passenden Reiter öffnen */
+    void open(String url) {
+        String app = appOf(url);
+        int i = app != null ? indexOf(app) : -1;
+        if (i < 0) return;
+        WebView w = view(i);
+        String cur = w.getUrl();
+        if (cur == null || !stripQuery(cur).equals(stripQuery(url))) w.loadUrl(url);
+        show(i);
+    }
+
+    static String stripQuery(String u) {
+        int q = u.indexOf('?'); if (q >= 0) u = u.substring(0, q);
+        int h = u.indexOf('#'); if (h >= 0) u = u.substring(0, h);
+        return u;
+    }
+
+    private WebView makeView(int index) {
+        final String home = TABS[index];
+        WebView w = new WebView(this);
+        w.setBackgroundColor(BG);
+        WebSettings s = w.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
-        s.setUserAgentString(s.getUserAgentString() + " AtelierApp/2");
-
-        web.addJavascriptInterface(new Bridge(), "AtelierApp");
-        web.setWebViewClient(new WebViewClient() {
+        s.setUserAgentString(s.getUserAgentString() + " AtelierApp/3");
+        w.addJavascriptInterface(new Bridge(), "AtelierApp");
+        w.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 String url = req.getUrl().toString();
-                if (url.startsWith(ORIGIN)) return false;
-                String mapped = fromHack(url);
-                if (mapped != null) { view.loadUrl(mapped); return true; }
+                String mapped = url.startsWith(ORIGIN) ? url : fromHack(url);
+                if (mapped != null) {
+                    String app = appOf(mapped);
+                    if (home.equals(app)) {
+                        if (mapped.equals(url)) return false;
+                        view.loadUrl(mapped);
+                        return true;
+                    }
+                    open(mapped);
+                    return true;
+                }
                 try { startActivity(new Intent(Intent.ACTION_VIEW, req.getUrl())); } catch (Exception ignored) { }
                 return true;
             }
@@ -86,9 +216,7 @@ public class MainActivity extends Activity {
                 return serve(url);
             }
         });
-
-        if (state != null) web.restoreState(state);
-        else web.loadUrl(startUrl(getIntent()));
+        return w;
     }
 
     /** raw.githack.com/FelixPfahl/theidealcity/<zweig>/<pfad> -> https://app.atelier/<app>/<pfad> */
@@ -194,22 +322,25 @@ public class MainActivity extends Activity {
     @Override
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
-        if (i != null && i.getStringExtra("url") != null) web.loadUrl(startUrl(i));
+        if (i == null) return;
+        if (i.getStringExtra("url") != null) open(startUrl(i));
+        else if (i.getStringExtra("tab") != null && indexOf(i.getStringExtra("tab")) >= 0) show(indexOf(i.getStringExtra("tab")));
     }
 
     @Override
     protected void onSaveInstanceState(Bundle out) {
         super.onSaveInstanceState(out);
-        if (web != null) web.saveState(out);
+        out.putInt("tab", current);
     }
 
     @Override
     public void onBackPressed() {
         if (web != null && web.canGoBack()) web.goBack();
+        else if (current != 0) show(0);
         else super.onBackPressed();
     }
 
-    /** Für die Web-Apps: window.AtelierApp.vibrate(ms), .retry(), .isApp() */
+    /** Für die Web-Apps: window.AtelierApp.vibrate(ms), .retry(), .openTab(app), .isApp() */
     class Bridge {
         @JavascriptInterface
         public void vibrate(long ms) {
@@ -220,7 +351,14 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void retry() { runOnUiThread(() -> web.loadUrl(START)); }
+        public void retry() { runOnUiThread(() -> { if (web != null) web.reload(); }); }
+
+        /** Reiter wechseln: "atelier", "pult", "morgenrunde" */
+        @JavascriptInterface
+        public void openTab(String app) {
+            int i = indexOf(app);
+            if (i >= 0) runOnUiThread(() -> show(i));
+        }
 
         @JavascriptInterface
         public boolean isApp() { return true; }

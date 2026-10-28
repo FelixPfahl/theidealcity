@@ -355,7 +355,7 @@ function tick(){
   const loc = locate(sec);
   const key = loc ? loc.lesson.id + ":" + loc.idx : "none";
   if (lastKey !== null && key !== lastKey && loc){
-    try { navigator.vibrate && navigator.vibrate([180, 80, 180]); } catch(e){}
+    try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(450); else if (navigator.vibrate) navigator.vibrate([180, 80, 180]); } catch(e){}
   }
   const changed = key !== lastKey;
   lastKey = key;

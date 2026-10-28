@@ -1043,3 +1043,7 @@ p.handp{font-size:1.25em;line-height:2.2}   /* Dank-Absatz größer und weiter g
 .marg a.src,.figs a.src{display:inline;font-size:11px;color:var(--accent)}
 .sbobj{z-index:30}
 body{overflow-x:clip}
+
+/* Danksagungen (Josef, 28.10., 06:32): eigene Akzentfarbe Prozessgrün für Handschrift und Unterschrift Josef Knoll */
+p.handp,p.sig.sigdank{--accent:#00A651;--red:#00A651}
+p.handp em.kw,p.sig.sigdank em.kw{color:#00A651}

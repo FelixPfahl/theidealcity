@@ -23,7 +23,7 @@
   window.JK_CALM = REDUCED;
   document.addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('.calmtoggle'); if (!t) return; e.preventDefault(); try { localStorage.setItem('jk_calm', REDUCED ? '0' : '1'); } catch(x){} location.reload(); });
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
-  var FX_DEFAULT = {ton:5, vol:100, bewegung:2, modem:true};   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
+  var FX_DEFAULT = {ton:5, vol:50, bewegung:2, modem:true};   /* Josef, 28.10., 06:35: alle Sounds auf die Hälfte (Master 50 %) */   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
   if (REDUCED){ FX.vol = 0; FX.ton = 0; FX.bewegung = 1; FX.modem = false; }   /* Reduced Motion (Josef, 27.10.): Text sofort komplett, kein Einflug, Ton aus */
   try { localStorage.removeItem('jk_fx'); } catch(e){}   /* Regler abgeschafft (Josef, 27.10., 18:30): nichts mehr gespeichert */
@@ -597,8 +597,8 @@
       btns.forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode') === m); });
       var meta = document.querySelector('meta[name=theme-color]'); if (meta) meta.content = m === 'dunkel' ? '#000000' : m === 'rot' ? '#E2231A' : '#ffffff';
       if (save){ try { localStorage.setItem('jk_mode', m); } catch(e){} } }
-    /* Standard: schwarz (Josef, 27.10., 19:03: weiße Hintergründe vermeiden) */
-    var cur = 'dunkel'; try { cur = localStorage.getItem('jk_mode') || 'dunkel'; } catch(e){}
+    /* Standard: hell (Josef, 28.10., 06:32); alte gespeicherte Wahl wird einmalig verworfen (jk_mode_v2) */
+    var cur = 'hell'; try { if (!localStorage.getItem('jk_mode_v2')){ localStorage.removeItem('jk_mode'); localStorage.setItem('jk_mode_v2', '1'); } cur = localStorage.getItem('jk_mode') || 'hell'; } catch(e){}
     set(cur, false);
     btns.forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); set(b.getAttribute('data-mode'), true); play('ratchet'); }); });   /* Lichtschalter-Knacken */
   });
@@ -974,7 +974,7 @@
         if (/\bpfahl\b/.test(cl)) s2.pf = true;
         runsOf(c, s2, out); });
       return out; }
-    function colors(el){ var cs = getComputedStyle(el); var acc = getComputedStyle(el.closest('.herohand, .comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A';
+    function colors(el){ var cs = getComputedStyle(el); var acc = getComputedStyle(el.closest('.herohand, .handp, .sigdank, .comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A';
       var dark = document.documentElement.getAttribute('data-mode') === 'dunkel';
       return {ink: cs.color, acc: acc, warm: dark ? '#e3d4c2' : '#2a1c12', cool: dark ? '#c3d3e4' : '#101c2a'}; }
     function build(el){

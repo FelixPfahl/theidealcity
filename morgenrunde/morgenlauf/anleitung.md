@@ -11,7 +11,7 @@ Geplante Aufgabe, Mo bis Fr um 5.48 Uhr (Europe/Berlin), Push aufs Handy. Privat
 5. **Fehlerfunde:** höchstens 4 Hinweise auf Platzhalter, Sachfehler, Zeitabweichungen, fehlenden KI-Hinweis usw. Nur melden, nichts ändern.
 6. **Cover (optional):** Werk der ersten Stunde von Wikimedia laden und als Asset hochladen; klappt es nicht beim ersten Versuch, weglassen.
 7. **Schreiben:** Heft in die Sammlung `quizzes` des Artifacts `<ARTIFACT-URL>` (doc_id = Datum). Existiert das Heft schon, nichts neu bauen.
-8. **GitHub:** Das Heft als `morgenrunde/hefte/JJJJ-MM-TT.json` in den Zweig `morgenrunde` dieses Repos legen, committen, pushen. Nur dieser Zweig und dieser Ordner, nie `main`, nie Force-Push.
+8. **GitHub und Webversion:** Das Heft als `morgenrunde/hefte/JJJJ-MM-TT.json` und `morgenrunde/web/hefte/JJJJ-MM-TT.json` in den Zweig `morgenrunde` legen, `morgenrunde/web/hefte/index.json` neu schreiben (`{"heute": Datum, "hefte": [alle Daten aufsteigend]}`), committen, pushen. Nur dieser Zweig und diese Ordner, nie `main`, nie Force-Push. Alle Fragen beziehen sich nur auf den heutigen Schultag.
 9. **Abschluss:** Push-Meldung in höchstens 2 Zeilen.
 
 ## Grenzen

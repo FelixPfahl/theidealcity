@@ -23,7 +23,7 @@ with sync_playwright() as p:
         kb = dev.startswith("Desktop")
         if dev == "Desktop Chrome HiDPI": d["viewport"] = {"width": 1920, "height": 1080}
         ctx = b.new_context(**d, color_scheme=scheme, locale="de-DE", timezone_id="Europe/Berlin")
-        ctx.add_init_script(FIX)
+        ctx.add_init_script("(" + FIX + ")()")
         page = ctx.new_page()
         page.on("pageerror", lambda e: probs.append(f"Skriptfehler: {e}"))
         page.route("**/*", lambda r: r.continue_() if "127.0.0.1" in r.request.url else r.abort())

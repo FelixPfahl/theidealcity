@@ -1,0 +1,33 @@
+=== Geräte und Browser (Claude-App-Fassung) ===
+OK      Pixel 7 · Claude-App (WebView) · light
+OK      Pixel 7 · Chrome · dark
+OK      Pixel 5 · Chrome · light
+OK      Galaxy S24 · Samsung Internet · light
+OK      Galaxy S24 · Samsung Internet · dark
+OK      Galaxy A55 · Chrome · light
+OK      Galaxy S8 · Chrome · light · Funkloch
+OK      Galaxy Z Fold 7 Cover · Claude-App (WebView) · dark
+OK      Galaxy Z Fold 7 · Chrome · light
+OK      Galaxy Tab S9 · Firefox-Kennung · light
+OK      Galaxy S24 landscape · Claude-App (WebView) · light
+OK      Galaxy S24 · Claude-App (WebView) · light · große Anzeige (320 px)
+OK      Desktop Chrome · Chrome · light · PC, Tastatur
+OK      Desktop Chrome HiDPI · Chrome · dark · PC 1920, Tastatur
+OK      Desktop Firefox · Chrome · light · PC, Firefox-Kennung, Tastatur
+OK      Desktop Edge · Chrome · light · PC, Maus
+16 von 16 Fällen fehlerfrei
+=== Öffentliche Webversion ===
+        Abbruch Page.wait_for_selector: Timeout 8000ms exceeded.
+FEHLER  Desktop Chrome · light
+        Abbruch Page.wait_for_selector: Timeout 8000ms exceeded.
+FEHLER  Desktop Chrome HiDPI · dark
+        Abbruch Page.wait_for_selector: Timeout 8000ms exceeded.
+FEHLER  Desktop Firefox · light
+        Abbruch Page.wait_for_selector: Timeout 8000ms exceeded.
+FEHLER  Desktop Edge · light
+        Abbruch Page.wait_for_selector: Timeout 8000ms exceeded.
+0 von 8 Webfällen fehlerfrei
+=== 10er-Schleife ===
+Durchgang 9: OK (am Stück: 9)
+Durchgang 10: OK (am Stück: 10)
+FERTIG

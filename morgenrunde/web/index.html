@@ -259,7 +259,7 @@ const BADGES=[
   ["erste","Erstes Heft","Ein Heft komplett gespielt"],["serie5","Fünf am Stück","Serie von 5 Schultagen"],["serie10","Zehn am Stück","Serie von 10 Schultagen"],
   ["serie25","Unaufhaltsam","Serie von 25 Schultagen"],["perfekt","Fehlerfrei","Alle Fragen eines Hefts richtig"],["combo10","Kettenreaktion","10 richtige Antworten am Stück"],
   ["boss","Genehmigung in Sicht","MB-Gespräch mit mindestens 80 %"],["sammler10","Sammler","10 Werke im Album"],["sammler25","Kurator","25 Werke im Album"],
-  ["sammler50","Sammlungsleitung","50 Werke im Album"],["comeback","Comeback","Eine Wiederholung ganz gelernt"],["finale","Wochensieger","Wochenfinale ohne Fehler"],
+  ["sammler50","Sammlungsleitung","50 Werke im Album"],
   ["fach100","100 × Fachwissen","100 Fachfragen beantwortet"],["didaktik100","100 × Didaktik","100 Didaktikfragen beantwortet"],
   ["methodik100","100 × Methodik","100 Methodikfragen beantwortet"],["paedagogik100","100 × Pädagogik","100 Pädagogikfragen beantwortet"]];
 
@@ -322,8 +322,7 @@ function weekSummary(quizzes,results,today){ const mon=weekStart(today); const d
   Object.keys(stats).forEach(k=>{ const v=stats[k]; if(v.total>=2){ const p=v.ok/v.total; if(!weakest||p<weakest.p) weakest={area:k,p}; } });
   return {monday:mon,days,stats,wrong,weakest}; }
 function finaleCandidates(quizzes,results,date){ return weekSummary(quizzes,results,date).wrong.filter(x=>x.date<=date).slice(-FINALE_MAX); }
-function pickDate(quizzes,today){ if(quizzes[today]) return today; const ds=Object.keys(quizzes).sort(); const fut=ds.filter(d=>d>today);
-  if(fut.length) return fut[0]; return ds.length?ds[ds.length-1]:null; }
+function pickDate(quizzes,today){ return quizzes[today]? today : null; }
 function firstOpen(quiz,res){ const qs=cleanQuestions(quiz); const a=(res&&res.answers)||{}; const i=qs.findIndex(x=>!a[x.id]); return i<0?qs.length:i; }
 function rankOf(points){ let i=0; for(let k=0;k<RANKS.length;k++) if(points>=RANKS[k][0]) i=k; const next=RANKS[i+1];
   return {name:RANKS[i][1],index:i,next:next?next[1]:null,nextAt:next?next[0]:null,pct:next?Math.floor(100*(points-RANKS[i][0])/(next[0]-RANKS[i][0])):100}; }
@@ -335,7 +334,7 @@ function earnedBadges(p,albumCount,best){ const e=[]; const A=p.byArea||{};
   if(p.quizzes>=1) e.push("erste"); if(best>=5) e.push("serie5"); if(best>=10) e.push("serie10"); if(best>=25) e.push("serie25");
   if(p.perfect>=1) e.push("perfekt"); if(p.comboBest>=10) e.push("combo10"); if(p.bossBest>=.8) e.push("boss");
   if(albumCount>=10) e.push("sammler10"); if(albumCount>=25) e.push("sammler25"); if(albumCount>=50) e.push("sammler50");
-  if(p.mastered>=1) e.push("comeback"); if(p.finaleWins>=1) e.push("finale");
+  
   Object.keys(AREAS).forEach(k=>{ if(A[k]&&A[k].total>=100) e.push(k+"100"); }); return e; }
 function grant(p,albumCount,best,today){ const nb=[]; p.badges=p.badges||{}; earnedBadges(p,albumCount,best).forEach(id=>{ if(!p.badges[id]){ p.badges[id]=today; nb.push(id); } }); return {profile:p,newBadges:nb}; }
 function applyFinish(profile,quiz,res,albumCount,best,today){ const p=JSON.parse(JSON.stringify(profile||emptyProfile()));
@@ -440,13 +439,13 @@ function viewLoading(){ return h("section",{class:"panel cover"},mast(),h("div",
   h("p",{class:"hook"},S.slow?"Funkloch? Das Heft kommt, sobald wieder Netz da ist.":"Das heutige Heft wird geholt.")); }
 function viewFailed(){ return h("section",{class:"panel stack"},mast(),h("p",{class:"hook"},"Die Hefte lassen sich gerade nicht laden."),h("p",{class:"notice"},S.failed),h("button",{class:"btn small",onclick:()=>location.reload()},"Neu laden")); }
 function topbar(right){ return h("div",{class:"topbar"},h("button",{class:"link",onclick:()=>goto("cover")},"Zum Titel"),right||h("span",{class:"mono",id:"savestate"},saveText())); }
-function goto(v){ S.view=v; S.picked=null; S.burst=null; render(); }
+function goto(v){ if(v==="cover"&&S.view!=="archive") S.date=pickDate(S.quizzes,S.today); S.view=v; S.picked=null; S.burst=null; render(); }
 
-function statsRow(){ const streak=computeStreak(S.quizzes,S.results,S.today); const due=dueReviews(S.reviews,S.today,99).length;
+function statsRow(){ const streak=computeStreak(S.quizzes,S.results,S.today); const pr=profile(); const quote=pr.answers? Math.round(100*pr.right/pr.answers)+" %" : "0 %";
   return h("div",{class:"stats"},
     h("div",{class:"stat hot"},h("b",null,String(streak)),h("span",{class:"mono"},"Serie")),
     h("div",{class:"stat"},h("b",null,String(profile().totalPoints)),h("span",{class:"mono"},"Punkte")),
-    h("div",{class:"stat"},h("b",null,String(due)),h("span",{class:"mono"},"Fällig"))); }
+    h("div",{class:"stat"},h("b",null,quote),h("span",{class:"mono"},"Treffer"))); }
 function rankPanel(){ const r=rankOf(profile().totalPoints); const fill=h("span",{class:"fill"}); fill.style.width=r.pct+"%";
   return h("section",{class:"panel rank"},h("div",{class:"line"},h("span",{class:"kicker"},"Rang"),h("span",{class:"mono"},r.next?("nächster ab "+r.nextAt+" P"):"höchster Rang")),
     h("b",{class:"hyph"},r.name),h("div",{class:"track"},fill),r.next?h("span",{class:"notice"},"Als Nächstes: "+r.next):null,
@@ -455,14 +454,13 @@ function navGrid(){ return h("div",{class:"grid2"},h("button",{class:"btn small"
   h("button",{class:"btn small",id:"toBadges",onclick:()=>goto("badges")},"Abzeichen"),h("button",{class:"btn small",id:"toArchive",onclick:()=>goto("archive")},"Archiv")); }
 
 function viewCover(){ const wrap=h("div",{class:"stack"}); const date=S.date; const q=date?S.quizzes[date]:null;
-  if(!q){ wrap.appendChild(h("section",{class:"panel cover stack"},mast(),h("p",{class:"hook"},"Noch kein Heft da."),
-      h("p",null,"An jedem Schultag liegt hier um 6.30 Uhr ein Heft zu deinen Stunden: 20 Fragen, Wiederholungen und am Ende das Gespräch mit dem MB.")));
+  if(!q){ wrap.appendChild(h("section",{class:"panel cover stack"},mast(),h("p",{class:"hook"},"Heute kein Heft."),
+      h("p",null,"An jedem Schultag liegt hier um 6.30 Uhr ein Heft zu deinen Stunden von heute: 20 Fragen und am Ende das Gespräch mit dem MB. Frühere Hefte findest du im Archiv.")));
     wrap.appendChild(statsRow()); wrap.appendChild(navGrid()); return wrap; }
   const res=resultFor(date); const sc=q.status==="ready"?scoreOf(q,res):null;
   const cover=h("section",{class:"panel cover pop"});
   cover.appendChild(h("div",{class:"coverhead"},mast(),h("div",{class:"who"},figure("erzaehler"))));
   cover.appendChild(h("div",{class:"issue mono"},h("span",null,"KW "+isoWeek(date)+" · "+WD[weekday(date)]),h("span",null,shortDate(date)+date.slice(0,4))));
-  if(date>S.today) cover.appendChild(h("p",{class:"chip acc",style:"display:inline-block;margin-bottom:10px"},"Vorschau auf "+WD[weekday(date)]));
   if(date<S.today) cover.appendChild(h("p",{class:"chip",style:"display:inline-block;margin-bottom:10px"},"Aus dem Archiv"));
   if(q.cover&&typeof q.cover.url==="string"&&/^(\/|https:\/\/[a-z0-9.-]*claude\.ai\/|data:image\/)/.test(q.cover.url)){
     const img=h("img",{src:q.cover.url,alt:q.cover.caption||"Werk des Tages",loading:"lazy"});
@@ -476,16 +474,16 @@ function viewCover(){ const wrap=h("div",{class:"stack"}); const date=S.date; co
     if(Array.isArray(q.alsoToday)&&q.alsoToday.length) box.appendChild(h("p",{class:"also"},"Außerdem heute: "+q.alsoToday.join(", ")));
     cover.appendChild(box); }
   wrap.appendChild(cover); wrap.appendChild(statsRow());
-  if(q.status==="ready"){ const due=dueReviews(S.reviews,S.today).length; let label="Los geht's",sub="";
+  if(q.status==="ready"){ let label="Los geht's",sub=""; const playable=date===S.today;
     if(res.finished){ label="Heft ansehen"; sub=sc.ok+" von "+sc.total+" richtig · "+sc.points+" Punkte"; }
     else if(sc.done>0){ label="Weiterlesen"; sub="Frage "+(sc.done+1)+" von "+sc.total; }
-    else if(due>0&&date===S.today) sub="Vorher "+due+" Wiederholung"+(due>1?"en":"")+" aus früheren Heften";
-    wrap.appendChild(h("button",{class:"btn primary",id:"start",onclick:()=>res.finished?goto("result"):startPlay()},label));
+    if(res.finished||playable) wrap.appendChild(h("button",{class:"btn primary",id:"start",onclick:()=>res.finished?goto("result"):startPlay()},label));
+    else sub="Dieses Heft war nur an seinem Tag spielbar.";
     if(sub) wrap.appendChild(h("p",{class:"notice",style:"text-align:center"},sub)); }
   wrap.appendChild(rankPanel()); wrap.appendChild(navGrid()); return wrap; }
 
 function startPlay(){ const q=S.quizzes[S.date]; const res=resultFor(S.date);
-  S.rq=(S.date===S.today&&!res.reviewDone&&firstOpen(q,res)===0)?dueReviews(S.reviews,S.today):[];
+  S.rq=[];
   S.ri=0; S.phase=S.rq.length?"review":"main"; S.idx=firstOpen(q,res); S.picked=null; S.burst=null;
   if(S.phase==="main"&&S.idx>=cleanQuestions(q).length){ if(q.boss&&!res.finished){ S.view="boss"; S.bossOpen=false; render(); } else finish(); return; }
   try{ if(navigator.wakeLock) navigator.wakeLock.request("screen").catch(()=>{}); }catch(e){}
@@ -547,7 +545,7 @@ function pickMain(oi){ const q=S.quizzes[S.date]; const x=cleanQuestions(q)[S.id
   if(S.picked!=null||res.answers[x.id]) return; S.picked=oi; const ok=oi===x.correct; const pts=ok?Math.round(basePoints(x)*multiplier(comboBefore(q,res,S.idx))):0;
   S.burst=burstFor(ok,S.date+x.id);
   saveResult(S.date,Object.assign({},res,{answers:Object.assign({},res.answers,{[x.id]:{chosen:oi,correct:ok,pts,at:new Date().toISOString()}})}));
-  if(!ok){ const id=S.date+"_"+x.id; if(!S.reviews[id]) saveReview(newReview(S.date,q,x)); } else collect(x,S.date);
+  if(ok) collect(x,S.date);
   render(); }
 function pickFinale(oi){ const res=resultFor(S.date); const f=S.fq[S.fi]; const key=f.date+"_"+f.q.id; const fr=(res.finale&&res.finale.answers)||{};
   if(S.picked!=null||fr[key]) return; S.picked=oi; const ok=oi===f.q.correct; const pts=ok?basePoints(f.q)*2:0; S.burst=burstFor(ok,"f"+key);
@@ -608,13 +606,11 @@ function viewResult(){ const q=S.quizzes[S.date]; const res=resultFor(S.date); c
     bt?h("p",{class:"notice",style:"margin-top:8px;position:relative;z-index:1"},"MB-Gespräch: "+bo+" von "+bt+" Punkten. "+bossJudge(bo,bt)):null));
   if(S.newBadges.length){ const ul=h("ul",{class:"list"}); [...new Set(S.newBadges)].forEach(id=>ul.appendChild(h("li",null,h("b",null,badgeName(id)))));
     wrap.appendChild(h("section",{class:"panel badgehit pop",id:"newBadges"},h("span",{class:"kicker"},"Neues Abzeichen"),ul)); }
-  const cands=weekday(S.date)===5&&res.finished?finaleCandidates(S.quizzes,S.results,S.date):[];
-  if(cands.length&&!(res.finale&&res.finale.done)) wrap.appendChild(h("button",{class:"btn primary",id:"finale",onclick:startFinale},"Wochenfinale: "+cands.length+" Fragen"));
   wrap.appendChild(statsRow());
   wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:12px"},"Nach Bereichen"),barsFor(areaStats(pairs))));
   const wrong=pairs.filter(p=>p.ans&&!p.ans.correct);
   if(wrong.length){ const ul=h("ul",{class:"list"}); wrong.forEach(p=>ul.appendChild(h("li",null,h("span",{class:"mono"},AREAS[p.q.area]||""),h("b",{class:"hyph"},p.q.q),h("span",null,"Richtig: "+p.q.options[p.q.correct]))));
-    wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:6px"},"Kommt wieder in 1, 3 und 7 Schultagen"),ul)); }
+    wrap.appendChild(h("section",{class:"panel"},h("h3",{class:"kicker",style:"margin-bottom:6px"},"Heute daneben"),ul)); }
   if(Array.isArray(q.findings)&&q.findings.length){ const ul=h("ul",{class:"list"}); q.findings.forEach(f=>ul.appendChild(h("li",null,h("span",{class:"mono hyph"},f.where||""),h("span",null,f.text||""))));
     wrap.appendChild(h("section",{class:"panel finding"},h("h3",{class:"kicker",style:"margin-bottom:6px"},"Beim Fragenbauen aufgefallen"),ul,h("p",{class:"notice",style:"margin-top:10px"},"Nur ein Hinweis. Geändert wurde nichts."))); }
   wrap.appendChild(h("div",{class:"grid2"},h("button",{class:"btn small",id:"toWeek",onclick:()=>goto("week")},"Woche"),
@@ -648,10 +644,10 @@ function viewBadges(){ const p=profile(); const wrap=h("div",{class:"stack"}); w
   wrap.appendChild(h("section",{class:"panel"},h("h2",{class:"mast",style:"font-size:clamp(36px,11vw,56px)"},"Abzei",h("span",null,"chen")),h("div",{style:"margin-top:12px"},grid)));
   return wrap; }
 function viewArchive(){ const wrap=h("div",{class:"stack"}); wrap.appendChild(topbar(h("span",{class:"mono"},"letzte 6 Wochen")));
-  const ds=Object.keys(S.quizzes).sort().reverse(); const list=h("div",{class:"archive"});
+  const ds=Object.keys(S.quizzes).filter(d=>d<=S.today).sort().reverse(); const list=h("div",{class:"archive"});
   if(!ds.length) list.appendChild(h("p",{class:"notice"},"Noch keine Hefte."));
   ds.forEach(d=>{ const q=S.quizzes[d]; const r=S.results[d]; let meta="";
-    if(q.status==="frei") meta="frei"; else { const sc=scoreOf(q,r); meta=r&&r.finished?(sc.ok+"/"+sc.total):(d>S.today?"Vorschau":(sc.done?"angefangen":"offen")); }
+    if(q.status==="frei") meta="frei"; else { const sc=scoreOf(q,r); meta=r&&r.finished?(sc.ok+"/"+sc.total):(d===S.today?(sc.done?"angefangen":"heute"):"nicht gespielt"); }
     list.appendChild(h("button",{"data-date":d,onclick:()=>{ S.date=d; goto("cover"); }},h("span",null,niceDate(d)),h("span",{class:"meta"},meta))); });
   wrap.appendChild(h("section",{class:"panel"},h("h2",{class:"mast",style:"font-size:clamp(40px,12vw,60px)"},"Ar",h("span",null,"chiv")),h("div",{style:"margin-top:12px"},list)));
   return wrap; }

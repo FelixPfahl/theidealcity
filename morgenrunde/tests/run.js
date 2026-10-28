@@ -164,8 +164,7 @@ async function scenarioFullDay(seed) {
   assert(res.boss.length === tick.length, "Bossabhaken gespeichert");
   assert(text(d).includes(expectRight + " / 20") || d.querySelector(".big").textContent.replace(/\s/g, "") === expectRight + "/20", "Punktzahl angezeigt");
   const wrongIds = QUIZ.questions.filter((q) => chosen[q.id] !== q.correct).map((q) => q.id);
-  for (const id of wrongIds) { const r = store.docs.get("review/2026-10-29_" + id); assert(r && r.due === "2026-10-30" && r.step === 0 && r.done === false, "Wiederholung angelegt " + id); }
-  assert([...store.docs.keys()].filter((k) => k.startsWith("review/")).length === wrongIds.length, "keine überzähligen Wiederholungen");
+  assert([...store.docs.keys()].filter((k) => k.startsWith("review/")).length === 0, "keine Wiederholungen mehr (nur heutiger Tag)");
   let c = 0, expPts = 0, maxRun = 0, run = 0;
   for (const q of QUIZ.questions) { const ok = chosen[q.id] === q.correct; if (ok) { expPts += Math.round(10 * (q.level || 1) * (1 + 0.25 * Math.min(c, 4))); c++; run++; maxRun = Math.max(maxRun, run); } else { c = 0; run = 0; } }
   assert(res.points === expPts, "Punkte mit Combo " + res.points + " statt " + expPts);
@@ -191,7 +190,7 @@ async function scenarioFullDay(seed) {
   assert(d.querySelector(".rank b").textContent.length > 3, "Rang sichtbar");
   click(d, "#toAlbum"); await sleep(1); assert(d.querySelectorAll(".card:not(.locked)").length === expAlbum.length, "Albumkarten"); noForbiddenText(d);
   w.MR._state.view = "cover"; w.MR._render(); await sleep(1);
-  click(d, "#toBadges"); await sleep(1); assert(d.querySelectorAll(".badge").length === 16 && d.querySelectorAll(".badge.on").length >= 1, "Abzeichen-Seite"); noForbiddenText(d);
+  click(d, "#toBadges"); await sleep(1); assert(d.querySelectorAll(".badge").length === 14 && d.querySelectorAll(".badge.on").length >= 1, "Abzeichen-Seite"); noForbiddenText(d);
   w.MR._state.view = "cover"; w.MR._render(); await sleep(1);
   click(d, "#toArchive"); await sleep(1); assert(d.querySelectorAll(".archive button").length === 1, "Archiv 1 Heft"); noForbiddenText(d);
   click(d, '.archive button[data-date="2026-10-29"]'); await sleep(1);
@@ -228,55 +227,25 @@ async function scenarioResume(seed) {
 }
 
 async function scenarioNextDayReviews(seed) {
-  const { store, wrongIds } = await scenarioFullDay(seed);
+  const { store } = await scenarioFullDay(seed);
   const rand = rng(seed * 7 + 1);
-  const q2 = clone(QUIZ); q2.date = "2026-10-30"; q2.title = "Freitag, 30. Oktober"; q2.questions = q2.questions.map((x) => Object.assign({}, x, { id: x.id + "f" }));
+  const q2 = clone(QUIZ); q2.date = "2026-10-30"; q2.questions = q2.questions.map((x) => Object.assign({}, x, { id: x.id + "f" }));
   store.docs.set("quizzes/2026-10-30", q2);
   const page = await open(store, "2026-10-30T06:35:00+01:00");
-  const { d, S } = page; const w2 = page.w;
+  const { d, S } = page;
   assert(S.date === "2026-10-30", "Freitag gewählt");
-  const due = Math.min(4, wrongIds.length);
-  if (due) assert(text(d).includes("Vorher " + due + " Wiederholung"), "Hinweis Wiederholungen");
+  assert(!text(d).includes("Wiederholung"), "keine Wiederholungen alter Tage");
   click(d, "#start"); await sleep(2);
-  if (due) { assert(S.phase === "review" && S.rq.length === due, "Wiederholungsphase " + S.rq.length); }
-  const reviewIds = S.rq.map((r) => r.id);
-  const beforeStep = {}; reviewIds.forEach((id) => (beforeStep[id] = store.docs.get("review/" + id).step));
-  // Wiederholungen beantworten und Ergebnis merken
-  const outcome = {};
-  while (S.phase === "review") {
-    const r = S.rq[S.ri]; const right = rand() < 0.6;
-    const btn = [...d.querySelectorAll(".opt")].find((b) => (Number(b.dataset.opt) === r.q.correct) === right);
-    click(d, btn); await sleep(1); outcome[r.id] = right; click(d, "#next"); await sleep(1);
-  }
-  await settle(store);
-  for (const id of reviewIds) { const r = store.docs.get("review/" + id);
-    if (outcome[id]) assert(r.step === 1 && r.due === "2026-11-04", "richtig: Stufe 1, fällig in 3 Schultagen (" + r.due + ")");
-    else assert(r.step === 0 && r.due === "2026-11-02", "falsch: zurück auf Stufe 0, nächster Schultag (" + r.due + ")"); }
-  assert(S.phase === "main" && S.idx === 0, "danach Hauptteil ab Frage 1");
-  assert(store.docs.get("results/2026-10-30").reviewDone === true, "Wiederholung als erledigt markiert");
+  assert(S.phase === "main" && S.idx === 0, "Heft startet direkt mit Frage 1 des Tages");
   await playQuiz(page, store, rand, 0.7);
   click(d, "#bossReveal"); await sleep(1); click(d, "#bossDone"); await sleep(2);
   await settle(store);
   assert(d.querySelector(".stat.hot b").textContent === "2", "Serie 2 nach zwei Tagen");
-  const before = store.docs.get("meta/profile").totalPoints;
-  const cand = w2.MR.finaleCandidates(S.quizzes, S.results, "2026-10-30");
-  if (cand.length) {
-    assert(d.querySelector("#finale"), "Finale-Knopf am Freitag");
-    click(d, "#finale"); await sleep(2); assert(S.phase === "finale", "Finale läuft");
-    let fpts = 0, allOk = true;
-    while (S.phase === "finale") { const f = S.fq[S.fi]; const right = rand() < 0.7; allOk = allOk && right;
-      const btn = [...d.querySelectorAll(".opt")].find((b) => (Number(b.dataset.opt) === f.q.correct) === right); click(d, btn); await sleep(1);
-      if (right) fpts += 10 * (f.q.level || 1) * 2; click(d, "#next"); await sleep(1); }
-    await settle(store);
-    assert(S.view === "result" && !d.querySelector("#finale"), "Finale fertig");
-    const pr = store.docs.get("meta/profile"); assert(pr.totalPoints === before + fpts, "Finalpunkte " + (pr.totalPoints - before) + " statt " + fpts);
-    if (allOk) assert(pr.badges.finale, "Abzeichen Wochensieger");
-    assert(store.docs.get("results/2026-10-30").finale.done === true, "Finale gespeichert");
-  } else assert(!d.querySelector("#finale"), "kein Finale ohne Fehler");
-  // Neuladen: Wiederholungen nicht erneut
+  assert(!d.querySelector("#finale"), "kein Wochenfinale mehr");
   page.dom.window.close();
   const p2 = await open(store, "2026-10-30T07:30:00+01:00");
   assert(p2.d.querySelector("#start").textContent === "Heft ansehen", "Freitag fertig");
+  // Archiv: Donnerstag nachlesbar, aber nicht mehr spielbar wenn offen
   return { store };
 }
 
@@ -285,25 +254,31 @@ async function scenarioWeekendAndHoliday() {
   store.docs.set("quizzes/2026-10-29", clone(QUIZ));
   store.docs.set("quizzes/2026-11-02", { date: "2026-11-02", status: "frei", hook: "Herbstferien. Kein Quiz, keine Fragen.", reason: "Herbstferien Bayern 02.11. bis 06.11.2026" });
   let page = await open(store, "2026-10-31T09:00:00+01:00");
-  assert(page.S.date === "2026-11-02", "Samstag: nächstes Heft (frei) gewählt, war " + page.S.date);
-  assert(text(page.d).includes("Herbstferien"), "Frei-Heft zeigt Grund");
-  assert(!page.d.querySelector("#start"), "kein Startknopf bei frei");
+  assert(page.S.date === null, "Samstag: kein Heft gewählt, war " + page.S.date);
+  assert(text(page.d).includes("Heute kein Heft"), "Samstag: Heute kein Heft");
+  assert(!page.d.querySelector("#start"), "kein Startknopf");
   noForbiddenText(page.d);
+  click(page.d, "#toArchive"); await sleep(1);
+  assert(page.d.querySelectorAll(".archive button").length === 1, "Archiv ohne künftige Hefte");
+  click(page.d, '.archive button[data-date="2026-10-29"]'); await sleep(1);
+  assert(!page.d.querySelector("#start") && text(page.d).includes("nur an seinem Tag spielbar"), "altes offenes Heft nicht spielbar");
   click(page.d, "#toWeek"); await sleep(1);
   const cells = [...page.d.querySelectorAll(".day")].map((c) => c.textContent);
-  assert(cells[3].startsWith("•") || cells[3].startsWith("×"), "Donnerstag offen/verpasst: " + cells[3]);
+  assert(cells[3].startsWith("×"), "Donnerstag verpasst: " + cells[3]);
   noForbiddenText(page.d);
   page.dom.window.close();
+  page = await open(store, "2026-11-02T06:30:00+01:00");
+  assert(page.S.date === "2026-11-02" && text(page.d).includes("Herbstferien"), "Ferientag zeigt freies Heft");
+  page.dom.window.close();
   page = await open(store, "2026-11-09T06:30:00+01:00");
-  assert(page.S.date === "2026-11-02", "ohne neues Heft: letztes Heft (" + page.S.date + ")");
-  assert(text(page.d).includes("Aus dem Archiv"), "Archivhinweis");
+  assert(page.S.date === null && text(page.d).includes("Heute kein Heft"), "ohne neues Heft: Heute kein Heft");
   return { store };
 }
 
 async function scenarioEmptyAndFailures() {
   let store = makeStore(); store.errors = []; store.inflight = new Set();
   let page = await open(store, "2026-10-29T06:30:00+01:00");
-  assert(text(page.d).includes("Noch kein Heft da"), "Leerer Zustand"); noForbiddenText(page.d);
+  assert(text(page.d).includes("Heute kein Heft"), "Leerer Zustand"); noForbiddenText(page.d);
   page.dom.window.close();
   page = await open(store, "2026-10-29T06:30:00+01:00", { nullDb: true });
   assert(page.S.failed && text(page.d).includes("nicht verfügbar"), "Speicher fehlt: Hinweis");
@@ -344,17 +319,18 @@ async function scenarioMalformed() {
   store.docs.set("quizzes/2026-10-28", { date: "2026-10-28", status: "ready", questions: [] });
   const bossless = clone(QUIZ); bossless.date = "2026-10-27"; delete bossless.boss; delete bossless.findings; delete bossless.alsoToday; bossless.questions = bossless.questions.slice(0, 3);
   store.docs.set("quizzes/2026-10-27", bossless);
-  const page = await open(store, "2026-10-29T06:30:00+01:00");
+  let page = await open(store, "2026-10-29T06:30:00+01:00");
   assert(Object.keys(page.S.quizzes).length === 2, "ungültige Hefte ignoriert: " + Object.keys(page.S.quizzes));
   assert(page.w.MR.cleanQuestions(page.S.quizzes["2026-10-29"]).length === 20, "kaputte Fragen ausgefiltert");
   const rand = rng(5);
   click(page.d, "#start"); await sleep(1);
   assert(page.d.querySelectorAll(".strip .cell").length === 21, "Fortschrittsleiste 20 + Boss");
-  // Heft ohne Boss
-  page.S.view = "archive"; page.w.MR._render(); await sleep(1);
-  click(page.d, '.archive button[data-date="2026-10-27"]'); await sleep(1);
-  click(page.d, "#start"); await sleep(1);
-  await playQuiz(page, store, rand, 0.5);
+  // Heft ohne Boss, an seinem eigenen Tag
+  page.dom.window.close();
+  const page2 = await open(store, "2026-10-27T06:30:00+01:00");
+  click(page2.d, "#start"); await sleep(1);
+  await playQuiz(page2, store, rand, 0.5);
+  page = page2;
   assert(page.S.view === "result", "ohne Boss direkt Auswertung");
   noForbiddenText(page.d);
   await settle(store);
@@ -399,7 +375,7 @@ function scenarioLogic() {
   assert(MR.bossJudge(5, 6) === "Genehmigung in Sicht." && MR.bossJudge(3, 6) === "Solide, mit Auflagen." && MR.bossJudge(0, 6) === "Nachbesuch angekündigt.", "MB-Urteil");
   assert(MR.multiplier(0) === 1 && MR.multiplier(4) === 2 && MR.multiplier(9) === 2, "Multiplikator");
   const prof0 = MR.emptyProfile(); prof0.byArea.paedagogik.total = 100; prof0.quizzes = 1; prof0.mastered = 1;
-  const eb = MR.earnedBadges(prof0, 10, 5); ["erste", "paedagogik100", "comeback", "sammler10", "serie5"].forEach((b) => assert(eb.includes(b), "Abzeichen " + b));
+  const eb = MR.earnedBadges(prof0, 10, 5); ["erste", "paedagogik100", "sammler10", "serie5"].forEach((b) => assert(eb.includes(b), "Abzeichen " + b));
   assert(MR.slugify("Théo van Doesburg / Contra-Construction") === "theo-van-doesburg-contra-construction", "slug");
   assert(!MR.validQ({ id: "a", q: "x", options: ["a", 3], correct: 0 }), "nicht-Text-Option abgelehnt");
   dom.window.close();

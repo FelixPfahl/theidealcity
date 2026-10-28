@@ -1,0 +1,23 @@
+Testtag laut Daten: 2026-10-28
+FEHLER  Update über die vorige Fassung (anderer Signaturschlüssel)
+FEHLER  Start während der Stunde öffnet Pult (erwartet: Mini-Skizzen)
+OK      Reiter Heute
+OK      Reiter Morgenrunde
+OK      Reiter Pult
+OK      +5 Min. verlängert und gleicht aus
+OK      Weiter springt zur nächsten Phase
+OK      Zurück nimmt beides zurück
+OK      Pult-Ansicht Tag
+OK      Pult-Ansicht Spick
+OK      Notiz bleibt nach Neustart
+OK      Querformat: Restzeit sichtbar
+OK      Nach dem Drehen weiter in Pult
+OK      Phase wechselt nach Uhrzeit
+OK      Vibration beim Phasenwechsel ausgelöst
+OK      Zurück-Taste führt zu Heute
+OK      Zweites Zurück schließt die App
+FEHLER  Ohne Netz: Pult mit gespeichertem Stand (erwartet: Zwischenhalt|Stern und Wunsch)
+OK      Ohne Netz: Morgenrunde
+FEHLER  Ohne Netz: Heute (erwartet: Auf dem Schulweg)
+---
+Fehler insgesamt: 4

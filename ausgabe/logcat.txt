@@ -1,536 +1,853 @@
 --------- beginning of main
-10-28 15:48:05.078  6645  7034 I PTCommittedOperation: Receive new configuration for com.google.android.gms.notifications
-10-28 15:48:05.080  6645  7037 I PTCommittedOperation: Receive new configuration for com.google.android.gms.tapandpay
-10-28 15:48:05.084  6645  7025 I PTCommittedOperation: Receive new configuration for com.google.android.gms.places
-10-28 15:48:05.092  6645  7035 I PTCommittedOperation: Receive new configuration for com.google.android.gms.nnapi.drivermanager
-10-28 15:48:05.095  6645  6827 I PTCommittedOperation: Receive new configuration for com.google.android.gms.signin
-10-28 15:48:05.099  6645  6827 I PTCommittedOperation: Receive new configuration for com.google.android.gms.auth_authzen
-10-28 15:48:05.101  6645  7034 I PTCommittedOperation: Receive new configuration for com.google.android.libraries.surveys#com.google.android.gms
-10-28 15:48:05.102  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.wearable
-10-28 15:48:05.103  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.firebase.auth
-10-28 15:48:05.104  6645  7025 I PTCommittedOperation: Receive new configuration for com.google.android.gms.ads
-10-28 15:48:05.105  6645  7025 I PTCommittedOperation: Receive new configuration for com.google.android.gms.gcm
-10-28 15:48:05.106  6645  7025 I PTCommittedOperation: Receive new configuration for com.google.android.gms.ulr
-10-28 15:48:05.109  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.appinvite
-10-28 15:48:05.111  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.setupservices
-10-28 15:48:05.112  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.usagereporting
-10-28 15:48:05.113  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.constellation
-10-28 15:48:05.115  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.feedback
-10-28 15:48:05.116  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.analytics
-10-28 15:48:05.117  6645  7036 I PTCommittedOperation: Receive new configuration for com.google.android.gms.auth_cryptauth
-10-28 15:48:05.119  6645  7034 I PTCommittedOperation: Receive new configuration for com.google.android.mainline.release
-10-28 15:48:05.119  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.instantapps
-10-28 15:48:05.120  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.clearcut.public
-10-28 15:48:05.121  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.common.download
-10-28 15:48:05.124  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.locationsharing
-10-28 15:48:05.126  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.panorama
-10-28 15:48:05.127  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.appstate
-10-28 15:48:05.128  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.octarine
-10-28 15:48:05.129  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.chromesync
-10-28 15:48:05.130  6645  6717 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskService started execution. cause:7 exec_start_elapsed_seconds: 142 [CONTEXT service_id=218 ]
-10-28 15:48:05.131  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.credential_manager
-10-28 15:48:05.132  6645  6818 I PTCommittedOperation: Receive new configuration for com.google.android.gms.autofill
-10-28 15:48:05.133  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.cast
-10-28 15:48:05.134  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.fido
-10-28 15:48:05.135  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.gass
-10-28 15:48:05.137  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.auth_folsom
-10-28 15:48:05.138  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.trustagent
-10-28 15:48:05.139  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.languageprofile
-10-28 15:48:05.140  6645  7023 I PTCommittedOperation: Receive new configuration for com.google.android.gms.mobile_data_plan
-10-28 15:48:05.140  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.checkin
-10-28 15:48:05.141  6645  7033 I PTCommittedOperation: Receive new configuration for com.google.android.gms.mdisync
-10-28 15:48:05.142  6645  7034 I PTCommittedOperation: Receive new configuration for com.google.android.gms.audit
-10-28 15:48:05.143  6645  6827 I PTCommittedOperation: Receive new configuration for com.google.android.gms.drive
-10-28 15:48:05.144  6645  6827 I PTCommittedOperation: Receive new configuration for com.google.android.gms.games
-10-28 15:48:05.145  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.droidguard
-10-28 15:48:05.145  6645  7026 I PTCommittedOperation: Receive new configuration for com.google.android.gms.recaptcha
-10-28 15:48:05.146  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.smartdevice
-10-28 15:48:05.147  6645  7020 I PTCommittedOperation: Receive new configuration for com.google.android.gms.platformconfigurator
-10-28 15:48:05.148  6645  7018 I NamespaceManager: Package com.android.refreshratecontrol name not found! Using module version.
-10-28 15:48:05.149  6645  7018 I NamespaceManager: Package com.google.oslo name not found! Using module version.
-10-28 15:48:05.149  6645  7018 I NamespaceManager: Package com.android.media name not found! Using module version.
-10-28 15:48:05.150  6645  7018 I NamespaceManager: Package com.android.media.swcodec name not found! Using module version.
-10-28 15:48:05.150  6645  6736 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskService finished executing. cause:7 result: 1 elapsed_millis: 32 uptime_millis: 32 exec_start_elapsed_seconds: 142 [CONTEXT service_id=218 ]
-10-28 15:48:05.151  6645  7018 I NamespaceManager: Package com.android.neuralnetworks name not found! Using module version.
-10-28 15:48:05.151  6645  7018 I NamespaceManager: Package com.android.media name not found! Using module version.
-10-28 15:48:05.152  6645  6706 I GCoreUlr: WorldUpdater received intent Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) } with receiverAction com.google.gservices.intent.action.GSERVICES_CHANGED
-10-28 15:48:05.156  6645  7018 I NamespaceManager: Package 1 name not found! Using module version.
-10-28 15:48:05.157  6645  7018 I NamespaceManager: Package rkpd name not found! Using module version.
-10-28 15:48:05.157  6645  7018 I NamespaceManager: Package com.google.android.devicelockcontroller name not found! Using module version.
-10-28 15:48:05.157  6645  7018 I NamespaceManager: Package com.google.android.healthfitness name not found! Using module version.
-10-28 15:48:05.157  6645  7018 I NamespaceManager: Package android.companion name not found! Using module version.
-10-28 15:48:05.158  6645  7018 I NamespaceManager: Package com.google.android.healthfitness name not found! Using module version.
-10-28 15:48:05.158  6645  7018 I NamespaceManager: Package com.google.android.aicore name not found! Using module version.
-10-28 15:48:05.158  6645  7018 I NamespaceManager: Package com.google.android.audioproxy name not found! Using module version.
-10-28 15:48:05.158  6645  7018 I NamespaceManager: Package com.google.android.healthfitness name not found! Using module version.
-10-28 15:48:05.158  6645  7018 I NamespaceManager: Package com.google.android.apps.pixel.psi name not found! Using module version.
-10-28 15:48:05.158  6645  6706 I GCoreUlr: WorldUpdater:com.google.gservices.intent.action.GSERVICES_CHANGED: Ensuring that reporting is stopped because of reasons: (no Google accounts)
-10-28 15:48:05.158  6645  7018 I NamespaceManager: Package com.google.android.apps.safetycore name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.crashrecovery name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.profiling name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.bt name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.nfcservices name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.webapp name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.telephonycore name not found! Using module version.
-10-28 15:48:05.159  6645  7018 I NamespaceManager: Package com.google.android.uprobestats name not found! Using module version.
-10-28 15:48:05.160  6645  6706 I GCoreUlr: Unbound from all signal providers.
-10-28 15:48:05.163  6645  6706 I GCoreUlr: DispatchingService ignoring Intent { act=android.net.wifi.WIFI_STATE_CHANGED flg=0x4000010 (has extras) } because ULR inactive
-10-28 15:48:05.165  6645  6645 I GCoreUlr: Unbound from all signal providers.
-10-28 15:48:05.165  6645  6645 I GCoreUlr: Stopping handler for UlrDispSvcFast
-10-28 15:48:05.626   759   813 D EGL_emulation: app_time_stats: avg=205.71ms min=184.19ms max=246.65ms count=5
-10-28 15:48:05.796  1743  1743 I BgTaskExecutorImpl: Starting EXCLUSIVE background task INTERNAL_PERIODIC_TASK_SYNC.
-10-28 15:48:05.807  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task ACTIVITY_LEVEL_TASK.
-10-28 15:48:05.834  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.834  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.839  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task FETCH_ADVERTISING_INFO.
-10-28 15:48:05.889  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.889  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.892  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task UPDATE_LAUNCHER_SHORTCUT.
-10-28 15:48:05.894  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.894  1743  2265 W SearchServiceCore: Abort, client detached.
+10-28 12:26:18.584  2716  2947 W Bugle   : TextClassifierLibManagerImpl: Reclaiming memory at level: 40
+10-28 12:26:18.609  1631  1666 I ogle.android.as: Compiler allocated 8172KB to compile java.lang.Object epe.a()
 --------- beginning of system
-10-28 15:48:05.895   486  1931 W JobScheduler: Job didn't exist in JobStore: a924016 #u0a118/-49 com.google.android.googlequicksearchbox/com.google.android.apps.gsa.tasks.BackgroundTasksJobService
-10-28 15:48:05.896  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task AWARE_TIP_WORKER_PROCESS_TIPS.
-10-28 15:48:05.905  1743  2188 D StrictMode: StrictMode policy violation: android.os.strictmode.DiskReadViolation
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at android.os.StrictMode$AndroidBlockGuardPolicy.onReadFromDisk(StrictMode.java:1658)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at libcore.io.BlockGuardOs.access(BlockGuardOs.java:74)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at libcore.io.ForwardingOs.access(ForwardingOs.java:128)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at android.app.ActivityThread$AndroidOs.access(ActivityThread.java:7801)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at java.io.UnixFileSystem.checkAccess(UnixFileSystem.java:281)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at java.io.File.exists(File.java:813)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at android.app.ContextImpl.getDataDir(ContextImpl.java:2962)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at android.app.ContextImpl.getDir(ContextImpl.java:2981)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at android.content.ContextWrapper.getDir(ContextWrapper.java:347)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.staticplugins.ee.a.d.a(PG:2)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.amr.j(Unknown Source:3527)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.amr.b(PG:54)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at dagger.a.e.b(PG:1)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.ol.el(Unknown Source:6)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.ok.j(Unknown Source:4051)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.ok.b(PG:1)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.search.core.service.g.a.c.a(PG:2)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.libraries.gsa.k.a.f.a(PG:2)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.common.util.concurrent.dx.a(PG:1)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.common.util.concurrent.cv.run(PG:4)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.common.util.concurrent.dz.run(PG:1)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.libraries.i.ae.run(PG:1)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.libraries.i.k.run(PG:2)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at com.google.android.libraries.i.p.run(PG:4)
-10-28 15:48:05.905  1743  2188 D StrictMode: 	at java.lang.Thread.run(Thread.java:1012)
-10-28 15:48:05.906  1743  2188 D StrictMode: StrictMode policy violation: android.os.strictmode.DiskReadViolation
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at android.os.StrictMode$AndroidBlockGuardPolicy.onReadFromDisk(StrictMode.java:1658)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at libcore.io.BlockGuardOs.access(BlockGuardOs.java:74)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at libcore.io.ForwardingOs.access(ForwardingOs.java:128)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at android.app.ActivityThread$AndroidOs.access(ActivityThread.java:7801)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at java.io.UnixFileSystem.checkAccess(UnixFileSystem.java:281)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at java.io.File.exists(File.java:813)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at android.app.ContextImpl.getDir(ContextImpl.java:2982)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at android.content.ContextWrapper.getDir(ContextWrapper.java:347)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.staticplugins.ee.a.d.a(PG:2)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.amr.j(Unknown Source:3527)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.amr.b(PG:54)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at dagger.a.e.b(PG:1)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.ol.el(Unknown Source:6)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.ok.j(Unknown Source:4051)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.binaries.velvet.app.ok.b(PG:1)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.apps.gsa.search.core.service.g.a.c.a(PG:2)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.libraries.gsa.k.a.f.a(PG:2)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.common.util.concurrent.dx.a(PG:1)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.common.util.concurrent.cv.run(PG:4)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.common.util.concurrent.dz.run(PG:1)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.libraries.i.ae.run(PG:1)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.libraries.i.k.run(PG:2)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at com.google.android.libraries.i.p.run(PG:4)
-10-28 15:48:05.906  1743  2188 D StrictMode: 	at java.lang.Thread.run(Thread.java:1012)
-10-28 15:48:05.917  1743  7057 I A       : load shared preferences: file not found
-10-28 15:48:05.922  1743  2265 E TipSharedPrefManager: invalid tip 40070019: tip does not need conditions checked only once
-10-28 15:48:05.923  1743  2265 E TipSharedPrefManager: invalid tip 40070055: tip does not need conditions checked only once
-10-28 15:48:05.924  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.925  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.925  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.925  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.925  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.925  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.925  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.925  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.925  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.926  1743  2265 E TipSharedPrefManager: invalid tip 40070197: tip does not need conditions checked only once
-10-28 15:48:05.927  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.927  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.927  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.927  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.927  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.927  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.927  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.927  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.928  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.928  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.928  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.929  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.929  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.929  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.929  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.929  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.929  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.930  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.931  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.931  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.932  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.932  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.932  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.933  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.933  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.933  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.934  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.936  1743  2265 E TipSharedPrefManager: invalid tip 40070251: tip does not need conditions checked only once
-10-28 15:48:05.944  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task CHROME_EXPERIMENT_SYNC.
-10-28 15:48:05.945  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.945  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.946  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.946  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.946  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.946  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.946  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.946  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.946  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.946  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.947  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.948  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.948  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.948  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.948  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.948  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.948  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.948  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.948  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.948  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.948  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.949  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.949  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.950  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.950  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.950  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.950  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.950  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.950  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.951  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.951  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.951  1743  2265 I A       : Using proto config with mendel
-10-28 15:48:05.951  1743  2265 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:05.951  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.951  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.951  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.951  1743  2265 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:05.951  1743  2265 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:05.952  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.952  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.956  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task GELLER_PKG_ENTITIES_REFRESH_TASK.
-10-28 15:48:05.958  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.961  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task CONTACT_AFFINITY_MODEL_CONTACTS_CHANGE_REFRESH.
-10-28 15:48:05.984  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.984  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.986  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task MDD_CHARGING_TASK.
-10-28 15:48:05.988  1743  7040 I A       : No accounts found for [PKG_ENTITIES], not syncing anything.
-10-28 15:48:05.989  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.989  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.991  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task CLEAR_DATA_DETECTOR.
-10-28 15:48:05.996  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.996  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:05.996  1743  7038 I FirstRunClassifier: First run of com.google.android.googlequicksearchbox on this device detected
-10-28 15:48:05.996   486  1931 D PackageManager: Instant App installer not found with android.intent.action.INSTALL_INSTANT_APP_PACKAGE
-10-28 15:48:05.996   486  1931 D PackageManager: Clear ephemeral installer activity
-10-28 15:48:06.000  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task MDD_MAINTENANCE_TASK.
-10-28 15:48:06.031  1743  7040 E SingleDataFileGroupPop: Failed to add file group 
-10-28 15:48:06.078  1743  2200 I A       : NGA Sync: MDD Task: MDD.MAINTENANCE.PERIODIC.GCM.TASK done.
-10-28 15:48:06.078  1743  2200 I A       : NGA Sync: isNgaSyncEnabled: false; enableFileGroupPopulator: false; requiresMddAssets: false
-10-28 15:48:06.079  1743  2161 I A       : Refresh account policy.
-10-28 15:48:06.079  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.080  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.084  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task CONTACT_AFFINITY_MODEL_PERIODIC_REFRESH.
-10-28 15:48:06.085  1743  7039 W CAMPeriodicRefresh: Refreshing not complete, unable to upload top contacts.
-10-28 15:48:06.085  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.086  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.088  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task NGA_READ_ONLY_LOGS_BASED_TOP_CONTACTS_NGA_PUSH.
-10-28 15:48:06.093  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.094  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.097  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task PCP_V1_BACKGROUND_REFRESH.
-10-28 15:48:06.105  1743  7038 E PCP.BackgroundTask: Missing PCP TNG entry point binding, or zero state response to PCP is not enabled.
-10-28 15:48:06.106  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.107  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.110  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task SYNC_TAPAS_ZERO_PREFIX_CACHE.
-10-28 15:48:06.118  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.119  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.122  1743  1743 I BgTaskExecutorImpl: Starting PERIODIC background task UPDATE_GSERVICES_CONFIG.
-10-28 15:48:06.123  1743  7039 I A       : Updating Gservices keys
-10-28 15:48:06.126  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.127  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:06.178  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.178  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.178  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.178  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.178  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.181  1743  7040 E d       : RuntimeException while executing runnable cb{com.google.apps.tiktok.tracing.ej@cc788af} with executor MoreExecutors.directExecutor()
-10-28 15:48:06.181  1743  7040 E d       : java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.ae.b' on a null object reference in method 'void com.google.android.libraries.mdi.download.h.bq.gH(java.lang.Object)'
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.mdi.download.h.bq.gH(PG:2)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.apps.tiktok.tracing.ej.gH(PG:2)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.cb.run(PG:7)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.bf.execute(PG:1)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.d.i(PG:1)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.d.iq(PG:5)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.ci.t(PG:1)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.mdi.download.h.bu.b(PG:26)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.mdi.download.gs.p(PG:3)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.mdi.download.gs.g(PG:4)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.apps.gsa.staticplugins.bw.a.a(PG:1)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.gsa.k.a.i.apply(PG:2)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.h.e(PG:2)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.common.util.concurrent.j.run(PG:9)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.i.ae.run(PG:1)
-10-28 15:48:06.181  1743  7040 E d       : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
-10-28 15:48:06.181  1743  7040 E d       : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.i.i.run(PG:2)
-10-28 15:48:06.181  1743  7040 E d       : 	at com.google.android.libraries.i.p.run(PG:4)
-10-28 15:48:06.181  1743  7040 E d       : 	at java.lang.Thread.run(Thread.java:1012)
-10-28 15:48:06.181  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.181  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.181  1743  7040 E PhFileGroupPop: Failed to add file group 
-10-28 15:48:06.185  1743  2117 I A       : Starting new batch; batchId=1 corpus=1004
-10-28 15:48:06.186  1743  7039 I A       : Joining existing batch; batchId=1 corpus=1014
-10-28 15:48:06.186  1743  7040 I A       : Download file group for language pack: en-US
-10-28 15:48:06.187  1743  7040 W A       : Locale en-US is not compatible, please check manifest exists
-10-28 15:48:06.187  1743  7040 I A       : Using proto config with mendel
-10-28 15:48:06.188  1743  7040 I A       : Using proto config with mendel
-10-28 15:48:06.194  1743  7040 I A       : Using proto config with mendel
-10-28 15:48:06.194  1743  7040 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:06.194  1743  7040 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:06.195  1743  7040 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:06.197  1743  7040 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:06.197  1743  7040 I A       : Adding from config to map. Locale: ro-RO modelPrefix: okgoogle Location:b051c93dce7bb4dcb5d9ddcbbb2ca760Test isSpeakerIdSupported: false
-10-28 15:48:06.202  1743  7040 I A       : Skipping. Expected model: 1 Found: 2
-10-28 15:48:06.202  1743  7040 I HotwordModelPopulator: #updateHotwordFileGroup group name: hotword_model_en-US_okg, raw locale: en-US, locale: en-US
-10-28 15:48:06.202  1743  7054 I A       : Joining existing batch; batchId=1 corpus=1015
-10-28 15:48:06.203  1743  7038 I A       : Joining existing batch; batchId=1 corpus=1008
-10-28 15:48:06.204  1743  7040 I A       : Using proto config with mendel
-10-28 15:48:06.206  1743  7040 I A       : Using proto config with mendel
-10-28 15:48:06.213  1743  7040 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:06.213  1743  7040 I A       : Adding from config to map. Locale: cmn-Hant-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
-10-28 15:48:06.214  1743  7040 I A       : Adding from config to map. Locale: id-ID modelPrefix: x_google Location:cfffcc1a4c1c084c003c8eb27f73d770 isSpeakerIdSupported: true
-10-28 15:48:06.214  1743  7040 I A       : Adding from config to map. Locale: ko-KR modelPrefix: x_google Location:0b132163a2eb2c1194b202067475724b isSpeakerIdSupported: true
-10-28 15:48:06.214  1743  7040 I A       : Skipping. Expected model: 2 Found: 1
-10-28 15:48:06.214  1743  7040 I A       : Adding from config to map. Locale: zh-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
-10-28 15:48:06.214  1743  7040 I HotwordModelPopulator: #updateHotwordFileGroup group name: hotword_model_en-US_okhey, raw locale: en-US, locale: en-US
-10-28 15:48:06.215  1743  7040 I A       : Using proto config with mendel
-10-28 15:48:06.217  1743  7040 I A       : Merging legacy hotword config map with new proto.
-10-28 15:48:06.217  1743  7040 I A       : Adding from config to map. Locale: cmn-Hant-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
-10-28 15:48:06.218  1743  7040 I A       : Adding from config to map. Locale: id-ID modelPrefix: x_google Location:cfffcc1a4c1c084c003c8eb27f73d770 isSpeakerIdSupported: true
-10-28 15:48:06.218  1743  7040 I A       : Adding from config to map. Locale: ko-KR modelPrefix: x_google Location:0b132163a2eb2c1194b202067475724b isSpeakerIdSupported: true
-10-28 15:48:06.218  1743  7040 I A       : Skipping. Expected model: 2 Found: 1
-10-28 15:48:06.218  1743  7040 I A       : Adding from config to map. Locale: zh-TW modelPrefix: x_google Location:4e7cae00daee30ec565c34e3aa67a51f isSpeakerIdSupported: true
-10-28 15:48:06.218  1743  7040 I HotwordModelPopulator: #updateHotwordFileGroup group name: hotword_model_en-US_okhey, raw locale: en-US, locale: en-US
-10-28 15:48:06.221  1743  7043 D PhFileGroupPop: Added file groups assistant_appintegration_appactions_config
-10-28 15:48:06.228  1743  7043 D PhFileGroupPop: Added file groups fedass_policy_config_group
-10-28 15:48:06.266  1743  7043 D PhFileGroupPop: Added file groups tapas_cortex
-10-28 15:48:06.267  1743  2143 E HotwordModelPopulator: Failed to add hotword file group for 'hotword_model_en-US_okg' from location: https://www.gstatic.com/android-search/hotword/x_google/975058821313279e27b2c3f04de0beef/hotword.data
-10-28 15:48:06.267  1743  2161 E HotwordModelPopulator: Failed to add hotword file group for 'hotword_model_en-US_okhey' from location: https://www.gstatic.com/android-search/hotword/x_google/975058821313279e27b2c3f04de0beef/hotword.data
-10-28 15:48:06.267  1743  2159 E HotwordModelPopulator: Failed to add hotword file group for 'hotword_model_en-US_okhey' from location: https://www.gstatic.com/android-search/hotword/x_google/975058821313279e27b2c3f04de0beef/hotword.data
-10-28 15:48:06.523  6924  6940 D EGL_emulation: app_time_stats: avg=162.06ms min=34.73ms max=993.41ms count=12
-10-28 15:48:06.627   759   813 D EGL_emulation: app_time_stats: avg=200.17ms min=198.99ms max=201.26ms count=5
-10-28 15:48:06.909   486   519 D OomAdjuster: Not killing cached processes
-10-28 15:48:07.000   486   586 I RoleService: Granting default roles...
-10-28 15:48:07.005  4772  5049 I PermissionControllerServiceImpl: Updating user sensitive for uid 10118
-10-28 15:48:07.006   486   486 I Telecom : DefaultDialerCache: Refreshing default dialer for user 0: now com.google.android.dialer: DDC.oR@AhY
-10-28 15:48:07.009   486   595 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS | 
-10-28 15:48:07.009  3536  3718 I Bugle   : BroadcastReceiverAsyncWorkTracker: Acknowledging broadcast of atsi@3c98ab5
-10-28 15:48:07.009   486   576 D CompatibilityChangeReporter: Compat change id reported: 171306433; UID 10118; state: ENABLED
-10-28 15:48:07.009   486   576 D CompatibilityChangeReporter: Compat change id reported: 226439802; UID 10118; state: DISABLED
-10-28 15:48:07.014   952   952 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
-10-28 15:48:07.014   952   952 D MediaPlayerList: Name of package changed: com.google.android.googlequicksearchbox
-10-28 15:48:07.014   952   952 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
-10-28 15:48:07.014   952   952 D MediaPlayerList: Name of package changed: com.google.android.googlequicksearchbox
-10-28 15:48:07.021   759   759 D ControlsListingControllerImpl: ServiceConfig reloaded, count: 0
-10-28 15:48:07.035   980   980 D CarrierSvcBindHelper: onPackageModified: com.google.android.googlequicksearchbox
-10-28 15:48:07.037   980   980 D CarrierSvcBindHelper: No carrier app for: 0
-10-28 15:48:07.038  3854  7061 I ProvidersCache: Provider returned no roots. Possibly naughty: com.google.android.apps.docs.storage
-10-28 15:48:07.042  6645  7029 I Fitness : OnPackageChangedOperation got intent: Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x45000010 pkg=com.google.android.gms cmp=com.google.android.gms/.chimera.PersistentIntentOperationService (has extras) } [CONTEXT service_id=17 ]
-10-28 15:48:07.053  6645  7033 I Fitness : FitCleanupIntentOperation received Intent android.intent.action.PACKAGE_CHANGED [CONTEXT service_id=17 ]
-10-28 15:48:07.054   980   980 D ImsResolver: maybeAddedImsService, packageName: com.google.android.googlequicksearchbox
-10-28 15:48:07.061  4772  4790 W Role    : Default holder doesn't have required signing certificate: com.google.android.apps.work.clouddpc:23962F4B43B9857638EA66F4D419518EAE282491ACDA4B94707BD59003C45E58
-10-28 15:48:07.062   486   519 D AppWidgetServiceImpl: Provider info from ComponentInfo{com.google.android.googlequicksearchbox/com.google.android.googlequicksearchbox.SearchWidgetProvider} won't be persisted.
-10-28 15:48:07.062   486   519 D AppWidgetServiceImpl: Provider info from ComponentInfo{com.google.android.googlequicksearchbox/com.google.android.apps.gsa.staticplugins.smartspace.widget.SmartspaceWidgetProvider} won't be persisted.
-10-28 15:48:07.076  6682  6782 W Icing   : Package com.google.android.googlequicksearchbox targets Android P and isn't allowed to use AppDataSearch indexing API
-10-28 15:48:07.083  6645  6788 W ChimeraUtils: Module com.google.android.gms.nearby_en missing resource null(0)
-10-28 15:48:07.100  6645  6788 W ChimeraUtils: Module com.google.android.gms.nearby_en missing resource null(0)
-10-28 15:48:07.108   486   500 I system_server: Background young concurrent copying GC freed 960050(19MB) AllocSpace objects, 3(60KB) LOS objects, 38% free, 27MB/44MB, paused 2.614ms,49us total 102.049ms
-10-28 15:48:07.172  6682  6782 I Icing   : Indexing com.google.android.gms-internal.3p:MobileApplication from com.google.android.gms
-10-28 15:48:07.178  6682  6782 I Icing   : Indexing done com.google.android.gms-internal.3p:MobileApplication
-10-28 15:48:07.179  6682  6782 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
-10-28 15:48:07.182  6682  6782 I Icing   : Indexing done com.google.android.gms-apps
-10-28 15:48:07.189  1743  1743 I BgTaskExecutorImpl: Starting NONEXCLUSIVE background task MDD_CELLULAR_CHARGING_TASK.
-10-28 15:48:07.190  1743  7043 I A       : Scheduled one-off task for batch; batchId=1 taskId=-1000006 corpora=[1004,1008,1014,1015]
-10-28 15:48:07.190  1743  7043 I A       : Pending callbacks: 1
-10-28 15:48:07.194  1743  2143 W A       : Corpus: GDD_APA_LIGHTWEIGHT_TOKENS is disabled
-10-28 15:48:07.196  1743  2162 I A       : Starting batch sync for corpora: [1014]
-10-28 15:48:07.201  1743  2159 I A       : Starting batch sync for corpora: [1015]
-10-28 15:48:07.202  1743  2161 I A       : Starting batch sync for corpora: [1004]
-10-28 15:48:07.220  1743  2162 I A       : Setting isLegacySQLite mode to false.
-10-28 15:48:07.300  1743  7040 I DeviceCapHelper: Adding surface identity to the device capabilities for surface OPA_AGSA.
-10-28 15:48:07.303  1743  7039 I DeviceCapHelper: Adding surface identity to the device capabilities for surface OPA_AGSA.
-10-28 15:48:07.304  1743  7043 I DeviceCapHelper: Adding surface identity to the device capabilities for surface OPA_AGSA.
-10-28 15:48:07.323  1743  7040 I A       : The GellerConfig is not present, defaulting isUploadEnabled for corpus GDD_APA_BISTO to true.
-10-28 15:48:07.324  1743  2200 I A       : There are 0 elements to be updated on the server for corpus GDD_APA_BISTO.
-10-28 15:48:07.324  1743  7040 I A       : The GellerConfig is not present, defaulting isUploadEnabled for corpus GDD_APA_HEAD_SUGGEST to true.
-10-28 15:48:07.324  1743  2188 I A       : There are 0 elements to be updated on the server for corpus GDD_APA_HEAD_SUGGEST.
-10-28 15:48:07.325  1743  2188 I A       : There are 0 elements to delete from the server for corpus GDD_APA_HEAD_SUGGEST.
-10-28 15:48:07.325  1743  7040 I A       : The GellerConfig is not present, defaulting isUploadEnabled for corpus GDD_APA_SMART_ACTION_MODELS to true.
-10-28 15:48:07.325  1743  2188 I A       : There are 0 elements to be updated on the server for corpus GDD_APA_SMART_ACTION_MODELS.
-10-28 15:48:07.326  1743  2200 I A       : There are 0 elements to delete from the server for corpus GDD_APA_BISTO.
-10-28 15:48:07.326  1743  2188 I A       : There are 0 elements to delete from the server for corpus GDD_APA_SMART_ACTION_MODELS.
-10-28 15:48:07.326  1743  7040 I A       : No previous syncToken for corpus GDD_APA_BISTO found.
-10-28 15:48:07.326  1743  7043 I A       : No previous syncToken for corpus GDD_APA_SMART_ACTION_MODELS found.
-10-28 15:48:07.327  1743  7039 I A       : No previous syncToken for corpus GDD_APA_HEAD_SUGGEST found.
-10-28 15:48:07.333   285  7078 I resolv  : GetAddrInfoHandler::run: {0 262144 0 983040 10118 0}
-10-28 15:48:07.334  1743  7077 W io.grpc.e.gx: [{0}] Failed to resolve name. status={1}
-10-28 15:48:07.334  1743  7080 W io.grpc.e.gx: [{0}] Failed to resolve name. status={1}
-10-28 15:48:07.335  1743  2161 E MDD     : GddFileGroupPopulator: GDD Sync failed for corpus: GDD_APA_HEAD_SUGGEST, configuration: GddAgsaApaHeadSuggest
-10-28 15:48:07.336  1743  2161 E MDD     : GddFileGroupPopulator: GDD Sync failed for corpus: GDD_APA_BISTO, configuration: GddAgsaApaBisto
-10-28 15:48:07.336  1743  7079 W io.grpc.e.gx: [{0}] Failed to resolve name. status={1}
-10-28 15:48:07.338  1743  2161 E MDD     : GddFileGroupPopulator: GDD Sync failed for corpus: GDD_APA_SMART_ACTION_MODELS, configuration: GddAgsaApaSmartActionModels
-10-28 15:48:07.338  1743  2188 I A       : Batch succeeded; batchId=1 taskId=-1000006
-10-28 15:48:07.339  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:07.339  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:07.341   486   505 W JobScheduler: Job didn't exist in JobStore: 1b4afa8 #u0a118/-1000006 com.google.android.googlequicksearchbox/com.google.android.apps.gsa.tasks.BackgroundTasksJobService
-10-28 15:48:07.343  1743  2188 I A       : NGA Sync: MDD Task: MDD.CHARGING.PERIODIC.TASK done.
-10-28 15:48:07.343  1743  2188 I A       : NGA Sync: isNgaSyncEnabled: false; enableFileGroupPopulator: false; requiresMddAssets: false
-10-28 15:48:07.343  1743  2159 I A       : Refresh account policy.
-10-28 15:48:07.344  1743  2265 W SearchServiceCore: Abort, client detached.
-10-28 15:48:07.523  6924  6940 D EGL_emulation: app_time_stats: avg=999.73ms min=999.73ms max=999.73ms count=1
-10-28 15:48:07.797  6682  6773 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.games [CONTEXT service_id=231 ]
-10-28 15:48:07.798  6682  6773 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.maps#com.google.android.gms [CONTEXT service_id=231 ]
-10-28 15:48:07.798  6682  6773 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.cast [CONTEXT service_id=231 ]
-10-28 15:48:07.799  6682  6773 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.mobile_data_plan [CONTEXT service_id=231 ]
-10-28 15:48:07.800  6682  6773 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.udc [CONTEXT service_id=231 ]
-10-28 15:48:07.826   759   813 D EGL_emulation: app_time_stats: avg=199.92ms min=198.98ms max=200.72ms count=6
-10-28 15:48:08.072   150  6879 I keystore2: keystore2::watchdog: Watchdog thread idle -> terminating. Have a great day.
-10-28 15:48:08.177  1018  1018 D MainContentCaptureSession: Flushing 18 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=TEXT_CHANGE
-10-28 15:48:08.197   486   702 D ConnectivityService: releasing NetworkRequest [ REQUEST id=132, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10118 RequestorUid: 10118 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ] (release request)
-10-28 15:48:08.529  6924  6940 D EGL_emulation: app_time_stats: avg=1005.76ms min=1005.76ms max=1005.76ms count=1
-10-28 15:48:08.907   486  1773 E AppOps  : Bad call made by uid 10118. Package "com.google.android.gms" does not belong to uid 10118.
-10-28 15:48:08.910   486  1773 E AppOps  : Bad call made by uid 10118. Package "com.google.android.gms" does not belong to uid 10118.
-10-28 15:48:08.910   486  1773 E AppOps  : Bad call made by uid 10118. Package "com.google.android.gms" does not belong to uid 10118.
-10-28 15:48:08.912  6556  7083 W AssistantConfig: appIntegrationDataInBase64 is null
-10-28 15:48:08.915  6556  7083 E AssistantConnector: Couldn't read whether gRPC is supported from public value
-10-28 15:48:08.915  6556  7083 E AssistantConnector: java.lang.IllegalStateException: Failed to query AGSA value. This is most likely caused by a Google signature check failure. Please make sure both of the AGSA app and the client app are either release or dev builds.
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at bhtw.call(PG:17)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at byyi.call(PG:3)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at ceby.a(PG:1)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at ceav.run(PG:4)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at cebz.run(PG:1)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
-10-28 15:48:08.915  6556  7083 E AssistantConnector: 	at java.lang.Thread.run(Thread.java:1012)
-10-28 15:48:09.005  1681  1681 V ContactsProvider: Scheduled notifyChange started.
-10-28 15:48:09.006   952   952 D BluetoothPbapService:  onChange on contact uri 
-10-28 15:48:09.010   952  7084 D BluetoothPbapUtils: primaryVersionCounter = 0, secondaryVersionCounter=0
-10-28 15:48:09.026   759   813 D EGL_emulation: app_time_stats: avg=199.89ms min=199.37ms max=200.20ms count=6
-10-28 15:48:09.531  6924  6940 D EGL_emulation: app_time_stats: avg=1002.24ms min=1002.24ms max=1002.24ms count=1
-10-28 15:48:10.018   486  1850 W JobScheduler: Job didn't exist in JobStore: 616205a #u0a121/7 com.google.android.contacts/com.google.android.apps.contacts.shortcut.ShortcutJobService
-10-28 15:48:10.027   759   813 D EGL_emulation: app_time_stats: avg=200.22ms min=199.72ms max=200.76ms count=5
-10-28 15:48:10.177  6682  7073 I ChimeraConfigurator: Starting update, reason: 4 urgentFeatures: vision.ocr:-1
-10-28 15:48:10.217  6682  7073 I ChimeraConfigurator: Detected pending changes for urgent request: [vision.ocr]. Pending module sets: container:2318189190800+mlkit.ocr.common,tflite_dynamite:2640104055100800+tflite_dynamite,vision_ocr:2316024025100000+vision.ocr
-10-28 15:48:10.231  6682  7073 I GmsDebugLogger: [73] 1801
-10-28 15:48:10.233  6682  6682 D StrictMode: StrictMode policy violation: android.os.strictmode.UnsafeIntentLaunchViolation: Launch of unsafe intent: Intent { act=com.google.android.gms.chimera.container.CHIMERA_LOG cat=[targeted_intent_op_prefix:.chimera.container.FileApkIntentOperation] cmp=com.google.android.gms/.chimera.GmsIntentOperationService (has extras) }
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.os.StrictMode.onUnsafeIntentLaunch(StrictMode.java:2329)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.content.Intent.prepareToLeaveProcess(Intent.java:11950)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.content.Intent.prepareToLeaveProcess(Intent.java:11863)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.app.ContextImpl.startServiceCommon(ContextImpl.java:1893)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.app.ContextImpl.startService(ContextImpl.java:1864)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.content.ContextWrapper.startService(ContextWrapper.java:817)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.content.ContextWrapper.startService(ContextWrapper.java:817)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at aoea.apply(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at aoeb.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at aoeb.startService(:com.google.android.gms@231818047@23.18.18 (190800-535401451):5)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.content.ContextWrapper.startService(ContextWrapper.java:817)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at com.google.android.gms.chimera.container.FileApkIntentOperation$ExternalFileApkChimeraService.onStartCommand(:com.google.android.gms@231818047@23.18.18 (190800-535401451):5)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at hhn.onStartCommand(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at zdg.onStartCommand(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.app.ActivityThread.handleServiceArgs(ActivityThread.java:4656)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.app.ActivityThread.-$$Nest$mhandleServiceArgs(Unknown Source:0)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2180)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.os.Handler.dispatchMessage(Handler.java:106)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.os.Looper.loopOnce(Looper.java:201)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.os.Looper.loop(Looper.java:288)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at android.app.ActivityThread.main(ActivityThread.java:7924)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at java.lang.reflect.Method.invoke(Native Method)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
-10-28 15:48:10.233  6682  6682 D StrictMode: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:936)
-10-28 15:48:10.236  6682  7073 W ZappDownloader: No successful module downloads for requested features [vision.ocr].
-10-28 15:48:10.236  6682  7073 I GmsDebugLogger: [30] [VisionOcrDynamite.integ:231602402100000],[TfliteDynamiteDynamite.integ:264010405100800],[MlkitOcrCommon.optional:231818100800]
-10-28 15:48:10.239  6682  7073 W ChimeraConfigService: Retry attempt was throttled. [CONTEXT service_id=264 ]
-10-28 15:48:10.239  6682  7073 I GmsDebugLogger: [83] 1 [vision.ocr]
-10-28 15:48:10.240  6682  7071 W Vision  : Request for optional module download of ocr failed. Request again.
-10-28 15:48:10.241  6682  7071 W Vision  : Would have logged:
-10-28 15:48:10.241  6682  7071 W Vision  : # dsae@37884fe7
-10-28 15:48:10.241  6682  7071 I Vision  : Schedule retrying download ocr at 147703 with backoff 20 seconds
-10-28 15:48:10.307  6645  7018 I PTCommittedOperation: Receive new configuration for com.google.android.gms.people
-10-28 15:48:10.314  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.auth_account
-10-28 15:48:10.315  6645  7087 I PTCommittedOperation: Receive new configuration for com.google.android.location
-10-28 15:48:10.317  6645  7029 I PTCommittedOperation: Receive new configuration for com.google.android.gms.wearable
-10-28 15:48:10.318  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.usagereporting
-10-28 15:48:10.319  6645  7027 I PTCommittedOperation: Receive new configuration for com.google.android.gms.clearcut.public
-10-28 15:48:10.320  6645  7097 I PTCommittedOperation: Receive new configuration for com.google.android.gms.common.download
-10-28 15:48:10.320  6645  7094 I PTCommittedOperation: Receive new configuration for com.google.android.gms.chromesync
-10-28 15:48:10.322  6645  7096 I PTCommittedOperation: Receive new configuration for com.google.android.gms.autofill
-10-28 15:48:10.324  6645  7099 I PTCommittedOperation: Receive new configuration for com.google.android.gms.smartdevice
-10-28 15:48:11.020  6645  6645 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.auth.account.data.service.START pkg=com.google.android.gms }
-10-28 15:48:11.226   759   813 D EGL_emulation: app_time_stats: avg=199.74ms min=198.18ms max=201.72ms count=6
-10-28 15:48:11.527  6924  6940 D EGL_emulation: app_time_stats: avg=997.79ms min=990.39ms max=1005.18ms count=2
-10-28 15:48:11.734  6682  6682 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.checkin.START pkg=com.google.android.gms }
-10-28 15:48:11.803  6645  6645 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.pseudonymous.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentApiService }
-10-28 15:48:11.803  6645  6645 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.clearcut.bootcount.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentBoundBrokerService }
-10-28 15:48:12.007   486  1072 D OomAdjuster: Not killing cached processes
-10-28 15:48:12.226   759   813 D EGL_emulation: app_time_stats: avg=199.98ms min=199.66ms max=200.28ms count=5
-10-28 15:48:12.322  6645  6680 E bwfc    : Phenotype API error. Event # edax@c6a42b3c, EventCode: 5 [CONTEXT service_id=51 ]
-10-28 15:48:12.322  6645  6680 E bwfc    : bwdx: 29501: Stale snapshot for com.google.android.libraries.consentverifier#com.google.android.gms(change count changed - expected 6  but was 2)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at bwfg.b(:com.google.android.gms@231818047@23.18.18 (190800-535401451):16)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at bwff.g(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at bwfc.e(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at bwfc.f(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at avsy.eo(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at avtf.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):14)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at dfhf.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):8)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
-10-28 15:48:12.322  6645  6680 E bwfc    : 	at java.lang.Thread.run(Thread.java:1012)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: operation=CommitToConfigurationOperationCall, opStatusCode=29501 [CONTEXT service_id=51 ]
-10-28 15:48:12.323  6645  6680 W AsyncOperation: OperationException[Status{statusCode=Stale snapshot for com.google.android.libraries.consentverifier#com.google.android.gms(change count changed - expected 6  but was 2), resolution=null}]
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at bwfc.e(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at bwfc.f(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at avsy.eo(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at avtf.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):14)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at dfhf.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):8)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1137)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:637)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
-10-28 15:48:12.323  6645  6680 W AsyncOperation: 	at java.lang.Thread.run(Thread.java:1012)
-10-28 15:48:12.324  6682  6786 W MobStoreFlagStore: Failed to commit due to stale snapshot for com.google.android.libraries.consentverifier#com.google.android.gms, triggering flag update. Experiments may be delayed til next app start.
-10-28 15:48:12.388  6682  6682 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.auth.cryptauth.cryptauthservice.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
-10-28 15:48:12.392  6645  6645 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.auth.proximity.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.PersistentBoundBrokerService }
-10-28 15:48:12.539  6682  6682 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.ocr.service.internal.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsInternalApiService }
-10-28 15:48:13.385  7110  7110 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
-10-28 15:48:13.393   127   127 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
-10-28 15:48:13.393  7110  7111 I Gralloc4: mapper 4.x is not supported
-10-28 15:48:13.428   759   813 D EGL_emulation: app_time_stats: avg=200.25ms min=199.41ms max=201.93ms count=6
-10-28 15:48:13.430  7110  7111 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
-10-28 15:48:13.472  6682  6682 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.chimera.container.moduleinstall.ModuleInstallService.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsApiService }
-10-28 15:48:13.472  6682  6682 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.mobstore.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
-10-28 15:48:13.477  6682  6682 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.mdd.service.START dat=chimera-action:/... cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
-10-28 15:48:13.535  6924  6940 D EGL_emulation: app_time_stats: avg=1003.59ms min=994.88ms max=1012.30ms count=2
+10-28 12:26:18.638   488  1707 I RescueParty: Starting to observe: [android, com.android.phone], updated namespace: telephony
+10-28 12:26:18.638   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.638   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.android.phone]
+10-28 12:26:18.638   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.638   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.640   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.640   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.641   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.641   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.641   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.641   488   488 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:18.642   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.642   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.642   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.642   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.642   488  1707 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.643   488  1707 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.643   488  1707 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.643   488  1707 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.643   488  1707 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.643   488  1707 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.652   488  1707 I RescueParty: Starting to observe: [android], updated namespace: app_standby
+10-28 12:26:18.652   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.653   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:18.653   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.653   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.653   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.656   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.656   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.657   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.658   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.658   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.658   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.658   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.660   488   577 D CompatibilityChangeReporter: Compat change id reported: 218533173; UID 10175; state: ENABLED
+10-28 12:26:18.661   488  1707 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.661   488  1707 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.661   488  1707 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.661   488  1707 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.661   488  1707 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.662   488  1707 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.663   488  1707 I RescueParty: Starting to observe: [com.google.android.apps.nexuslauncher], updated namespace: launcher
+10-28 12:26:18.663   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.663   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [com.google.android.apps.nexuslauncher]
+10-28 12:26:18.664   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.664   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.664   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.665   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.665   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.667   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.667   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.667   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.667   488   488 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:18.667   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.667   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.668   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.668   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.668   488  1762 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.668   488  1762 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.668   488  1762 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.669   488  1762 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.669   488  1762 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.669  1013  1013 I ActivityThread: Schedule relaunch activity: com.google.android.apps.nexuslauncher.NexusLauncherActivity
+10-28 12:26:18.671   488  1762 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.673  1013  1013 D b/254119092: clearActivity
+10-28 12:26:18.673  1013  1013 D b/254119092: mActivity and mContext agree taskbarIsPresent=false
+10-28 12:26:18.675   488  1707 D SearchUiPerUserService: Removing all callbacks for session Id=com.google.android.apps.nexuslauncher:fb7befdd-c949-4f2d-bc52-93d2364973d7,0 and 0 callbacks.
+10-28 12:26:18.676   488  1707 I RescueParty: Starting to observe: [android], updated namespace: configuration
+10-28 12:26:18.676   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.677   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:18.678   488  1707 D CoreBackPreview: Window{35f1c15 u0 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}: Setting back callback null
+10-28 12:26:18.678   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.678   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.680   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.680   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.682   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.682   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.682   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.683   488   488 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:18.683   488  1707 W InputManager-JNI: Input channel object '35f1c15 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (client)' was disposed without first being removed with the input manager!
+10-28 12:26:18.684   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.684   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.684   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.684   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.685   488  2021 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.685   488  2021 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.685   488  2021 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.685   488  2021 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.685   488  2021 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.686   488  2021 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.688  1013  1013 W OnBackInvokedCallback: OnBackInvokedCallback is not enabled for the application.
+10-28 12:26:18.688  1013  1013 W OnBackInvokedCallback: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+10-28 12:26:18.698   488  2021 I RescueParty: Starting to observe: [com.google.android.ext.services, com.google.android.providers.media.module, android, com.google.android.as, com.google.android.permissioncontroller, com.google.android.setupwizard, com.google.android.bluetooth, com.google.android.networkstack, com.android.keychain, com.google.android.gms, com.google.android.gsf, com.google.android.apps.nexuslauncher, com.android.settings, com.google.android.settings.intelligence, com.google.android.apps.wallpaper, com.android.phone, com.android.shell, com.android.systemui, com.android.bluetooth, com.android.providers.contacts], updated namespace: privacy
+10-28 12:26:18.710   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.710   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [com.google.android.ext.services, com.google.android.providers.media.module, android, com.google.android.as, com.google.android.permissioncontroller, com.google.android.setupwizard, com.google.android.bluetooth, com.google.android.networkstack, com.android.keychain, com.google.android.gms, com.google.android.gsf, com.google.android.apps.nexuslauncher, com.android.settings, com.google.android.settings.intelligence, com.google.android.apps.wallpaper, com.android.phone, com.android.shell, com.android.systemui, com.android.bluetooth, com.android.providers.contacts]
+10-28 12:26:18.710   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.710   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.710   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.714  7888  7903 D CompatibilityChangeReporter: Compat change id reported: 150939131; UID 10120; state: ENABLED
+10-28 12:26:18.718   358   387 W TransactionTracing: Could not find layer handle 0x7fca4a0d4330
+10-28 12:26:18.729   488   488 I PackageWatchdog: Syncing health check requests for packages: {com.google.android.settings.intelligence}
+10-28 12:26:18.729   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.730   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.730   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.731   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.731   488   488 I PackageWatchdog: Syncing health check requests for packages: {com.google.android.settings.intelligence}
+10-28 12:26:18.731   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.733   488  2618 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.733   488  2618 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.733   488  2618 I PackageWatchdog: Updated health check state for package com.google.android.settings.intelligence: INACTIVE -> PASSED
+10-28 12:26:18.734   488  2618 I PackageWatchdog: Syncing state, reason: updated health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.734   488  2618 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.734   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.734   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.734   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.734   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.734   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.735   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.735   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.736   488  2618 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.737   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.737   488  2618 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.737   488  2618 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.737   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.743  1013  1013 D AutofillManager: Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+10-28 12:26:18.746  1013  1013 D DeviceSearchAlg: search timeout = %d200
+10-28 12:26:18.751  1013  1119 I AiAiSuggestUi: Connecting to system intelligence module.
+10-28 12:26:18.755  1013  2037 I AiAiSuggestUi: Successfully connected to system intelligence: 
+10-28 12:26:18.756  1013  1013 W PageIndicator: Total number of pages invalid: 0. Assuming 1 page.
+10-28 12:26:18.756  1013  1013 W BcSmartspaceView: Current card is not present in the Adapter; cannot log.
+10-28 12:26:18.759  1013  1013 I OverviewComponentObserver: updateOverviewTargets: mIsHomeDisabled=false, isDefaultHomeNull=false, mIsDefaultHome=true
+10-28 12:26:18.759   488  2618 I RescueParty: Starting to observe: [android, com.google.android.as, com.android.settings, com.android.systemui], updated namespace: systemui
+10-28 12:26:18.759   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.759   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.google.android.as, com.android.settings, com.android.systemui]
+10-28 12:26:18.760   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.760   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.760   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.761   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.761   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.762   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.763   764   764 D NavigationModeController: getCurrentUserContext: contextUser=0 currentUser=0
+10-28 12:26:18.765   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.765   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.765   488   488 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:18.765   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.765   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.765   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.765   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.766   488   818 I RescueParty: Starting to observe: [android], updated namespace: media
+10-28 12:26:18.767   488  2618 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.767   488  2618 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.767   488  2618 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.767   488  2618 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.767   488  2618 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.768   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.768   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:18.768   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.768   488  2618 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.768   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.769   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.769   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.769   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.769   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.769   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.770   488  2618 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.770   488  2618 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.770   488  2618 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.770   488  2618 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.770   488  2618 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.771   488  2618 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.771   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.771   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.773  6735  8633 I bwir    : updateFromConfigurations using legacy put method [CONTEXT service_id=204 ]
+10-28 12:26:18.782   488   818 D SearchUiPerUserService: Creating SearchSessionInfo for session Id=com.google.android.apps.nexuslauncher:3764f293-d873-4526-9f02-7f7eccf5d9dc,0
+10-28 12:26:18.783  1631  1631 I AiAiEcho: SearchContextManagerImpl::setSearchContext resultTypes=[141151] extras=[Bundle[mParcelledData.dataSize=608]] sessionId=[com.google.android.apps.nexuslauncher:3764f293-d873-4526-9f02-7f7eccf5d9dc,0]
+10-28 12:26:18.791   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.791   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.791   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.792   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.792   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.792   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.792   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.793   488  2618 I RescueParty: Starting to observe: [android], updated namespace: alarm_manager
+10-28 12:26:18.793   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.793   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.793   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.794   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.794   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.794   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.796   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.805   488   818 D CompatibilityChangeReporter: Compat change id reported: 197654537; UID 10175; state: ENABLED
+10-28 12:26:18.805   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:18.805   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.805   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.805   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.807  1013  1013 I ContentCaptureHelper: Setting logging level to DEBUG
+10-28 12:26:18.807  1013  1013 D ContentCaptureManager: setFlushViewTreeAppearingEventDisabled(): setting to false
+10-28 12:26:18.807  1013  1013 D ContentCaptureManager: updateWindowAttributes(): window flags=-2137980672
+10-28 12:26:18.808   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.808   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.809   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.809   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.810   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.810   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.810   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.810   488   506 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.810   488   506 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.811   488   506 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.811   488   506 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.811   488   506 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.812   488   506 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.812  1013  1844 W Parcel  : Expecting binder but got null!
+10-28 12:26:18.814   488  2568 D CoreBackPreview: Window{cb13b53 u0 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@6c35989, mPriority=0}
+10-28 12:26:18.816  1013  1013 D MainContentCaptureSession: Flushing 0 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=FINISHED
+10-28 12:26:18.825  1013  1013 D MainContentCaptureSession: Destroying session (ctx=com.google.android.apps.nexuslauncher.NexusLauncherActivity@2798062, id=918546201) with 0 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false]
+10-28 12:26:18.827  1631  1631 W ContentCaptureService: handleSendEvents() received empty list of events
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: Unable to register Doze Always on content observer.
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: java.lang.SecurityException: No access to content://settings/secure/doze_always_on: Neither user 10152 nor current process has android.permission.INTERACT_ACROSS_USERS_FULL.
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3011)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Parcel.createException(Parcel.java:2995)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Parcel.readException(Parcel.java:2978)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Parcel.readException(Parcel.java:2920)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.content.IContentService$Stub$Proxy.registerContentObserver(IContentService.java:1032)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.content.ContentResolver.registerContentObserver(ContentResolver.java:2712)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at com.google.android.systemui.smartspace.BcSmartspaceView.onAttachedToWindow(Unknown Source:222)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.View.dispatchAttachedToWindow(View.java:21357)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3491)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:2900)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:2371)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.ViewRootImpl$TraversalRunnable.run(ViewRootImpl.java:9297)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.Choreographer$CallbackRecord.run(Choreographer.java:1231)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.Choreographer$CallbackRecord.run(Choreographer.java:1239)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.Choreographer.doCallbacks(Choreographer.java:899)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.Choreographer.doFrame(Choreographer.java:832)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:1214)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Handler.handleCallback(Handler.java:942)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Looper.loopOnce(Looper.java:201)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.os.Looper.loop(Looper.java:288)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.app.ActivityThread.main(ActivityThread.java:7924)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at java.lang.reflect.Method.invoke(Native Method)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:936)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: Caused by: android.os.RemoteException: Remote stack trace:
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.app.ContextImpl.enforce(ContextImpl.java:2240)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.app.ContextImpl.enforceCallingOrSelfPermission(ContextImpl.java:2268)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at com.android.server.content.ContentService.handleIncomingUser(ContentService.java:1397)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at com.android.server.content.ContentService.registerContentObserver(ContentService.java:369)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 	at android.content.IContentService$Stub.onTransact(IContentService.java:486)
+10-28 12:26:18.853  1013  1013 W BcSmartspaceView: 
+10-28 12:26:18.876  1013  1013 D TISBindHelper: TIS service connected
+10-28 12:26:18.876  1013  1013 D b/254119092: Set mActivity=com.google.android.apps.nexuslauncher.NexusLauncherActivity@1fbb33
+10-28 12:26:18.876  1013  1013 D b/254119092: mActivity and mContext agree taskbarIsPresent=false
+10-28 12:26:18.876  1013  1013 D MainContentCaptureSession: handleScheduleFlush(act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=1 (WAITING_FOR_SERVER), disabled=false], reason=FULL): not a timeout reason because mDirectServiceInterface is not ready yet
+10-28 12:26:18.876  1013  1013 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=CONNECTED
+10-28 12:26:18.877  1013  1013 D MainContentCaptureSession: Flushing 1 event(s) for act:com.google.android.apps.nexuslauncher/.NexusLauncherActivity [state=2 (ACTIVE), disabled=false], reason=FULL
+10-28 12:26:18.877   488   506 I ActivityTaskManager: Activity reported stop, but no longer stopping: ActivityRecord{f3cb79e u0 com.google.android.apps.nexuslauncher/.NexusLauncherActivity} t8} STOPPED
+10-28 12:26:18.880   488   506 D CompatibilityChangeReporter: Compat change id reported: 181136395; UID 10175; state: DISABLED
+10-28 12:26:18.880   488   506 D CompatibilityChangeReporter: Compat change id reported: 174042936; UID 10175; state: DISABLED
+10-28 12:26:18.881   764   783 I ndroid.systemui: Background young concurrent copying GC freed 114710(5724KB) AllocSpace objects, 19(1724KB) LOS objects, 26% free, 18MB/25MB, paused 3.152ms,32us total 153.191ms
+10-28 12:26:18.914   488   818 I RescueParty: Starting to observe: [android, com.google.android.permissioncontroller, com.android.settings], updated namespace: app_hibernation
+10-28 12:26:18.914   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.914   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.google.android.permissioncontroller, com.android.settings]
+10-28 12:26:18.914   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.914   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.914   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.917   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.917   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.918   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.919   488   488 D AppHibernationService: App hibernation changed to enabled=true
+10-28 12:26:18.919   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.919   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.919   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.919   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:18.920   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.920   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:18.920   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:18.920   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:18.920   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:18.924   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:18.981   488   818 I RescueParty: Starting to observe: [android, com.android.systemui], updated namespace: window_manager
+10-28 12:26:18.981   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:18.981   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.android.systemui]
+10-28 12:26:18.981   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:18.982   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:18.982   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:18.989   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.989   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:18.991   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:18.995   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:18.995   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:18.995   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:18.995   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.000   488  2568 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.000   488  2568 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.000   488  2568 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.000   488  2568 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.000   488  2568 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.006   488  2568 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.014  1794  2736 W Parcel  : Expecting binder but got null!
+10-28 12:26:19.016   488  2568 D CoreBackPreview: Window{27bf63e u0 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@a1161ec, mPriority=0}
+10-28 12:26:19.023   488  2568 D CoreBackPreview: Window{9a92b28 u0 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}: Setting back callback null
+10-28 12:26:19.024   488  2568 W InputManager-JNI: Input channel object '9a92b28 com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity (client)' was disposed without first being removed with the input manager!
+10-28 12:26:19.042   358   387 W TransactionTracing: Could not find layer handle 0x7fca4a0d4ff0
+10-28 12:26:19.083  8651  8651 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+10-28 12:26:19.092  8651  8651 I AndroidRuntime: Using default boot image
+10-28 12:26:19.092  8651  8651 I AndroidRuntime: Leaving lock profiling enabled
+10-28 12:26:19.094  8651  8651 I app_process: Core platform API reporting enabled, enforcing=false
+10-28 12:26:19.094  8651  8651 I app_process: Using CollectorTypeCC GC.
+10-28 12:26:19.115   488  2568 I RescueParty: Starting to observe: [android, com.google.android.bluetooth], updated namespace: bluetooth
+10-28 12:26:19.115   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.117   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.google.android.bluetooth]
+10-28 12:26:19.117   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.117   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:19.117   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:19.119   488   488 D BluetoothDeviceConfigChangeTracker: shouldRestartWhenPropertiesUpdated: scan_timeout_millis='300000',location_denylist_name='',location_denylist_advertising_data='⊈0016AAFE40/00FFFFFFF0,⊆0016AAFE/00FFFFFF,⊆00FF4C0002/00FFFFFFFF',location_denylist_mac=''
+10-28 12:26:19.119   488   488 D BluetoothDeviceConfigListener: All properties unchanged, skipping restart
+10-28 12:26:19.119   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.119   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.122   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.122   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.122   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.122   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.122   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.123   488  2568 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.123   488  2568 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.123   488  2568 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.123   488  2568 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.123   488  2568 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.124   488  2568 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.130   488  2568 I RescueParty: Starting to observe: [android, com.android.systemui], updated namespace: latency_tracker
+10-28 12:26:19.131   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.131   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.131   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.133   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.133   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.android.systemui]
+10-28 12:26:19.133   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.133   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.133   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.133   488   488 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:19.133   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.133   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.133   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.133   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.133   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:19.134   488  2568 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.135   488  2568 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.135   488  2568 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.136   488  2568 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.136   488  2568 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.136   488  2568 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.137   488  2568 I RescueParty: Starting to observe: [android], updated namespace: battery_saver
+10-28 12:26:19.137   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.137   488   488 E DeviceConfig: Parsing int failed for location_mode
+10-28 12:26:19.139   488  2568 I RescueParty: Starting to observe: [android], updated namespace: constrain_display_apis
+10-28 12:26:19.140   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.140   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.142   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.143   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:19.143   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.145   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.145   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.145   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.145   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.145   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.145   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.145   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.145   488   520 I PackageWatchdog: Not pruning observers, elapsed time: 0ms
+10-28 12:26:19.145   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.145   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.145   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:19.145   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.145   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.145   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.146   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.146   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:19.146   488   506 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.146   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.146   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.146   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.146   488  2568 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.150   488  1707 I RescueParty: Starting to observe: [android], updated namespace: nnapi_native
+10-28 12:26:19.151   488  2618 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.151   488  2618 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.152   488  2618 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.158   488   506 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.158   488   506 I ExplicitHealthCheckController: Service not ready to get health check requested packages. Binding...
+10-28 12:26:19.158   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.158   488  2568 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.160   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.160   488  1763 I RescueParty: Starting to observe: [android, com.google.android.networkstack], updated namespace: tethering
+10-28 12:26:19.161   488   506 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.161   488   818 I ExplicitHealthCheckController: Service not ready to get health check requested packages. Binding...
+10-28 12:26:19.161   488   818 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:19.161   488  2568 I ExplicitHealthCheckController: Service not ready to get health check requested packages. Binding...
+10-28 12:26:19.161   488  2568 I ExplicitHealthCheckController: Not binding to service, service already connecting
+10-28 12:26:19.161   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.161   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.161   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.162   488  2568 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.165   488  2568 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.165   488  2568 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.166   488  2568 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.166   488  2568 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.173   488  2568 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.174   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.174   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.174   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.175   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.176   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.176   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.176   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.176   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.176   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.176   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.176   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.177   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.177   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.178   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.178   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:19.178   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.178   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.178   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.178   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.179   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.179   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.179   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.179   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.179   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.179   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.180   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.180   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.180   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.180   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.180   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.180   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.180   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.181   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.182   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.182   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.182   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.182   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.182   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.182   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.182   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.182   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.183   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.183   488  2568 I RescueParty: Starting to observe: [android], updated namespace: location
+10-28 12:26:19.183   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.184   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android, com.google.android.networkstack]
+10-28 12:26:19.184   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.184   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.184   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.185   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.187   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.187   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.187   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.187   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.187   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.187   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.187   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.187   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.187   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.188   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.188   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:19.189   488   520 I PackageWatchdog: Syncing state, reason: observing new packages
+10-28 12:26:19.189   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.189   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.190   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.190   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.191   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.191   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.191   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.191   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.191   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.191   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.191   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.191   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.192   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.192   488   520 D PackageWatchdog: rescue-party-observer added the following packages to monitor [android]
+10-28 12:26:19.192   488   520 I PackageWatchdog: Syncing state, reason: updated observers
+10-28 12:26:19.192   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.192   488   488 I ExplicitHealthCheckController: Service not ready to get health check supported packages. Binding...
+10-28 12:26:19.192   488   488 I ExplicitHealthCheckController: Explicit health check service is bound
+10-28 12:26:19.193   488   488 I ExplicitHealthCheckController: Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-28 12:26:19.193   488   488 I ExplicitHealthCheckController: Service initialized, syncing requests
+10-28 12:26:19.193   488   488 I PackageWatchdog: Syncing health check requests for packages: {}
+10-28 12:26:19.193   488   488 D ExplicitHealthCheckController: Getting health check supported packages
+10-28 12:26:19.193   488   818 I ExplicitHealthCheckController: Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.193   488   818 D PackageWatchdog: Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-28 12:26:19.193   488   818 D ExplicitHealthCheckController: Getting health check requested packages
+10-28 12:26:19.193   488   818 I ExplicitHealthCheckController: Explicit health check requested packages []
+10-28 12:26:19.193   488   818 I ExplicitHealthCheckController: No more health check requests, unbinding...
+10-28 12:26:19.194   488   818 I ExplicitHealthCheckController: Explicit health check service is unbound
+10-28 12:26:19.194   488   520 I PackageWatchdog: Saving observer state to file
+10-28 12:26:19.210  8651  8651 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+10-28 12:26:19.210  8651  8651 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt70l.dat
+10-28 12:26:19.217  8651  8651 W app_process: Unexpected CPU variant for x86: x86_64.
+10-28 12:26:19.217  8651  8651 W app_process: Known variants: atom, sandybridge, silvermont, kabylake, default
+10-28 12:26:19.221  8651  8651 W app_process: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/system/framework/android.test.runner.jar*2649186567])
+10-28 12:26:19.236  8651  8651 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+10-28 12:26:19.241   488   488 D BatterySaverPolicy: accessibility changed to true, updating policy.
+10-28 12:26:19.242  8651  8665 V UiAutomation: Init UiAutomation@27d07a[id=32, flags=0]
+10-28 12:26:19.244  1631  4382 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:19.245  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:19.245  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:19.245  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:19.245  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:19.247  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:19.247  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:19.247  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:19.248  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:19.249  1794  2380 I A       : NGA disabled due to not being eligible.
+10-28 12:26:19.249  1631  4372 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:19.260  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:19.260  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:19.260  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:19.260  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:19.260  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:19.260  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:19.261  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:19.261  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:19.273   764   802 W Looper  : Slow dispatch took 32ms wmshell.main h=android.view.ViewRootImpl$ViewRootHandler c=android.view.accessibility.AccessibilityManager$$ExternalSyntheticLambda1@c51275d m=0
+10-28 12:26:19.279  5071  5071 V SafetyCenterAccessibilityListener: accessibility event occurred, safety center feature not enabled.
+10-28 12:26:19.966  8541  8559 D EGL_emulation: app_time_stats: avg=996.61ms min=996.00ms max=997.22ms count=2
+10-28 12:26:20.214   488   577 D OomAdjuster: Not killing cached processes
+10-28 12:26:20.249   488  1763 D CompatibilityChangeReporter: Compat change id reported: 161145287; UID 10175; state: DISABLED
+10-28 12:26:20.253  8651  8651 W AccessibilityNodeInfoDumper: Fetch time: 4ms
+10-28 12:26:20.255  1631  4372 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:20.255   488   488 D BatterySaverPolicy: accessibility changed to false, updating policy.
+10-28 12:26:20.257  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:20.257  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:20.257  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:20.257  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:20.258  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:20.259  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:20.259  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:20.259  1794  2379 I A       : NGA disabled due to not being eligible.
+10-28 12:26:20.260  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:20.261  8651  8651 D AndroidRuntime: Shutting down VM
+10-28 12:26:20.969  8541  8559 D EGL_emulation: app_time_stats: avg=1002.06ms min=1002.06ms max=1002.06ms count=1
+10-28 12:26:21.212  8670  8670 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+10-28 12:26:21.215  8670  8670 I AndroidRuntime: Using default boot image
+10-28 12:26:21.215  8670  8670 I AndroidRuntime: Leaving lock profiling enabled
+10-28 12:26:21.217  8670  8670 I app_process: Core platform API reporting enabled, enforcing=false
+10-28 12:26:21.217  8670  8670 I app_process: Using CollectorTypeCC GC.
+10-28 12:26:21.285  8670  8670 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+10-28 12:26:21.285  8670  8670 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt70l.dat
+10-28 12:26:21.289  8670  8670 W app_process: Unexpected CPU variant for x86: x86_64.
+10-28 12:26:21.289  8670  8670 W app_process: Known variants: atom, sandybridge, silvermont, kabylake, default
+10-28 12:26:21.291  8670  8670 W app_process: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/system/framework/android.test.runner.jar*2649186567])
+10-28 12:26:21.304  8670  8670 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+10-28 12:26:21.310   488   488 D BatterySaverPolicy: accessibility changed to true, updating policy.
+10-28 12:26:21.311  1631  3639 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:21.312  1794  2380 I A       : NGA disabled due to not being eligible.
+10-28 12:26:21.312  8670  8684 V UiAutomation: Init UiAutomation@56d054c[id=33, flags=0]
+10-28 12:26:21.313  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:21.313  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:21.313  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:21.313  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:21.314  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:21.314  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:21.314  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:21.315  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:21.316  1631  4372 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:21.317  5071  5071 V SafetyCenterAccessibilityListener: accessibility event occurred, safety center feature not enabled.
+10-28 12:26:21.322  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:21.322  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:21.322  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:21.322  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:21.323  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:21.323  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:21.323  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:21.324  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:22.966  8541  8559 D EGL_emulation: app_time_stats: avg=998.49ms min=995.92ms max=1001.07ms count=2
+10-28 12:26:24.101  8670  8670 W AccessibilityNodeInfoDumper: Fetch time: 12ms
+10-28 12:26:24.103  1631  3639 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:24.103  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:24.103  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:24.104  8670  8670 D AndroidRuntime: Shutting down VM
+10-28 12:26:24.104  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:24.104  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:24.104  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:24.104  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:24.104  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:24.104  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:24.112   488   488 D BatterySaverPolicy: accessibility changed to false, updating policy.
+10-28 12:26:24.114  1794  2358 I A       : NGA disabled due to not being eligible.
+10-28 12:26:24.218   283  8686 I resolv  : GetAddrInfoHandler::run: {0 786432 0 983040 10120 0}
+10-28 12:26:24.218  6735  8528 W enyb    : [{0}] Failed to resolve name. status={1}
+10-28 12:26:24.970  8541  8559 D EGL_emulation: app_time_stats: avg=1001.65ms min=998.56ms max=1004.75ms count=2
+10-28 12:26:25.045  8692  8692 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-28 12:26:25.059   132   132 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-28 12:26:25.060  8692  8693 I Gralloc4: mapper 4.x is not supported
+10-28 12:26:25.080  8692  8693 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-28 12:26:25.287  8697  8697 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-28 12:26:25.297   132   132 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-28 12:26:25.298  8697  8698 I Gralloc4: mapper 4.x is not supported
+10-28 12:26:25.324  8697  8698 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-28 12:26:25.481   488  1100 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=de.theidealcity.atelier/.MainActivity (has extras)} from uid 0
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 265464455; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 265452344; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 266124927; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 265451093; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 265456536; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 255940284; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 236283604; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 263959004; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 264304459; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 264301586; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 254631730; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 273509367; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 263259275; UID 10175; state: DISABLED
+10-28 12:26:25.482   488  1100 D CompatibilityChangeReporter: Compat change id reported: 194480991; UID 10175; state: ENABLED
+10-28 12:26:25.483   488  1100 D CompatibilityChangeReporter: Compat change id reported: 174042980; UID 10175; state: DISABLED
+10-28 12:26:25.495   283  8705 I resolv  : GetAddrInfoHandler::run: {0 0 0 983040 10175 0}
+10-28 12:26:25.510  8541  8607 D EGL_emulation: eglCreateContext: 0x728e17c388d0: maj 3 min 0 rcv 3
+10-28 12:26:25.517   488   513 D OomAdjuster: Not killing cached processes
+10-28 12:26:27.113  8541  8559 D EGL_emulation: app_time_stats: avg=534.38ms min=14.45ms max=1165.36ms count=4
+10-28 12:26:28.250   959  1273 D BtGatt.ScanManager: uid 10120 isForeground true scanMode -1
+10-28 12:26:28.251   959  1273 D BtGatt.ScanManager: uid 10120 isForeground true scanMode 1
+10-28 12:26:28.251   959  1273 D BtGatt.ScanManager: uid 10120 isForeground true scanMode -1
+10-28 12:26:30.011  6901  6966 I GMS_MM_Logger: Memory Metric Logging not allowed. Stopping.
+10-28 12:26:31.132  6901  6901 I NearbySharing: SharingTileService destroyed [CONTEXT service_id=194 ]
+10-28 12:26:31.132   488  2618 D OomAdjuster: Not killing cached processes
+10-28 12:26:31.581  8706  8706 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+10-28 12:26:31.585  8706  8706 I AndroidRuntime: Using default boot image
+10-28 12:26:31.585  8706  8706 I AndroidRuntime: Leaving lock profiling enabled
+10-28 12:26:31.587  8706  8706 I app_process: Core platform API reporting enabled, enforcing=false
+10-28 12:26:31.587  8706  8706 I app_process: Using CollectorTypeCC GC.
+10-28 12:26:31.661  8706  8706 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+10-28 12:26:31.661  8706  8706 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt70l.dat
+10-28 12:26:31.665  8706  8706 W app_process: Unexpected CPU variant for x86: x86_64.
+10-28 12:26:31.665  8706  8706 W app_process: Known variants: atom, sandybridge, silvermont, kabylake, default
+10-28 12:26:31.667  8706  8706 W app_process: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/system/framework/android.test.runner.jar*2649186567])
+10-28 12:26:31.680  8706  8706 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+10-28 12:26:31.684  1631  4372 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:31.684  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:31.685  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:31.685  8706  8720 V UiAutomation: Init UiAutomation@fc70d66[id=34, flags=0]
+10-28 12:26:31.685  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:31.685  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:31.685  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:31.685  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:31.685  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:31.685  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:31.687  1794  2379 I A       : NGA disabled due to not being eligible.
+10-28 12:26:31.690   488   488 D BatterySaverPolicy: accessibility changed to true, updating policy.
+10-28 12:26:31.691  1631  3639 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:31.692  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:31.692  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:31.692  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:31.692  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:31.692  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:31.692  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:31.693  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:31.693  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:31.694  5071  5071 V SafetyCenterAccessibilityListener: accessibility event occurred, safety center feature not enabled.
+10-28 12:26:35.083  8706  8706 W AccessibilityNodeInfoDumper: Fetch time: 5ms
+10-28 12:26:35.084  1631  3639 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:35.086  8706  8706 D AndroidRuntime: Shutting down VM
+10-28 12:26:35.086  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:35.086  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:35.086  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:35.086  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:35.087  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:35.087  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:35.087  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:35.087  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:35.089  1794  2378 I A       : NGA disabled due to not being eligible.
+10-28 12:26:35.090   488   488 D BatterySaverPolicy: accessibility changed to false, updating policy.
+10-28 12:26:35.784   283  8722 I resolv  : GetAddrInfoHandler::run: {0 786432 0 983040 10120 0}
+10-28 12:26:35.785  6735  8522 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 12:26:35.785  6735  8522 W WakeLock: GCM_HB_ALARM counter does not exist
+10-28 12:26:35.785  6735  8522 I AlarmManager: setExactAndAllowWhileIdle [name: GCM_CONN_ALARM type: 2 triggerAtMillis: 368787]
+10-28 12:26:35.785  6735  8522 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 12:26:35.995  8728  8728 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-28 12:26:36.004   132   132 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-28 12:26:36.004  8728  8729 I Gralloc4: mapper 4.x is not supported
+10-28 12:26:36.024  8728  8729 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-28 12:26:36.174   488  2618 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=de.theidealcity.atelier/.MainActivity (has extras)} from uid 0
+10-28 12:26:36.184   283  8737 I resolv  : GetAddrInfoHandler::run: {0 0 0 983040 10175 0}
+10-28 12:26:36.195  8541  8607 D EGL_emulation: eglCreateContext: 0x728e17c3bc90: maj 3 min 0 rcv 3
+10-28 12:26:36.201   488   513 D OomAdjuster: Not killing cached processes
+10-28 12:26:36.208  8541  8559 D EGL_emulation: app_time_stats: avg=822.89ms min=25.25ms max=8725.56ms count=11
+10-28 12:26:37.881  8541  8559 D EGL_emulation: app_time_stats: avg=417.63ms min=20.20ms max=914.46ms count=4
+10-28 12:26:38.965  8541  8559 D EGL_emulation: app_time_stats: avg=104.03ms min=28.68ms max=681.96ms count=10
+10-28 12:26:39.360   488   512 I DropBoxManagerService: add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-28 12:26:39.361   488   512 I DropBoxManagerService: add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-28 12:26:39.361   488   512 I DropBoxManagerService: add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-28 12:26:40.238  1456  7989 I DialerOmtpVvmCarrierConfigHelper: com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_STATUS_SMS_TIME_OUT PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.239  1456  1456 I DialerRetryPolicy: com.android.voicemail.impl.scheduling.RetryPolicy.onCompleted:118 discarding deferred status [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.240  1456  1456 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor.prepareStop:371 no more tasks, stopping service if no task are added in 5000 millis [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.241  1456  1456 I DialerLogcatLoggingBindings: com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_AUTO_RETRY_ACTIVATION
+10-28 12:26:40.241  1456  1456 I DialerTaskReceiver: com.android.voicemail.impl.scheduling.TaskReceiver.onReceive:68 task received [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.242  1456  1456 I DialerTaskReceiver: com.android.voicemail.impl.scheduling.TaskReceiver.onReceive:73 TaskExecutor already running [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.242  1456  1456 I DialerTasks: com.android.voicemail.impl.scheduling.Tasks.createTask:59 Task.createTask create task:com.android.voicemail.impl.ActivationTask [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.242  1456  1456 I DialerRetryPolicy: com.android.voicemail.impl.scheduling.RetryPolicy.onCreate:81 retry #3 for com.android.voicemail.impl.ActivationTask@d530864 queued, executing in 5000 [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.245  1456  1456 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor.addTask:299 com.android.voicemail.impl.ActivationTask@d530864 added [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.246  1456  1456 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor.runNextTask:345 minimal wait time:4997 [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.246  1456  1456 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor.sleep:355 sleep for 4997 millis [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:40.280  8739  8739 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+10-28 12:26:40.284  8739  8739 I AndroidRuntime: Using default boot image
+10-28 12:26:40.284  8739  8739 I AndroidRuntime: Leaving lock profiling enabled
+10-28 12:26:40.286  8739  8739 I app_process: Core platform API reporting enabled, enforcing=false
+10-28 12:26:40.286  8739  8739 I app_process: Using CollectorTypeCC GC.
+10-28 12:26:40.355  8739  8739 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+10-28 12:26:40.355  8739  8739 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt70l.dat
+10-28 12:26:40.360  8739  8739 W app_process: Unexpected CPU variant for x86: x86_64.
+10-28 12:26:40.360  8739  8739 W app_process: Known variants: atom, sandybridge, silvermont, kabylake, default
+10-28 12:26:40.362  8739  8739 W app_process: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/system/framework/android.test.runner.jar*2649186567])
+10-28 12:26:40.374  8739  8739 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+10-28 12:26:40.378  1631  3639 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:40.378  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:40.378  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:40.378  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:40.378  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:40.379  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:40.379  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:40.379  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:40.379  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:40.379  8739  8753 V UiAutomation: Init UiAutomation@77e7b17[id=35, flags=0]
+10-28 12:26:40.382  1794  2379 I A       : NGA disabled due to not being eligible.
+10-28 12:26:40.386  5071  5071 V SafetyCenterAccessibilityListener: accessibility event occurred, safety center feature not enabled.
+10-28 12:26:40.387   488   488 D BatterySaverPolicy: accessibility changed to true, updating policy.
+10-28 12:26:40.392  1631  4382 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:40.396  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:40.397  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:40.397  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:40.397  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:40.399  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:40.399  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:40.400  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:40.400  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:40.966  8541  8559 D EGL_emulation: app_time_stats: avg=1000.59ms min=999.61ms max=1001.57ms count=2
+10-28 12:26:41.364   488   521 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.DROPBOX_ENTRY_ADDED flg=0x10 (has extras) } to com.google.android.gms/.stats.service.DropBoxEntryAddedReceiver
+10-28 12:26:41.364   488   521 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.DROPBOX_ENTRY_ADDED flg=0x10 (has extras) } to com.google.android.gms/.chimera.GmsIntentOperationService$PersistentTrustedReceiver
+10-28 12:26:41.378   488  2618 D OomAdjuster: Not killing cached processes
+10-28 12:26:42.091  8739  8739 W AccessibilityNodeInfoDumper: Fetch time: 3ms
+10-28 12:26:42.092   488   488 D BatterySaverPolicy: accessibility changed to false, updating policy.
+10-28 12:26:42.093  1631  1671 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:42.094  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:42.094  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:42.094  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:42.094  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:42.095  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:42.095  1794  2378 I A       : NGA disabled due to not being eligible.
+10-28 12:26:42.095  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:42.095  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:42.095  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:42.097  8739  8739 D AndroidRuntime: Shutting down VM
+10-28 12:26:42.404   283  8760 I resolv  : GetAddrInfoHandler::run: {0 786432 0 983040 10120 0}
+10-28 12:26:42.405  6735  8528 W enyb    : [{0}] Failed to resolve name. status={1}
+10-28 12:26:42.973  8541  8559 D EGL_emulation: app_time_stats: avg=1003.56ms min=998.04ms max=1009.08ms count=2
+10-28 12:26:43.063  8764  8764 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+10-28 12:26:43.066  8764  8764 I AndroidRuntime: Using default boot image
+10-28 12:26:43.066  8764  8764 I AndroidRuntime: Leaving lock profiling enabled
+10-28 12:26:43.068  8764  8764 I app_process: Core platform API reporting enabled, enforcing=false
+10-28 12:26:43.068  8764  8764 I app_process: Using CollectorTypeCC GC.
+10-28 12:26:43.137  8764  8764 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+10-28 12:26:43.137  8764  8764 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt70l.dat
+10-28 12:26:43.142  8764  8764 W app_process: Unexpected CPU variant for x86: x86_64.
+10-28 12:26:43.142  8764  8764 W app_process: Known variants: atom, sandybridge, silvermont, kabylake, default
+10-28 12:26:43.143  8764  8764 W app_process: ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[] | PCL[/system/framework/android.test.runner.jar*2649186567])
+10-28 12:26:43.156  8764  8764 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+10-28 12:26:43.160  1631  4382 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:43.160  8764  8778 V UiAutomation: Init UiAutomation@f664a52[id=36, flags=0]
+10-28 12:26:43.161  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:43.161  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:43.161  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:43.161  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:43.161  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:43.161  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:43.161  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:43.161  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:43.163  1794  2379 I A       : NGA disabled due to not being eligible.
+10-28 12:26:43.164   488   488 D BatterySaverPolicy: accessibility changed to true, updating policy.
+10-28 12:26:43.166  1631  1671 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:43.167  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:43.167  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:43.167  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:43.167  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:43.167  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:43.168  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:43.168  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:43.168  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:43.182  5071  5071 V SafetyCenterAccessibilityListener: accessibility event occurred, safety center feature not enabled.
+10-28 12:26:43.816  1794  2522 I BistoDBWrapper: Close DB
+10-28 12:26:44.624   987  1030 I m.android.phone: JIT allocated 62KB for compiled code of boolean com.android.internal.telephony.ITelephony$Stub.onTransact(int, android.os.Parcel, android.os.Parcel, int)
+10-28 12:26:44.965  8541  8559 D EGL_emulation: app_time_stats: avg=995.66ms min=990.77ms max=1000.55ms count=2
+10-28 12:26:45.091  8764  8764 W AccessibilityNodeInfoDumper: Fetch time: 3ms
+10-28 12:26:45.094  1631  1671 I AiAiEcho: Settings cha with uri: content://settings/secure/accessibility_enabled
+10-28 12:26:45.094  8764  8764 D AndroidRuntime: Shutting down VM
+10-28 12:26:45.095  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:45.096  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:45.096  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:45.096  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:45.097  1631  1997 I AiAiEcho: Predicting[0]: 
+10-28 12:26:45.097  1631  1997 I AiAiEcho: Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-28 12:26:45.097  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0
+10-28 12:26:45.098   488   488 D BatterySaverPolicy: accessibility changed to false, updating policy.
+10-28 12:26:45.100  1631  1997 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface home with targets# 0
+10-28 12:26:45.123  1794  2358 I A       : NGA disabled due to not being eligible.
+10-28 12:26:45.249  1456  7989 I DialerTaskExecutor: com.android.voicemail.impl.scheduling.TaskExecutor$WorkerThreadHandler.handleMessage:221 executing task com.android.voicemail.impl.ActivationTask@d530864 [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.250  1456  1456 I DialerLogcatLoggingBindings: com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_ACTIVATION_STARTED
+10-28 12:26:45.254  1456  7989 I DialerPreOMigrationHandler: com.android.voicemail.impl.PreOMigrationHandler.migrate:76 ComponentInfo{com.android.phone/com.android.services.telephony.TelephonyConnectionService}, 1, UserHandle{0} already migrated [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.258  1456  7989 I DialerVoicemailStatus: com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-28 12:26:45.258  1456  7989 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-28 12:26:45.271  1456  8780 W Settings: Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-28 12:26:45.272  1456  8780 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-28 12:26:45.273  1456  7989 I DialerActivationTask: com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:292 VVM content provider configured - vvm_type_cvvm PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.273  1456  7989 I DialerActivationTask: com.android.voicemail.impl.ActivationTask.updateVoicemailsWithIccId:477 conversion disabled [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.273  1456  7989 I DialerOmtpVvmCarrierConfigHelper: com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_ACTIVATING PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.273  1456  7989 I DialerVoicemailStatus: com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-28 12:26:45.274  1456  7989 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-28 12:26:45.282  1456  8780 W Settings: Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-28 12:26:45.282  1456  8780 I DialerVoicemailStatusDataServiceImpl: com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-28 12:26:45.284  1456  7989 I DialerActivationTask: com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:339 sending an activation request [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.287   987  1243 D SmsNumberUtils: enter filterDestAddr. destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-28 12:26:45.287   987  1243 D SmsNumberUtils: destAddr is not formatted.
+10-28 12:26:45.287   987  1243 D SmsNumberUtils: leave filterDestAddr, new destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-28 12:26:45.290  1456  7989 I DialerLogcatLoggingBindings: com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:46 Impression: CVVM_SEND_VVM_SMS
+10-28 12:26:45.294  1456  1456 I DialerStatusSmsFetcher: com.android.voicemail.impl.sms.StatusSmsFetcher.onReceive:106 Request SMS successfully sent [CONTEXT enable_persistent_logger=true ]
+10-28 12:26:45.972  8541  8559 D EGL_emulation: app_time_stats: avg=1006.65ms min=1006.65ms max=1006.65ms count=1
+10-28 12:26:46.051  8786  8786 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+10-28 12:26:46.069   132   132 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-28 12:26:46.069  8786  8787 I Gralloc4: mapper 4.x is not supported
+10-28 12:26:46.087  8786  8787 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_vulkan_queue_submit_with_commands ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_multi_configs ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+10-28 12:26:46.245   488  2618 I WifiService: setWifiEnabled package=com.android.shell uid=0 enable=true isPrivileged=true
+10-28 12:26:46.246   488   697 D WifiActiveModeWarden: Switching all client mode managers
+10-28 12:26:46.246   488   697 I SupplicantStaIfaceHalAidlImpl: Clearing internal state
+10-28 12:26:46.248   127   127 I servicemanager: Found android.hardware.wifi.supplicant.ISupplicant/default in device VINTF manifest.
+10-28 12:26:46.249   127   127 I servicemanager: Since 'android.hardware.wifi.supplicant.ISupplicant/default' could not be found, trying to start it as a lazy AIDL service
+--------- beginning of kernel
+10-28 12:26:46.441     0     0 I init    : starting service 'wpa_supplicant'...
+10-28 12:26:46.446     0     0 I init    : Created socket '/dev/socket/wpa_wlan0', mode 660, user 1010, group 1010
+10-28 12:26:46.452     0     0 I init    : Control message: Processed ctl.interface_start for 'aidl/android.hardware.wifi.supplicant.ISupplicant/default' from pid: 127 (/system/bin/servicemanager)
+10-28 12:26:46.282   488  1100 D ConnectivityService: registerNetworkAgent NetworkAgentInfo{network{102}  handle{441492361229}  ni{MOBILE[HSPA] CONNECTING extra: epc.tmobile.com} created=2026-10-28T12:26:46.281Z Score(Policies :  ; KeepConnected : 0)   lp{{LinkAddresses: [ ] DnsAddresses: [ ] Domains: null MTU: 0 Routes: [ ]}}  nc{[ Transports: CELLULAR Capabilities: MMS&SUPL&DUN&FOTA&IMS&CBS&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=14Kbps LinkDnBandwidth>=14Kbps Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> SubscriptionIds: {1} UnderlyingNetworks: Null]}  factorySerialNumber=4}
+10-28 12:26:46.286   283   283 I netd    : getFwmarkForNetwork(102) -> {MarkMaskParcel{mark: 102, mask: 65535}} <0.01ms>
+10-28 12:26:46.288   488  2618 W ContextImpl: Calling a method in the system process without a qualified user: android.app.ContextImpl.sendBroadcastMultiplePermissions:1272 android.content.Context.sendBroadcastMultiplePermissions:2281 com.android.server.TelephonyRegistry.broadcastDataConnectionStateChanged:3281 com.android.server.TelephonyRegistry.notifyDataConnectionForSubscriber:2036 com.android.internal.telephony.ITelephonyRegistry$Stub.onTransact:571 

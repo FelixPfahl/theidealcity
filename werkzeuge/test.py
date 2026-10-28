@@ -101,7 +101,7 @@ with sync_playwright() as p:
     st = pg.locator('#stageBox [data-f="schritte"]'); st.click(); pg.keyboard.press("Control+End"); pg.keyboard.press("Enter"); pg.keyboard.type("Neuer Schritt"); pg.wait_for_timeout(200)
     pg.locator("#canvasWrap").click(position={"x": 5, "y": 5}); pg.wait_for_timeout(400)
     ok(pg.evaluate("pres.slides[6].schritte.split('\\n').length") == 6 and pg.locator("#stageBox ol li").count() == 6, "Liste: neuer Schritt als sechster Punkt")
-    ok("8.10 bis 8.20 Uhr · Partnerarbeit · 10 Minuten" in pg.inner_text("#stageBox .line"), "Arbeitsauftrag: Zeile mit Uhrzeit, Sozialform, Dauer")
+    ok("8.10 bis 8.20 Uhr · Partnerarbeit · 10 Minuten" in pg.inner_text("#stageBox .line").replace("\xa0", " "), "Arbeitsauftrag: Zeile mit Uhrzeit, Sozialform, Dauer")
     # Folien hinzufügen, verschieben, löschen
     pg.click("#addBtn"); pg.click('[data-add="bewertung"]'); pg.wait_for_timeout(300)
     ok(pg.locator(".thumb").count() == 15, "Folie: hinzugefügt")

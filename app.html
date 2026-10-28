@@ -119,7 +119,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 
 /* ===== Folien: 2560 x 1440, Bilder vor Text, große Schrift ===== */
 .s{width:2560px;height:1440px;background:#fff;color:#111;position:relative;overflow:hidden;font-family:var(--f),"Jost","Futura","Century Gothic",sans-serif;font-size:58px;line-height:1.3;padding:120px 160px 150px}
-.s .H{font-family:var(--tf),var(--f),sans-serif}
+.s .H{font-family:var(--tf),var(--f),sans-serif;font-stretch:var(--tw,100%)}
 .s em{font-style:italic}
 .s strong{font-weight:800}
 .s .acc{color:var(--acc)}
@@ -182,7 +182,7 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 .s-auftrag.mitbild .line{font-size:84px}
 .s-auftrag.mitbild .st{font-size:56px}
 .s-auftrag h2{font-size:104px;line-height:1.02;font-weight:800;margin:0;letter-spacing:-.02em}
-.s-auftrag .line{font-size:104px;margin:24px 0 44px}
+.s-auftrag .line{font-size:96px;margin:24px 0 44px}
 .s-auftrag .st{font-size:64px}
 .s-auftrag .extra{font-size:52px;border-left:10px solid var(--acc);padding:6px 0 6px 34px;margin-top:40px;color:#333}
 .s-auftrag .abgabe{font-size:64px;font-weight:800;margin-top:34px}
@@ -190,11 +190,11 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 
 
 .s-bewertung h2{font-size:100px;font-weight:800;margin:0 0 50px;letter-spacing:-.02em}
-.s-bewertung .rows{display:grid;grid-template-columns:auto 1fr;column-gap:70px;row-gap:22px;align-items:center}
-.s-bewertung .pt{font-size:110px;font-weight:800;color:var(--acc);text-align:right;line-height:1;font-variant-numeric:tabular-nums}
+.s-bewertung .rows{display:grid;grid-template-columns:auto 1fr;column-gap:70px;row-gap:36px;align-items:center}
+.s-bewertung .pt{font-size:130px;font-weight:800;color:var(--acc);text-align:right;line-height:1;font-variant-numeric:tabular-nums}
 .s-bewertung .pt small{font-size:44px;margin-left:8px}
-.s-bewertung .kr{font-size:52px}
-.s-bewertung .sum{margin-top:44px;font-size:64px;font-weight:800}
+.s-bewertung .kr{font-size:64px}
+.s-bewertung .sum{margin-top:60px;font-size:76px;font-weight:800}
 .s-bewertung .sum span{color:var(--acc)}
 
 .s-zitat .zq{font-size:104px;line-height:1.12;font-weight:500;letter-spacing:-.015em;max-width:2200px}
@@ -437,11 +437,12 @@ function fig(s, f, edit, W, H, cap){
 function phaseLine(p, s, i, pt){
   const idx = slidePhases(p)[i];
   const ph = pt[idx]; if (!ph) return "";
-  return `${fmt(ph.s)} bis ${fmt(ph.s + ph.d)} Uhr · ${esc(ph.form)} · ${ph.d} Minuten`;
+  const nb = x => String(x).replace(/ /g, "&nbsp;");
+  return `${nb(fmt(ph.s) + " bis " + fmt(ph.s + ph.d) + " Uhr")} · ${nb(esc(ph.form))} · ${nb(ph.d + " Minuten")}`;
 }
 function slideHTML(p, i, edit){
   const s = p.slides[i], k = p.konzept || {}, pt = phaseTimes(p);
-  const st = `--acc:${esc(k.akzent || "#0028FF")};--f:'${esc(k.schrift || "Jost")}';--tf:'${esc(k.titelschrift || k.schrift || "Jost")}'`;
+  const st = `--acc:${esc(k.akzent || "#0028FF")};--f:'${esc(k.schrift || "Jost")}';--tf:'${esc(k.titelschrift || k.schrift || "Jost")}';--tw:${+k.breite || 100}%`;
   const E = (f, cls, ph, kind, tag) => ed(p, s, f, cls, edit, ph, kind, tag);
   let inner = "", cls = "s s-" + s.type;
   switch (s.type){
@@ -450,7 +451,7 @@ function slideHTML(p, i, edit){
       break;
     case "ablauf": {
       const rows = pt.filter(ph => !/^puffer$/i.test(ph.form));
-      if (rows.length > 9) cls += " dense";
+      if (rows.length > 8) cls += " dense";
       const head = ober(p) ? "Was Sie heute erwartet" : "Was euch heute erwartet";
       inner = `<h2 class="H">${head}</h2><div class="ziel"><b>Ziel: </b>${ed(p, s, "meta.ziel", "", edit, "Das Stundenziel in einem Satz", "text", "span")}</div>
         <div class="rows">${rows.map(ph => `<div class="tm">${fmt(ph.s)}</div><div class="ti">${md(ph.titel)}</div><div class="fo">${esc(ph.form)}, ${ph.d} Min.</div>`).join("")}</div>`;
@@ -894,6 +895,7 @@ function renderSide(){
     const k = pres.konzept;
     B.innerHTML = `<label class="f">Schrift</label><select data-kf="schrift">${FONTS.map(f => opt(f, k.schrift)).join("")}</select>
       <label class="f">Schrift für Überschriften</label><select data-kf="titelschrift">${FONTS.map(f => opt(f, k.titelschrift || k.schrift)).join("")}</select>
+      <label class="f">Breite der Überschriften (nur Archivo: 62 schmal bis 125 breit)</label><input type="range" min="62" max="125" step="1" data-kf="breite" value="${esc(k.breite || 100)}" style="width:100%">
       <label class="f">Akzentfarbe (nur Uhrzeit, Sozialform, Dauer, Punkte, wenige Hervorhebungen)</label><input type="color" data-kf="akzent" value="${esc(k.akzent || "#0028FF")}" style="width:80px;height:40px;padding:2px">
       <label class="f">Grafisches Konzept (zwei bis drei Sätze)</label><textarea data-kf="notiz" rows="5">${esc(k.notiz || "")}</textarea>
       <p class="meta">Standard: Jost (Futura-ähnlich), Schwarz auf Weiß, Akzentblau #0028FF.</p>`;

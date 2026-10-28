@@ -1,0 +1,180 @@
+{
+ "format": "atelier-folien",
+ "version": 1,
+ "id": "vv94xja6",
+ "meta": {
+  "klasse": "11",
+  "titel": "Klassische Moderne 2 von 4: Kubismus",
+  "datum": "2026-11-13",
+  "start": "11:30",
+  "ende": "13:00",
+  "ziel": "Sie erklären, wie der Kubismus einen Gegenstand von mehreren Seiten zugleich zeigt, und wer ihn zwischen 1908 und 1914 feierte oder bekämpfte."
+ },
+ "konzept": {
+  "schrift": "Archivo",
+  "titelschrift": "Archivo",
+  "akzent": "#A8571B",
+  "notiz": "Facetten. Archivo, Überschriften schmal und hoch wie gebrochene Bildflächen, Fließtext in normaler Breite. Akzent Ocker aus der Palette des analytischen Kubismus, sonst nur Schwarz und Grau. Werke immer unbeschnitten auf Weiß, Text links ausgerichtet, ruhiger Wechsel von Bild und Text.",
+  "breite": 72
+ },
+ "phases": [
+  {
+   "d": 5,
+   "form": "Partnerarbeit",
+   "titel": "Wo sitzt hier ein Mann?",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Plenum",
+   "titel": "Paris 1907: ein Bild, das keiner wollte",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Einzelarbeit",
+   "titel": "Ein Gegenstand, drei Ansichten",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Plenum",
+   "titel": "Vom Würfel zum Zeitungspapier",
+   "puffer": 0
+  },
+  {
+   "d": 15,
+   "form": "Partnerarbeit",
+   "titel": "Stimmen der Zeit",
+   "puffer": 0
+  },
+  {
+   "d": 15,
+   "form": "Gruppenarbeit",
+   "titel": "Wer feierte, wer bekämpfte?",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Plenum",
+   "titel": "Ein Satz je Gruppe, Vorgriff 1937",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Einzelarbeit",
+   "titel": "Steckbrief Kubismus",
+   "puffer": 5
+  },
+  {
+   "d": 5,
+   "form": "Plenum",
+   "titel": "Ausblick: Expressionismus",
+   "puffer": 0
+  }
+ ],
+ "slides": [
+  {
+   "type": "titel",
+   "kicker": "Klassische Moderne 2 von 4",
+   "thema": "Kubismus",
+   "unter": "Ein Ding, von allen Seiten zugleich",
+   "id": "rz1owonp"
+  },
+  {
+   "type": "frage",
+   "phase": 0,
+   "frage": "In diesem Bild sitzt ein Mann. Wo sind seine Hände, seine Haare, seine Uhrkette?",
+   "hinweis": "Suchen Sie zu zweit und zeigen Sie mit dem Finger.",
+   "mitBild": true,
+   "id": "dfjacvsk"
+  },
+  {
+   "type": "ablauf",
+   "phase": 0,
+   "id": "li9t8veo"
+  },
+  {
+   "type": "werkbild",
+   "phase": 1,
+   "id": "ngl90dca"
+  },
+  {
+   "type": "werk",
+   "phase": 1,
+   "titel": "Die Auflösung",
+   "text": "[nach Freigabe]",
+   "id": "kay061jm"
+  },
+  {
+   "type": "text",
+   "phase": 1,
+   "titel": "Paris 1907: ein Bild, das keiner wollte",
+   "text": "[nach Freigabe]",
+   "id": "gas5a8qs"
+  },
+  {
+   "type": "auftrag",
+   "phase": 2,
+   "titel": "Ein Gegenstand, drei Ansichten",
+   "schritte": "Stellen Sie einen Gegenstand vor sich: Tasse, Flasche oder Schuh.\nZeichnen Sie ihn in drei kleinen Skizzen: von vorn, von der Seite, von oben.\nVerbinden Sie die drei Ansichten zu einem Bild. Teile dürfen sich überlagern und brechen.\nLassen Sie alle Linien stehen, radieren Sie nicht.",
+   "extra": "Schnell fertig? Fügen Sie eine vierte Ansicht von unten hinzu.",
+   "id": "m26eugo8"
+  },
+  {
+   "type": "bewertung",
+   "phase": 2,
+   "titel": "Bewertung: Ein Gegenstand, drei Ansichten",
+   "kriterien": "Prozess: drei Ansichten als eigene Skizzen | 10\nKonzept: Ansichten bewusst zu einem Bild verbunden | 10\nUmsetzung: klare Linien, Gegenstand bleibt erkennbar | 10",
+   "id": "jfy0k16m"
+  },
+  {
+   "type": "text",
+   "phase": 3,
+   "titel": "Vom Würfel zum Zeitungspapier",
+   "text": "[nach Freigabe]",
+   "id": "purt11gk"
+  },
+  {
+   "type": "auftrag",
+   "phase": 4,
+   "titel": "Stimmen der Zeit",
+   "schritte": "Lesen Sie zu zweit Ihren Text (Handout 2 bis 6).\nMarkieren Sie: Wer spricht, wann, für oder gegen den Kubismus?\nNotieren Sie das stärkste Argument in einem Satz.\nWählen Sie ein Wort aus dem Text, das Sie den anderen erklären.",
+   "id": "quliwadq"
+  },
+  {
+   "type": "auftrag",
+   "phase": 5,
+   "titel": "Wer feierte, wer bekämpfte?",
+   "schritte": "Bilden Sie Gruppen mit je einer Person aus jedem Expertenpaar.\nStellen Sie Ihren Text in einer Minute vor.\nOrdnen Sie alle Stimmen auf einer Linie von Ablehnung bis Begeisterung (Arbeitsblatt 7).\nFormulieren Sie einen gemeinsamen Satz: Der Kubismus war 1912 umstritten, weil ...",
+   "id": "2gr16puq"
+  },
+  {
+   "type": "text",
+   "phase": 6,
+   "titel": "1937",
+   "text": "[nach Freigabe]",
+   "id": "sc1xw5a5"
+  },
+  {
+   "type": "auftrag",
+   "phase": 7,
+   "titel": "Steckbrief Kubismus",
+   "abgabe": true,
+   "schritte": "Ergänzen Sie den Steckbrief (Handout 1): Zeit, Ort, Personen, Merkmale.\nNennen Sie ein Werk und eine Stimme der Zeit.\nLegen Sie den Steckbrief in Ihre Mappe.",
+   "id": "337zdgv0"
+  },
+  {
+   "type": "text",
+   "phase": 8,
+   "titel": "Nächste Woche: Expressionismus",
+   "text": "[nach Freigabe]",
+   "id": "8al9oavh"
+  },
+  {
+   "type": "quellen",
+   "text": "Abbildungen\n[nach Freigabe]\nTexte\n[nach Freigabe]",
+   "id": "me031ct9"
+  }
+ ]
+}

@@ -25,6 +25,18 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Aktuelle Fassung der Web-Apps mitliefern
+        run: |
+          A=android/app/src/main/assets/web
+          rm -rf "$A"; mkdir -p "$A"
+          for br in atelier pult morgenrunde; do git fetch --depth 1 origin "$br:refs/remotes/origin/$br"; done
+          mkdir -p "$A/atelier" "$A/pult" "$A/morgenrunde"
+          git archive origin/atelier | tar -x -C "$A/atelier" --wildcards 'index.html' 'heute.json' 'manifest.json' 'icon*'
+          git archive origin/pult | tar -x -C "$A/pult" --wildcards 'index.html' 'daten/*' 'manifest.json' 'icon*'
+          git archive origin/morgenrunde morgenrunde/web | tar -x -C "$RUNNER_TEMP"
+          cp -r "$RUNNER_TEMP/morgenrunde/web/." "$A/morgenrunde/"
+          find "$A" -type f | sort
+
       - name: Signaturschlüssel (falls als Secret hinterlegt)
         env:
           KS: ${{ secrets.ATELIER_KEYSTORE_BASE64 }}
@@ -66,12 +78,12 @@ jobs:
           script: |
             adb install -r android/app/build/outputs/apk/release/app-release.apk
             adb shell am start -W -n de.theidealcity.atelier/.MainActivity
-            sleep 25
+            sleep 20
             adb exec-out screencap -p > ausgabe/test_1_atelier.png
-            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://raw.githack.com/FelixPfahl/theidealcity/pult/index.html
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://app.atelier/pult/index.html
             sleep 20
             adb exec-out screencap -p > ausgabe/test_2_pult.png
-            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://app.atelier/morgenrunde/index.html
             sleep 20
             adb exec-out screencap -p > ausgabe/test_3_morgenrunde.png
             adb shell svc wifi disable
@@ -79,7 +91,10 @@ jobs:
             adb shell am force-stop de.theidealcity.atelier
             adb shell am start -W -n de.theidealcity.atelier/.MainActivity
             sleep 15
-            adb exec-out screencap -p > ausgabe/test_4_offline.png
+            adb exec-out screencap -p > ausgabe/test_4_offline_atelier.png
+            adb shell am start -W -n de.theidealcity.atelier/.MainActivity --es url https://app.atelier/pult/index.html
+            sleep 10
+            adb exec-out screencap -p > ausgabe/test_5_offline_pult.png
             adb logcat -d -t 400 > ausgabe/logcat.txt
 
       - name: Ergebnis ins Repo

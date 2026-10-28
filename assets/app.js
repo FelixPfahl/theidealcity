@@ -733,7 +733,7 @@
         if (r.top > vh + 40 || r.bottom < -40){ if (el.classList.contains('fly')){ el.classList.remove('fly'); el.style.removeProperty('--s'); el.style.removeProperty('--tx'); el.style.removeProperty('--z'); el.style.removeProperty('--cap'); } return; }
         /* 0: Oberkante am unteren Rand, 1: Oberkante bei 42 % der Höhe */
         /* Landeweg: 60 % der Höhe; große Bilder (höher als die halbe Ansicht) und kleine Fenster landen nach 120 px, sonst bleiben sie unklickbar (Josef, 28.10., 00:54: Bilder kaum anklickbar) */
-        var span = vh * .6; if (r.height > vh * .5 || vh < 700) span = Math.min(span, 140);
+        var span = vh * .45; if (r.height > vh * .5 || vh < 700) span = Math.min(span, 140);
         var p = Math.min(1, Math.max(0, (vh - r.top) / span));
         if (p >= 1){ if (el.classList.contains('fly')){ el.classList.remove('fly'); el.style.removeProperty('--s'); el.style.removeProperty('--tx'); el.style.removeProperty('--z'); el.style.removeProperty('--cap'); }
           if (!el._landed){ el._landed = true; if (el._huge && el._seen) softPlay(secSound(el), .35); } return; }
@@ -879,7 +879,7 @@
 
   /* ---------- Schreibmaschine im Newsletter-Feld, Menü- und Modus-Töne, Wusch bei schneller Maus ---------- */
   document.querySelectorAll('input[type=email], input[type=text], textarea').forEach(function(i){ i.addEventListener('keydown', function(e){ if (e.key.length === 1 || e.key === 'Backspace') softPlay('typewriter', .5); }); });
-  (function(){ var last = null, lastW = 0; document.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse') return; var now = performance.now(); if (last){ var v = Math.hypot(e.clientX - last.x, e.clientY - last.y) / Math.max(1, now - last.t); if (v > 3.2 && now - lastW > 900){ lastW = now; softPlay('shh', .35); } } last = {x:e.clientX, y:e.clientY, t:now}; }, {passive:true}); })();
+  (function(){ var last = null, lastW = 0; document.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse') return; var now = performance.now(); if (last){ var v = Math.hypot(e.clientX - last.x, e.clientY - last.y) / Math.max(1, now - last.t); if (false && v > 3.2 && now - lastW > 900){ lastW = now; softPlay('shh', .35); } /* Wusch aus (Josef, 28.10., 01:22: Mauseffekte reduzieren) */ } last = {x:e.clientX, y:e.clientY, t:now}; }, {passive:true}); })();
 
   /* ---------- Eigener Zeiger: groß, atmet, neigt sich, Spur, Schlag, Abdruck, Lupe über Bildern, Radiergummi über Fett-Titeln ---------- */
   if (MOUSE) safe(function(){
@@ -909,7 +909,7 @@
     function tick(){ var now = performance.now();
       if (!cur.t || now - cur.t > 1500){ running = false; return; }
       if (prev){ var dx = cur.x - prev.x; vx = vx * .8 + dx * .2; } prev = {x:cur.x, y:cur.y};
-      rot = Math.max(-28, Math.min(28, vx * 1.4));
+      rot = 0;
       el.style.transform = 'translate(' + cur.x + 'px,' + cur.y + 'px) rotate(' + rot.toFixed(1) + 'deg)';
       hist.unshift({x:cur.x, y:cur.y}); if (hist.length > 24) hist.pop();
       ghosts.forEach(function(g, i){ var p = hist[Math.min(hist.length - 1, (i + 1) * 5)]; if (p) g.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px) scale(' + (1 - (i + 1) * .12) + ')'; });
@@ -1056,8 +1056,12 @@
       /* Nachtrag: Federwechsel, dann alle Betonungen in Rot über dem Grau */
       if (hitems.length){ items.push({gap:true, len:900, snd:'feder', at:prev ? prev.end : [0, 0], cum:cum}); cum += 900; var off = cum; hitems.forEach(function(h){ h.cum += off; items.push(h); }); cum += hcum; }
       var H = hero && window.JK_MONO ? lh * 2 + 4 : lines * lh;
-      var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.width = 0; cv.height = 0;
-      var lv = document.createElement('canvas'); lv.className = 'plot live'; lv.style.width = W + 'px'; lv.style.height = H + 'px'; lv.width = 0; lv.height = 0;
+      /* Kopf- und Fußrand (Josef, 28.10., 01:21: die rote Schrift clippt oben): Canvas ragt oben und unten über den Absatz hinaus, alle Einträge rutschen um PAD nach unten */
+      var PAD = hero ? 0 : Math.ceil(lh * .9);
+      if (PAD){ items.forEach(function(it){ if (it.gap){ if (it.at) it.at = [it.at[0], it.at[1] + PAD]; return; } it.y += PAD; it.start = [it.start[0], it.start[1] + PAD]; it.end = [it.end[0], it.end[1] + PAD]; it.d1[1] += PAD; it.d2[1] += PAD; if (it.bleed) it.bleed[1] += PAD; }); }
+      var HC = H + 2 * PAD;
+      var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = HC + 'px'; cv.style.marginTop = (-PAD) + 'px'; cv.style.marginBottom = (-PAD) + 'px'; cv.width = 0; cv.height = 0;
+      var lv = document.createElement('canvas'); lv.className = 'plot live'; lv.style.width = W + 'px'; lv.style.height = HC + 'px'; lv.style.top = (-PAD) + 'px'; lv.width = 0; lv.height = 0;
       var keep = document.createElement('span'); keep.className = 'vh plotsrc';
       while (el.firstChild) keep.appendChild(el.firstChild);
       el.appendChild(keep); el.appendChild(cv); el.appendChild(lv); el.classList.add('plotted'); el.style.minHeight = H + 'px';
@@ -1068,7 +1072,7 @@
       hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
         var t = document.createElement('b'); t.className = 'plothand-w'; t.textContent = hw.txt; t.style.top = (lh * .55 + hw.base - fs * .78) + 'px'; a.appendChild(t); el.appendChild(a);
         a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerdown', function(e){ a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); /* Josef, 28.10., 01:12: das Plotterwort bleibt stehen, sonst kann man nichts lesen */ a.addEventListener('click', function(){ a.classList.add('on'); }); });
-      built.push({el:el, cv:cv, lv:lv, W:W, H:H, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, played:{}, col:colors(el), alive:false, dirty:true});
+      built.push({el:el, cv:cv, lv:lv, W:W, H:HC, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, ft:0, played:{}, col:colors(el), alive:false, dirty:true});
     }
     window.JK_PLOT_ONCE = function(el, ms){ if (!F || !el || el.classList.contains('plotted')) return; try { build(el); } catch(e){ return; } var b = built[built.length - 1]; if (!b || b.el !== el) return; b.hero = true; b.t0 = performance.now(); b.ms = ms || 900; update(); };
     function unbuild(b){ var src = b.el.querySelector('.plotsrc'); b.el.querySelectorAll('.plotsup').forEach(function(s){ s.classList.remove('plotsup'); s.style.left = s.style.top = ''; src.appendChild(s); }); b.el.querySelectorAll('.plotlink,.plothand').forEach(function(a){ a.remove(); }); b.cv.remove(); b.lv.remove(); if (src){ while (src.firstChild) b.el.appendChild(src.firstChild); src.remove(); } b.el.classList.remove('plotted'); b.el.style.minHeight = ''; }
@@ -1109,17 +1113,22 @@
       for (var j = done; j < n; j++) if (D - items[j].cum <= 0 && items[j].gap) b.played[j] = false;
       if (penAt){ L.setTransform(DPR, 0, 0, DPR, 0, 0); L.globalAlpha = 1; L.fillStyle = b.col.acc; L.beginPath(); L.arc(penAt[0], penAt[1], b.hero ? 6 : 3, 0, 6.283); L.fill(); }
     }
-    function update(){ raf = false; var vh = window.innerHeight, moved = false, now = performance.now();
+    function update(){ raf = false; var vh = window.innerHeight, moved = false, lag = false, now = performance.now();
       var dy = Math.abs(window.scrollY - lastScrollY), dt = Math.max(1, now - lastScrollT); speed = speed * .6 + (dy / dt) * .4; lastScrollY = window.scrollY; lastScrollT = now;
       built.forEach(function(b){ var r = b.el.getBoundingClientRect();
         if (r.bottom < -vh * 2 || r.top > vh * 3){ if (b.alive && !b.hero){ b.cv.width = 0; b.cv.height = 0; b.lv.width = 0; b.lv.height = 0; b.alive = false; b.dirty = true; } return; }   /* weit weg: Speicher frei */
         var f;
         if (b.hero){ f = Math.min(1, (now - b.t0) / (b.ms || 2800)); if (f < 1) moved = true; }
-        else { f = Math.min(1, Math.max(0, (vh * .92 - r.top) / (r.height + vh * .3))); }
+        else {
+          /* Josef, 28.10., 01:26: geschrieben wird dort, wo man gerade ist, mit leichter Latenz; was einmal geschrieben wurde, bleibt */
+          var ft = Math.min(1, Math.max(0, (vh * .92 - r.top) / (r.height + vh * .3))); var cur = b.f < 0 ? 0 : b.f;
+          var step = Math.min(1, 3 / Math.max(1, b.items.length));   /* drei Buchstaben pro Bild: ein Absatz von 600 Zeichen braucht gut drei Sekunden */
+          f = ft > cur ? Math.min(ft, cur + step) : cur; if (f < ft) lag = true;
+          if (f >= 1 && !b.fin){ b.fin = true; b.el.classList.add('plotdone'); } }
         if (REDUCED) f = 1;
         if (f !== b.f || b.dirty){ b.fwd = f > b.f; moved = moved || f !== b.f; b.f = f; b.dirty = false; if (r.bottom > -vh && r.top < vh * 2) draw(b); else b.dirty = true; } });
       if (moved && AC){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
-      if (built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }
+      if (lag || built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }
     function penSound(kind){ var ac = ctx(); if (!ac) return; var t = ac.currentTime + .01; vary(); V.len = 1; V.vol = .8;
       if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:1.1, force:true}); spritePlay('plotter', {vol:.6, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
       if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8, max:.3, force:true}); return; }

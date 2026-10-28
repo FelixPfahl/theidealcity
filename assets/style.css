@@ -661,7 +661,7 @@ html[data-mode=dunkel] .opener img{filter:brightness(.82)}
 @media (max-width:620px){.grid.wild{grid-template-columns:repeat(2,1fr)}.grid.wild .work.s3,.grid.wild .work.s2,.grid.wild .work.big{grid-column:span 2}}
 @media (min-width:621px) and (max-width:1000px){.grid.wild{grid-template-columns:repeat(4,1fr)}}
 /* Einflug: app.js setzt --p (0 unten am Rand, 1 gelandet), --sx (Skalierung riesig), --tx (Verschiebung zur Mitte) */
-.grid .work.fly,.powtiles figure.fly,.einzel .work.fly,.marg figure.fly{transform:translate(var(--tx,0px),0) scale(var(--s,1));z-index:calc(20 - var(--z,0));transition:none;position:relative;transform-origin:50% 50%;pointer-events:none}
+.grid .work.fly,.powtiles figure.fly,.einzel .work.fly,.marg figure.fly{transform:translate(var(--tx,0px),0) scale(var(--s,1));z-index:calc(20 - var(--z,0));transition:none;position:relative;transform-origin:50% 50%}
 .grid .work.fly img{box-shadow:0 30px 60px -20px rgba(0,0,0,.7)}
 .grid .work{position:relative}
 .bigcap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:clamp(22px,4.2vw,76px);line-height:.9;color:#fff;text-align:center;width:100%;pointer-events:none;opacity:var(--cap,0);text-shadow:0 2px 24px rgba(0,0,0,.6);--fatmax:.03em;z-index:2}
@@ -747,20 +747,21 @@ body.lbopen{overflow:hidden}
    Eigener Zeiger (viertes Interview): groß, animiert, Spur, Schlag, Abdruck, Lupe, Radiergummi
    ============================================================ */
 /* Josef, 28.10., 01:11: Systemzeiger bleibt (genau, auch per Remotedesktop); der gezeichnete Zeiger begleitet ihn rechts unten */
-html.cur .cur-el{margin:6px 0 0 10px}
-.cur-el{position:fixed;left:0;top:0;width:110px;height:110px;pointer-events:none;z-index:1000;margin:6px 0 0 10px;will-change:transform;opacity:0;transition:opacity .2s;transform-origin:0 0}
+html.cur .cur-el{margin:4px 0 0 8px}
+/* Josef, 28.10., 01:18: Zeiger nur leicht über Standardgröße */
+.cur-el{position:fixed;left:0;top:0;width:44px;height:44px;pointer-events:none;z-index:1000;margin:4px 0 0 8px;will-change:transform;opacity:0;transition:opacity .2s;transform-origin:0 0}
 .cur-el.on{opacity:1}
-.cur-el img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:0 0;transform-origin:16px 16px;animation:breathe 2.6s ease-in-out infinite}
+.cur-el img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:0 0;transform-origin:16px 16px;}
 .cur-el.hit img{animation:hit .34s cubic-bezier(.2,.9,.2,1.4)}
 @keyframes breathe{0%,100%{transform:rotate(-2deg) scale(1)}50%{transform:rotate(3deg) scale(1.05)}}
 @keyframes hit{0%{transform:scale(1)}30%{transform:scale(1.9) rotate(-8deg)}100%{transform:scale(1)}}
 .cur-el .lensc,.cur-el .eras{position:absolute;inset:0;width:100%;height:100%;display:none}
 .cur-el.lens img,.cur-el.eras img{display:none}
-.cur-el.lens .lensc{display:block;width:80px;height:80px;transform:translate(-40px,-40px)}
-.cur-el.eras .eras{display:block;width:80px;height:80px;transform:translate(-36px,-36px) rotate(-20deg)}
-.cur-ghost{position:fixed;left:0;top:0;width:110px;height:110px;pointer-events:none;z-index:999;opacity:.3;will-change:transform;margin:6px 0 0 10px;transform-origin:0 0}
+.cur-el.lens .lensc{display:block;width:48px;height:48px;transform:translate(-24px,-24px)}
+.cur-el.eras .eras{display:block;width:48px;height:48px;transform:translate(-22px,-22px) rotate(-20deg)}
+.cur-ghost{display:none}
 .cur-ghost img{width:100%;height:100%;object-fit:contain;object-position:0 0}
-.imprint{position:absolute;width:64px;height:64px;pointer-events:none;z-index:5;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0);animation:imp 3.2s ease-out forwards;color:var(--accent)}
+.imprint{position:absolute;width:34px;height:34px;pointer-events:none;z-index:5;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0);animation:imp 3.2s ease-out forwards;color:var(--accent)}
 .imprint svg{width:100%;height:100%;display:block}
 @keyframes imp{0%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0);opacity:1}12%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1.15)}30%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1);opacity:.9}100%{transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(1);opacity:0}}
 .mute{width:30px;height:30px;border:1.5px solid var(--ink);background:none;color:var(--ink);border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -872,7 +873,8 @@ html[data-mode=dunkel] .plot path.cool,html[data-mode=dunkel] .plot .dots circle
 .plotted .plotlink.pfahl2{cursor:help}
 .landing .hero.plotted{color:#000}
 .plotted canvas.plot.live{position:absolute;left:0;top:0;pointer-events:none}
-.plotted canvas.plot{pointer-events:none}
+.plotted canvas.plot{pointer-events:none;position:relative;z-index:5}
+.plotted .plothand{z-index:7}.plotted .plotlink{z-index:8}.plotted sup.plotsup{z-index:8}
 
 /* Dürer-Schriften: alle Titel, Reiter, Menüs in Versalien (Duerer1525 hat nur Versalien) */
 nav.tabs a,.subnav a,.menu a,.msub a,.minititle,.bigtabs a,.ctabtn .big,.nextpart,.fxpanel h2,.nlok,.moti p{font-family:var(--head);text-transform:uppercase;font-weight:400;letter-spacing:.02em}
@@ -881,7 +883,7 @@ nav.tabs a,.subnav a,.menu a,.msub a,.minititle,.bigtabs a,.ctabtn .big,.nextpar
 /* Unterschrift unter jedem Text, in Dürers Hand */
 .sertext p.sig{margin:.6em 0 0;text-align:right;font-size:1.25em}
 .sertext p.sig em.kw{font-size:1em}
-.sticky-head .minititle,.serhead .minititle{font-size:clamp(20px,2.6vw,34px);line-height:1.05}
+.sticky-head .minititle,.serhead .minititle{font-size:clamp(16px,1.6vw,22px);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(100%,70vw)}
 
 /* Duerer1525: Buchstabenabstand und Zeilen der fetten Titel */
 .fat .l{margin-right:.015em}
@@ -891,10 +893,10 @@ h1 .fat,h2 .fat,.bigtabs .fat,.nextpart .fat{line-height:1.1}
 /* Hover über ein Handschriftwort: Federstrich durch das Wort, dann das Wort in Relief fett und rot an derselben Stelle; Handschrift blendet aus */
 .plotted .plothand{position:absolute;display:block;z-index:3;cursor:crosshair}
 .plotted .plothand::before{content:'';position:absolute;left:-2%;top:55%;width:0;height:2px;background:var(--accent);transform:rotate(-3deg);transition:width .18s ease-out}
-.plotted .plothand .plothand-w{position:absolute;left:0;white-space:nowrap;font-family:"Relief",sans-serif;font-weight:700;color:var(--accent);background:var(--paper);padding:0 .08em 0 0;opacity:0;transition:opacity .15s .22s;line-height:1;font-size:1em;-webkit-text-stroke:.5px var(--accent)}
+.plotted .plothand .plothand-w{position:absolute;left:0;white-space:nowrap;font-family:"Relief",sans-serif;font-weight:700;color:var(--accent);background:none;padding:0 .08em 0 0;opacity:0;-webkit-text-stroke:4px var(--paper);paint-order:stroke fill;transition:opacity .15s} /* Josef, 28.10., 01:24: kein Balken, nur eine Papierkontur um die Buchstaben */
 .plotted .plothand.on::before{width:104%}
 .plotted .plothand.on .plothand-w{opacity:1}
-.plotted .plothand.on{background:var(--paper)}
+.plotted .plothand.on{background:none}
 
 /* Drucktextur der Versalien (Holzschnitt): rauer Rand, ungleichmäßige Deckung; Filter und Seeds wechseln je Aufruf (app.js) */
 .woodcut .fat .w{filter:url(#holz1)}
@@ -1002,7 +1004,7 @@ html.beben{animation:beben 2.2s ease-in-out}
 @keyframes beben{10%,30%,50%,70%{transform:translate(1px,-1px)}20%,40%,60%,80%{transform:translate(-1px,1px)}}
 html.calm.beben{animation:none}
 /* Kleine Fenster (Josef, 28.10., 01:05: Cloud-PC 1040 x 515 bei 175 %): Kopfzeile einzeilig, Untermenü und Serienkopf nicht mehr klebend bei niedriger Höhe */
-@media (min-width:701px) and (max-width:1250px){
+@media (min-width:1001px) and (max-width:1450px){
   .top{flex-wrap:nowrap;gap:12px}
   .top nav.tabs{flex:1 1 auto;min-width:0;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;gap:14px;letter-spacing:.04em}
   .top nav.tabs::-webkit-scrollbar{display:none}
@@ -1014,7 +1016,10 @@ html.calm.beben{animation:none}
   .sticky-head.small .minititle{display:none}
   .sbdlg .txt{font-size:15px;min-height:0}.sbdlg img{width:64px;height:64px}
 }
-.sbcall{margin-right:8px;padding:3px 9px;border:1px solid var(--line);background:none;color:var(--ink);font-family:var(--head);text-transform:uppercase;letter-spacing:.06em;font-size:13px;cursor:pointer;white-space:nowrap}
+.sbcall{margin-right:8px;padding:3px 8px;font-size:12px;border:1px solid var(--line);background:none;color:var(--ink);font-family:var(--head);text-transform:uppercase;letter-spacing:.06em;font-size:13px;cursor:pointer;white-space:nowrap}
 .sbcall:hover{background:var(--ink);color:var(--paper)}
 body.start .sbcall{border-color:#000;color:#000}
 @media (max-width:700px){.sbcall{font-size:11px;padding:2px 6px}}
+@media (min-width:701px) and (max-width:1000px){.top{gap:8px 12px}.top nav.tabs{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;font-size:13px;gap:16px}.top nav.tabs::-webkit-scrollbar{display:none}}
+/* Handwörter erst nach dem Schreiben anfassbar (Josef, 01:25) */
+.plotted .plothand{pointer-events:none}.plotted.plotdone .plothand{pointer-events:auto}

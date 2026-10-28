@@ -28,6 +28,7 @@ head_end = frag.index("</style>") + len("</style>")
 doc = ('<!doctype html><html lang="de"><head><meta charset="utf-8">'
        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
        '<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0b0c10">'
+       '<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png">'
        '<style>[hidden]{display:none!important}body{margin:0}</style>'
        + frag[:head_end] + "</head><body>" + frag[head_end:] + "</body></html>")
 open(p("index.html"), "w", encoding="utf-8").write(doc)

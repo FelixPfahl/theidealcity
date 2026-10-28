@@ -1,0 +1,2 @@
+{"name":"Pult","short_name":"Pult","description":"Unterrichtsbegleiter: laufende Phase, Restzeit, Spickzettel","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#0b0c10","theme_color":"#0b0c10","lang":"de",
+ "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"},{"src":"icon.svg","sizes":"any","type":"image/svg+xml"}]}

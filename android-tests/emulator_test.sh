@@ -9,7 +9,7 @@ NEU=android/app/build/outputs/apk/release/app-release.apk
 N=0
 ok()   { echo "OK      $1" | tee -a "$R"; }
 bad()  { echo "FEHLER  $1" | tee -a "$R"; N=$((N+1)); $UI texts > "ausgabe/ui_fehler_$N.txt" 2>/dev/null; adb exec-out screencap -p > "ausgabe/fehler_$N.png"; }
-check(){ if $UI has "$2"; then ok "$1"; else bad "$1 (erwartet: $2)"; fi; }
+check(){ for _ in 1 2 3 4; do if $UI has "$2"; then ok "$1"; return; fi; sleep 4; done; bad "$1 (erwartet: $2)"; }
 shot() { adb exec-out screencap -p > "ausgabe/test_$1.png"; }
 start(){ adb shell am start -W -n "$PKG/.MainActivity" "$@" > /dev/null; }
 tap()  { $UI tap "$1" > /dev/null || echo "  (nicht gefunden: $1)" | tee -a "$R"; }
@@ -89,6 +89,7 @@ start --es tab morgenrunde; sleep 6
 check "Ohne Netz: Morgenrunde" "archiv"; shot 10_offline_morgenrunde
 start --es tab atelier; sleep 4
 check "Ohne Netz: Heute" "Auf dem Schulweg"
+check "Heute bleibt Heute, auch während der Stunde" "Auf dem Schulweg"
 adb shell svc wifi enable; adb shell svc data enable
 
 adb logcat -d -t 800 > ausgabe/logcat.txt

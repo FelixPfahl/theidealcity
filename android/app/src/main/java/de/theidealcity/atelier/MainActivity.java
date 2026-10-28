@@ -61,6 +61,8 @@ public class MainActivity extends Activity {
     private final TextView[] tabs = new TextView[TABS.length];
     private FrameLayout stage;
     private int current = 0;
+    /** Darf die Startseite einmal automatisch zu Pult springen? Nur beim normalen Start, bis du selbst einen Reiter tippst. */
+    private boolean autoTabAllowed = false;
     private WebView web; // aktuelle Ansicht
 
     @Override
@@ -83,7 +85,7 @@ public class MainActivity extends Activity {
             t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             t.setPadding(0, dp(12), 0, dp(10));
-            t.setOnClickListener(v -> show(idx));
+            t.setOnClickListener(v -> { autoTabAllowed = false; show(idx); });
             t.setContentDescription(LABELS[i]);
             tabs[i] = t;
             bar.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
@@ -101,6 +103,7 @@ public class MainActivity extends Activity {
         String wanted = getIntent() != null ? getIntent().getStringExtra("tab") : null;
         if (state != null) startTab = state.getInt("tab", 0);
         else if (wanted != null) startTab = Math.max(0, indexOf(wanted));
+        autoTabAllowed = state == null && wanted == null && (getIntent() == null || getIntent().getStringExtra("url") == null);
         show(startTab);
         String u = getIntent() != null ? getIntent().getStringExtra("url") : null;
         if (state == null && u != null) open(startUrl(getIntent()));
@@ -323,6 +326,7 @@ public class MainActivity extends Activity {
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
         if (i == null) return;
+        autoTabAllowed = false;
         if (i.getStringExtra("url") != null) open(startUrl(i));
         else if (i.getStringExtra("tab") != null && indexOf(i.getStringExtra("tab")) >= 0) show(indexOf(i.getStringExtra("tab")));
     }
@@ -353,11 +357,16 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void retry() { runOnUiThread(() -> { if (web != null) web.reload(); }); }
 
-        /** Reiter wechseln: "atelier", "pult", "morgenrunde" */
+        /** Automatischer Sprung beim Start (z. B. während einer Stunde zu Pult). Wirkt nur einmal und nur, solange du keinen Reiter getippt hast. */
         @JavascriptInterface
         public void openTab(String app) {
             int i = indexOf(app);
-            if (i >= 0) runOnUiThread(() -> show(i));
+            if (i < 0) return;
+            runOnUiThread(() -> {
+                if (!autoTabAllowed) return;
+                autoTabAllowed = false;
+                show(i);
+            });
         }
 
         @JavascriptInterface

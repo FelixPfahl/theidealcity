@@ -70,6 +70,7 @@ const FALLBACK = {"datum":"2026-10-28","label":"Mittwoch, 28.10.","termine":[
   {"start":"13:15","ende":"14:45","titel":"9a Figur 4 von 4","unterricht":true},
   {"start":"15:00","ende":"16:30","titel":"12 Eigenes Objekt 1 von 3","unterricht":true}]};
 
+const IN_APP = (() => { try { return !!(window.AtelierApp && AtelierApp.isApp()); } catch(e){ return false; } })();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const toMin = t => { const [h,m] = t.split(":").map(Number); return h*60+m; };
 const fmt = t => t.replace(":", ".");
@@ -83,7 +84,7 @@ function renderApps(live){
         ${live && a.id==="pult" ? '<span class="badge">Läuft</span>' : ""}
         <div class="n">${esc(a.n)}</div><div class="d">${esc(a.d)}</div>
       </a>
-      <a class="alt" href="${esc(a.claude)}" target="_blank" rel="noopener">${esc(a.n)} in Claude öffnen</a>
+      ${IN_APP ? "" : `<a class="alt" href="${esc(a.claude)}" target="_blank" rel="noopener">${esc(a.n)} in Claude öffnen</a>`}
     </div>`).join("");
 }
 
@@ -119,6 +120,13 @@ function renderToday(){
     }
   }
   renderApps(live);
+  /* In der Android-App: läuft gerade eine Stunde, beim Start direkt Pult zeigen (einmal pro Start) */
+  try {
+    if (live && window.AtelierApp && AtelierApp.isApp() && !sessionStorage.getItem("autoPult")){
+      sessionStorage.setItem("autoPult", "1");
+      AtelierApp.openTab("pult");
+    }
+  } catch(e){}
 }
 
 /* Tagesdaten kommen aus Pult (ein Morgenlauf für beide Apps), sonst aus heute.json, sonst Ersatz */

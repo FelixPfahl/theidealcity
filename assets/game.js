@@ -127,7 +127,14 @@
   function counter(){ var head = document.querySelector('header.top'); if (!head) return; btn = document.createElement('button'); btn.type = 'button'; btn.className = 'sbcount'; btn.setAttribute('aria-label', 'Suchbild: Hinweis (kostet 50 Punkte)'); btn.title = 'Suchbild: Hinweis, kostet 50 Punkte';
     btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg><b>' + count() + '</b><span>/' + N + '</span>';
     num = btn.querySelector('b'); var mb = head.querySelector('.menubtn'); head.insertBefore(btn, mb || null);
-    btn.addEventListener('click', hint); }
+    btn.addEventListener('click', hint);
+    /* Josef, 28.10., 01:10: ein Schalter, mit dem man das Spiel aktiv startet: "Inka rufen". Man weiß nicht, was das soll, und klickt drauf. Mit Spielstand: weiterspielen. */
+    var call = document.createElement('button'); call.type = 'button'; call.className = 'sbcall'; call.textContent = 'Inka rufen'; call.title = 'Suchbild starten oder weiterspielen'; head.insertBefore(call, btn);
+    call.addEventListener('click', function(){ if (dlg) return; sp('g-kraehe', {vol:.5, max:.3});
+      if (S.done) { dialog([['inka', 'Du hast schon alle zwanzig. ' + points() + ' Punkte. Willst du die Urkunde noch mal sehen? Oder Neustart, dann liegen die Dinge woanders.']], cert); return; }
+      var n = count(); if (!n){ try { localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(RULES); return; }
+      var left = PLACES.filter(function(p){ return !S.found[p.id]; }); var here = left.filter(function(p){ return p.p === PAGE; }).length;
+      dialog([['inka', 'Da bist du wieder. ' + n + ' von ' + N + ' hast du, ' + points() + ' Punkte. Die Uhr läuft weiter.' + (here ? ' Auf dieser Seite ' + (here === 1 ? 'liegt noch eins.' : 'liegen noch ' + here + '.') : ' Auf dieser Seite ist nichts mehr, such woanders.') + ' Hinweis gefällig? Die Lupe. Wagner nimmt 50.']]); }); }
   function refresh(){ if (num) num.textContent = count(); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return;
     var p = left[Math.floor(Math.random() * left.length)]; S.hints++; save(); tick();

@@ -746,8 +746,9 @@ body.lbopen{overflow:hidden}
 /* ============================================================
    Eigener Zeiger (viertes Interview): groß, animiert, Spur, Schlag, Abdruck, Lupe, Radiergummi
    ============================================================ */
-html.cur,html.cur *{cursor:none!important}
-.cur-el{position:fixed;left:0;top:0;width:160px;height:160px;pointer-events:none;z-index:1000;margin:-16px 0 0 -16px;will-change:transform;opacity:0;transition:opacity .2s;transform-origin:16px 16px}
+/* Josef, 28.10., 01:11: Systemzeiger bleibt (genau, auch per Remotedesktop); der gezeichnete Zeiger begleitet ihn rechts unten */
+html.cur .cur-el{margin:6px 0 0 10px}
+.cur-el{position:fixed;left:0;top:0;width:110px;height:110px;pointer-events:none;z-index:1000;margin:6px 0 0 10px;will-change:transform;opacity:0;transition:opacity .2s;transform-origin:0 0}
 .cur-el.on{opacity:1}
 .cur-el img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:0 0;transform-origin:16px 16px;animation:breathe 2.6s ease-in-out infinite}
 .cur-el.hit img{animation:hit .34s cubic-bezier(.2,.9,.2,1.4)}
@@ -755,9 +756,9 @@ html.cur,html.cur *{cursor:none!important}
 @keyframes hit{0%{transform:scale(1)}30%{transform:scale(1.9) rotate(-8deg)}100%{transform:scale(1)}}
 .cur-el .lensc,.cur-el .eras{position:absolute;inset:0;width:100%;height:100%;display:none}
 .cur-el.lens img,.cur-el.eras img{display:none}
-.cur-el.lens .lensc{display:block;width:90px;height:90px;transform:translate(-29px,-29px)}
-.cur-el.eras .eras{display:block;width:90px;height:90px;transform:translate(-29px,-29px) rotate(-20deg)}
-.cur-ghost{position:fixed;left:0;top:0;width:160px;height:160px;pointer-events:none;z-index:999;opacity:.35;will-change:transform;margin:-16px 0 0 -16px;transform-origin:16px 16px}
+.cur-el.lens .lensc{display:block;width:80px;height:80px;transform:translate(-40px,-40px)}
+.cur-el.eras .eras{display:block;width:80px;height:80px;transform:translate(-36px,-36px) rotate(-20deg)}
+.cur-ghost{position:fixed;left:0;top:0;width:110px;height:110px;pointer-events:none;z-index:999;opacity:.3;will-change:transform;margin:6px 0 0 10px;transform-origin:0 0}
 .cur-ghost img{width:100%;height:100%;object-fit:contain;object-position:0 0}
 .imprint{position:absolute;width:64px;height:64px;pointer-events:none;z-index:5;transform:translate(-50%,-50%) rotate(var(--r,0deg)) scale(0);animation:imp 3.2s ease-out forwards;color:var(--accent)}
 .imprint svg{width:100%;height:100%;display:block}
@@ -1013,3 +1014,7 @@ html.calm.beben{animation:none}
   .sticky-head.small .minititle{display:none}
   .sbdlg .txt{font-size:15px;min-height:0}.sbdlg img{width:64px;height:64px}
 }
+.sbcall{margin-right:8px;padding:3px 9px;border:1px solid var(--line);background:none;color:var(--ink);font-family:var(--head);text-transform:uppercase;letter-spacing:.06em;font-size:13px;cursor:pointer;white-space:nowrap}
+.sbcall:hover{background:var(--ink);color:var(--paper)}
+body.start .sbcall{border-color:#000;color:#000}
+@media (max-width:700px){.sbcall{font-size:11px;padding:2px 6px}}

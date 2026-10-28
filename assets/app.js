@@ -725,7 +725,9 @@
         var r = el.getBoundingClientRect();
         if (r.top > vh + 40 || r.bottom < -40){ if (el.classList.contains('fly')){ el.classList.remove('fly'); el.style.removeProperty('--s'); el.style.removeProperty('--tx'); el.style.removeProperty('--z'); el.style.removeProperty('--cap'); } return; }
         /* 0: Oberkante am unteren Rand, 1: Oberkante bei 42 % der Höhe */
-        var p = Math.min(1, Math.max(0, (vh - r.top) / (vh * .6)));
+        /* Landeweg: 60 % der Höhe; große Bilder (höher als die halbe Ansicht) und kleine Fenster landen nach 120 px, sonst bleiben sie unklickbar (Josef, 28.10., 00:54: Bilder kaum anklickbar) */
+        var span = vh * .6; if (r.height > vh * .5 || vh < 700) span = Math.min(span, 140);
+        var p = Math.min(1, Math.max(0, (vh - r.top) / span));
         if (p >= 1){ if (el.classList.contains('fly')){ el.classList.remove('fly'); el.style.removeProperty('--s'); el.style.removeProperty('--tx'); el.style.removeProperty('--z'); el.style.removeProperty('--cap'); }
           if (!el._landed){ el._landed = true; if (el._huge && el._seen) softPlay(secSound(el), .35); } return; }
         el._seen = true;
@@ -1058,7 +1060,7 @@
         if (o.pf){ a.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.on(e); }); a.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.move(e); }); a.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.off(); }); a.addEventListener('click', function(e){ if (window.JK_PFAHL){ window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 8000); } }); } });
       hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
         var t = document.createElement('b'); t.className = 'plothand-w'; t.textContent = hw.txt; t.style.top = (lh * .55 + hw.base - fs * .78) + 'px'; a.appendChild(t); el.appendChild(a);
-        a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerleave', function(){ a.classList.remove('on'); }); });
+        a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerdown', function(e){ a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); /* Josef, 28.10., 01:12: das Plotterwort bleibt stehen, sonst kann man nichts lesen */ a.addEventListener('click', function(){ a.classList.add('on'); }); });
       built.push({el:el, cv:cv, lv:lv, W:W, H:H, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, played:{}, col:colors(el), alive:false, dirty:true});
     }
     window.JK_PLOT_ONCE = function(el, ms){ if (!F || !el || el.classList.contains('plotted')) return; try { build(el); } catch(e){ return; } var b = built[built.length - 1]; if (!b || b.el !== el) return; b.hero = true; b.t0 = performance.now(); b.ms = ms || 900; update(); };

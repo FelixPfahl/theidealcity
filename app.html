@@ -282,6 +282,10 @@ function renderTag(){
     <h2>Bewertung offen</h2>
     <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
     <p class="small">${esc(DAY.bewertungHinweis)}</p>
+    <h2>Mit dem Schul-PC koppeln</h2>
+    <p class="small">Code von der Folien-Datei am Schul-PC eingeben. Dann folgt Pult den Folien.</p>
+    <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
+    <div class="status" id="pairState">${esc(pairStatus())}</div>
     <h2>Uhrzeit testen</h2>
     <p class="small">Zum Ausprobieren eine andere Uhrzeit einstellen.</p>
     <div class="ctrl"><input type="time" id="simTime" aria-label="Testuhrzeit"><button class="btn" data-act="simreset">Echte Zeit</button></div>`;
@@ -403,6 +407,12 @@ document.addEventListener("click", e => {
     save(); lastKey = null; render(); return;
   }
   if (act === "undo"){ const a = state.adj[b.dataset.id]; if (a) a.pop(); save(); lastKey = null; render(); return; }
+  if (act === "pair"){
+    const v = ($("#pairCode").value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (v.length < 6){ const s2 = $("#pairState"); if (s2) s2.textContent = "Der Code hat 8 Zeichen."; return; }
+    pair = {code: v}; store.set("pult-kopplung", pair); connectPair(); render(); return;
+  }
+  if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); render(); return; }
   if (act === "simreset"){ state.sim = null; save(); lastKey = null; render(); tick(); return; }
   if (b.dataset.check){
     const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
@@ -454,5 +464,44 @@ async function init(){
     }
   } catch(e){ /* offline oder in Claude: eingebettete bzw. letzte Daten bleiben */ }
 }
+/* ===== Kopplung mit dem Schul-PC: Folie führt, Pult folgt (über ntfy.sh, nur Phase und Uhrzeit) ===== */
+const NTFY = (new URLSearchParams(location.search).get("ntfy")) || "https://ntfy.sh";
+let pair = store.get("pult-kopplung", {}), pairES = null, pairLive = false, pairLast = null;
+function pairStatus(){
+  if (!pair.code) return "Nicht gekoppelt.";
+  if (!pairLive) return "Gekoppelt, warte auf Verbindung …";
+  return pairLast ? "Gekoppelt. Letzte Folie: " + pairLast : "Gekoppelt und bereit.";
+}
+function showPairState(){ const s2 = $("#pairState"); if (s2) s2.textContent = pairStatus(); }
+function applySync(m){
+  if (!m || m.v !== 1 || m.date !== DAY.date) return;
+  const l = lessons.find(x => toMin(x.start) === toMin(m.lesson));
+  if (!l) return;
+  const i = l.phases.findIndex(ph => toMin(ph[0]) === toMin(m.phase));
+  if (i < 0) return;
+  const p = plan(l);
+  const delta = Math.round(m.st - p.phases[i].s);
+  if (i > 0 && delta !== 0 && Math.abs(delta) < 90){
+    (state.adj[l.id] = state.adj[l.id] || []).push({at: i - 1, delta});
+    save();
+  }
+  pairLast = l.klasse + ", Folie " + m.page;
+  lastKey = null; render(); tick();
+}
+function connectPair(){
+  if (pairES){ try { pairES.close(); } catch(e){} pairES = null; }
+  pairLive = false; showPairState();
+  if (!pair.code || typeof EventSource === "undefined") return;
+  try {
+    pairES = new EventSource(NTFY + "/atelier-pult-" + pair.code + "/sse");
+    pairES.onopen = () => { pairLive = true; showPairState(); };
+    pairES.onerror = () => { pairLive = false; showPairState(); };
+    pairES.onmessage = ev => {
+      try { const d = JSON.parse(ev.data); if (d.event === "message") applySync(JSON.parse(d.message)); } catch(e){}
+    };
+  } catch(e){}
+}
+
 init();
+connectPair();
 </script>

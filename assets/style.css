@@ -1000,3 +1000,16 @@ html[data-mode=dunkel] .sbdlg.c-xae .win{background:#151515;color:#fff}
 html.beben{animation:beben 2.2s ease-in-out}
 @keyframes beben{10%,30%,50%,70%{transform:translate(1px,-1px)}20%,40%,60%,80%{transform:translate(-1px,1px)}}
 html.calm.beben{animation:none}
+/* Kleine Fenster (Josef, 28.10., 01:05: Cloud-PC 1040 x 515 bei 175 %): Kopfzeile einzeilig, Untermenü und Serienkopf nicht mehr klebend bei niedriger Höhe */
+@media (min-width:701px) and (max-width:1250px){
+  .top{flex-wrap:nowrap;gap:12px}
+  .top nav.tabs{flex:1 1 auto;min-width:0;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;gap:14px;letter-spacing:.04em}
+  .top nav.tabs::-webkit-scrollbar{display:none}
+  .modes{margin-left:4px}.sbcount{margin-right:6px}.menubtn{padding:4px 8px;font-size:12px}
+}
+@media (max-height:650px){
+  .subnav{position:static}
+  .sticky-head{position:static!important}
+  .sticky-head.small .minititle{display:none}
+  .sbdlg .txt{font-size:15px;min-height:0}.sbdlg img{width:64px;height:64px}
+}

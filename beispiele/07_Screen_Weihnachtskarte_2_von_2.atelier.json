@@ -1,0 +1,203 @@
+{
+ "format": "atelier-folien",
+ "version": 1,
+ "id": "un7n7d1h",
+ "meta": {
+  "klasse": "7a",
+  "titel": "Weihnachtskarte 2 von 2",
+  "datum": "2026-10-29",
+  "start": "8:00",
+  "ende": "9:30",
+  "ziel": "Eure Weihnachtskarte wird heute fertig, mit einer klaren Grundform und einer Hauptsache, die man sofort findet."
+ },
+ "konzept": {
+  "schrift": "Jost",
+  "titelschrift": "Jost",
+  "akzent": "#0028FF",
+  "notiz": "Grundlayout: Jost, Schwarz auf Weiß, Akzentblau nur für Uhrzeit, Sozialform, Dauer."
+ },
+ "phases": [
+  {
+   "d": 5,
+   "form": "Partnerarbeit",
+   "titel": "Die erste Weihnachtskarte der Welt",
+   "puffer": 0
+  },
+  {
+   "d": 5,
+   "form": "Hinschauen und mitdenken",
+   "titel": "Die Auflösung und unsere Kriterien",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Partnerarbeit",
+   "titel": "Deine Skizze wählen",
+   "puffer": 0
+  },
+  {
+   "d": 20,
+   "form": "Einzelarbeit",
+   "titel": "Die Karte beginnen",
+   "puffer": 0
+  },
+  {
+   "d": 5,
+   "form": "Gemeinsam besprechen",
+   "titel": "Was funktioniert schon?",
+   "puffer": 0
+  },
+  {
+   "d": 25,
+   "form": "Einzelarbeit",
+   "titel": "Weitermalen",
+   "puffer": 10
+  },
+  {
+   "d": 5,
+   "form": "Partnerarbeit",
+   "titel": "Ein Stern und ein Wunsch",
+   "puffer": 0
+  },
+  {
+   "d": 10,
+   "form": "Einzelarbeit",
+   "titel": "Fertigstellen",
+   "puffer": 0
+  },
+  {
+   "d": 5,
+   "form": "Gemeinsam besprechen",
+   "titel": "Rundgang und Schlusssatz",
+   "puffer": 0
+  }
+ ],
+ "slides": [
+  {
+   "type": "titel",
+   "kicker": "Weihnachtskarte, Teil V",
+   "thema": "Die Karte entsteht",
+   "unter": "7a, Donnerstag, 29.10.2026",
+   "id": "dbuuk29d"
+  },
+  {
+   "type": "ablauf",
+   "phase": 0,
+   "id": "9b1dmyjn"
+  },
+  {
+   "type": "frage",
+   "phase": 0,
+   "frage": "Diese Karte war 1843 ein Skandal. Was hat die Leute aufgeregt?",
+   "hinweis": "Ratet zu zweit.",
+   "bild": {
+    "kuenstler": "John Callcott Horsley",
+    "titel": "Weihnachtskarte für Henry Cole",
+    "jahr": "1843",
+    "material": "Handkolorierte Lithografie",
+    "ort": "Sammlung Dr. Alan Huggins",
+    "art": "werk"
+   },
+   "mitBild": true,
+   "id": "4klla532"
+  },
+  {
+   "type": "werkbild",
+   "phase": 1,
+   "bild": {
+    "kuenstler": "John Callcott Horsley",
+    "titel": "Weihnachtskarte für Henry Cole",
+    "jahr": "1843",
+    "material": "Handkolorierte Lithografie",
+    "ort": "Sammlung Dr. Alan Huggins",
+    "art": "werk"
+   },
+   "id": "k11vgb4l"
+  },
+  {
+   "type": "werk",
+   "phase": 1,
+   "titel": "Die Auflösung",
+   "text": "Henry Cole ließ 1843 tausend dieser Karten drucken.\nIn der Mitte feiert eine Familie. Auch die Kinder trinken Wein.\nGegner des Alkohols waren empört. Sie fanden, die Karte mache Kindern Lust auf Alkohol.",
+   "bild": {
+    "kuenstler": "John Callcott Horsley",
+    "titel": "Weihnachtskarte für Henry Cole",
+    "jahr": "1843",
+    "material": "Handkolorierte Lithografie",
+    "ort": "Sammlung Dr. Alan Huggins",
+    "art": "werk"
+   },
+   "id": "tfhdmifk"
+  },
+  {
+   "type": "text",
+   "phase": 1,
+   "titel": "Darauf kommt es an",
+   "text": "**1. Komposition** Man erkennt eine klare Grundform.\n**2. Hauptsache** Mutter und Kind findet man sofort, durch Größe, Licht oder Lage.\n**3. Farbe** Höchstens fünf Farben, von hell nach dunkel gemalt.\n**4. Bildfläche** Das Bild füllt die ganze Karte.\n**5. Sorgfalt** Saubere Ränder, keine Flecken, Name auf der Rückseite.\nGemeinsam abstimmen: Welches Kriterium ist für eure Karten am wichtigsten? Stimmt per Handzeichen ab.",
+   "id": "7q4vak3m"
+  },
+  {
+   "type": "auftrag",
+   "phase": 2,
+   "nr": 4,
+   "titel": "Deine Skizze wählen",
+   "schritte": "Zeig deinem Partner oder deiner Partnerin deine Skizzen. Sag noch nichts dazu.\nDein Partner zeigt auf die Skizze, die am stärksten auffällt, und sagt, warum.\nEntscheide dich dann selbst und kreuze deine Skizze an.\nErgänze auf Handout 5: Meine Karte ist mit einer ... gebaut. Das Wichtigste steht ...\nLege höchstens fünf Farben fest und male sie als kleine Kästchen auf Handout 5.",
+   "extra": "Dann tauscht ihr die Rollen.",
+   "id": "fazcl557"
+  },
+  {
+   "type": "auftrag",
+   "phase": 3,
+   "nr": 5,
+   "titel": "Die Karte beginnen",
+   "schritte": "Nimm deine Karte. Die Vorderseite wird dein Bild.\nÜbertrage deine Skizze mit leichten Bleistiftlinien: erst die Grundform, dann die Figuren.\nPrüfe: Ist die Hauptsache gut zu sehen? Füllt das Bild die ganze Karte?\nBeginne mit den hellsten Flächen. Male von hell nach dunkel.\nSchreib gleich deinen Namen hinten auf die Karte.",
+   "id": "772icuvv"
+  },
+  {
+   "type": "frage",
+   "phase": 4,
+   "frage": "Was funktioniert schon?",
+   "hinweis": "Welche Grundform erkennt ihr? Wo ist die Hauptsache? Ein Tipp, freundlich gesagt. Wir sprechen über das Bild, nicht über die Person. Niemand muss seine Karte zeigen.",
+   "id": "3wfkmqs1"
+  },
+  {
+   "type": "auftrag",
+   "phase": 5,
+   "nr": 6,
+   "titel": "Weitermalen",
+   "schritte": "Leg Handout 5 mit deinem Farbplan neben dich.\nMale die großen Flächen fertig. Lass jede Schicht trocknen, bevor du daneben malst.\nWährend eine Schicht trocknet, probierst du auf Restpapier die nächste Farbe aus.\nHebe die Hauptsache hervor: hellere Farbe, stärkerer Kontrast oder klarere Umrisse.\nDetails kommen zuletzt: Gesichter, Muster, Sterne.",
+   "extra": "Schnell fertig? Gestalte die Innenseite: Schreib einen Gruß in schöner Schrift.",
+   "id": "htgr3pec"
+  },
+  {
+   "type": "auftrag",
+   "phase": 6,
+   "kick": "Rückmeldung",
+   "titel": "Ein Stern und ein Wunsch",
+   "schritte": "Tauscht eure Karten.\nEin Stern: Sag, was an der Karte schon richtig gut ist.\nEin Wunsch: Sag einen Tipp, was noch besser werden kann.\nSchreib den Wunsch auf Handout 6. Dein Partner nimmt ihn mit.",
+   "extra": "Mir gefällt, dass ... Man erkennt sofort ... Du könntest noch ...",
+   "id": "6cw9thb1"
+  },
+  {
+   "type": "auftrag",
+   "phase": 7,
+   "nr": 7,
+   "titel": "Fertigstellen",
+   "abgabe": true,
+   "schritte": "Lies den Wunsch deines Partners. Setze ihn um, wenn er dir hilft.\nMale die letzten Details.\nPrüfe deine Karte mit den fünf Kriterien.\nName auf die Rückseite, Karte flach zum Trocknen legen.",
+   "id": "kob4dnn8"
+  },
+  {
+   "type": "frage",
+   "phase": 8,
+   "frage": "Meine Karte zeigt die Geburt Christi mit einer ... Das Wichtigste ist ..., weil ...",
+   "hinweis": "Kurzer Museumsrundgang: Wir gehen einmal leise durch den Raum und schauen. Dann kommen die Karten ins Fach der Klasse.",
+   "id": "evfa0y1u"
+  },
+  {
+   "type": "quellen",
+   "text": "Abbildungen\nJohn Callcott Horsley, *Weihnachtskarte für Henry Cole*, 1843, handkolorierte Lithografie, Exemplar der Sammlung Dr. Alan Huggins. Abbildung: commons.wikimedia.org, abgerufen am 26.10.2026\nTexte\nVictoria and Albert Museum, The first Christmas card, vam.ac.uk, abgerufen am 26.10.2026\nSmithsonian Magazine, Artikel zur ersten gedruckten Weihnachtskarte, smithsonianmag.com, abgerufen am 26.10.2026",
+   "id": "k4vuz3jz"
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+"""Beispiel: die 7a-Stunde vom 29.10.2026 als Präsentation (Inhalte aus dem freigegebenen Canva-Deck, Teil V)."""
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "werkzeuge"))
+from praesentation import pres, save
+H = {"kuenstler": "John Callcott Horsley", "titel": "Weihnachtskarte für Henry Cole", "jahr": "1843", "material": "Handkolorierte Lithografie", "ort": "Sammlung Dr. Alan Huggins", "art": "werk"}
+p = pres("7a", "Weihnachtskarte 2 von 2", "2026-10-29", "8:00", "9:30",
+  "Eure Weihnachtskarte wird heute fertig, mit einer klaren Grundform und einer Hauptsache, die man sofort findet.",
+  [(5, "Partnerarbeit", "Die erste Weihnachtskarte der Welt", 0), (5, "Hinschauen und mitdenken", "Die Auflösung und unsere Kriterien", 0),
+   (10, "Partnerarbeit", "Deine Skizze wählen", 0), (20, "Einzelarbeit", "Die Karte beginnen", 0), (5, "Gemeinsam besprechen", "Was funktioniert schon?", 0),
+   (25, "Einzelarbeit", "Weitermalen", 10), (5, "Partnerarbeit", "Ein Stern und ein Wunsch", 0), (10, "Einzelarbeit", "Fertigstellen", 0), (5, "Gemeinsam besprechen", "Rundgang und Schlusssatz", 0)],
+  [
+   {"type": "titel", "kicker": "Weihnachtskarte, Teil V", "thema": "Die Karte entsteht", "unter": "7a, Donnerstag, 29.10.2026"},
+   {"type": "ablauf", "phase": 0},
+   {"type": "frage", "phase": 0, "frage": "Diese Karte war 1843 ein Skandal. Was hat die Leute aufgeregt?", "hinweis": "Ratet zu zweit.", "bild": dict(H), "mitBild": True},
+   {"type": "werkbild", "phase": 1, "bild": dict(H)},
+   {"type": "werk", "phase": 1, "titel": "Die Auflösung", "text": "Henry Cole ließ 1843 tausend dieser Karten drucken.\nIn der Mitte feiert eine Familie. Auch die Kinder trinken Wein.\nGegner des Alkohols waren empört. Sie fanden, die Karte mache Kindern Lust auf Alkohol.", "bild": dict(H)},
+   {"type": "text", "phase": 1, "titel": "Darauf kommt es an", "text": "**1. Komposition** Man erkennt eine klare Grundform.\n**2. Hauptsache** Mutter und Kind findet man sofort, durch Größe, Licht oder Lage.\n**3. Farbe** Höchstens fünf Farben, von hell nach dunkel gemalt.\n**4. Bildfläche** Das Bild füllt die ganze Karte.\n**5. Sorgfalt** Saubere Ränder, keine Flecken, Name auf der Rückseite.\nGemeinsam abstimmen: Welches Kriterium ist für eure Karten am wichtigsten? Stimmt per Handzeichen ab."},
+   {"type": "auftrag", "phase": 2, "nr": 4, "titel": "Deine Skizze wählen", "schritte": "Zeig deinem Partner oder deiner Partnerin deine Skizzen. Sag noch nichts dazu.\nDein Partner zeigt auf die Skizze, die am stärksten auffällt, und sagt, warum.\nEntscheide dich dann selbst und kreuze deine Skizze an.\nErgänze auf Handout 5: Meine Karte ist mit einer ... gebaut. Das Wichtigste steht ...\nLege höchstens fünf Farben fest und male sie als kleine Kästchen auf Handout 5.", "extra": "Dann tauscht ihr die Rollen."},
+   {"type": "auftrag", "phase": 3, "nr": 5, "titel": "Die Karte beginnen", "schritte": "Nimm deine Karte. Die Vorderseite wird dein Bild.\nÜbertrage deine Skizze mit leichten Bleistiftlinien: erst die Grundform, dann die Figuren.\nPrüfe: Ist die Hauptsache gut zu sehen? Füllt das Bild die ganze Karte?\nBeginne mit den hellsten Flächen. Male von hell nach dunkel.\nSchreib gleich deinen Namen hinten auf die Karte."},
+   {"type": "frage", "phase": 4, "frage": "Was funktioniert schon?", "hinweis": "Welche Grundform erkennt ihr? Wo ist die Hauptsache? Ein Tipp, freundlich gesagt. Wir sprechen über das Bild, nicht über die Person. Niemand muss seine Karte zeigen."},
+   {"type": "auftrag", "phase": 5, "nr": 6, "titel": "Weitermalen", "schritte": "Leg Handout 5 mit deinem Farbplan neben dich.\nMale die großen Flächen fertig. Lass jede Schicht trocknen, bevor du daneben malst.\nWährend eine Schicht trocknet, probierst du auf Restpapier die nächste Farbe aus.\nHebe die Hauptsache hervor: hellere Farbe, stärkerer Kontrast oder klarere Umrisse.\nDetails kommen zuletzt: Gesichter, Muster, Sterne.", "extra": "Schnell fertig? Gestalte die Innenseite: Schreib einen Gruß in schöner Schrift."},
+   {"type": "auftrag", "phase": 6, "kick": "Rückmeldung", "titel": "Ein Stern und ein Wunsch", "schritte": "Tauscht eure Karten.\nEin Stern: Sag, was an der Karte schon richtig gut ist.\nEin Wunsch: Sag einen Tipp, was noch besser werden kann.\nSchreib den Wunsch auf Handout 6. Dein Partner nimmt ihn mit.", "extra": "Mir gefällt, dass ... Man erkennt sofort ... Du könntest noch ..."},
+   {"type": "auftrag", "phase": 7, "nr": 7, "titel": "Fertigstellen", "abgabe": True, "schritte": "Lies den Wunsch deines Partners. Setze ihn um, wenn er dir hilft.\nMale die letzten Details.\nPrüfe deine Karte mit den fünf Kriterien.\nName auf die Rückseite, Karte flach zum Trocknen legen."},
+   {"type": "frage", "phase": 8, "frage": "Meine Karte zeigt die Geburt Christi mit einer ... Das Wichtigste ist ..., weil ...", "hinweis": "Kurzer Museumsrundgang: Wir gehen einmal leise durch den Raum und schauen. Dann kommen die Karten ins Fach der Klasse."},
+   {"type": "quellen", "text": "Abbildungen\nJohn Callcott Horsley, *Weihnachtskarte für Henry Cole*, 1843, handkolorierte Lithografie, Exemplar der Sammlung Dr. Alan Huggins. Abbildung: commons.wikimedia.org, abgerufen am 26.10.2026\nTexte\nVictoria and Albert Museum, The first Christmas card, vam.ac.uk, abgerufen am 26.10.2026\nSmithsonian Magazine, Artikel zur ersten gedruckten Weihnachtskarte, smithsonianmag.com, abgerufen am 26.10.2026"}
+  ], notiz="Grundlayout: Jost, Schwarz auf Weiß, Akzentblau nur für Uhrzeit, Sozialform, Dauer.")
+save(p, os.path.join(os.path.dirname(os.path.abspath(__file__)), "07_Screen_Weihnachtskarte_2_von_2.atelier.json"))
+print("ok", len(p["slides"]), "Folien")

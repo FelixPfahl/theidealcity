@@ -1029,3 +1029,8 @@ main.comicpage,html[data-mode=dunkel] main.comicpage,html[data-mode=rot] main.co
 .comicpage .opener::after,html[data-mode=dunkel] .comicpage .opener::after,html[data-mode=rot] .comicpage .opener::after{background:linear-gradient(to top,var(--paper),transparent)}
 .comicpage .sticky-head,html[data-mode=dunkel] .comicpage .sticky-head{background:var(--paper)}
 .comicpage sup.fn:hover,.comicpage sup.fn.on{background:var(--blue-ink);color:#fff}
+/* Josef, 28.10., 01:37: Systemzeiger überall, keine Zeigereffekte */
+html,html *{cursor:auto}
+html a,html button,html [role=button],html label,html summary,html .work a,html a.reflink,html sup.fn,html .sbobj,html .plothand,html .sbdlg,html input[type=range],html input[type=checkbox]{cursor:pointer}
+html input[type=text],html input[type=email],html textarea{cursor:text}
+.lb2{cursor:auto}

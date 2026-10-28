@@ -884,7 +884,7 @@
   (function(){ var last = null, lastW = 0; document.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse') return; var now = performance.now(); if (last){ var v = Math.hypot(e.clientX - last.x, e.clientY - last.y) / Math.max(1, now - last.t); if (false && v > 3.2 && now - lastW > 900){ lastW = now; softPlay('shh', .35); } /* Wusch aus (Josef, 28.10., 01:22: Mauseffekte reduzieren) */ } last = {x:e.clientX, y:e.clientY, t:now}; }, {passive:true}); })();
 
   /* ---------- Eigener Zeiger: groß, atmet, neigt sich, Spur, Schlag, Abdruck, Lupe über Bildern, Radiergummi über Fett-Titeln ---------- */
-  if (MOUSE) safe(function(){
+  if (false) safe(function(){   /* Josef, 28.10., 01:37: gezeichneter Zeiger komplett aus */
     var h = document.documentElement; h.classList.add('cur');
     var el = document.createElement('div'); el.className = 'cur-el';
     el.innerHTML = '<img alt=""><svg class="lensc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="40" cy="40" r="26" fill="rgba(255,255,255,.12)" stroke="currentColor" stroke-width="5"/><line x1="59" y1="59" x2="88" y2="88" stroke="currentColor" stroke-width="9" stroke-linecap="round"/></svg><svg class="eras" viewBox="0 0 100 100" aria-hidden="true"><rect x="18" y="34" width="64" height="32" rx="4" fill="currentColor"/><rect x="18" y="34" width="22" height="32" rx="4" fill="#fff" stroke="currentColor" stroke-width="4"/></svg>';
@@ -927,7 +927,7 @@
     function stamp(x, y, tg){ var s = tg.closest ? tg.closest('section[id], main.comicpage') : null; var id = s ? (s.id || 'comic') : ''; if (id === 'egoshooter') id = 'clickclickboom'; if (s && s.classList.contains('comicpage')) id = 'comic';
       var d = document.createElement('div'); d.className = 'imprint'; d.innerHTML = SH[id] || INK; d.style.left = (x + window.scrollX) + 'px'; d.style.top = (y + window.scrollY) + 'px'; d.style.setProperty('--r', ((Math.random() * 60) - 30).toFixed(0) + 'deg');
       document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 3300); }
-    document.addEventListener('pointerdown', function(e){ if (e.button !== 0) return; if (e.target.closest && e.target.closest('.lb2, .menu, .modem, iframe, input, textarea, button, .nlpanel')) return; stamp(e.clientX, e.clientY, e.target); }, {passive:true});
+    /* Abdruck beim Klick aus (Josef, 28.10., 01:37) */
   });
 
   /* ============================================================
@@ -1073,8 +1073,11 @@
         if (o.pf){ a.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.on(e); }); a.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.move(e); }); a.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.off(); }); a.addEventListener('click', function(e){ if (window.JK_PFAHL){ window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 8000); } }); } });
       hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
         var t = document.createElement('b'); t.className = 'plothand-w'; t.textContent = hw.txt; t.style.top = (lh * .55 + hw.base - fs * .78) + 'px'; a.appendChild(t); el.appendChild(a);
-        a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerdown', function(e){ a.classList.add('on'); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); /* Josef, 28.10., 01:12: das Plotterwort bleibt stehen, sonst kann man nichts lesen */ a.addEventListener('click', function(){ a.classList.add('on'); }); });
-      built.push({el:el, cv:cv, lv:lv, W:W, H:HC, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, ft:0, played:{}, col:colors(el), alive:false, dirty:true});
+        /* Josef, 28.10., 01:36: beim Hovern verschwindet die rote Handschrift, nur das saubere Wort bleibt: der Bereich wird vom Canvas gelöscht und bleibt gelöscht */
+        var rect = [hw.x - lh * .35, hw.y - lh * .7 + PAD, hw.w + lh * .7, lh * 2.1];
+        function wipe(){ if (a.classList.contains('on')) return; a.classList.add('on'); var bb = null; for (var q = 0; q < built.length; q++){ if (built[q].el === el){ bb = built[q]; break; } } if (bb){ bb.cleared.push(rect); if (bb.alive){ var c = bb.cv.getContext('2d'); c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(rect[0], rect[1], rect[2], rect[3]); } } }
+        a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; wipe(); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerdown', function(e){ wipe(); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); });
+      built.push({el:el, cv:cv, lv:lv, W:W, H:HC, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, ft:0, played:{}, col:colors(el), alive:false, dirty:true, cleared:[]});
     }
     window.JK_PLOT_ONCE = function(el, ms){ if (!F || !el || el.classList.contains('plotted')) return; try { build(el); } catch(e){ return; } var b = built[built.length - 1]; if (!b || b.el !== el) return; b.hero = true; b.t0 = performance.now(); b.ms = ms || 900; update(); };
     function unbuild(b){ var src = b.el.querySelector('.plotsrc'); b.el.querySelectorAll('.plotsup').forEach(function(s){ s.classList.remove('plotsup'); s.style.left = s.style.top = ''; src.appendChild(s); }); b.el.querySelectorAll('.plotlink,.plothand').forEach(function(a){ a.remove(); }); b.cv.remove(); b.lv.remove(); if (src){ while (src.firstChild) b.el.appendChild(src.firstChild); src.remove(); } b.el.classList.remove('plotted'); b.el.style.minHeight = ''; }
@@ -1107,6 +1110,7 @@
           for (var m = Math.max(0, done - 3); m < done; m++){ if (!items[m].gap){ travelTo(c, b, m); strokeItem(c, b, items[m], items[m].len); } } b.done = done; } }
       for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35) spritePlay('feder', {vol:.5, max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
       b.done = done;
+      if (b.cleared.length){ c.setTransform(DPR, 0, 0, DPR, 0, 0); b.cleared.forEach(function(q){ c.clearRect(q[0], q[1], q[2], q[3]); }); }
       L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lv.width, lv.height);
       var penAt = null;
       if (done < n){ var cur = items[done], d = D - cur.cum;

@@ -777,6 +777,7 @@
       f.addEventListener('pointerleave', function(){ if (cur === f){ cur = null; hov.classList.remove('on'); } });
       f.addEventListener('click', function(){ cur = null; hov.classList.remove('on'); });
     });
+    window.addEventListener('scroll', function(){ if (cur){ cur = null; hov.classList.remove('on'); } }, {passive:true});
   });
 
   /* ---------- Großansicht: schwarz, bildschirmfüllend, Wischen, Pfeile, Zoom, Lupe, Play ---------- */
@@ -1058,7 +1059,7 @@
       if (hitems.length){ items.push({gap:true, len:900, snd:'feder', at:prev ? prev.end : [0, 0], cum:cum}); cum += 900; var off = cum; hitems.forEach(function(h){ h.cum += off; items.push(h); }); cum += hcum; }
       var H = hero && window.JK_MONO ? lh * 2 + 4 : lines * lh;
       /* Kopf- und Fußrand (Josef, 28.10., 01:21: die rote Schrift clippt oben): Canvas ragt oben und unten über den Absatz hinaus, alle Einträge rutschen um PAD nach unten */
-      var PAD = hero ? 0 : Math.ceil(lh * .9);
+      var PAD = hero ? 0 : Math.ceil(lh * (hitems.length ? 1.6 : .5));   /* Handschrift ragt mit Ober- und Unterschleifen weit über die Zeile (Josef, 01:35: Unterschriften oben geclippt) */
       if (PAD){ items.forEach(function(it){ if (it.gap){ if (it.at) it.at = [it.at[0], it.at[1] + PAD]; return; } it.y += PAD; it.start = [it.start[0], it.start[1] + PAD]; it.end = [it.end[0], it.end[1] + PAD]; it.d1[1] += PAD; it.d2[1] += PAD; if (it.bleed) it.bleed[1] += PAD; }); }
       var HC = H + 2 * PAD;
       var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = HC + 'px'; cv.style.marginTop = (-PAD) + 'px'; cv.style.marginBottom = (-PAD) + 'px'; cv.width = 0; cv.height = 0;

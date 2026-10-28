@@ -1023,3 +1023,9 @@ body.start .sbcall{border-color:#000;color:#000}
 @media (min-width:701px) and (max-width:1000px){.top{gap:8px 12px}.top nav.tabs{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;font-size:13px;gap:16px}.top nav.tabs::-webkit-scrollbar{display:none}}
 /* Handwörter erst nach dem Schreiben anfassbar (Josef, 01:25) */
 .plotted .plothand{pointer-events:none}.plotted.plotdone .plothand{pointer-events:auto}
+/* Josef, 28.10., 01:35: Comic-Hintergrund wie überall sonst (Papier), Blau bleibt Akzent */
+main.comicpage,html[data-mode=dunkel] main.comicpage,html[data-mode=rot] main.comicpage{background:var(--paper)}
+.comicpage .subnav,html[data-mode=dunkel] .comicpage .subnav{background:var(--paper)}
+.comicpage .opener::after,html[data-mode=dunkel] .comicpage .opener::after,html[data-mode=rot] .comicpage .opener::after{background:linear-gradient(to top,var(--paper),transparent)}
+.comicpage .sticky-head,html[data-mode=dunkel] .comicpage .sticky-head{background:var(--paper)}
+.comicpage sup.fn:hover,.comicpage sup.fn.on{background:var(--blue-ink);color:#fff}

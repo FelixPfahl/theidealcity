@@ -1,0 +1,42 @@
+{
+ "date": "2026-10-30",
+ "label": "Freitag, 30.10.",
+ "drucken": [
+  "11: Handouts 1 bis 9 und Merkblatt Bewertung (PDF im Schultagsordner)",
+  "Comic-AG: Arbeitsblatt 01 Partner-Check und 02 Tusche, je Teilnehmerzahl plus 3"
+ ],
+ "items": [
+  {
+   "type": "lesson",
+   "klasse": "11",
+   "titel": "Klassische Moderne 1 von 4",
+   "start": "11:30",
+   "end": "13:00",
+   "ziel": "Warum Beckmann und Max Ernst kein Impressionismus sind; acht Bildsprachen im Überblick, Expertenpaare mit Originaltexten.",
+   "mitnehmen": [
+    "Handouts 1 bis 9",
+    "Merkblatt Bewertung"
+   ]
+  },
+  {
+   "type": "lesson",
+   "klasse": "Comic-AG",
+   "titel": "Dokumentarischer Strip: Vom Bleistift zur Tusche",
+   "start": "13:15",
+   "end": "14:45",
+   "ziel": "Skizze fertig, dann tuschen.",
+   "mitnehmen": [
+    "Arbeitsblätter 01 und 02",
+    "Fineliner oder Pinselstifte, Radierer",
+    "Skizzen vom 23.10.",
+    "Anwesenheitsliste"
+   ]
+  },
+  {
+   "type": "other",
+   "start": "17:00",
+   "end": "19:00",
+   "titel": "Unterrichtsvorbereitung"
+  }
+ ]
+}

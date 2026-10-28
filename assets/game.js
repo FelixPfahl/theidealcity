@@ -155,8 +155,10 @@
     unstack(); window.addEventListener('load', unstack); window.addEventListener('resize', unstack); }
   /* Zwei Dinge dürfen nie übereinander liegen (Test 28.10., 06:00: Bombe lag unter einem anderen Objekt): das spätere wird im Anker verschoben, bis es frei liegt */
   function unstack(){ var objs = [].slice.call(document.querySelectorAll('.sbobj')); var done = [];
+    /* feste Knöpfe (Newsletter unten links bzw. rechts) decken am Seitenende die Ecken ab: dort darf nichts liegen (Test 28.10., 06:25: Brief unter dem Newsletter-Knopf) */
+    var de = document.documentElement, DH = de.scrollHeight, DW = de.clientWidth, sy = window.pageYOffset || de.scrollTop; var corners = [{left:0, right:80, top:DH - 80 - sy, bottom:DH - sy}, {left:DW - 80, right:DW, top:DH - 80 - sy, bottom:DH - sy}];
     objs.forEach(function(o){ var a = o.offsetParent || o.parentNode; if (!a) return; var aw = a.clientWidth, ah = a.clientHeight; var sz = o.offsetWidth || 40; var tries = 0;
-      function hits(){ var r = o.getBoundingClientRect(); return done.some(function(d){ var q = d.getBoundingClientRect(); return r.left < q.right + 6 && r.right > q.left - 6 && r.top < q.bottom + 6 && r.bottom > q.top - 6; }); }
+      function hits(){ var r = o.getBoundingClientRect(); var ov = function(q){ return r.left < q.right + 6 && r.right > q.left - 6 && r.top < q.bottom + 6 && r.bottom > q.top - 6; }; return corners.some(ov) || done.some(function(d){ return ov(d.getBoundingClientRect()); }); }
       while (hits() && tries < 40){ tries++; var l = o.offsetLeft, t = o.offsetTop; var nl = l + sz + 10, nt = t; if (nl + sz > aw){ nl = 0; nt = t + sz + 10; } if (nt + sz > ah){ nt = 0; } o.style.left = nl + 'px'; o.style.top = nt + 'px'; }
       done.push(o); }); }
   function splash(x, y, col){ var NS = 'http://www.w3.org/2000/svg'; var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'sbsplash'); svg.setAttribute('viewBox', '-50 -50 100 100'); svg.style.left = (x - 60) + 'px'; svg.style.top = (y - 60) + 'px';

@@ -1066,3 +1066,8 @@ h1,h2,h3,.nextpart a,.bigtabs a,.minititle{overflow-wrap:break-word;hyphens:auto
 img.sbobj{height:auto!important;max-height:none!important;min-height:0!important;max-width:none!important;min-width:0!important;object-fit:contain!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:none!important;aspect-ratio:auto!important;will-change:auto}
 img.sbobj:not(.pop){transform:none!important}
 img.sbobj:not(.found){filter:none!important}
+
+/* Josef, 29.10., 12:12 bis 12:13: Hover-Vorschau dreimal so groß wie das Vorschaubild (Größe setzt app.js, höchstens 90 % des Fensters); nur ein grüner Balken je Teilabschnitt */
+.hov,.hov img{max-width:none;max-height:none}
+.hov img{object-fit:contain}
+.progress2{display:none!important}

@@ -579,11 +579,11 @@
 
   /* ---------- Fortschrittsbalken: nur das jeweilige Kapitel; Grün für Bilder-Kapitel, Rot für Texte, Blau für Comic; darunter Lesebalken für den Fließtext ---------- */
   safe(function(){
-    var bar = document.querySelector('.progress i'), bar2 = document.querySelector('.progress2 i'); if (!bar) return; var t = false;
+    var bar = document.querySelector('.progress i'), bar2 = null; if (!bar) return; var t = false;
     var secs = Array.prototype.slice.call(document.querySelectorAll('section.series'));
     var comic = document.body.classList.contains('comicbody'), isText = document.body.classList.contains('textbody');
     var texts = Array.prototype.slice.call(document.querySelectorAll('.sertext'));
-    function upd(){ t = false; var h = document.documentElement, vh = h.clientHeight, p = 0, p2 = 0, col = comic ? '#3F97B8' : (isText ? '#E2231A' : '#00A651');
+    function upd(){ t = false; var h = document.documentElement, vh = h.clientHeight, p = 0, p2 = 0, col = '#00A651';   /* Josef, 29.10., 12:13: ein grüner Balken je Teilabschnitt, kein zweiter Lesebalken */
       var cur = null; secs.forEach(function(s){ var r = s.getBoundingClientRect(); if (r.top <= vh * .5 && r.bottom > vh * .5) cur = s; });
       if (cur){ var r = cur.getBoundingClientRect(); p = Math.min(100, Math.max(0, (vh * .5 - r.top) / Math.max(1, r.height - vh * .5) * 100)); }
       else if (!secs.length){ var max = h.scrollHeight - vh; p = max > 0 ? Math.min(100, (h.scrollTop || 0) / max * 100) : 0; }
@@ -774,6 +774,10 @@
     document.querySelectorAll('.grid .work, .powtiles figure, .einzelgrid .work, .marg figure, .powinfo figure, .powlead figure').forEach(function(f){
       var a = f.querySelector('a[data-full], a.reflink'); if (!a) return;
       f.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; if (f.classList.contains('fly') && (parseFloat(f.style.getPropertyValue('--s')) || 1) > 1.2) return; cur = f;
+        var th = f.querySelector('img:not(.sbobj)'), tr = th ? th.getBoundingClientRect() : f.getBoundingClientRect();
+        /* Josef, 29.10., 12:12: Vorschau immer dreimal so groß wie das Vorschaubild, höchstens 90 % des Fensters (Seitenverhältnis bleibt) */
+        var tw = tr.width * 3, thh = tr.height * 3, k = Math.min(1, window.innerWidth * .9 / Math.max(1, tw), (window.innerHeight * .9 - 34) / Math.max(1, thh));
+        him.style.width = Math.round(tw * k) + 'px'; him.style.height = Math.round(thh * k) + 'px';
         him.src = a.getAttribute('data-full') || a.getAttribute('href'); var fc = f.querySelector('figcaption'); hcap.innerHTML = fc ? fc.innerHTML : '';
         hov.classList.add('on'); place(e); if (Date.now() - lastSnd > 350){ lastSnd = Date.now(); softPlay(secSound(f), .25); } });
       f.addEventListener('pointermove', function(e){ if (cur === f && e.pointerType === 'mouse') place(e); });
@@ -1087,7 +1091,9 @@
     }
     window.JK_PLOT_ONCE = function(el, ms){ if (!F || !el || el.classList.contains('plotted')) return; try { build(el); } catch(e){ return; } var b = built[built.length - 1]; if (!b || b.el !== el) return; b.hero = true; b.t0 = performance.now(); b.ms = ms || 900; update(); };
     function unbuild(b){ var src = b.el.querySelector('.plotsrc'); b.el.querySelectorAll('.plotsup').forEach(function(s){ s.classList.remove('plotsup'); s.style.left = s.style.top = ''; src.appendChild(s); }); b.el.querySelectorAll('.plotlink,.plothand').forEach(function(a){ a.remove(); }); b.cv.remove(); b.lv.remove(); if (src){ while (src.firstChild) b.el.appendChild(src.firstChild); src.remove(); } b.el.classList.remove('plotted'); b.el.style.minHeight = ''; }
-    function buildAll(){ built.forEach(unbuild); built = []; targets.forEach(function(el){ try { build(el); } catch(e){ try { console.warn('plot', e); } catch(_){} } }); update(); }
+    /* Neuaufbau (nur bei geänderter Breite) behält den Fortschritt: was geschrieben war, steht sofort wieder da (Josef, 29.10., 12:10: am Handy verschwand der Text beim Hochscrollen und Tippen, weil die Adressleiste die Fensterhöhe ändert) */
+    function buildAll(){ var prev = []; built.forEach(function(b){ prev.push([b.el, b.f, b.fin]); }); built.forEach(unbuild); built = []; targets.forEach(function(el){ try { build(el); } catch(e){ try { console.warn('plot', e); } catch(_){} } });
+      built.forEach(function(b){ for (var i = 0; i < prev.length; i++){ if (prev[i][0] === b.el){ if (prev[i][1] > 0){ b.f = prev[i][1]; b.dirty = true; if (b.hero) b.t0 = performance.now() - (b.ms || 2800) * prev[i][1]; if (prev[i][2]){ b.fin = true; b.el.classList.add('plotdone'); } } break; } } }); update(); }
     function strokeItem(c, b, it, d){ /* einen Glyph (ganz oder teilweise) auf einen Kontext zeichnen */
       var col = b.col, sc = it.sc || b.sc, full = d >= it.len, stroke = it.acc ? col.acc : (it.tone > 0 ? col.warm : (it.tone < 0 ? col.cool : col.ink));
       if (it.o0 === undefined) it.o0 = speed > 2.2 ? R(.45, .65) : 1;
@@ -1151,7 +1157,7 @@
         var n = ac.createBufferSource(); n.buffer = noiseBuf(ac, 2); n.loop = true; var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 6; var ng = ac.createGain(); ng.gain.value = .25; n.connect(bp); bp.connect(ng); ng.connect(g); o.start(); o2.start(); n.start(); hum = {g:g, ac:ac}; }
       hum.g.gain.setTargetAtTime(.06 * V.vol, hum.ac.currentTime, .05); clearTimeout(humT); humT = setTimeout(function(){ hum.g.gain.setTargetAtTime(0, hum.ac.currentTime, .12); }, 220); }
     window.addEventListener('scroll', function(){ if (!raf){ raf = true; requestAnimationFrame(update); } }, {passive:true});
-    var rs = null; window.addEventListener('resize', function(){ clearTimeout(rs); rs = setTimeout(function(){ if (F) buildAll(); }, 250); });
+    var rs = null, lastW = window.innerWidth; window.addEventListener('resize', function(){ clearTimeout(rs); rs = setTimeout(function(){ if (!F || window.innerWidth === lastW) return; lastW = window.innerWidth; buildAll(); }, 250); });   /* nur Breitenänderung baut neu, Höhe (Adressleiste am Handy) nie */
     document.querySelectorAll('.modes button').forEach(function(bt){ bt.addEventListener('click', function(){ setTimeout(function(){ built.forEach(function(b){ b.col = colors(b.el); b.done = 0; if (b.alive){ var c = b.cv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,b.cv.width,b.cv.height); } b.dirty = true; }); update(); }, 30); }); });
     document.addEventListener('pointerdown', function(){ if (built.some(function(b){ return b.hero && b.f < 1; })) requestAnimationFrame(update); }, {passive:true});
   });

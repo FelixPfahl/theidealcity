@@ -1,24 +1,28 @@
-Testtag laut Daten: 2026-10-28
+Testtag laut Daten: 2026-10-29
 FEHLER  Update über die vorige Fassung (anderer Signaturschlüssel)
-OK      Start während der Stunde öffnet Pult
+FEHLER  Start während der Stunde öffnet Pult (erwartet: Mini-Skizzen)
 OK      Reiter Heute
 OK      Reiter Morgenrunde
-OK      Reiter Pult
-OK      +5 Min. verlängert und gleicht aus
-OK      Weiter springt zur nächsten Phase
-OK      Zurück nimmt beides zurück
+FEHLER  Reiter Pult (erwartet: Mini-Skizzen)
+  (nicht gefunden: +5 Min.)
+FEHLER  +5 Min. verlängert und gleicht aus (erwartet: Ausgleich in)
+  (nicht gefunden: Weiter)
+FEHLER  Weiter springt zur nächsten Phase (erwartet: Zwischenhalt)
+  (nicht gefunden: Zurück)
+  (nicht gefunden: Zurück)
+FEHLER  Zurück nimmt beides zurück (erwartet: Mini-Skizzen)
 OK      Pult-Ansicht Tag
 OK      Pult-Ansicht Spick
 OK      Notiz bleibt nach Neustart
-OK      Querformat: Restzeit sichtbar
-OK      Nach dem Drehen weiter in Pult
-OK      Phase wechselt nach Uhrzeit
+FEHLER  Querformat: Restzeit sichtbar (erwartet: bis 12.)
+FEHLER  Nach dem Drehen weiter in Pult (erwartet: Mini-Skizzen)
+FEHLER  Phase wechselt nach Uhrzeit (erwartet: Zwischenhalt)
 OK      Vibration beim Phasenwechsel ausgelöst
 OK      Zurück-Taste führt zu Heute
 OK      Zweites Zurück schließt die App
-OK      Ohne Netz: Pult mit gespeichertem Stand
+FEHLER  Ohne Netz: Pult mit gespeichertem Stand (erwartet: Zwischenhalt|Stern und Wunsch)
 OK      Ohne Netz: Morgenrunde
 OK      Ohne Netz: Heute
 OK      Heute bleibt Heute, auch während der Stunde
 ---
-Fehler insgesamt: 1
+Fehler insgesamt: 10

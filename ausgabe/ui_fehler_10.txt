@@ -1,0 +1,22 @@
+android.widget.TextView | Heute
+android.widget.TextView | Pult
+android.widget.TextView | Morgenrunde
+android.webkit.WebView | Pult
+android.widget.TextView | DONNERSTAG, 29.10.
+android.widget.TextView | 12.26
+android.widget.TextView | 6A · KLASSENSTUNDE: SCHULLANDHEIM ABSCHLIESSEN · 12.15 BIS 13.00
+android.widget.TextView | Partnerarbeit
+android.widget.TextView | Schönster Moment
+android.widget.TextView | 03:13
+android.widget.TextView | bis 12.30
+android.widget.TextView | Banknachbarn erzählen sich ihren schönsten Moment. Zwei, drei nennen ihn danach in einem Satz.
+android.widget.TextView | Danach 12.30 Gemeinsam besprechen, 10 Min.: Fundsachen und Termine
+android.widget.Button | +5 Min.
+android.widget.Button | Weiter
+android.widget.TextView | Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).
+android.widget.TextView | Stand der Daten: Donnerstag, 29.10.
+android.view.View | Ansichten
+android.widget.Button | Jetzt
+android.widget.Button | Tag
+android.widget.Button | Spick
+android.widget.Button | Notiz

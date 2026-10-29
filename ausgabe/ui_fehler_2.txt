@@ -1,0 +1,21 @@
+android.widget.TextView | Heute
+android.widget.TextView | Pult
+android.widget.TextView | Morgenrunde
+android.webkit.WebView | Atelier
+android.widget.TextView | Atelier
+android.widget.TextView | 11.50
+android.widget.TextView | DONNERSTAG, 29.10.
+android.widget.TextView | ALS NÄCHSTES
+android.widget.TextView | 12.15 6a Klassenstunde: Schullandheim abschließen
+android.widget.TextView | in 25 Min.
+android.view.View | Apps
+android.view.View | Pult Im Unterricht: Phase, Restzeit, Spickzettel
+android.widget.TextView | Pult
+android.widget.TextView | Im Unterricht: Phase, Restzeit, Spickzettel
+android.view.View | Morgenrunde Auf dem Schulweg: Quiz zum Tag
+android.widget.TextView | Morgenrunde
+android.widget.TextView | Auf dem Schulweg: Quiz zum Tag
+android.view.View | Folien Am PC: Präsentationen bauen, prüfen, vorführen
+android.widget.TextView | Folien
+android.widget.TextView | Am PC: Präsentationen bauen, prüfen, vorführen
+android.widget.TextView | Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).

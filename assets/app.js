@@ -359,7 +359,7 @@
   }
 
   /* 56k-Modem: Wählton, DTMF, Klingeln, V.90-Handshake, Rauschen. Etwa 9 Sekunden. */
-  function dialup(onDone){
+  function dialup(onDone, opt){
     var ac = ctx(); if(!ac){ onDone(); return; }
     var t0 = ac.currentTime, out = ac.createGain(); out.gain.value = .5; out.connect(OUT(ac));
     function tone(f, t, d, vol, type){ var o=ac.createOscillator(), g=ac.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol||.3,t+.01); g.gain.setValueAtTime(vol||.3,t+d-.01); g.gain.linearRampToValueAtTime(0,t+d); o.connect(g); g.connect(out); o.start(t); o.stop(t+d+.02); }
@@ -373,7 +373,8 @@
     tone(900, t, .3, .18); tone(1125, t+.3, .3, .18); t += .65;
     nz(t, .9, .3, 900); tone(825, t, .5, .1); t += .95;
     nz(t, .8, .35, 500); t += .85;
-    tone(500, t, .15, .25, 'square'); tone(750, t+.17, .15, .25, 'square'); t += .4;
+    if (opt && opt.fail){ nz(t, .5, .5, 2600); nz(t + .5, .12, .7, 400); t += .7; }   /* NO CARRIER: Rauschen, Knacken, Stille */
+    else { tone(500, t, .15, .25, 'square'); tone(750, t+.17, .15, .25, 'square'); t += .4; }
     var total = (t - t0) * 1000;
     setTimeout(onDone, total);
     return total;
@@ -384,7 +385,8 @@
      Über den Regler abschaltbar. */
   var fromInside = false;
   try { fromInside = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch(e){}
-  if (!fromInside && FX.modem && !/nomodem/.test(location.search)){
+  window.JK_DIALUP = dialup;   /* das Modem gehört jetzt zum Spiel: Inka wählt sich ein (game.js, Josef, 29.10., 13:14) */
+  if (false && !fromInside && FX.modem && !/nomodem/.test(location.search)){
     var ov = document.createElement('div'); ov.className='modem';
     ov.innerHTML = '<div class="box"><pre></pre><div class="bar"><i></i></div><button type="button">'+(T.skip||'Überspringen')+'</button>'+(T.modem_hint?'<small>'+T.modem_hint+'</small>':'')+'</div>';
     document.body.appendChild(ov);
@@ -718,10 +720,16 @@
   /* ---------- Stumm-Knopf ---------- */
   safe(function(){
     var b = document.querySelector('.mute'); if (!b) return; var muted = false;
+    /* Josef, 29.10., 13:54: Zustand klar zeigen: an = Wellen, aus = durchgestrichen ohne Wellen, dazu ein Wort */
+    var sv = b.querySelector('svg'); if (sv && !sv.querySelector('.x')){ var x = document.createElementNS('http://www.w3.org/2000/svg', 'path'); x.setAttribute('class', 'x'); x.setAttribute('d', 'M3 3l18 18'); sv.appendChild(x); }
+    var lab = document.createElement('span'); lab.className = 'mutelab'; b.appendChild(lab);
     try { muted = localStorage.getItem('jk_mute') === '1'; } catch(e){}
-    function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton an' : 'Ton aus'); FX.vol = (muted || REDUCED) ? 0 : FX_DEFAULT.vol;   /* Ruhig und Firefox bleiben stumm */ if (MASTER) MASTER.node.gain.value = FX.vol/100; }
+    function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton ist aus, einschalten' : 'Ton ist an, ausschalten'); b.title = muted ? 'Ton ist aus. Klicken zum Einschalten.' : 'Ton ist an. Klicken zum Ausschalten.'; lab.textContent = muted ? 'Ton aus' : 'Ton an'; FX.vol = (muted || REDUCED) ? 0 : FX_DEFAULT.vol;   /* Ruhig und Firefox bleiben stumm */ if (MASTER) MASTER.node.gain.value = FX.vol/100; }
     apply();
-    b.addEventListener('click', function(e){ e.stopPropagation(); muted = !muted; try { localStorage.setItem('jk_mute', muted ? '1' : '0'); } catch(err){} apply(); if (!muted) play('click'); });
+    /* Josef, 29.10., 13:56: der Plotter streicht den Lautsprecher durch (mit Stiftgeräusch, erst danach ist es still) */
+    b.addEventListener('click', function(e){ e.stopPropagation(); muted = !muted; try { localStorage.setItem('jk_mute', muted ? '1' : '0'); } catch(err){}
+      if (muted){ b.classList.add('off', 'plotx'); lab.textContent = 'Ton aus'; try { spritePlay('plotter', {vol:.6, max:.45, force:true}); } catch(x){} setTimeout(function(){ apply(); b.classList.remove('plotx'); }, 520); }
+      else { apply(); play('click'); } });
   });
 
   /* ---------- Einflug: Bilder kommen beim Scrollen riesig und schrumpfen an ihren Platz (scrollgekoppelt) ---------- */

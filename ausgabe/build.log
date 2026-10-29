@@ -30,22 +30,19 @@ Daemon will be stopped at the end of the build
 > Task :app:stripReleaseDebugSymbols NO-SOURCE
 > Task :app:extractReleaseNativeSymbolTables NO-SOURCE
 > Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
-> Task :app:checkReleaseDuplicateClasses
-> Task :app:desugarReleaseFileDependencies
-> Task :app:mergeReleaseStartupProfile
 > Task :app:processReleaseManifestForPackage
-> Task :app:mergeExtDexRelease
+> Task :app:desugarReleaseFileDependencies
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:mergeReleaseStartupProfile
 > Task :app:mergeReleaseArtProfile
+> Task :app:mergeExtDexRelease
 > Task :app:mergeReleaseShaders
 > Task :app:compileReleaseShaders NO-SOURCE
 > Task :app:generateReleaseAssets UP-TO-DATE
 > Task :app:mergeReleaseAssets
 > Task :app:compressReleaseAssets
-> Task :app:extractReleaseVersionControlInfo
-> Task :app:processReleaseJavaRes NO-SOURCE
 > Task :app:processReleaseResources
-> Task :app:collectReleaseDependencies
-> Task :app:mergeReleaseJavaResource
+> Task :app:extractReleaseVersionControlInfo
 
 > Task :app:compileReleaseJavaWithJavac
 Note: /home/runner/work/theidealcity/theidealcity/android/app/src/main/java/de/theidealcity/atelier/MainActivity.java uses or overrides a deprecated API.
@@ -53,12 +50,15 @@ Note: Recompile with -Xlint:deprecation for details.
 
 > Task :app:generateReleaseLintVitalReportModel
 > Task :app:dexBuilderRelease
+> Task :app:processReleaseJavaRes NO-SOURCE
 > Task :app:mergeReleaseGlobalSynthetics
-> Task :app:sdkReleaseDependencyData
-> Task :app:mergeDexRelease
-> Task :app:validateSigningRelease
-> Task :app:compileReleaseArtProfile
+> Task :app:mergeReleaseJavaResource
+> Task :app:collectReleaseDependencies
 > Task :app:optimizeReleaseResources
+> Task :app:mergeDexRelease
+> Task :app:sdkReleaseDependencyData
+> Task :app:compileReleaseArtProfile
+> Task :app:validateSigningRelease
 > Task :app:writeReleaseAppMetadata
 > Task :app:writeReleaseSigningConfigVersions
 > Task :app:packageRelease
@@ -67,7 +67,7 @@ Note: Recompile with -Xlint:deprecation for details.
 > Task :app:lintVitalReportRelease
 > Task :app:lintVitalRelease
 > Task :app:assembleRelease
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1793259946123.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1793260761801.json
 
-BUILD SUCCESSFUL in 40s
+BUILD SUCCESSFUL in 39s
 43 actionable tasks: 43 executed

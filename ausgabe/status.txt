@@ -1,2 +1,2 @@
-Lauf 7: success (2026-10-29T07:54Z)
-Fehler insgesamt: 2
+Lauf 8: success (2026-10-29T08:07Z)
+Fehler insgesamt: 1

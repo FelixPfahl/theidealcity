@@ -16,7 +16,7 @@ OK      Pult-Ansicht Tag
 OK      Pult-Ansicht Spick
 OK      Notiz bleibt nach Neustart
 OK      Querformat: Restzeit sichtbar
-FEHLER  Nach dem Drehen weiter in Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+OK      Nach dem Drehen weiter in Pult
 OK      Phase wechselt nach Uhrzeit
 OK      Vibration beim Phasenwechsel ausgelöst
 OK      Zurück-Taste führt zu Heute
@@ -26,4 +26,4 @@ OK      Ohne Netz: Morgenrunde
 OK      Ohne Netz: Heute
 OK      Heute bleibt Heute, auch während der Stunde
 ---
-Fehler insgesamt: 2
+Fehler insgesamt: 1

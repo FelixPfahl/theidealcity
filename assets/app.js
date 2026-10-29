@@ -70,22 +70,34 @@
     var c = st.clips[i]; var src = ac.createBufferSource(); src.buffer = st.buf; src.playbackRate.value = Math.pow(2, ((Math.random() * 4 - 2) + (opt.semi || 0)) / 12);
     var g = ac.createGain(); var vol = (opt.vol || 1) * Math.pow(10, (Math.random() * 6 - 3) / 20); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(vol, now + .01);
     var dur = Math.min(c[1], opt.max || c[1]); g.gain.setValueAtTime(vol, now + dur - .03); g.gain.linearRampToValueAtTime(0, now + dur);
-    var pan = null; if (ac.createStereoPanner && opt.x !== undefined){ pan = ac.createStereoPanner(); pan.pan.value = Math.max(-.4, Math.min(.4, (opt.x / window.innerWidth - .5) * .8)); }
-    src.connect(g); if (pan){ g.connect(pan); pan.connect(bus(ac, opt.bus || 'tools')); } else g.connect(bus(ac, opt.bus || 'tools'));
+    var pan = null; if (ac.createStereoPanner && opt.x !== undefined){ pan = ac.createStereoPanner(); pan.pan.value = panFor(opt.x); }
+    /* Josef, 29.10., 14:14: weiter weg klingt dumpfer (Tiefpass nach Abstand) */
+    var lpN = null; if (opt.lp && opt.lp < 15000){ lpN = ac.createBiquadFilter(); lpN.type = 'lowpass'; lpN.frequency.value = opt.lp; }
+    var tail = g; src.connect(g); if (lpN){ tail.connect(lpN); tail = lpN; } if (pan){ tail.connect(pan); tail = pan; } tail.connect(bus(ac, opt.bus || 'tools'));
     src.start(now, c[0], dur); 
     /* Polyphonie: höchstens 3 Stimmen je Werkzeug, die älteste wird ausgeblendet */
     st.voices.push({g:g, src:src, t:now}); while (st.voices.length > 3){ var v = st.voices.shift(); try { v.g.gain.setTargetAtTime(0, now, .03); v.src.stop(now + .12); } catch(e){} }
     st.voices = st.voices.filter(function(v){ return v.t + 2 > now; });
     if ((opt.bus || 'tools') === 'tools') duck(ac); }
-  /* Plotter-Loop beim Scrollen: läuft mit Fade, solange gescrollt wird */
-  var LOOP = null;
+  /* Plotter-Loop: läuft mit Fade, solange ein Stift schreibt. Zwei Stifte (Josef, 29.10., 14:12): Schleife 0 für das Sichtbare, Schleife 1 für den Hintergrund-Stift,
+     leicht versetzt in der Tonhöhe, zusammen nicht lauter als einer; je weiter weg, desto leiser und dumpfer; leichtes Stereo nach waagrechter Lage */
+  var LOOPS = [null, null];
   var SPEED = 1.25;   /* Josef, 29.10., 14:07: alles 25 Prozent schneller schreiben */
   var HEAR = 1;   /* Hörbarkeit des gerade schreibenden Absatzes (1 im Bild, 0 weit weg) */
-  function plotterLoop(on){ var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR.plotter; if (!st){ spriteLoad('plotter'); return; } if (!st.buf) return;
-    if (on){ if (!LOOP){ var src = ac.createBufferSource(); src.buffer = st.buf; src.loop = true; var c = st.clips[Math.floor(Math.random() * st.clips.length)]; src.loopStart = c[0]; src.loopEnd = c[0] + c[1]; src.playbackRate.value = .9 + Math.random() * .2;
-        var g = ac.createGain(); g.gain.value = 0; src.connect(g); g.connect(bus(ac, 'tools')); src.start(ac.currentTime, c[0]); LOOP = {src:src, g:g}; }
-      LOOP.g.gain.setTargetAtTime(.27 * HEAR, ac.currentTime, .08);   /* Josef, 28.10., 01:45: ein Drittel */ clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
-    else if (LOOP){ LOOP.g.gain.setTargetAtTime(0, ac.currentTime, .15); var L = LOOP; LOOP = null; setTimeout(function(){ try { L.src.stop(); } catch(e){} }, 700); } }
+  function lpFor(h){ return h >= .995 ? 20000 : 450 * Math.pow(40, Math.max(0, h)); }
+  function panFor(x){ return x === undefined || x === null ? 0 : Math.max(-.4, Math.min(.4, (x / window.innerWidth - .5) * .8)); }
+  function plotterLoop(on, k, hv, px, share){ k = k || 0; var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR.plotter; if (!st){ spriteLoad('plotter'); return; } if (!st.buf) return;
+    var L = LOOPS[k];
+    if (on){ var h = hv === undefined ? HEAR : hv, now = ac.currentTime;
+      if (!L){ var src = ac.createBufferSource(); src.buffer = st.buf; src.loop = true; var c = st.clips[(Math.floor(Math.random() * st.clips.length) + k) % st.clips.length]; src.loopStart = c[0]; src.loopEnd = c[0] + c[1]; src.playbackRate.value = (k ? .8 : .92) + Math.random() * .08;
+        var g = ac.createGain(); g.gain.value = 0; var lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = lpFor(h); var pn = ac.createStereoPanner ? ac.createStereoPanner() : null;
+        src.connect(g); g.connect(lp); if (pn){ pn.pan.value = panFor(px); lp.connect(pn); pn.connect(bus(ac, 'tools')); } else lp.connect(bus(ac, 'tools')); src.start(now, c[0]); L = LOOPS[k] = {src:src, g:g, lp:lp, pn:pn}; }
+      L.g.gain.setTargetAtTime(.27 * h * (share || 1), now, .08);   /* Josef, 28.10., 01:45: ein Drittel */
+      L.lp.frequency.setTargetAtTime(lpFor(h), now, .1); if (L.pn) L.pn.pan.setTargetAtTime(panFor(px), now, .15);
+      clearTimeout(L.t); L.t = setTimeout(function(){ plotterLoop(false, k); }, 260); }
+    else if (L){ L.g.gain.setTargetAtTime(0, ac.currentTime, .15); LOOPS[k] = null; setTimeout(function(){ try { L.src.stop(); } catch(e){} }, 700); } }
+  window.JK_LOOPS = function(){ return LOOPS.map(function(L){ return L ? {g:+L.g.gain.value.toFixed(3), lp:Math.round(L.lp.frequency.value), pan:L.pn ? +L.pn.pan.value.toFixed(2) : 0} : null; }); };   /* für Tests */
+  function plotterLoopsOff(){ plotterLoop(false, 0); plotterLoop(false, 1); }
   window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
   var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
@@ -100,7 +112,7 @@
   /* Idle (Josef, 27.10.): 20 s ohne Eingabe, dann zieht der Plotter am linken Rand eine Linie nach unten, die Atmo wird lauter; die erste Bewegung beendet es */
   (function(){ if (true) return; /* Idle gestrichen (Josef, 28.10., 01:53) */ var T = null, cv = null, raf = null, y = 0, x = 0, pts = [];
     function stop(){ clearTimeout(T); T = setTimeout(start, 20000); if (!cv) return; var c = cv; cv = null; cancelAnimationFrame(raf); c.style.opacity = 0; setTimeout(function(){ if (c.parentNode) c.parentNode.removeChild(c); }, 600);
-      plotterLoop(false); if (BUS && BUS.atmos) BUS.atmos.gain.setTargetAtTime(.5, BUS.ctx.currentTime, .4); }
+      plotterLoopsOff(); if (BUS && BUS.atmos) BUS.atmos.gain.setTargetAtTime(.5, BUS.ctx.currentTime, .4); }
     function start(){ if (cv || document.hidden) return; cv = document.createElement('canvas'); cv.className = 'idleline'; document.body.appendChild(cv);
       var d = Math.min(2, window.devicePixelRatio || 1), W = 48, H = window.innerHeight; cv.width = W * d; cv.height = H * d; var c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0);
       c.strokeStyle = getComputedStyle(document.body).color; c.lineWidth = 1.2; c.lineCap = 'round'; x = 24; y = 0; pts = [[x, y]]; var t0 = performance.now(), last = t0;
@@ -437,6 +449,16 @@
       a.addEventListener('mouseleave', function(){ pbT = setTimeout(function(){ peekbig.classList.remove('on'); if (peek) peek.classList.remove('off'); }, 250); });
     });
   }
+  /* ---------- Überschriften: nie mitten im Wort umbrechen (Test 29.10., 14:40: VERMITTLUN/G am Handy). Wörter bleiben ganz;
+     ist das längste Wort breiter als der Platz, wird die Schrift der Überschrift so weit verkleinert, dass es passt ---------- */
+  safe(function(){
+    var heads = [].slice.call(document.querySelectorAll('.fat')).map(function(f){ return f.parentElement; }).filter(function(h, i, a){ return h && a.indexOf(h) === i; });
+    if (!heads.length) return; var lastW = 0;
+    function fit(force){ if (!force && window.innerWidth === lastW) return; lastW = window.innerWidth;
+      heads.forEach(function(h){ h.style.fontSize = ''; var avail = h.clientWidth; if (!avail) return; var max = 0; h.querySelectorAll('.w').forEach(function(w){ if (w.offsetWidth > max) max = w.offsetWidth; });
+        if (max > avail){ var fs = parseFloat(getComputedStyle(h).fontSize); h.style.fontSize = Math.floor(fs * avail / max * 0.97) + 'px'; } }); }
+    fit(true); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fit(true); });
+    window.addEventListener('load', function(){ fit(true); }); var t = null; window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(function(){ fit(false); }, 120); }); });
   /* ---------- Zufällige Neigung der Werke (dezent) ---------- */
   document.querySelectorAll('.work.rot').forEach(function(w,i){ w.style.setProperty('--tilt', (((i*7919)%7)-3)*0.5+'deg'); });
 
@@ -595,16 +617,58 @@
   safe(function(){
     var bar = document.querySelector('.progress i'), bar2 = null; if (!bar) return; var t = false;
     var secs = Array.prototype.slice.call(document.querySelectorAll('section.series'));
+    /* Josef, 29.10., 14:53: zu große Abschnitte (LICK IT CUT IT am Handy über 20 Bildschirme) werden weiter unterteilt, damit der Balken nicht das Gefühl gibt,
+       man würde nie fertig: erst nach Art (Text, Arbeiten, Ansichten, Tonspur, Skript, Ausstellungen), dann in Stücke von höchstens 2,5 Bildschirmhöhen ("Arbeiten 2/4") */
+    var WORK = document.body.classList.contains('workpage'), parts = [], MAXK = 2.5;
+    function kindOf(el){ var c = el.classList, tg = el.tagName;
+      if (c.contains('grid') || c.contains('einzelgrid')) return WORK ? 'Arbeiten' : 'Bilder';
+      if (c.contains('powtiles') || (tg === 'H3' && c.contains('meta'))) return 'Ausstellungen';
+      if (c.contains('bleed') || c.contains('photocredit')) return 'Ansichten';
+      if (c.contains('tonspur')) return 'Tonspur'; if (c.contains('script')) return 'Skript';
+      if (c.contains('refs') || c.contains('nextpart') || c.contains('sbboard')) return null;   /* gehört zum vorigen Teil */
+      return 'Text'; }
+    function layout(){ var vh = document.documentElement.clientHeight, sy = window.pageYOffset || 0, raw = [];
+      function y(el){ return el.getBoundingClientRect().top + sy; }
+      if (secs.length){ secs.forEach(function(sec){ var name = nameOf(sec), list = [];
+          [].forEach.call(sec.children, function(ch){ if (!ch.offsetHeight) return; var k = kindOf(ch), t = y(ch), b2 = t + ch.offsetHeight; var last = list[list.length - 1];
+            if (last && (k === null || k === last.k)){ last.b = Math.max(last.b, b2); return; } list.push({k:k || 'Text', t:t, b:b2}); });
+          if (list.length){ list[0].t = y(sec); list[list.length - 1].b = Math.max(list[list.length - 1].b, y(sec) + sec.offsetHeight); }
+          var one = list.length === 1;
+          list.forEach(function(q){ var n = Math.max(1, Math.ceil((q.b - q.t) / (vh * MAXK))), base = one ? name : name + ' \u00b7 ' + q.k;
+            for (var i = 0; i < n; i++) raw.push({t:q.t + (q.b - q.t) * i / n, b:q.t + (q.b - q.t) * (i + 1) / n, name:n > 1 ? base + (one ? ' \u00b7 ' : ' ') + (i + 1) + '/' + n : base}); }); }); }
+      else { var H = document.documentElement.scrollHeight, n2 = Math.max(1, Math.ceil(H / (vh * MAXK))); for (var j = 0; j < n2; j++) raw.push({t:H * j / n2, b:H * (j + 1) / n2, name:n2 > 1 ? pageName + ' \u00b7 ' + (j + 1) + '/' + n2 : pageName}); }
+      for (var k2 = 0; k2 + 1 < raw.length; k2++) if (raw[k2 + 1].t > raw[k2].b) raw[k2].b = raw[k2 + 1].t;   /* keine Lücken zwischen Teilen */
+      parts = raw; }
     var comic = document.body.classList.contains('comicbody'), isText = document.body.classList.contains('textbody');
     var texts = Array.prototype.slice.call(document.querySelectorAll('.sertext'));
-    function upd(){ t = false; var h = document.documentElement, vh = h.clientHeight, p = 0, p2 = 0, col = '#00A651';   /* Josef, 29.10., 12:13: ein grüner Balken je Teilabschnitt, kein zweiter Lesebalken */
-      var cur = null; secs.forEach(function(s){ var r = s.getBoundingClientRect(); if (r.top <= vh * .5 && r.bottom > vh * .5) cur = s; });
-      if (cur){ var r = cur.getBoundingClientRect(); p = Math.min(100, Math.max(0, (vh * .5 - r.top) / Math.max(1, r.height - vh * .5) * 100)); }
-      else if (!secs.length){ var max = h.scrollHeight - vh; p = max > 0 ? Math.min(100, (h.scrollTop || 0) / max * 100) : 0; }
-      var ct = null; texts.forEach(function(x){ var r = x.getBoundingClientRect(); if (r.top <= vh * .6 && r.bottom > vh * .3) ct = x; });
-      if (ct){ var rr = ct.getBoundingClientRect(); p2 = Math.min(100, Math.max(0, (vh * .6 - rr.top) / Math.max(1, rr.height) * 100)); }
-      bar.style.width = p + '%'; bar.style.background = col; if (bar2){ bar2.style.width = p2 + '%'; bar2.parentNode.classList.toggle('on', !!ct); } }
-    window.addEventListener('scroll', function(){ if (!t){ t = true; requestAnimationFrame(upd); } }, {passive:true}); window.addEventListener('resize', upd); upd();
+    function upd(){ t = false; var h = document.documentElement, vh = h.clientHeight, p = 0, col = '#00A651';   /* Josef, 29.10., 12:13: ein grüner Balken je Teilabschnitt, kein zweiter Lesebalken */
+      if (!parts.length) layout(); var sy = window.pageYOffset || 0, mid = sy + vh * .5, cur = null;
+      if (!secs.length){ var max = h.scrollHeight - vh; mid = max > 0 ? (sy / max) * h.scrollHeight : 0; }   /* Seiten ohne Abschnitte: Fortschritt der ganzen Seite, damit der letzte Teil voll wird */
+      for (var i = 0; i < parts.length; i++){ if (mid >= parts[i].t && mid < parts[i].b){ cur = parts[i]; break; } }
+      if (!cur && parts.length && mid >= parts[parts.length - 1].b && !secs.length) cur = parts[parts.length - 1];
+      if (cur) p = Math.min(100, Math.max(0, (mid - cur.t) / Math.max(1, cur.b - cur.t) * 100));
+      bar.style.width = p + '%'; bar.style.background = col;
+      label(cur ? cur.name : null); }
+    window.JK_PARTS = function(){ return parts.map(function(q){ return [q.name, Math.round(q.t), Math.round(q.b)]; }); };
+    /* Josef, 29.10., 14:17: im Balken steht, welche Sektion er misst (Relief, klein; auf Grün weiß, daneben grau); beim Wechsel schreibt der Plotter den neuen Namen.
+       Zwei strichgleiche Kopien (gleicher seed): grau in der Spur, weiß im grünen Teil (der schneidet sie ab) */
+    var prog = bar.parentNode, labName = null, labT = null, labSeed = 7, labs = [];
+    var pageName = (document.title.split(/[:·|]/)[0] || '').trim();
+    function nameOf(sec){ if (!sec) return pageName; if (typeof sec === 'string') return sec; var l = document.querySelector('.subnav a[href="#' + sec.id + '"]'); if (l && l.getAttribute('data-name')) return l.getAttribute('data-name');
+      var h = sec.querySelector('h2'); return (h && (h.getAttribute('aria-label') || h.textContent) || pageName).trim(); }
+    function label(sec){ var n = nameOf(sec); if (n === labName) return; labName = n; clearTimeout(labT); labT = setTimeout(function(){ show(n); }, labs.length ? 220 : 0); }
+    function show(n){ labs.forEach(function(e){ if (window.JK_PLOT_DROP) window.JK_PLOT_DROP(e); e.remove(); }); labs = [];
+      var g = document.createElement('span'); g.className = 'plab plab-g'; g.textContent = n; g.setAttribute('aria-hidden', 'true');
+      var w = document.createElement('span'); w.className = 'plab plab-w'; w.textContent = n; w.setAttribute('aria-hidden', 'true');
+      prog.insertBefore(g, bar); bar.appendChild(w); labs = [g, w]; labSeed++;
+      var ok = !REDUCED && window.JK_PLOT_ONCE && window.JK_PLOT_ONCE(g, 650, labSeed); if (ok) window.JK_PLOT_ONCE(w, 650, labSeed);
+      prog.setAttribute('data-sec', n); }
+    window.JK_PLAB = function(){ return labName; };
+    var lt = null; function relayout(){ clearTimeout(lt); lt = setTimeout(function(){ layout(); upd(); }, 250); }
+    window.addEventListener('scroll', function(){ if (!t){ t = true; requestAnimationFrame(upd); } }, {passive:true}); window.addEventListener('resize', relayout); window.addEventListener('load', relayout);
+    if (window.ResizeObserver) new ResizeObserver(relayout).observe(document.body); layout(); upd();
+    /* Plotter-Schrift lädt später als der Balken: sobald sie da ist, den aktuellen Namen einmal plotten */
+    var tries = 0; (function wait(){ if (window.JK_PLOT_F){ if (labs.length && !labs[0].classList.contains('plotted')) show(labName); return; } if (++tries < 60) setTimeout(wait, 250); })();
   });
 
   /* ---------- Drei Modi: weiß, schwarz, rot (im Browser gemerkt, ohne Personenbezug) ---------- */
@@ -974,6 +1038,14 @@
     if (!targets.length || !window.fetch || !window.Path2D) return;
     var F = null, built = [], raf = false, humT = null, hum = null, lastScrollT = performance.now(), lastScrollY = window.scrollY, speed = 0;
     var rnd = Math.random, R = function(a, b){ return a + rnd() * (b - a); };
+    /* Josef, 29.10., 14:12: der Plotter schreibt die ganze Seite. Neben dem Sichtbaren arbeitet ein Hintergrund-Stift (BG) Absatz für Absatz: erst oberhalb, dann unterhalb des Fensters.
+       Er beginnt, sobald der erste sichtbare Absatz fertig ist. Ganz fertige Seiten bleiben im selben Besuch fertig (sessionStorage jk_plotdone). */
+    var PKEY = 'jk_plotdone', PAGEK = location.pathname.split('/').pop() || 'index.html';
+    function pageDone(){ try { return JSON.parse(sessionStorage.getItem(PKEY) || '[]').indexOf(PAGEK) >= 0; } catch(e){ return false; } }
+    function markDone(){ try { var a = JSON.parse(sessionStorage.getItem(PKEY) || '[]'); if (a.indexOf(PAGEK) < 0){ a.push(PAGEK); sessionStorage.setItem(PKEY, JSON.stringify(a)); } } catch(e){} }
+    var DONE0 = pageDone(), pageFin = DONE0, BG = null, bgArmed = false, T0 = performance.now(), firstBuild = true;
+    window.JK_PLOT_BG = function(){ return BG ? BG.el : null; };
+    window.JK_PLOT_STATE = function(){ return {bg: BG ? built.indexOf(BG) : -1, armed: bgArmed, fin: pageFin, done0: DONE0, n: built.filter(function(b){ return !b.once; }).length, finished: built.filter(function(b){ return !b.once && b.fin; }).length}; };
     var DPR = Math.min(2, window.devicePixelRatio || 1);
     var svgNS = 'http://www.w3.org/2000/svg';
     var meas = document.createElementNS(svgNS, 'svg'); meas.setAttribute('width', 0); meas.setAttribute('height', 0); meas.style.position = 'absolute'; meas.style.left = '-9999px';
@@ -1115,11 +1187,17 @@
         a.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; wipe(); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); a.addEventListener('pointerdown', function(e){ wipe(); spritePlay('feder', {vol:.9, max:.3, x:e.clientX, force:true}); }); });
       built.push({el:el, cv:cv, lv:lv, W:W, H:HC, sc:sc, items:items, total:cum, hero:hero, done:0, t0:hero ? performance.now() : 0, f:-1, ft:0, played:{}, col:colors(el), alive:false, dirty:true, cleared:[]});
     }
-    window.JK_PLOT_ONCE = function(el, ms){ if (!F || !el || el.classList.contains('plotted')) return; try { build(el); } catch(e){ return; } var b = built[built.length - 1]; if (!b || b.el !== el) return; b.hero = true; b.t0 = performance.now(); b.ms = ms || 900; update(); };
+    function seeded(seed){ var a = seed >>> 0; return function(){ a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+    /* seed: zwei Elemente mit gleichem seed werden strichgleich geplottet (Sektionsname im Fortschrittsbalken, weiß auf Grün und grau daneben) */
+    window.JK_PLOT_ONCE = function(el, ms, seed){ if (!F || !el || el.classList.contains('plotted')) return false; if (seed) rnd = seeded(seed); try { build(el); } catch(e){ rnd = Math.random; return false; } rnd = Math.random; var b = built[built.length - 1]; if (!b || b.el !== el) return false; b.hero = true; b.once = true; b.t0 = performance.now(); b.ms = ms || 900; update(); return true; };
+    window.JK_PLOT_DROP = function(el){ built = built.filter(function(b){ return b.el !== el; }); };
     function unbuild(b){ var src = b.el.querySelector('.plotsrc'); b.el.querySelectorAll('.plotsup').forEach(function(s){ s.classList.remove('plotsup'); s.style.left = s.style.top = ''; src.appendChild(s); }); b.el.querySelectorAll('.plotlink,.plothand').forEach(function(a){ a.remove(); }); b.cv.remove(); b.lv.remove(); if (src){ while (src.firstChild) b.el.appendChild(src.firstChild); src.remove(); } b.el.classList.remove('plotted'); b.el.style.minHeight = ''; }
     /* Neuaufbau (nur bei geänderter Breite) behält den Fortschritt: was geschrieben war, steht sofort wieder da (Josef, 29.10., 12:10: am Handy verschwand der Text beim Hochscrollen und Tippen, weil die Adressleiste die Fensterhöhe ändert) */
     function buildAll(){ var prev = []; built.forEach(function(b){ prev.push([b.el, b.f, b.fin]); }); built.forEach(unbuild); built = []; targets.forEach(function(el){ try { build(el); } catch(e){ try { console.warn('plot', e); } catch(_){} } });
-      built.forEach(function(b){ for (var i = 0; i < prev.length; i++){ if (prev[i][0] === b.el){ if (prev[i][1] > 0){ b.f = prev[i][1]; b.dirty = true; if (b.hero) b.t0 = performance.now() - (b.ms || 2800) / SPEED * prev[i][1]; if (prev[i][2]){ b.fin = true; b.el.classList.add('plotdone'); } } break; } } }); update(); }
+      built.forEach(function(b){ for (var i = 0; i < prev.length; i++){ if (prev[i][0] === b.el){ if (prev[i][1] > 0){ b.f = prev[i][1]; b.dirty = true; if (b.hero) b.t0 = performance.now() - (b.ms || 2800) / SPEED * prev[i][1]; if (prev[i][2]){ b.fin = true; b.el.classList.add('plotdone'); } } break; } } });
+      if (firstBuild && DONE0){ var nw = performance.now(); built.forEach(function(b){ b.f = 1; b.fin = true; b.quiet = true; b.dirty = true; b.el.classList.add('plotdone'); if (b.hero) b.t0 = nw - 1e7; }); }
+      if (firstBuild) setTimeout(function(){ if (!raf){ raf = true; requestAnimationFrame(update); } }, 8100);   /* Hintergrund-Stift auch ohne sichtbaren Text oben (nach 8 s) */
+      firstBuild = false; update(); }
     function strokeItem(c, b, it, d){ /* einen Glyph (ganz oder teilweise) auf einen Kontext zeichnen */
       var col = b.col, sc = it.sc || b.sc, full = d >= it.len, stroke = it.acc ? col.acc : (it.tone > 0 ? col.warm : (it.tone < 0 ? col.cool : col.ink));
       if (it.o0 === undefined) it.o0 = speed > 2.2 ? R(.45, .65) : 1;
@@ -1146,43 +1224,54 @@
         if (b.done - done > 400){ c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); b.done = 0; }
         else { c.setTransform(DPR, 0, 0, DPR, 0, 0); for (var k = b.done - 1; k >= done; k--){ var g = items[k]; if (g.gap) continue; c.clearRect(g.x - 4, g.y - b.sc * F.asc - 6, g.adv + 8, b.sc * (F.asc - F.desc) + 12); }
           for (var m = Math.max(0, done - 3); m < done; m++){ if (!items[m].gap){ travelTo(c, b, m); strokeItem(c, b, items[m], items[m].len); } } b.done = done; } }
-      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35 && (b.hear === undefined || b.hear > .02)) spritePlay('feder', {vol:.3 * (b.hear === undefined ? 1 : b.hear), max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
+      /* Ton nur beim echten Weiterschreiben; Nachholen (Absatz kommt mit fertigem Text ins Bild) bleibt still */
+      var live = b.fwd && !b.quiet && done - b.done <= 8, hv = b.hear === undefined ? 1 : b.hear;
+      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && live && hv > .02 && Math.random() < .35) spritePlay('feder', {vol:.3 * hv, max:.35, x:it.x + (b.left || 0), lp:lpFor(hv)}); if (it.gap){ if (it.snd && !b.played[i]){ b.played[i] = true; if (AC && live && hv > .02) penSound(it.snd, hv); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
       b.done = done;
       if (b.cleared.length){ c.setTransform(DPR, 0, 0, DPR, 0, 0); b.cleared.forEach(function(q){ c.clearRect(q[0], q[1], q[2], q[3]); }); }
       L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lv.width, lv.height);
       var penAt = null;
       if (done < n){ var cur = items[done], d = D - cur.cum;
-        if (cur.gap){ if (d > 0) penAt = cur.at; if (cur.snd && d > 0 && b.fwd && !b.played[done]){ b.played[done] = true; if (AC && (b.hear === undefined || b.hear > .02)) penSound(cur.snd, b.hear); } }
+        if (cur.gap){ if (d > 0) penAt = cur.at; if (cur.snd && d > 0 && b.fwd && !b.quiet && !b.played[done]){ b.played[done] = true; if (AC && (b.hear === undefined || b.hear > .02)) penSound(cur.snd, b.hear); } }
         else if (d > 0){ travelTo(L, b, done); strokeItem(L, b, cur, d); mpath.setAttribute('d', cur.g.d); var pt = mpath.getPointAtLength(d); penAt = [cur.x + pt.x * (cur.sc || b.sc), cur.y - pt.y * (cur.sc || b.sc)]; } }
       for (var j = done; j < n; j++) if (D - items[j].cum <= 0 && items[j].gap) b.played[j] = false;
+      b.penX = penAt ? penAt[0] + (b.left || 0) : null;
       if (penAt){ L.setTransform(DPR, 0, 0, DPR, 0, 0); L.globalAlpha = 1; L.fillStyle = b.col.acc; L.beginPath(); L.arc(penAt[0], penAt[1], b.hero ? 6 : 3, 0, 6.283); L.fill(); }
     }
     function update(){ raf = false; var vh = window.innerHeight, moved = false, lag = false, now = performance.now();
       var dy = Math.abs(window.scrollY - lastScrollY), dt = Math.max(1, now - lastScrollT); speed = speed * .6 + (dy / dt) * .4; lastScrollY = window.scrollY; lastScrollT = now;
-      var hearMax = 0;
+      var grp = [0, 0], gx = [null, null];
       /* sichtbarer Bereich je Fenstergröße und Auflösung (Josef, 29.10., 14:02): unter Kopfzeile und Unternavigation, mit Zoom am Handy (visualViewport); Ausblendweg = ein Drittel der sichtbaren Höhe */
-      var VV = window.visualViewport, cs = getComputedStyle(document.documentElement), hh = (parseFloat(cs.getPropertyValue('--headh')) || 0) + (parseFloat(cs.getPropertyValue('--subh')) || 0);
+      var VV = window.visualViewport, cs = getComputedStyle(document.documentElement), hh = (parseFloat(cs.getPropertyValue('--headh')) || 0) + (parseFloat(cs.getPropertyValue('--subh')) || 0) + (document.body.classList.contains('start') ? 0 : (parseFloat(cs.getPropertyValue('--pbh')) || 0));
       var VIS = {top:(VV ? VV.offsetTop : 0) + Math.min(hh, vh * .3), bot:VV ? VV.offsetTop + VV.height : vh}; VIS.fade = Math.max(60, (VIS.bot - VIS.top) * .35);
-      built.forEach(function(b){ var r = b.el.getBoundingClientRect();
-        if (r.bottom < -vh * 2 || r.top > vh * 3){ if (b.alive && !b.hero){ b.cv.width = 0; b.cv.height = 0; b.lv.width = 0; b.lv.height = 0; b.alive = false; b.dirty = true; } return; }   /* weit weg: Speicher frei */
+      built.forEach(function(b){ var r = b.el.getBoundingClientRect(); b.rt = r.top; b.rb = r.bottom; b.left = r.left;
+        if (r.bottom < -vh * 2 || r.top > vh * 3){ if (b.alive && !b.hero){ b.cv.width = 0; b.cv.height = 0; b.lv.width = 0; b.lv.height = 0; b.alive = false; b.dirty = true; } }   /* weit weg: Speicher frei, geschrieben wird trotzdem weiter (ohne Zeichnen) */
         var f;
         if (b.hero){ f = Math.min(1, (now - b.t0) / ((b.ms || 2800) / SPEED)); if (f < 1) moved = true; }
         else {
           /* Josef, 28.10., 01:41: nichts mehr mit dem Scrollen zu tun. Sobald der Absatz im Bild ist, schreibt der Plotter in eigenem Tempo bis zum Ende, nie rückwärts */
           var cur = b.f < 0 ? 0 : b.f; var seen = r.top < vh * .9 && r.bottom > 0; f = cur;
-          if (seen || cur > 0){ var step = Math.min(1, 1.8 * SPEED / Math.max(1, b.items.length)); f = Math.min(1, cur + step); if (f < 1) lag = true; }
+          if (seen || cur > 0 || b === BG){ var step = Math.min(1, 1.8 * SPEED / Math.max(1, b.items.length)); f = Math.min(1, cur + step); if (f < 1) lag = true; }
           if (f >= 1 && !b.fin){ b.fin = true; b.el.classList.add('plotdone'); } }
         if (REDUCED) f = 1;
         /* Josef, 29.10., 14:00: Schreiben außerhalb des Bildschirms wird leiser und schließlich unhörbar (Plotter und Dürers Feder) */
         /* Josef, 29.10., 14:01: nur was man sieht, bleibt laut; maßgeblich ist die Stelle, an der der Stift gerade schreibt; sonst graduell ausblenden */
         var penY = r.top + r.height * Math.max(0, Math.min(1, f)); b.hear = (penY >= VIS.top && penY <= VIS.bot) ? 1 : Math.max(0, 1 - (penY > VIS.bot ? penY - VIS.bot : VIS.top - penY) / VIS.fade);
-        if (f !== b.f && b.hear > hearMax) hearMax = b.hear;
+        if (f !== b.f){ var gk = b === BG ? 1 : 0; if (b.hear > grp[gk]){ grp[gk] = b.hear; gx[gk] = (b.penX !== undefined && b.penX !== null) ? b.penX : r.left + r.width / 2; } }
         if (f !== b.f || b.dirty){ b.fwd = f > b.f; moved = moved || f !== b.f; b.f = f; b.dirty = false; if (r.bottom > -vh && r.top < vh * 2) draw(b); else b.dirty = true; } });
-      HEAR = hearMax; if (moved && AC && HEAR > .02){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
+      /* Hintergrund-Stift: scharf, sobald der erste Absatz fertig ist (oder nach 8 s, wenn oben kein Text steht); nimmt sich den nächsten ungeschriebenen Absatz, erst oberhalb, dann unterhalb */
+      if (!REDUCED && !bgArmed && (built.some(function(b){ return !b.hero && b.fin; }) || now - T0 > 8000)) bgArmed = true;
+      if (bgArmed && !REDUCED && (!BG || BG.fin || built.indexOf(BG) < 0)){ BG = null; var above = null, below = null;
+        for (var q = 0; q < built.length; q++){ var c = built[q]; if (c.hero || c.fin || c.f > 0 || c.rb === undefined) continue; if (c.rb <= VIS.top){ if (!above) above = c; } else if (!below) below = c; }
+        BG = above || below; }
+      if (BG) lag = true;
+      if (!pageFin && built.length && built.every(function(b){ return b.once || (b.hero ? b.f >= 1 : b.fin); })){ pageFin = true; markDone(); }
+      HEAR = Math.max(grp[0], grp[1]);
+      if (moved && AC && HEAR > .02){ if (SPR.plotter && SPR.plotter.buf){ var share = (grp[0] > .02 && grp[1] > .02) ? .71 : 1; for (var k2 = 0; k2 < 2; k2++){ if (grp[k2] > .02) plotterLoop(true, k2, grp[k2], gx[k2], share); } } else { spriteLoad('plotter'); humOn(); } }
       if (lag || built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }
     function penSound(kind, hv){ var ac = ctx(); if (!ac) return; hv = hv === undefined ? 1 : hv; var t = ac.currentTime + .01; vary(); V.len = 1; V.vol = .8 * hv;
-      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:.4 * hv, force:true}); spritePlay('plotter', {vol:.2 * hv, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
-      if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8 * hv, max:.3, force:true}); return; }
+      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:.4 * hv, force:true, lp:lpFor(hv)}); spritePlay('plotter', {vol:.2 * hv, max:.25, semi:-5, lp:lpFor(hv)}); return; } if (kind === 'feder') spriteLoad('feder');
+      if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8 * hv, max:.3, force:true, lp:lpFor(hv)}); return; }
       if (kind === 'swap'){ [0, .09].forEach(function(dt){ noise(ac, t + dt, .025, .5, 'lowpass', 900, 1, .025); osc(ac, 'square', 180, t + dt, .03, .25); }); }
       else if (kind === 'feder'){ /* Feder wird aufgenommen und eingetaucht: Klirren, Tropfen, Kratzen */ noise(ac, t, .05, .35, 'highpass', 2600, 1, .05); osc(ac, 'triangle', 1900, t + .06, .05, .12, .002); noise(ac, t + .18, .22, .4, 'bandpass', 3200, 3, .1); }
       else { var n = 9; for (var k = 0; k < n; k++){ osc(ac, 'square', 70 + k * 4, t + k * .035, .02, .14); } noise(ac, t + .34, .04, .5, 'lowpass', 700, 1, .04); osc(ac, 'sine', 60, t + .34, .12, .45, .004); noise(ac, t + .5, .03, .4, 'lowpass', 900, 1, .03); } }
@@ -1191,6 +1280,8 @@
         var n = ac.createBufferSource(); n.buffer = noiseBuf(ac, 2); n.loop = true; var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 6; var ng = ac.createGain(); ng.gain.value = .25; n.connect(bp); bp.connect(ng); ng.connect(g); o.start(); o2.start(); n.start(); hum = {g:g, ac:ac}; }
       hum.g.gain.setTargetAtTime(.06 * V.vol, hum.ac.currentTime, .05); clearTimeout(humT); humT = setTimeout(function(){ hum.g.gain.setTargetAtTime(0, hum.ac.currentTime, .12); }, 220); }
     window.addEventListener('scroll', function(){ if (!raf){ raf = true; requestAnimationFrame(update); } }, {passive:true});
+    /* Hintergrund-Tab: Stifte pausieren (rAF ruht), Ton aus; zurück im Tab geht es weiter */
+    document.addEventListener('visibilitychange', function(){ if (document.hidden) plotterLoopsOff(); else if (!raf){ raf = true; requestAnimationFrame(update); } });
     var rs = null, lastW = window.innerWidth; window.addEventListener('resize', function(){ clearTimeout(rs); rs = setTimeout(function(){ if (!F || window.innerWidth === lastW) return; lastW = window.innerWidth; buildAll(); }, 250); });   /* nur Breitenänderung baut neu, Höhe (Adressleiste am Handy) nie */
     document.querySelectorAll('.modes button').forEach(function(bt){ bt.addEventListener('click', function(){ setTimeout(function(){ built.forEach(function(b){ b.col = colors(b.el); b.done = 0; if (b.alive){ var c = b.cv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,b.cv.width,b.cv.height); } b.dirty = true; }); update(); }, 30); }); });
     document.addEventListener('pointerdown', function(){ if (built.some(function(b){ return b.hero && b.f < 1; })) requestAnimationFrame(update); }, {passive:true});

@@ -781,7 +781,7 @@ body,main{overflow-x:clip}
 @media (max-width:620px){
   .opener h2,.opener h2.long{font-size:clamp(28px,9.5vw,60px)}
   .opener h2.xlong{font-size:clamp(22px,7vw,40px)}
-  .opener h2 .fat .w,.song .quote .fat .w,.pagehead h1 .fat .w{white-space:normal}
+  .opener h2 .fat .w,.song .quote .fat .w,.pagehead h1 .fat .w{white-space:nowrap}   /* Josef, Test 29.10., 14:40: Wörter nie zerbrechen, app.js verkleinert die Schrift */
   .song{grid-template-columns:56px 1fr;gap:10px 14px}
   .song .playbig{width:56px;height:56px}
   .song .quote{font-size:clamp(22px,7vw,32px)}
@@ -1106,3 +1106,24 @@ html.calm .mute .x{animation:none}
 @keyframes mutewait{50%{opacity:.45}}
 html.calm .mute.wait{animation:none}
 @media (max-width:700px){.mute.wait .mutelab{display:inline;font-size:10px}.mute.wait{width:auto;padding:0 8px 0 5px}}
+/* Josef, 29.10., 14:17: Name der gemessenen Sektion im Fortschrittsbalken */
+.progress{overflow:hidden}
+.progress i{position:relative;overflow:hidden}
+.plab{position:absolute;left:8px;top:0;display:block;width:calc(100vw - 24px);font:9px/12px 'Relief',sans-serif;white-space:nowrap;letter-spacing:.02em;pointer-events:none}
+.plab-g{color:var(--ink);opacity:.55}
+.plab-w{color:#fff}
+/* Josef, 29.10., 14:13: Spielobjekte in noch ungeschriebenen Absätzen erscheinen erst, wenn der Absatz fertig ist */
+.plotted:not(.plotdone) .sbobj{visibility:hidden;pointer-events:none}
+/* Josef, 29.10., 14:36: grüner Balken viel fetter; Kopf, Unternavigation und Sprungziele rücken darunter */
+:root{--pbh:28px}
+@media (max-width:700px){:root{--pbh:24px}}
+.progress{height:var(--pbh)}
+body:not(.start){padding-top:var(--pbh)}
+.top{top:var(--pbh)}
+.subnav{top:calc(var(--headh,70px) + var(--pbh))}
+.sticky-head{top:calc(var(--headh,70px) + var(--subh,50px) + var(--pbh))}
+section[id],.series[id],[id].powlead{scroll-margin-top:calc(var(--headh,70px) + var(--subh,50px) + var(--pbh) + 14px)}
+.plab{left:12px;font-size:15px;line-height:var(--pbh);letter-spacing:.03em}
+@media (max-width:700px){.plab{left:10px;font-size:13px}}
+.progress{background:linear-gradient(rgba(128,128,128,.18),rgba(128,128,128,.18)),var(--paper)}   /* deckend: der Inhalt scrollt nicht sichtbar darunter durch */
+.fat .w{white-space:nowrap}   /* Wörter der Überschriften bleiben ganz (Josef, Test 29.10., 14:40) */

@@ -111,5 +111,5 @@
     replace:function(obj){ LOC = obj || {}; try { localStorage.setItem('jk_regler', JSON.stringify(LOC)); } catch(e){} css(); subs.forEach(function(f){ try { f('*'); } catch(e){} }); },
     sub:function(f){ subs.push(f); }, css:css};
   css();
-  if (ON){ document.documentElement.classList.add('regler'); var s = document.createElement('script'); s.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'regler.js'); s.defer = true; document.head.appendChild(s); }
+  if (ON){ document.documentElement.classList.add('regler'); var s = document.createElement('script'); s.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'regler.js') + '?t=' + Math.floor(Date.now() / 60000); s.defer = true; document.head.appendChild(s); }
 })();

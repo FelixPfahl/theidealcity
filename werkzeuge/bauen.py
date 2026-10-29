@@ -9,7 +9,9 @@ app = open(p("app.html"), encoding="utf-8").read()
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import geheim
 KEY = os.environ.get("ATELIER_SCHLUESSEL", "")
-assert len(geheim.norm(KEY)) == 16, "ATELIER_SCHLUESSEL fehlt oder hat nicht 16 Zeichen"
+KLAR = os.environ.get("ATELIER_KLAR") == "1"   # Übergang: Tagesdaten unverschlüsselt (keine Namen enthalten)
+assert KLAR or len(geheim.norm(KEY)) == 16, "ATELIER_SCHLUESSEL fehlt oder hat nicht 16 Zeichen"
+siegel = (lambda d: d) if KLAR else (lambda d: geheim.seal(d, KEY))
 os.makedirs(p("daten", "klar"), exist_ok=True)
 def lade(name):
     k, o = p("daten", "klar", name), p("daten", name)
@@ -35,14 +37,14 @@ for it in heute["items"]:
 bad = [c for c in ("–", "—") if c in json.dumps([heute, morgen], ensure_ascii=False)]
 assert not bad, "Lange Gedankenstriche in den Daten"
 klar = json.dumps({"heute": heute, "morgen": morgen}, ensure_ascii=False).replace("</", "<\\/")
-box = json.dumps(geheim.seal({"heute": heute, "morgen": morgen}, KEY))
+box = json.dumps(siegel({"heute": heute, "morgen": morgen}), ensure_ascii=False).replace("</", "<\\/")
 put = lambda e: re.sub(r"/\*EMBED\*/.*?/\*EMBED_END\*/", lambda m: "/*EMBED*/" + e + "/*EMBED_END*/", app, flags=re.S)
 # artifact.html (Claude, privat) mit Klartext; bleibt lokal, nicht im Repo
 open(p("artifact.html"), "w", encoding="utf-8").write(put(klar))
 frag = put(box)
 # Tagesdaten verschlüsselt ablegen
-json.dump(geheim.seal(heute, KEY), open(p("daten", "heute.json"), "w"))
-if morgen: json.dump(geheim.seal(morgen, KEY), open(p("daten", "morgen.json"), "w"))
+json.dump(siegel(heute), open(p("daten", "heute.json"), "w"), ensure_ascii=False)
+if morgen: json.dump(siegel(morgen), open(p("daten", "morgen.json"), "w"), ensure_ascii=False)
 elif os.path.exists(p("daten", "morgen.json")): os.remove(p("daten", "morgen.json"))
 head_end = frag.index("</style>") + len("</style>")
 doc = ('<!doctype html><html lang="de"><head><meta charset="utf-8">'

@@ -1,29 +1,45 @@
 Testtag laut Daten: 2026-10-29
 FEHLER  Update über die vorige Fassung (anderer Signaturschlüssel)
 Erwartet: Auflösung, Kriterien, Abstimmung / Skizze wählen / Karte beginnen
-OK      Start während der Stunde öffnet Pult
+FEHLER  Start während der Stunde öffnet Pult (erwartet: Auflösung, Kriterien, Abstimmung)
 OK      Leiste: Heute
 OK      Kachel Morgenrunde
-OK      Leiste: Pult
-OK      Leiste: Fernbedienung
-OK      Leiste: zurück von Fernbedienung zu Pult
-OK      Kachel Folien öffnet die Fernbedienung
-OK      Kachel Pult wechselt jederzeit
-OK      +5 Min. verlängert und gleicht aus
-OK      Weiter springt zur nächsten Phase
-OK      Zurück nimmt beides zurück
-OK      Pult-Ansicht Tag
-OK      Pult-Ansicht Spick
-OK      Notiz bleibt nach Neustart
-OK      Querformat: Restzeit sichtbar
-OK      Nach dem Drehen weiter in Pult
-OK      Phase wechselt nach Uhrzeit
-OK      Vibration beim Phasenwechsel ausgelöst
-OK      Zurück-Taste führt zu Heute
+FEHLER  Leiste: Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+FEHLER  Leiste: Fernbedienung (erwartet: Noch nicht gekoppelt)
+FEHLER  Leiste: zurück von Fernbedienung zu Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+  (nicht gefunden: Folien)
+FEHLER  Kachel Folien öffnet die Fernbedienung (erwartet: Noch nicht gekoppelt)
+FEHLER  Kachel Pult wechselt jederzeit (erwartet: Auflösung, Kriterien, Abstimmung|Noch nicht gekoppelt)
+  (nicht gefunden: Jetzt)
+  (nicht gefunden: +5 Min.)
+FEHLER  +5 Min. verlängert und gleicht aus (erwartet: Ausgleich in)
+  (nicht gefunden: Weiter)
+FEHLER  Weiter springt zur nächsten Phase (erwartet: Skizze wählen)
+  (nicht gefunden: Zurück)
+  (nicht gefunden: Zurück)
+FEHLER  Zurück nimmt beides zurück (erwartet: Auflösung, Kriterien, Abstimmung)
+  (nicht gefunden: Tag)
+FEHLER  Pult-Ansicht Tag (erwartet: drucken|Ablauf)
+  (nicht gefunden: Spick)
+FEHLER  Pult-Ansicht Spick (erwartet: Impulsfragen)
+  (nicht gefunden: Notiz)
+  (nicht gefunden: Notiz)
+FEHLER  Notiz bleibt nach Neustart (erwartet: Testnotiz_Emulator)
+  (nicht gefunden: Jetzt)
+FEHLER  Querformat: Restzeit sichtbar (erwartet: bis 8.)
+FEHLER  Nach dem Drehen weiter in Pult (erwartet: Auflösung, Kriterien, Abstimmung|Skizze wählen)
+FEHLER  Phase wechselt nach Uhrzeit (erwartet: Skizze wählen)
+FEHLER  Vibration beim Phasenwechsel nicht nachweisbar
+OK      Benachrichtigung mit laufender Phase im Hintergrund
+FEHLER  Kein Wecker für den Phasenwechsel
+OK      Lautstärketaste ohne Kopplung: App läuft weiter
+  (nicht gefunden: Heute)
+  (nicht gefunden: Morgenrunde)
+FEHLER  Zurück-Taste führt zu Heute (erwartet: Auf dem Schulweg)
 OK      Zweites Zurück schließt die App
-OK      Ohne Netz: Pult mit gespeichertem Stand
-OK      Ohne Netz: Morgenrunde
-OK      Ohne Netz: Heute
-OK      Heute bleibt Heute, auch während der Stunde
+FEHLER  Ohne Netz: Pult mit gespeichertem Stand (erwartet: Skizze wählen|Karte beginnen)
+FEHLER  Ohne Netz: Morgenrunde (erwartet: archiv)
+FEHLER  Ohne Netz: Heute (erwartet: Auf dem Schulweg)
+FEHLER  Heute bleibt Heute, auch während der Stunde (erwartet: Auf dem Schulweg)
 ---
-Fehler insgesamt: 1
+Fehler insgesamt: 23

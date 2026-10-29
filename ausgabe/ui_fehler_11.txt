@@ -1,0 +1,29 @@
+android.webkit.WebView | Morgenrunde
+android.widget.TextView | MORGEN RUNDE
+android.widget.TextView | KW 44 · DONNERSTAG
+android.widget.TextView | 29.10.2026
+android.widget.TextView | Letzter Doppelschlag vor den Ferien: Weihnachten in der 7a, ein Bauplan ohne Fluchtpunkt in der 8.
+android.widget.TextView | IN DIESEM HEFT
+android.view.View | 8.007a Weihnachtskarte 2 von 2
+android.view.View | 9.458 Arbeitsräume 6 von 10, Möbel isometrisch
+android.view.View | BossDas Gespräch mit dem MB
+android.widget.TextView | Außerdem heute: 7.45 Aufsicht Halle, 12.15 Klassenstunde 6a
+android.widget.TextView | 0
+android.widget.TextView | SERIE
+android.widget.TextView | 0
+android.widget.TextView | PUNKTE
+android.widget.TextView | 0 %
+android.widget.TextView | TREFFER
+android.widget.Button | LOS GEHT'S
+android.widget.TextView | RANG
+android.widget.TextView | NÄCHSTER AB 1500 P
+android.widget.TextView | FRISCH IM KOLLEGIUM
+android.widget.TextView | Als Nächstes: Kopierer-Flüsterer
+android.widget.TextView | Schutzschild diese Woche noch da: ein verpasster Schultag bricht die Serie nicht.
+android.widget.Button | WOCHE
+android.widget.Button | ALBUM
+android.widget.Button | ABZEICHEN
+android.widget.Button | ARCHIV
+android.widget.TextView | Heute
+android.widget.TextView | Pult
+android.widget.TextView | Fernbedienung

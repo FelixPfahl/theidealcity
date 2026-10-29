@@ -1,0 +1,3 @@
+android.widget.TextView | Heute
+android.widget.TextView | Pult
+android.widget.TextView | Fernbedienung

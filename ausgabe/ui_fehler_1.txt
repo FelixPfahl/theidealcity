@@ -1,13 +1,3 @@
-android.widget.TextView | Thu, Oct 29
-android.widget.TextView | Gmail
-android.widget.TextView | Photos
-android.widget.TextView | YouTube
-android.view.View | Home
-android.widget.TextView | Phone
-android.widget.TextView | Messages
-android.widget.TextView | Chrome
-android.widget.TextView | Gmail
-android.widget.FrameLayout | Search
-android.widget.ImageView | Google app
-android.widget.ImageView | Voice search
-android.widget.ImageButton | Google Lens
+android.widget.TextView | Wallpaper & style
+android.widget.TextView | Widgets
+android.widget.TextView | Home settings

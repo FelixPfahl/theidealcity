@@ -1,0 +1,23 @@
+android.webkit.WebView | Atelier
+android.widget.TextView | Atelier
+android.widget.TextView | 8.06
+android.widget.TextView | DONNERSTAG, 29.10.
+android.widget.TextView | SCHLÜSSEL NÖTIG
+android.widget.TextView | Tagesdaten verschlüsselt
+android.widget.TextView | Einmal in Pult unter „Tag“ den Atelier-Schlüssel eingeben.
+android.view.View | Apps
+android.view.View | Pult Im Unterricht: Phase, Restzeit, Spickzettel
+android.widget.TextView | Pult
+android.widget.TextView | Im Unterricht: Phase, Restzeit, Spickzettel
+android.view.View | Morgenrunde Auf dem Schulweg: Quiz zum Tag
+android.widget.TextView | Morgenrunde
+android.widget.TextView | Auf dem Schulweg: Quiz zum Tag
+android.view.View | Folien Am PC vorführen, am Handy fernsteuern
+android.widget.TextView | Folien
+android.widget.TextView | Am PC vorführen, am Handy fernsteuern
+android.view.View | Anleitung: Installieren, Koppeln, Bedienen ›
+android.widget.TextView | Anleitung: Installieren, Koppeln, Bedienen ›
+android.widget.TextView | Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).
+android.widget.TextView | Heute
+android.widget.TextView | Pult
+android.widget.TextView | Fernbedienung

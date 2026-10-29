@@ -1,2 +1,2 @@
-Lauf 11: failure (2026-10-29T18:40Z)
-Fehler insgesamt: 1
+Lauf 12: success (2026-10-29T19:17Z)
+Fehler insgesamt: 23

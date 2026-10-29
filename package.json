@@ -21,19 +21,45 @@
   "build": {
     "appId": "de.theidealcity.atelier.folien",
     "productName": "Atelier Folien",
-    "files": ["main.js", "preload.js", "start.html", "icon.png"],
+    "files": [
+      "main.js",
+      "preload.js",
+      "start.html",
+      "icon.png"
+    ],
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "icon.png",
       "artifactName": "Atelier-Folien-Setup.${ext}"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Atelier Folien",
-      "deleteAppDataOnUninstall": false
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "installerLanguages": [
+        "de_DE"
+      ],
+      "language": "1031",
+      "artifactName": "Atelier-Folien-Setup.${ext}"
     },
     "publish": [
       {
@@ -42,6 +68,9 @@
         "repo": "theidealcity",
         "releaseType": "release"
       }
-    ]
+    ],
+    "portable": {
+      "artifactName": "Atelier-Folien-ohne-Installation.${ext}"
+    }
   }
 }

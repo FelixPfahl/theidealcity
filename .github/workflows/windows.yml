@@ -26,7 +26,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: setup
-          path: dist/Atelier-Folien-Setup.exe
+          path: |
+            dist/Atelier-Folien-Setup.exe
+            dist/Atelier-Folien-ohne-Installation.exe
       - name: Installieren und starten (Probe)
         shell: pwsh
         run: |
@@ -53,6 +55,18 @@ jobs:
           if ($r -notlike "*Atelier_Folien_Probe*") { Write-Host "::error::Folien-Datei wurde nicht geöffnet: $r"; exit 1 }
           Stop-Process -Name "Atelier Folien" -Force -ErrorAction SilentlyContinue
           Write-Host "Probe OK"
+
+      - name: Ohne Installation starten (Probe)
+        shell: pwsh
+        run: |
+          $probe = Join-Path $env:RUNNER_TEMP "probe2.json"
+          $env:ATELIER_PROBE = $probe
+          Get-Process -Name "Atelier Folien" -ErrorAction SilentlyContinue | Stop-Process -Force
+          $p = Start-Process "dist\Atelier-Folien-ohne-Installation.exe" -PassThru
+          Start-Sleep 30
+          if (!(Test-Path $probe)) { Write-Host "::error::Ohne Installation: keine Seite geladen"; exit 1 }
+          Write-Host "::notice::Ohne Installation: $(Get-Content $probe -Raw)"
+          Get-Process -Name "Atelier Folien" -ErrorAction SilentlyContinue | Stop-Process -Force
 
   probe-win11:
     needs: build

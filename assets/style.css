@@ -1133,3 +1133,35 @@ section[id],.series[id],[id].powlead{scroll-margin-top:calc(var(--headh,70px) + 
 .grptitle{font-family:var(--body);font-weight:400;font-size:clamp(18px,1.3vw,22px);line-height:1.4;letter-spacing:.06em;margin:0;color:var(--ink);text-transform:none;max-width:62ch}
 .wgroup > .grid,.wgroup > .einzelgrid{margin-top:14px}
 .song > *,.song .sbody{min-width:0}   /* Songzitate: Spalte darf schmaler als das längste Wort werden, app.js verkleinert dann die Schrift (Test 29.10., 15:25) */
+/* Regler-Leiste (Josef, 29.10., 14:44): Werte greifen nur, wenn cfg.js sie gesetzt hat (Inline-Variable am html); sonst gilt alles wie oben */
+html[style*="--pbtrack"] .progress{background:linear-gradient(rgba(128,128,128,var(--pbtrack)),rgba(128,128,128,var(--pbtrack))),var(--paper)}
+html[style*="--pbfs"] .plab{font-size:var(--pbfs)}
+html[style*="--kbody"] .sertext{font-size:calc(clamp(20px,1.55vw,28px) * var(--kbody))}
+html[style*="--lh"] .sertext{line-height:var(--lh)}
+html[style*="--khead"] .opener h2,html[style*="--khead"] .pagehead h1,html[style*="--khead"] .bigcap,html[style*="--khead"] .nextpart,html[style*="--khead"] .serhead .minititle{zoom:var(--khead)}
+html[style*="--kcap"] figcaption,html[style*="--kcap"] .marg,html[style*="--kcap"] .notes{zoom:var(--kcap)}
+html[style*="--gutterx"]{--gutter:var(--gutterx)}
+html[style*="--gridmin"] .grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--gridmin)),1fr))}
+html[style*="--kgap"] .grid{gap:calc(clamp(18px,3vw,44px) * var(--kgap)) calc(clamp(14px,2vw,30px) * var(--kgap))}
+html[style*="--kseries"] .divider{margin:calc(40px * var(--kseries)) 0 calc(10px * var(--kseries))}
+html[style*="--lbt"] .lb2{transition:opacity var(--lbt) ease}
+html[style*="--paperx"]:not([data-mode=dunkel]){--paper:var(--paperx)}
+html[style*="--inkx"]:not([data-mode=dunkel]){--ink:var(--inkx);--line:var(--inkx)}
+html[style*="--knet"] svg.net{stroke-width:var(--knet)}
+html[style*="--dlgw"] .sbdlg .win{width:min(var(--dlgw),100%)}
+html[style*="--dlgb"] .sbdlg{padding-bottom:var(--dlgb)}
+/* Josef, 29.10., 15:29: Balken richtig fett, nur Großbuchstaben, dominant (56 px, Handy 44 px); Grün mit schwarzer Schrift, Spur papierweiß mit schwarzer Linie */
+:root{--pbh:56px}
+@media (max-width:700px){:root{--pbh:44px}}
+.progress{box-sizing:border-box;background:var(--paper);border-bottom:2px solid var(--line)}
+html[style*="--pbtrack"] .progress{background:var(--paper)}
+.progress i{background:var(--green)}
+.plab{position:absolute;left:var(--gutter);top:0;height:calc(var(--pbh) - 2px);width:auto;display:flex;align-items:center;white-space:nowrap;font-family:var(--head);font-weight:400;text-transform:uppercase;font-size:calc(var(--pbh) * var(--pbk, .5));line-height:1;letter-spacing:.01em;pointer-events:none;opacity:1}
+.plab .fat{white-space:nowrap}
+.plab .fat .l{--st:0px;transition:-webkit-text-stroke-width .9s ease-out,opacity .12s linear}
+.plab.go .pser .l{--st:.075em}
+.plab .ppart .l,.plab.go .ppart .l{--st:0px}
+.plab .pslash{display:inline-block;margin:0 .32em;font-family:var(--head);transition:opacity .12s linear}
+.plab-g{color:var(--ink)}
+.plab-w{color:#000}
+html.calm .plab .fat .l{transition:none}

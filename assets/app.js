@@ -108,6 +108,11 @@
   var METER = null; window.JK_METER = function(){ var ac = AC; if (!ac || !BUS || !MASTER) return null;
     if (!METER || METER.ac !== ac){ METER = {ac:ac, n:{}}; [['master', MASTER.node], ['tools', BUS.tools], ['ui', BUS.ui], ['atmos', BUS.atmos], ['game', BUS.game]].forEach(function(q){ var an = ac.createAnalyser(); an.fftSize = 512; q[1].connect(an); METER.n[q[0]] = {an:an, buf:new Float32Array(512)}; }); }
     var out = {}; for (var k in METER.n){ var m = METER.n[k]; m.an.getFloatTimeDomainData(m.buf); var sum = 0; for (var i = 0; i < m.buf.length; i++) sum += m.buf[i] * m.buf[i]; out[k] = Math.sqrt(sum / m.buf.length); } return out; };
+  /* Regler: Holzschnitt-Filter (Verzerrung und Körnung) */
+  function wood(){ var k = CF('fx.wood', 1), g = CF('fx.woodgrain', 1);
+    document.querySelectorAll('filter[id^="holz"] feDisplacementMap').forEach(function(d){ if (!d.hasAttribute('data-base')) d.setAttribute('data-base', d.getAttribute('scale')); d.setAttribute('scale', String(parseFloat(d.getAttribute('data-base')) * k)); });
+    document.querySelectorAll('filter[id^="holz"] feColorMatrix').forEach(function(m){ if (!m.hasAttribute('data-base')) m.setAttribute('data-base', m.getAttribute('values')); var v = m.getAttribute('data-base').trim().split(/\s+/); var off = parseFloat(v[19]); v[19] = String(g <= 0 ? -3 : off - (1 - g) * (3 + off)); m.setAttribute('values', v.join(' ')); }); }
+  if (window.JK_CFG){ document.addEventListener('DOMContentLoaded', wood); window.JK_CFG.sub(function(k){ if (k === '*' || /^fx\.wood/.test(k)) wood(); }); }
   window.JK_BUSLEVELS = function(){ return BUS ? {tools:BUS.tools.gain.value, ui:BUS.ui.gain.value, atmos:BUS.atmos.gain.value, game:BUS.game.gain.value, master:MASTER ? MASTER.node.gain.value : 0} : null; };
   window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
@@ -641,7 +646,7 @@
         for (var j = list.length - 1; j > 0; j--){ if (list[j].b - list[j].t < vh * .6){ list[j - 1].b = list[j].b; list.splice(j, 1); } }   /* zu klein: zum vorigen Teil */
         if (list.length > 1 && list[0].b - list[0].t < vh * .6){ list[1].t = list[0].t; list.splice(0, 1); }
         var one = list.length === 1;
-        list.forEach(function(q){ raw.push({t:q.t, b:q.b, name:one ? prefix : (prefix ? prefix + ' \u00b7 ' : '') + q.name}); }); }
+        list.forEach(function(q){ raw.push({t:q.t, b:q.b, name:one ? prefix : (prefix ? prefix + ' / ' : '') + q.name}); }); }
       if (secs.length){ secs.forEach(function(sec){ if (!sec.offsetHeight) return; var name = nameOf(sec), list = [], top = y(sec);
           /* Randabbildungen zählen nur, wenn sie unter dem Text stehen (Handy), nicht daneben (Desktop) */
           var marks = [].slice.call(sec.querySelectorAll('[data-part], [data-part-stack]')).filter(function(el){ if (!el.offsetHeight) return false; if (!el.hasAttribute('data-part-stack')) return true; var st = el.parentNode.querySelector('.sertext'); if (!st || st.getBoundingClientRect().bottom > el.getBoundingClientRect().top + 10) return false; el.setAttribute('data-part', el.getAttribute('data-part-stack')); return true; });
@@ -674,18 +679,41 @@
     function nameOf(sec){ if (!sec) return pageName; if (typeof sec === 'string') return sec; var l = document.querySelector('.subnav a[href="#' + sec.id + '"]'); if (l && l.getAttribute('data-name')) return l.getAttribute('data-name');
       var h = sec.querySelector('h2'); return (h && (h.getAttribute('aria-label') || h.textContent) || pageName).trim(); }
     function label(sec){ var n = nameOf(sec); if (n === labName) return; labName = n; clearTimeout(labT); labT = setTimeout(function(){ show(n); }, labs.length ? 220 : 0); }
-    function show(n){ labs.forEach(function(e){ if (window.JK_PLOT_DROP) window.JK_PLOT_DROP(e); e.remove(); }); labs = [];
-      var g = document.createElement('span'); g.className = 'plab plab-g'; g.textContent = n; g.setAttribute('aria-hidden', 'true');
-      var w = document.createElement('span'); w.className = 'plab plab-w'; w.textContent = n; w.setAttribute('aria-hidden', 'true');
-      prog.insertBefore(g, bar); bar.appendChild(w); labs = [g, w]; labSeed++;
-      var ok = !REDUCED && window.JK_PLOT_ONCE && window.JK_PLOT_ONCE(g, 650, labSeed); if (ok) window.JK_PLOT_ONCE(w, 650, labSeed);
+    /* Josef, 29.10., 15:29: Balken richtig fett, nur Großbuchstaben, dominant. Computer Duerer in Dürers Schreibung (wie die Überschriften),
+       Serie fett, Teil normal, getrennt durch Schrägstrich; schwarz auf Grün, auf der Spur in Tinte. Ein neuer Name wird erst dünn geschrieben, dann fett nachgezogen. */
+    var CRC = null; function crc32(str){ if (!CRC){ CRC = []; for (var n = 0; n < 256; n++){ var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC[n] = c >>> 0; } }
+      var bytes = unescape(encodeURIComponent(str)), crc = 0xFFFFFFFF; for (var i = 0; i < bytes.length; i++) crc = CRC[(crc ^ bytes.charCodeAt(i)) & 255] ^ (crc >>> 8); return (crc ^ 0xFFFFFFFF) >>> 0; }
+    function duererWord(w){ if (!w || w === '/') return w; var h = crc32(w), r = function(k){ return ((h >>> (k * 5)) & 127) / 127; };   /* wie duerer_word in build_site.py */
+      if (/^[uU]/.test(w) && r(1) < .98) w = (w[0] === 'U' ? 'V' : 'v') + w.slice(1); else if (/^[iI]/.test(w) && w.length > 1 && r(2) < .55) w = (w[0] === 'I' ? 'J' : 'j') + w.slice(1);
+      if (r(3) < .8) w = w.replace(/ei/g, 'ey').replace(/Ei/g, 'Ey').replace(/EI/g, 'EY');
+      if (r(4) < .27){ var pr = [['nn', 'n\u0304'], ['mm', 'm\u0304'], ['NN', 'N\u0304'], ['MM', 'M\u0304']]; for (var q = 0; q < pr.length; q++){ if (w.indexOf(pr[q][0]) >= 0){ w = w.replace(pr[q][0], pr[q][1]); break; } } }
+      return w; }
+    var UML = {'ä':'a', 'ö':'o', 'ü':'u', 'Ä':'A', 'Ö':'O', 'Ü':'U'};
+    function letters(text, cls){ var out = document.createElement('span'); out.className = 'fat ' + cls;
+      text.split(' ').filter(Boolean).forEach(function(w, wi){ if (wi) { var sp = document.createElement('span'); sp.className = 'sp'; out.appendChild(sp); }
+        var ws = document.createElement('span'); ws.className = 'w'; var dw = duererWord(w);
+        Array.from(dw).forEach(function(ch){ var l = document.createElement('span'); l.className = 'l'; if (UML[ch]){ l.className = 'l um'; l.textContent = UML[ch]; var e = document.createElement('span'); e.className = 'ue'; e.textContent = 'e'; l.appendChild(e); } else l.textContent = ch; ws.appendChild(l); });
+        out.appendChild(ws); }); return out; }
+    function build1(n){ var el = document.createElement('span'); el.className = 'plab'; el.setAttribute('aria-hidden', 'true'); var k = n.indexOf(' / ');
+      el.appendChild(letters(k >= 0 ? n.slice(0, k) : n, 'pser'));
+      if (k >= 0){ var sl = document.createElement('span'); sl.className = 'pslash'; sl.textContent = '/'; el.appendChild(sl); el.appendChild(letters(n.slice(k + 3), 'ppart')); }
+      return el; }
+    function fitLab(el){ el.style.fontSize = ''; var avail = prog.clientWidth - el.offsetLeft - 8; if (el.scrollWidth > avail && avail > 40){ var fs = parseFloat(getComputedStyle(el).fontSize); el.style.fontSize = Math.max(9, Math.floor(fs * avail / el.scrollWidth * .98)) + 'px'; } }
+    function show(n){ labs.forEach(function(e){ e.remove(); }); labs = [];
+      var g = build1(n), w = build1(n); g.classList.add('plab-g'); w.classList.add('plab-w');
+      prog.insertBefore(g, bar); bar.appendChild(w); labs = [g, w]; fitLab(g); w.style.fontSize = g.style.fontSize;
+      if (!REDUCED){ var ls = [g, w].map(function(x){ return [].slice.call(x.querySelectorAll('.l, .pslash')); });
+        ls.forEach(function(arr){ arr.forEach(function(l){ l.style.opacity = '0'; }); });
+        var i = 0, N = ls[0].length; (function step(){ for (var j = 0; j < 2 && i < N; j++, i++){ ls[0][i].style.opacity = ''; ls[1][i].style.opacity = ''; } if (i < N) setTimeout(step, 28); else setTimeout(function(){ g.classList.add('go'); w.classList.add('go'); }, 60); })();
+        if (window.JK_SPRITE) window.JK_SPRITE('plotter', {vol:.35, max:.4, force:true, bus:'ui'}); }
+      else { g.classList.add('go'); w.classList.add('go'); }
       prog.setAttribute('data-sec', n); }
     window.JK_PLAB = function(){ return labName; };
     var lt = null; function relayout(){ clearTimeout(lt); lt = setTimeout(function(){ layout(); upd(); }, 250); }
     window.addEventListener('scroll', function(){ if (!t){ t = true; requestAnimationFrame(upd); } }, {passive:true}); window.addEventListener('resize', relayout); window.addEventListener('load', relayout);
     if (window.ResizeObserver) new ResizeObserver(relayout).observe(document.body); layout(); upd();
-    /* Plotter-Schrift lädt später als der Balken: sobald sie da ist, den aktuellen Namen einmal plotten */
-    var tries = 0; (function wait(){ if (window.JK_PLOT_F){ if (labs.length && !labs[0].classList.contains('plotted')) show(labName); return; } if (++tries < 60) setTimeout(wait, 250); })();
+    function refit(){ if (labs[0]){ fitLab(labs[0]); labs[1].style.fontSize = labs[0].style.fontSize; } }
+    window.addEventListener('resize', refit); if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
   });
 
   /* ---------- Drei Modi: weiß, schwarz, rot (im Browser gemerkt, ohne Personenbezug) ---------- */

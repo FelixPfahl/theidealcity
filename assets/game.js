@@ -38,13 +38,16 @@
   var PLACES;
   var NAMES = {sonne:'Sonne', bombe:'Bombe', hai:'Hai', flamme:'Flamme', burger:'Burger', krokodil:'Krokodil', betonmischer:'Betonmischer', brief:'Alter Brief', ziegel:'Ziegel', maus:'Maus', schere:'Schere', sticker:'Sticker', kaese:'Käse', zigarette:'Zigarette', klopapier:'Klopapier', spiegel:'Spiegel', cocktail:'Cocktail', anker:'Anker', krabbe:'Krabbe', bier:'Bier'};
   var TOUCH = !!(window.matchMedia && window.matchMedia('(hover: none)').matches);
+  /* Regler (Josef, 29.10., 14:44): Werte aus cfg.js, sonst die Standards hier */
+  function CF(k, d){ var v = window.JK_CF ? window.JK_CF(k) : undefined; return (v === undefined || v === null || v === '') ? d : v; }
   var SIZE = TOUCH ? {1:85, 2:58, 3:40} : {1:64, 2:44, 3:30};   /* am Handy ein Drittel größer (Josef, 28.10., 01:53) */
+  SIZE = {1:CF('game.size1', SIZE[1]), 2:CF('game.size2', SIZE[2]), 3:CF('game.size3', SIZE[3])};
   var S = load(); if (!S.seed) S.seed = (Math.random() * 4294967295) >>> 0; PLACES = deal();
   function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
-  function points(){ return Math.max(0, count() * 100 - S.hints * HINT_COST); }   /* kein Zeitabzug (Josef, 29.10., 13:14) */
+  function points(){ return Math.max(0, count() * CF('game.pts', 100) - S.hints * CF('game.hint', HINT_COST)); }   /* kein Zeitabzug (Josef, 29.10., 13:14) */
   function fmt(t){ var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   function accent(el){ return getComputedStyle(el.closest('.comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A'; }
 
@@ -68,7 +71,7 @@
     out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(.9, t0 + .03);
     if (c.pop){ out.gain.setValueAtTime(.9, t0 + c.pop); out.gain.linearRampToValueAtTime(.05, t0 + c.pop + .02); out.gain.linearRampToValueAtTime(.9, t0 + c.pop + .06); }
     out.gain.setValueAtTime(.9, t0 + c.dur - .06); out.gain.linearRampToValueAtTime(0, t0 + c.dur + .05);
-    var hi = ac.createBiquadFilter(); hi.type = 'highshelf'; hi.frequency.value = 2500; hi.gain.value = 4; out.connect(hi); hi.connect(A.bus);
+    var hi = ac.createBiquadFilter(); hi.type = 'highshelf'; hi.frequency.value = 2500; hi.gain.value = 4; var gc = ac.createGain(); gc.gain.value = CF('gsnd.cheer', 1); out.connect(hi); hi.connect(gc); gc.connect(A.bus);
     src.start(t0); o2.start(t0); vib.start(t0); src.stop(t0 + c.dur + .1); o2.stop(t0 + c.dur + .1); vib.stop(t0 + c.dur + .1); }
   function tick(){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = 'triangle'; o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(1320, t + .07);
     var g = ac.createGain(); g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + .12); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .14); }
@@ -100,10 +103,11 @@
   var DONE = [['gojira', '…'], ['gojira', '… … …'], ['sigma', 'Das war Gojira. Er hat das Quadrat eingegraben, für dich. Als Relikt vergangener Existenz, würde Wagner sagen. Danke.']];
   var dlg = null;
   function blip(){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = 'square'; o.frequency.value = 520 + Math.random() * 90; var g = ac.createGain(); g.gain.setValueAtTime(.07, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
-  function sp(tool, opt){ if (window.JK_SPRITE){ opt = opt || {}; opt.bus = 'game'; opt.force = true; window.JK_SPRITE(tool, opt); return true; } return false; }
+  var GV = {'g-fund':'gsnd.find', 'g-stempel':'gsnd.stamp'};
+  function sp(tool, opt){ if (window.JK_SPRITE){ opt = opt || {}; opt.bus = 'game'; opt.force = true; if (GV[tool]) opt.vol = (opt.vol || 1) * CF(GV[tool], 1); window.JK_SPRITE(tool, opt); return true; } return false; }
   function spLoad(t){ if (window.JK_SPRITE_LOAD) try { window.JK_SPRITE_LOAD(t); } catch(e){} }
-  function blipFor(c, who){ if (sp('g-' + who, {vol:.55, max:.2, semi:(Math.random() * 2 - 1)})) return;
-    var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = c.blip[1]; o.frequency.value = c.blip[0] * (.94 + Math.random() * .12); var g = ac.createGain(); g.gain.setValueAtTime(c.blip[1] === 'sine' ? .12 : .05, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
+  function blipFor(c, who){ var st = CF('dlg.pitch.' + who, 0), bv = CF('dlg.blipvol', 1); if (bv <= 0) return; if (sp('g-' + who, {vol:.55 * bv, max:.2, semi:st + (Math.random() * 2 - 1)})) return;
+    var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = c.blip[1]; o.frequency.value = c.blip[0] * Math.pow(2, st / 12) * (.94 + Math.random() * .12); var g = ac.createGain(); g.gain.setValueAtTime(c.blip[1] === 'sine' ? .12 : .05, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
   function rumble(){ document.documentElement.classList.add('beben'); setTimeout(function(){ document.documentElement.classList.remove('beben'); }, 2400); if (sp('g-gojira', {vol:1, max:3})) return; var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(38, t); o.frequency.linearRampToValueAtTime(26, t + 2.2); var f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 120; var g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.7, t + .4); g.gain.linearRampToValueAtTime(0, t + 2.4); o.connect(f); f.connect(g); g.connect(A.bus); o.start(t); o.stop(t + 2.5);
     document.documentElement.classList.add('beben'); setTimeout(function(){ document.documentElement.classList.remove('beben'); }, 2400); }
   function dialog(lines, done){ if (dlg){ dq = (dq || []).concat(lines); return; } var k = 0, typing = null; dq = [];
@@ -113,7 +117,7 @@
     document.body.appendChild(dlg); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), cur;
     function show(i){ var who_ = lines[i][0], text = lines[i][1]; cur = CH[who_] || CH.inka; dlg.className = 'sbdlg c-' + who_; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; img.src = '../assets/game/char-' + who_ + '.png'; dlg.style.setProperty('--c', cur.col);
       p.textContent = ''; more.style.visibility = 'hidden'; var n = 0; clearInterval(typing); if (who_ === 'gojira' && k === 0) rumble(); if (who_ === 'inka' && i === 0 && lines.length > 1) sp('g-kraehe', {vol:.5, max:.3});
-      typing = setInterval(function(){ n++; p.textContent = text.slice(0, n); if (who_ !== 'gojira' && n % 2 && text[n - 1] !== ' ') blipFor(cur, who_); if (n >= text.length){ clearInterval(typing); typing = null; more.style.visibility = 'visible'; } }, cur.speed); }
+      typing = setInterval(function(){ n++; p.textContent = text.slice(0, n); if (who_ !== 'gojira' && n % Math.max(1, Math.round(CF('dlg.blipevery', 2))) === 1 % Math.max(1, Math.round(CF('dlg.blipevery', 2))) && text[n - 1] !== ' ') blipFor(cur, who_); if (n >= text.length){ clearInterval(typing); typing = null; more.style.visibility = 'visible'; } }, CF('dlg.ms.' + who_, cur.speed)); }
     function next(e){ if (e) { e.preventDefault(); e.stopPropagation(); } if (typing){ clearInterval(typing); typing = null; p.textContent = lines[k][1]; more.style.visibility = 'visible'; return; }
       k++; if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(function(l){ return typeof l === 'string' ? ['inka', l] : l; })); dq = []; show(k); return; } close(); return; } show(k); }
     function close(){ if (!dlg) return; document.removeEventListener('keydown', onkey); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(); }
@@ -148,6 +152,12 @@
     var p = left[Math.floor(Math.random() * left.length)]; S.hints++; save(); tick();
     dialog([['inka', NAMES[p.id] + ': ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '')], ['wagner', 'Fünfzig Punkte. Koordinaten kosten.']]); }
 
+  /* Regler-Leiste: Dialogprobe und Spielstand (nur für Josefs Feintuning) */
+  window.JK_DIALOG = function(lines){ dialog(lines); };
+  window.JK_SB = {state:function(){ return {found:count(), hints:S.hints || 0, points:points(), done:!!S.done, seed:S.seed, n:N}; },
+    ids:function(){ return PLACES.map(function(p){ return p.id; }); },
+    set:function(found, hints){ var ids = PLACES.map(function(p){ return p.id; }); S.found = {}; for (var i = 0; i < Math.min(found, ids.length); i++) S.found[ids[i]] = Date.now(); S.hints = hints || 0; if (found >= N){ S.done = S.done || Date.now(); } else S.done = 0; save(); },
+    reset:function(){ try { localStorage.removeItem('jk_sb'); } catch(e){} }};
   /* ---------- Gegenstände verstecken ---------- */
   var ZI = 0;
   function place(){ PLACES.filter(function(p){ return p.p === PAGE; }).forEach(function(p){ var all = document.querySelectorAll(p.sel); if (!all.length) all = document.querySelectorAll('footer .footgrid'); if (!all.length) return; var a = all[(p.i - 1) % all.length];
@@ -235,7 +245,7 @@
   function watchSB(i){ var el = document.getElementById('w-suchbild' + i); if (!el || !('IntersectionObserver' in window)) return;
     var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (!e.isIntersecting || !HOLES) return;
       S.back = S.back || {}; var fresh = Object.keys(HOLES).filter(function(k){ return HOLES[k].bild === i && S.found[k] && !S.back[k]; }); if (!fresh.length) return;
-      paintSB(i, function(){ var img = el.querySelector('img'); if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+      paintSB(i, function(){ if (CF('game.flash', 1) < .5){ fresh.forEach(function(k){ S.back[k] = Date.now(); }); save(); return; } var img = el.querySelector('img'); if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
         fresh.forEach(function(k, n){ var h = HOLES[k], r = img.getBoundingClientRect(), er = el.getBoundingClientRect(); var sz = Math.max(30, Math.max(h.w, h.h) / h.W * r.width * 1.3);
           var f = document.createElement('span'); f.className = 'sbflash'; f.style.width = f.style.height = sz + 'px'; f.style.left = (r.left - er.left + (h.x + h.w / 2) / h.W * r.width - sz / 2) + 'px'; f.style.top = (r.top - er.top + (h.y + h.h / 2) / h.H * r.height - sz / 2) + 'px'; f.style.animationDelay = (n * .25) + 's';
           el.appendChild(f); setTimeout(function(){ f.remove(); }, 2200 + n * 250); S.back[k] = Date.now(); });

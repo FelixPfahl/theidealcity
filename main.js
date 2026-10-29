@@ -167,6 +167,39 @@ function createWindow() {
 ipcMain.handle("list", () => candidates().slice(0, 12).map(c => ({ path: c.path, name: c.name, folder: c.folder, mtime: c.mtime })));
 ipcMain.handle("open", () => chooseFile());
 ipcMain.handle("openPath", (e, p) => { if (typeof p === "string" && PATTERN.test(path.basename(p)) && candidates().some(c => c.path === p)) openFile(p); });
+/* Notizen aus Pult (kommen verschlüsselt über die Folien-Datei): als Markdown in Drive ablegen,
+   damit Claude sie bei der Planung lesen kann. Ohne Drive für Desktop: Dokumente\Atelier Folien. */
+const nz = v => (typeof v === "string" ? v : "").slice(0, 4000).replace(/\r/g, "");
+function notizZiel(){
+  for (const d of driveFolders()){
+    const root = path.dirname(d);   /* ...\Schule_Material */
+    try { const z = path.join(root, "Tagesmemos_2026-27"); fs.mkdirSync(z, { recursive: true }); return { file: path.join(z, "Pult_Notizen.md"), wo: "Drive, Tagesmemos_2026-27" }; } catch (e) {}
+  }
+  const z = path.join(app.getPath("documents"), "Atelier Folien");
+  fs.mkdirSync(z, { recursive: true });
+  return { file: path.join(z, "Pult_Notizen.md"), wo: "Dokumente, Atelier Folien" };
+}
+function notizMd(list){
+  const T = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+  const rows = list.filter(n => n && /^\d{4}-\d{2}-\d{2}$/.test(n.date) && /^\d{1,2}:\d{2}$/.test(n.lesson))
+    .sort((a, b) => (b.date + b.lesson.padStart(5, "0")).localeCompare(a.date + a.lesson.padStart(5, "0")));
+  const one = (k, v) => v ? "- **" + k + ":** " + nz(v).replace(/\n+/g, " / ") + "\n" : "";
+  let out = "# Pult-Notizen\n\nAutomatisch geschrieben vom Programm Atelier Folien (Notizen aus Pult). Neueste zuerst. Nicht von Hand bearbeiten, wird überschrieben.\n";
+  for (const n of rows){
+    const d = new Date(n.date + "T12:00:00"), dd = T[d.getDay()] + " " + n.date.slice(8, 10) + "." + n.date.slice(5, 7) + "." + n.date.slice(0, 4);
+    out += "\n## " + dd + ", " + n.lesson.replace(":", ".") + ", " + nz(n.klasse) + (n.titel ? ": " + nz(n.titel) : "") + "\n\n"
+      + one("Zeit gehalten", n.zeit) + one("Ziel erreicht", n.ziel) + one("Notiz", n.text) + one("Aus den Exit-Tickets", n.exit) + one("Fürs Material ändern", n.aendern);
+  }
+  return out;
+}
+ipcMain.handle("notizen", (e, list) => {
+  try {
+    if (!Array.isArray(list) || list.length > 2000) return { ok: false };
+    const z = notizZiel();
+    fs.writeFileSync(z.file, notizMd(list), "utf8");
+    return { ok: true, wo: z.wo };
+  } catch (err) { return { ok: false }; }
+});
 ipcMain.handle("info", () => ({ version: app.getVersion(), downloads: app.getPath("downloads"), updateReady }));
 
 app.whenReady().then(() => {

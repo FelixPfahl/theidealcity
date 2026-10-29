@@ -520,11 +520,56 @@ function renderNotiz(){
     <h2>Kurzcheck nach der Stunde</h2>
     <label>Zeit gehalten?</label>${seg("zeit", ["Ja","Knapp","Nein"])}
     <label>Ziel erreicht?</label>${seg("ziel", ["Ja","Teilweise","Nein"])}
+    <label for="nExit">Aus den Exit-Tickets: was greift die nächste Stunde auf?</label>
+    <textarea id="nExit" data-field="exit" placeholder="z. B. Fluchtpunkt bei vielen unklar, nächste Stunde zuerst wiederholen">${esc(n.exit || "")}</textarea>
     <label for="nAendern">Was ändern fürs Material?</label>
     <textarea id="nAendern" data-field="aendern" placeholder="z. B. Input zu lang, Kriterien früher zeigen">${esc(n.aendern)}</textarea>
     <div class="saved" id="saved"></div>
-    <p class="small">Gespeichert nur auf diesem Handy. Im Ausbau lese ich die Notizen im Morgenlauf mit. Bitte keine Noten eintragen.</p>`;
+    <p class="small" id="notizState">${notizStatus(n)}</p>
+    <p class="small">Bitte keine Noten eintragen.</p>`;
 }
+
+/* ===== Notizen ans Notebook: verschlüsselt über die Kopplung; das Programm Atelier Folien legt sie in Drive ab ===== */
+function notizTouch(l, n){ n.u = Date.now(); n.klasse = l.klasse; n.titel = l.titel; n.start = l.start; notizSync(); }
+function notizStatus(n){
+  if (!n || !n.u) return "Gespeichert auf diesem Handy.";
+  if (n.ok === n.u) return /^Drive/.test(n.wo || "Drive") ? "Im Drive abgelegt (Tagesmemos_2026-27, Pult_Notizen.md). Claude liest sie bei der Planung." : "Am Notebook abgelegt (" + n.wo + "), dort findet Claude sie nicht. Google Drive für Desktop einrichten.";
+  if (!pair.code || typeof Geheim === "undefined" || !Geheim.get()) return "Gespeichert auf diesem Handy. Mit Atelier-Schlüssel und Kopplung geht sie verschlüsselt ans Notebook und von dort in Drive.";
+  return "Gespeichert. Geht ans Notebook, sobald das Programm Atelier Folien läuft.";
+}
+/* alle Notizen der letzten 8 Tage, die noch nicht im Drive bestätigt sind */
+function notizOffen(){
+  const out = [];
+  for (let i = 0; i < localStorage.length; i++){
+    const k = localStorage.key(i); if (!/^pult-\d{4}-\d{2}-\d{2}$/.test(k)) continue;
+    const date = k.slice(5); if (Date.now() - new Date(date + "T12:00:00").getTime() > 8 * 864e5) continue;
+    const st = k === KEY ? state : store.get(k, {});
+    for (const n of Object.values(st.notes || {})) if (n && n.u && n.start && n.ok !== n.u)
+      out.push({date, lesson: n.start, klasse: n.klasse || "", titel: n.titel || "", text: n.text || "", zeit: n.zeit || "", ziel: n.ziel || "", exit: n.exit || "", aendern: n.aendern || "", u: n.u});
+  }
+  return out;
+}
+let notizT = null;
+function notizSync(){
+  if (!pair.code || typeof Geheim === "undefined" || !Geheim.get()) return;
+  clearTimeout(notizT);
+  notizT = setTimeout(() => {
+    const notizen = notizOffen(); if (!notizen.length) return;
+    const msg = {v: 1, cmd: "notiz", at: Date.now(), notizen};
+    pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method: "POST", body: await pack(msg)})).catch(() => {});
+  }, 1500);
+}
+/* Bestätigung vom Notebook: Notiz liegt im Drive */
+function notizOk(m){
+  let ch = false;
+  for (const a of (m.ok || [])){
+    const k = "pult-" + a.date, st = k === KEY ? state : store.get(k, null); if (!st || !st.notes) continue;
+    for (const n of Object.values(st.notes)) if (n && n.start && toMin(n.start) === toMin(a.lesson) && n.u === a.u && n.ok !== n.u){ n.ok = n.u; n.wo = String(m.wo || "").slice(0, 60); ch = true; }
+    if (ch) store.set(k, st);
+  }
+  if (ch && view === "notiz"){ const s2 = $("#notizState"), l = lessons.find(x => x.id === selected); if (s2 && l) s2.textContent = notizStatus(state.notes[l.id]); }
+}
+setInterval(notizSync, 300000);
 
 /* ===== Klasse: Störungen, Verspätungen, Hausaufgaben, Zufall, Gruppen, Ämter =====
    Namen und Einträge liegen nur auf diesem Gerät. Mit Atelier-Schlüssel gleichen Handy und Notebook sie verschlüsselt ab. */
@@ -865,6 +910,7 @@ document.addEventListener("click", e => {
   if (b.dataset.check){
     const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
     n[b.dataset.check] = n[b.dataset.check] === b.dataset.val ? "" : b.dataset.val;
+    { const l = lessons.find(x => x.id === selected); if (l) notizTouch(l, n); }
     const ok = save(); render(); const s = $("#saved"); if (s) s.textContent = ok ? "Gespeichert." : "Speichern nicht möglich (Browser blockiert).";
   }
 });
@@ -874,6 +920,7 @@ document.addEventListener("input", e => {
   if (f){
     const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
     n[f] = e.target.value;
+    { const l = lessons.find(x => x.id === selected); if (l) notizTouch(l, n); }
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => { const ok = save(); const s = $("#saved"); if (s) s.textContent = ok ? "Gespeichert." : "Speichern nicht möglich (Browser blockiert)."; }, 400);
   }
@@ -951,6 +998,7 @@ function showPairState(){ const s2 = $("#pairState"); if (s2) s2.textContent = p
 const led = {};
 function applySync(m){
   if (m && m.kind === "klog"){ if (klMerge(m)) render(); return; }
+  if (m && m.kind === "notizOk"){ notizOk(m); return; }
   if (!m || m.v !== 1 || m.date !== DAY.date) return;
   const l = lessons.find(x => toMin(x.start) === toMin(m.lesson));
   if (!l) return;
@@ -1043,7 +1091,7 @@ function connectPair(){
     pairTopic().then(t => {
       if (pair.code !== code || pairES) return;
       pairES = new EventSource(NTFY + "/" + t + "/sse");
-      pairES.onopen = () => { pairLive = true; showPairState(); };
+      pairES.onopen = () => { pairLive = true; showPairState(); notizSync(); };
       pairES.onerror = () => { pairLive = false; showPairState(); };
       pairES.onmessage = async ev => {
         try { const d = JSON.parse(ev.data); if (d.event !== "message") return; const m = await unpack(d.message); if (m) applySync(m); } catch(e){}

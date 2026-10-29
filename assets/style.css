@@ -1165,3 +1165,23 @@ html[style*="--pbtrack"] .progress{background:var(--paper)}
 .plab-g{color:var(--ink)}
 .plab-w{color:#000}
 html.calm .plab .fat .l{transition:none}
+/* Barrierefreiheit, Ziel WCAG 2.2 AA (Josef, 29.10.): Lesefarben für kleine Schrift, Tippziele, Fokus */
+html[data-mode=dunkel]{--red:#EA3A30;--accent:var(--red)}
+html[data-mode=dunkel] .comicpage{--accent:var(--blue-ink)}
+html[data-mode=dunkel] body.textbody{--accent:var(--green)}
+#newsletter,.nlform{--red:#EA3A30}
+html:not([data-mode=dunkel]) .comicpage .meta .acc,html:not([data-mode=dunkel]) .comicpage .marg a.src,html:not([data-mode=dunkel]) .comicpage .figs a.src{color:#347D99}
+html:not([data-mode=dunkel]) body.textbody .meta .acc{color:#008742}
+body.start .ctaline .n,body.start .ctaline .sep,body.start .sbcount span{color:#000}
+.bleed figcaption .n{color:#9a9a9a}
+.nlrow button[type=submit]{color:#fff;background:#E2231A}
+sup.fn,sup.plotsup{padding:3px 0 3px 14px;margin:-3px 0 -3px -14px;box-sizing:content-box}   /* Tippziel 24 px, wächst nach links, nie über den Rand */
+.plotlink.focus{outline:3px solid var(--accent);outline-offset:2px}
+li.sbli{list-style:none;margin:0;padding:0;height:0;overflow:visible}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:700px){.modes button{width:24px;height:24px}}   /* Tippziel mindestens 24 px (WCAG 2.5.8) */
+.nlform .nlrow button[type=submit],.nlform.big .nlrow button[type=submit],.landing .nlform.big .nlrow button[type=submit],html[data-mode=dunkel] .nlform .nlrow button[type=submit]{background:#E2231A;border-color:#E2231A;color:#fff}
+/* "Klick für Ton": pulsiert nur der Rahmen, die Schrift bleibt voll lesbar (Kontrast, 29.10.) */
+.mute.wait{animation:mutewait2 1.6s ease-in-out infinite}
+@keyframes mutewait2{50%{border-color:transparent}}
+html.calm .mute.wait{animation:none}

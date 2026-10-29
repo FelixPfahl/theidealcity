@@ -547,7 +547,7 @@
 
   /* ---------- Fußnoten: Quelle als kleines Fenster (Maus: Drüberfahren, Touch: Antippen, Tastatur: Fokus) ---------- */
   safe(function(){
-    var pop = document.createElement('div'); pop.className = 'fnpop'; pop.setAttribute('role','tooltip'); pop.id = 'fnpop'; document.body.appendChild(pop);
+    var pop = document.createElement('div'); pop.className = 'fnpop'; pop.id = 'fnpop';   /* role=tooltip erst beim Zeigen (axe: Tooltip ohne Namen) */ document.body.appendChild(pop);
     var hideT = null, cur = null, shownAt = 0;
     function place(sup){ var r = sup.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
       var x = Math.min(Math.max(12, r.left + r.width/2 - pw/2), window.innerWidth - pw - 12);
@@ -555,8 +555,8 @@
       pop.style.left = x + 'px'; pop.style.top = y + 'px'; }
     function show(sup){ clearTimeout(hideT); if (cur !== sup || !pop.classList.contains('on')) shownAt = Date.now(); if (cur && cur !== sup) cur.classList.remove('on'); cur = sup; sup.classList.add('on');
       pop.innerHTML = '<b>' + (T.note || 'Anmerkung') + ' ' + sup.textContent + '</b>' + sup._note.innerHTML;
-      pop.style.left = '-9999px'; pop.style.top = '0'; pop.classList.add('on'); place(sup); sup.setAttribute('aria-describedby','fnpop'); }
-    function hide(now){ clearTimeout(hideT); hideT = setTimeout(function(){ pop.classList.remove('on'); if (cur){ cur.classList.remove('on'); cur.removeAttribute('aria-describedby'); } cur = null; }, now ? 0 : 160); }
+      pop.style.left = '-9999px'; pop.style.top = '0'; pop.classList.add('on'); pop.setAttribute('role','tooltip'); place(sup); sup.setAttribute('aria-describedby','fnpop'); }
+    function hide(now){ clearTimeout(hideT); hideT = setTimeout(function(){ pop.classList.remove('on'); pop.removeAttribute('role'); if (cur){ cur.classList.remove('on'); cur.removeAttribute('aria-describedby'); } cur = null; }, now ? 0 : 160); }
     document.querySelectorAll('.notes ol').forEach(function(ol){
       var box = ol.closest('section, .powlead, .textblock, main') || document.body, lis = ol.querySelectorAll('li');
       box.querySelectorAll('sup').forEach(function(sup){
@@ -1222,8 +1222,13 @@
       el.appendChild(keep); el.appendChild(cv); el.appendChild(lv); el.classList.add('plotted'); el.style.minHeight = H + 'px';
       sups.forEach(function(s){ s.el.classList.add('plotsup'); s.el.style.left = s.x + 'px'; s.el.style.top = s.y + 'px'; el.appendChild(s.el); });
       /* Links und Felix Pfahl als unsichtbare Flächen über dem Canvas */
-      overlays.forEach(function(o){ var a = document.createElement(o.href ? 'a' : 'span'); a.className = 'plotlink' + (o.pf ? ' pfahl2' : ''); if (o.href) a.href = o.href; a.style.left = o.x + 'px'; a.style.top = o.y + 'px'; a.style.width = o.w + 'px'; a.style.height = o.h + 'px'; el.appendChild(a);
+      overlays.forEach(function(o){ var a = document.createElement(o.href ? 'a' : 'span'); a.className = 'plotlink' + (o.pf ? ' pfahl2' : ''); if (o.href){ a.href = o.href; a.setAttribute('tabindex', '-1'); } a.setAttribute('aria-hidden', 'true');   /* Barrierefreiheit: die echten Links stehen im Quelltext (.plotsrc), Flächen nur für die Maus */
+        var ow = Math.max(24, o.w), oh = Math.max(24, o.h); a.style.left = (o.x - (ow - o.w) / 2) + 'px'; a.style.top = (o.y - (oh - o.h) / 2) + 'px'; a.style.width = ow + 'px'; a.style.height = oh + 'px'; el.appendChild(a);
         if (o.pf){ a.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.on(e); }); a.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.move(e); }); a.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse' && window.JK_PFAHL) window.JK_PFAHL.off(); }); a.addEventListener('click', function(e){ if (window.JK_PFAHL){ window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 8000); } }); } });
+      /* Tastatur: der echte Link im Quelltext bekommt den Fokus, die Fläche darüber zeigt ihn (Barrierefreiheit, 29.10.) */
+      keep.querySelectorAll('a[href]').forEach(function(lk){ var hr = lk.getAttribute('href');
+        lk.addEventListener('focus', function(){ el.querySelectorAll('.plotlink').forEach(function(o){ if (o.getAttribute('href') === hr) o.classList.add('focus'); }); });
+        lk.addEventListener('blur', function(){ el.querySelectorAll('.plotlink.focus').forEach(function(o){ o.classList.remove('focus'); }); }); });
       /* Josef, 28.10., 01:42: die rote Schrift wird gar nicht mehr ersetzt, kein Hover-Wort */
       if (false) hwords.forEach(function(hw){ var a = document.createElement('span'); a.className = 'plothand'; a.style.left = hw.x + 'px'; a.style.top = (hw.y - lh * .55) + 'px'; a.style.width = hw.w + 'px'; a.style.height = (lh * 1.9) + 'px';
         var t = document.createElement('b'); t.className = 'plothand-w'; t.textContent = hw.txt; t.style.top = (lh * .55 + hw.base - fs * .78) + 'px'; a.appendChild(t); el.appendChild(a);

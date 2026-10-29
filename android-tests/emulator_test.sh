@@ -44,7 +44,9 @@ fi
 echo "Erwartet: $E_P1 / $E_P2 / $E_P3" | tee -a "$R"
 # Atelier-Schlüssel einmal über den Link-Anker übergeben (Pult speichert ihn lokal, Atelier liest ihn mit)
 setclock "$T_P1" 00
-adb shell am start -W -n "$PKG/.MainActivity" --es url "https://app.atelier/pult/index.html#s=$ATELIER_SCHLUESSEL" > /dev/null; sleep 12
+# (Anführungszeichen für die Shell auf dem Gerät, sonst gilt # dort als Kommentar)
+adb shell am start -W -n "$PKG/.MainActivity" --es url "'https://app.atelier/pult/index.html#s=$ATELIER_SCHLUESSEL'" > /dev/null; sleep 14
+if $UI has "Schlüssel nötig|Schlüssel eingeben"; then bad "Atelier-Schlüssel wurde nicht übernommen"; else ok "Atelier-Schlüssel über den Link übernommen"; fi
 adb shell am force-stop "$PKG"
 
 # 2. Start mitten in der Stunde springt zu Pult

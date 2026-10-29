@@ -1,0 +1,41 @@
+name: Windows-Programm bauen
+on:
+  push:
+    branches: [windows]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Pakete
+        run: npm install --no-audit --no-fund
+      - name: Version
+        shell: bash
+        run: npm version "1.0.${{ github.run_number }}" --no-git-tag-version
+      - name: Bauen und als Release veröffentlichen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win nsis --publish always
+      - name: Installieren und starten (Probe)
+        shell: pwsh
+        run: |
+          Get-ChildItem dist
+          New-Item -ItemType Directory -Force "$env:USERPROFILE\Downloads" | Out-Null
+          Set-Content "$env:USERPROFILE\Downloads\Atelier_Folien_Probe.html" '<!doctype html><title>Probe</title><h1>Probe</h1>'
+          Start-Process -Wait "dist\Atelier-Folien-Setup.exe" -ArgumentList "/S"
+          $exe = Join-Path $env:LOCALAPPDATA "Programs\atelier-folien\Atelier Folien.exe"
+          if (!(Test-Path $exe)) { Get-ChildItem -Recurse "$env:LOCALAPPDATA\Programs" | Select-Object -First 40; throw "Programm nicht installiert" }
+          $p = Start-Process $exe -PassThru
+          Start-Sleep 15
+          if ($p.HasExited) { throw "Programm hat sich beendet" }
+          $w = Get-Process | Where-Object { $_.MainWindowTitle -like "Atelier Folien*" } | Select-Object -First 1
+          Write-Host "Fenstertitel:" $w.MainWindowTitle
+          if (!$w -or $w.MainWindowTitle -notlike "*Atelier_Folien_Probe*") { throw "Folien-Datei wurde nicht geöffnet" }
+          Stop-Process -Name "Atelier Folien" -Force
+          Write-Host "Probe OK"

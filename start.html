@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>Atelier Folien</title>
+<style>
+:root{--bg:#0b0c10;--surface:#15171d;--line:#262a33;--fg:#eceef3;--muted:#8b91a0;--accent:#0028ff;--accent-text:#8296ff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font-family:"Segoe UI",system-ui,sans-serif}
+main{max-width:920px;margin:0 auto;padding:6vh 32px}
+h1{font-size:64px;margin:0;font-weight:800;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:19px;margin:8px 0 30px}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:12px;padding:14px 20px;font:inherit;font-size:18px;cursor:pointer}
+.btn.alt{background:var(--surface);border:1px solid var(--line);color:var(--fg)}
+.list{margin-top:28px;display:grid;gap:10px}
+.item{display:flex;justify-content:space-between;gap:16px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--fg);font:inherit;font-size:18px;cursor:pointer}
+.item:hover,.item:focus-visible{border-color:var(--accent);outline:none}
+.item span{color:var(--muted);font-size:15px;white-space:nowrap}
+.empty{color:var(--muted);font-size:18px;line-height:1.5}
+.help{margin-top:36px;color:var(--muted);font-size:15px;line-height:1.7}
+kbd{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--fg)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Atelier Folien</h1>
+  <div class="sub" id="sub">Lade …</div>
+  <div><button class="btn" id="open">Folien-Datei öffnen …</button></div>
+  <div class="list" id="list"></div>
+  <div class="help">
+    Die Folien-Datei des Tages aus dem Chat herunterladen. Das Programm öffnet beim Start von selbst die neueste <b>Atelier_Folien_…html</b> aus Downloads, Desktop oder Dokumente.<br>
+    <kbd>Strg</kbd>+<kbd>N</kbd> neueste Datei laden · <kbd>Strg</kbd>+<kbd>O</kbd> Datei wählen · <kbd>F11</kbd> Vollbild · <kbd>Alt</kbd> zeigt das Menü (auch „Nach Updates suchen“).<br>
+    Updates kommen von selbst und werden beim nächsten Start installiert.<br>
+    <span style="font-size:13px">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).</span>
+  </div>
+</main>
+<script>
+const D = window.atelierDesktop;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const when = ms => { const d = new Date(ms); return d.toLocaleDateString("de-DE", {weekday:"short", day:"numeric", month:"numeric"}) + ", " + d.getHours() + "." + String(d.getMinutes()).padStart(2, "0"); };
+async function render(){
+  const info = await D.info();
+  const list = await D.list();
+  document.getElementById("sub").textContent = "Version " + info.version + (info.updateReady ? " · Update bereit, kommt beim nächsten Start" : "");
+  document.getElementById("list").innerHTML = list.length
+    ? list.map(f => `<button class="item" data-p="${esc(f.path)}"><b>${esc(f.name)}</b><span>${esc(f.folder)} · ${esc(when(f.mtime))}</span></button>`).join("")
+    : `<div class="empty">Noch keine Folien-Datei gefunden. Lade sie aus dem Chat herunter (landet in Downloads) und drücke dann <kbd>Strg</kbd>+<kbd>N</kbd>.</div>`;
+}
+document.getElementById("open").addEventListener("click", () => D.open());
+document.getElementById("list").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b) D.openPath(b.dataset.p); });
+render(); setInterval(render, 15000);
+</script>
+</body>
+</html>

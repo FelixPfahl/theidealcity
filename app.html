@@ -76,6 +76,15 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .remote .btn{min-height:64px}
 @media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
+.fern{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.fern .btn{min-height:min(12vh,96px);font-size:22px}
+.fern .btn.wide{grid-column:1 / -1;min-height:min(20vh,150px);font-size:32px}
+.fv .count{margin-top:2px}.fv .count b{font-size:min(15vw,64px)}
+.appbar{position:fixed;left:0;right:0;bottom:0;z-index:7;height:40px;display:flex;background:#07080b;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.appbar a{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}
+.appbar a[aria-current="page"]{color:var(--fg);box-shadow:inset 0 2px 0 var(--accent)}
+body.has-appbar .nav{bottom:40px}
+body.has-appbar .wrap{padding-bottom:170px}
 .keys{display:none;font-size:13px;color:var(--muted);margin-top:8px}
 @media (max-height:520px){
   .eyebrow{margin:8px 0 2px}
@@ -351,10 +360,12 @@ function renderNotiz(){
 
 function render(){
   const v = $("#view");
-  const map = {jetzt:renderJetzt, tag:renderTag, spick:renderSpick, notiz:renderNotiz};
+  const map = {jetzt:renderJetzt, tag:renderTag, spick:renderSpick, notiz:renderNotiz, fern:renderFern};
   const focusId = document.activeElement && document.activeElement.id;
   v.innerHTML = map[view]() + (view === "jetzt" ? remoteHtml() : "");
   document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
+  document.querySelectorAll(".appbar a").forEach(a => a.setAttribute("aria-current", a.dataset.app === (view === "fern" ? "fern" : "pult") ? "page" : "false"));
+  try { if (window.AtelierApp && AtelierApp.pultView) AtelierApp.pultView(view); } catch(e){}
   if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
 }
 
@@ -371,7 +382,7 @@ function tick(){
   }
   const changed = key !== lastKey;
   lastKey = key;
-  if (view === "jetzt"){
+  if (view === "jetzt" || view === "fern"){
     if (changed || !loc) render();
     else {
       const ph = loc.plan.phases[loc.idx];
@@ -508,6 +519,28 @@ function remoteHtml(){
     <button class="btn" data-fern="timer">Timer</button></div>
     <div class="small" id="fernState">${esc(fernMsg)}</div>`;
 }
+function renderFern(){
+  const sec = nowSec(), loc = fresh() ? locate(sec) : null;
+  let head = `<div class="eyebrow">Fernbedienung</div>`;
+  if (loc){
+    const {lesson, plan:p, idx} = loc, ph = p.phases[idx];
+    const left = Math.max(0, (ph.s + ph.d)*60 - sec);
+    head = `<div class="fv"><div class="eyebrow">Fernbedienung · ${esc(lesson.klasse)} · ${esc(lesson.titel)}</div>
+      <div class="ptitle">${esc(ph.form)}: ${esc(ph.titel)}</div>
+      <div class="count"><b id="cd">${leftText(left)}</b><span>bis ${fmt(ph.s+ph.d)}</span></div>
+      <div class="bar"><i id="pg" style="width:${(Math.min(1, 1 - left/(ph.d*60))*100).toFixed(1)}%"></i></div></div>`;
+  }
+  if (!pair.code) return head + `<div class="form">Noch nicht gekoppelt</div>
+    <div class="regie">Am Notebook auf „QR-Code zum Koppeln zeigen“ klicken und mit der Handy-Kamera scannen. Oder unter „Tag“ den Code eingeben.</div>
+    <div class="ctrl"><button class="btn primary" data-v="tag">Zum Koppeln</button></div>`;
+  return head + `<div class="fern">
+    <button class="btn primary wide" data-fern="next" aria-label="Folie weiter">Folie ›</button>
+    <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
+    <button class="btn" data-fern="black">Schwarz</button>
+    <button class="btn" data-fern="timer" style="grid-column:1 / -1">Timer groß</button></div>
+    <div class="small" id="fernState">${esc(fernMsg)}</div>
+    <div class="small">${esc(pairStatus())}</div>`;
+}
 function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textContent = t; }
 function sendFern(cmd){
   try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
@@ -536,6 +569,24 @@ function connectPair(){
   const v = k.toLowerCase().replace(/[^a-z0-9]/g, "");
   if (v.length >= 6){ pair = {code: v}; store.set("pult-kopplung", pair); fernMsg = "Gekoppelt per QR-Code."; }
   try { const u = new URL(location.href); u.searchParams.delete("koppeln"); history.replaceState(null, "", u.toString()); } catch(e){}
+})();
+/* Ansicht von außen setzen: Handy-App-Leiste, Adresse ?ansicht=fern oder #fern */
+const VIEWS = ["jetzt","tag","spick","notiz","fern"];
+window.AtelierSetView = function(v){ if (VIEWS.indexOf(v) < 0) return; view = v; render(); window.scrollTo(0,0); try { keepAwake(); } catch(e){} };
+(function(){
+  const q = new URLSearchParams(location.search).get("ansicht"), h = (location.hash || "").slice(1);
+  if (VIEWS.indexOf(q) >= 0) view = q; else if (VIEWS.indexOf(h) >= 0) view = h;
+  window.addEventListener("hashchange", () => { const x = (location.hash || "").slice(1); if (VIEWS.indexOf(x) >= 0) window.AtelierSetView(x); });
+})();
+/* Leiste zwischen den Apps, nur im Browser (in der Handy-App gibt es die Leiste unten von der App selbst) */
+(function(){
+  let inApp = false; try { inApp = !!(window.AtelierApp && AtelierApp.isApp()); } catch(e){}
+  if (inApp || /claude\.ai|claudeusercontent/.test(location.hostname)) return;
+  const bar = document.createElement("nav");
+  bar.className = "appbar"; bar.setAttribute("aria-label", "Apps");
+  bar.innerHTML = '<a data-app="atelier" href="https://raw.githack.com/FelixPfahl/theidealcity/atelier/index.html">Atelier</a><a data-app="pult" href="#jetzt">Pult</a><a data-app="fern" href="#fern">Fernbedienung</a>';
+  bar.addEventListener("click", e => { const a = e.target.closest("a[data-app]"); if (!a || a.dataset.app === "atelier") return; e.preventDefault(); window.AtelierSetView(a.dataset.app === "fern" ? "fern" : (view === "fern" ? "jetzt" : view)); });
+  document.body.appendChild(bar); document.body.classList.add("has-appbar");
 })();
 init();
 connectPair();

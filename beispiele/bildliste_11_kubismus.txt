@@ -1,0 +1,51 @@
+BILDLISTE UND ARBEITSAUFTRAG: 11 Kubismus, Freitag 13.11.2026
+(für Claude auf dem Cloud-PC; Bilder nach Josefs Regel: alles nehmen, was sich findet, beste Auflösung, nie beschneiden)
+
+Ablage: Drive, Schule_Material/Kl. 11/Entwurf_Kubismus_13.11/Bilder
+Dateinamen: Künstler_Werktitel_Jahr, Kleinbuchstaben, ohne Umlaute
+
+1. picasso_daniel_henry_kahnweiler_1910.jpg
+   Pablo Picasso, Daniel-Henry Kahnweiler, 1910, Öl auf Leinwand, 100,4 × 72,4 cm, Art Institute of Chicago
+   Quelle zuerst: artic.edu/artworks/111060 (Download des Museumsbildes)
+   Gebraucht auf Folie 2 (Suchbild, ohne Bildunterschrift), 4 und 5
+
+2. birmant_oubrerie_pablo_band4_seite.jpg
+   Julie Birmant und Clément Oubrerie, Pablo, Band 4: Picasso, Dargaud
+   Eine Seite oder ein Panel mit dem Bateau-Lavoir oder Picasso an den Demoiselles; Seitenzahl notieren
+   Gebraucht auf Folie 6 (darf beschnitten werden)
+
+3. laurencin_gruppe_von_kuenstlern_1908.jpg
+   Marie Laurencin, Gruppe von Künstlern, 1908, Öl auf Leinwand, 65,1 × 81 cm, Baltimore Museum of Art, The Cone Collection
+   Quelle zuerst: artbma.org/artwork/group-of-artists
+   Gebraucht auf Folie 7 und 8 sowie klein auf Handout 6
+
+4. picasso_les_demoiselles_d_avignon_1907.jpg
+   Pablo Picasso, Les Demoiselles d'Avignon, 1907, Öl auf Leinwand, 243,9 × 233,7 cm, The Museum of Modern Art, New York
+   Quelle zuerst: moma.org
+   Gebraucht auf Folie 9 und 10
+
+5. braque_haeuser_in_l_estaque_1908.jpg
+   Georges Braque, Häuser in L'Estaque, 1908, Öl auf Leinwand, 40,5 × 32,5 cm, LaM Lille
+   Gebraucht auf Folie 12 und 13
+
+6. picasso_stillleben_mit_rohrstuhlgeflecht_1912.jpg
+   Pablo Picasso, Stillleben mit Rohrstuhlgeflecht, 1912, Öl und Wachstuch auf Leinwand, mit Seil gerahmt, Musée national Picasso-Paris (MP36)
+   Quelle zuerst: museepicassoparis.fr
+   Gebraucht auf Folie 14 und 15
+
+Nach dem Herunterladen
+- In der Folien-App (https://raw.githack.com/FelixPfahl/theidealcity/folien/index.html) die Datei
+  11_Screen_Klassische_Moderne_02_Kubismus.atelier.json öffnen, je Bildfläche das Bild hineinziehen, mit Strg+S speichern.
+- Prüfung rechts muss leer sein (bis auf die Anmerkung zum Suchbild ohne Bildunterschrift, das ist Absicht).
+- PDF erzeugen: Knopf „PDF“, als 11_Screen_Klassische_Moderne_02_Kubismus.pdf speichern.
+
+Handouts (Word-Entwürfe liegen im selben Ordner)
+- 02 bis 06: die Stellen „PLATZHALTER ERSETZEN“ mit dem Originaltext füllen (Quellen stehen auf jedem Blatt), Übersetzungen prüfen.
+- Schrift: Futura, sonst Century Gothic in allen Formatvorlagen.
+- Jedes Blatt als PDF speichern und Seite für Seite prüfen.
+
+Ablage, wenn alles fertig ist
+- Kl. 11: Präsentation (.atelier.json und PDF), Handouts (.docx und PDF)
+- 00_dateien_für_den_schultag: Präsentation als PDF, Handouts als PDF
+
+Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).

@@ -1,7 +1,7 @@
 {
  "format": "atelier-folien",
  "version": 1,
- "id": "1kyitgmk",
+ "id": "zb6rds8k",
  "meta": {
   "klasse": "11",
   "titel": "Klassische Moderne 2 von 4: Kubismus",
@@ -28,7 +28,7 @@
   {
    "d": 10,
    "form": "Plenum",
-   "titel": "Paris 1907: ein Bild, das keiner wollte",
+   "titel": "Paris 1907: ein Bild, das kaum jemand sah",
    "puffer": 0
   },
   {
@@ -80,7 +80,7 @@
    "kicker": "Klassische Moderne 2 von 4",
    "thema": "Kubismus",
    "unter": "Ein Ding, von allen Seiten zugleich",
-   "id": "plrrzhc9"
+   "id": "r1kfpkjk"
   },
   {
    "type": "frage",
@@ -88,67 +88,213 @@
    "frage": "In diesem Bild sitzt ein Mann. Wo sind seine Hände, seine Haare, seine Uhrkette?",
    "hinweis": "Suchen Sie zu zweit und zeigen Sie mit dem Finger.",
    "mitBild": true,
-   "id": "3bigs8nt"
+   "bild": {
+    "kuenstler": "",
+    "titel": "",
+    "jahr": "",
+    "material": "",
+    "ort": "",
+    "art": "werk"
+   },
+   "id": "b1ingknv"
   },
   {
    "type": "ablauf",
    "phase": 0,
-   "id": "ghgr8e3y"
+   "id": "7ial1dn1"
   },
   {
    "type": "werkbild",
    "phase": 1,
-   "id": "xreoi6dz"
+   "bild": {
+    "kuenstler": "Pablo Picasso",
+    "titel": "Daniel-Henry Kahnweiler",
+    "jahr": "1910",
+    "material": "Öl auf Leinwand, 100,4 × 72,4 cm",
+    "ort": "Art Institute of Chicago",
+    "art": "werk"
+   },
+   "id": "dwplc50l"
   },
   {
    "type": "werk",
    "phase": 1,
    "titel": "Die Auflösung",
-   "text": "[nach Freigabe]",
-   "id": "ekuwfly3"
+   "bild": {
+    "kuenstler": "Pablo Picasso",
+    "titel": "Daniel-Henry Kahnweiler",
+    "jahr": "1910",
+    "material": "Öl auf Leinwand, 100,4 × 72,4 cm",
+    "ort": "Art Institute of Chicago",
+    "art": "werk"
+   },
+   "text": "Der Mann ist **Daniel-Henry Kahnweiler**, ein deutscher Kunsthändler in Paris. Er verkaufte die Bilder von Picasso und Braque.\nBis zu dreißig Mal saß er Picasso Modell.\nPicasso zerlegt die Figur in durchscheinende **Flächen** aus Braun, Grau, Schwarz und Weiß.\nErkennbar bleiben: gefaltete Hände, eine Haarwelle, der Krawattenknoten, die Uhrkette.",
+   "id": "1xzm0o8z"
   },
   {
-   "type": "text",
+   "type": "werk",
    "phase": 1,
-   "titel": "Paris 1907: ein Bild, das keiner wollte",
-   "text": "[nach Freigabe]",
-   "id": "4o4h41tl"
+   "seite": "rechts",
+   "titel": "Paris, Montmartre, um 1907",
+   "bild": {
+    "kuenstler": "Julie Birmant und Clément Oubrerie",
+    "titel": "Pablo, Band 4: Picasso",
+    "jahr": "",
+    "material": "Comic",
+    "ort": "Dargaud, Paris",
+    "art": "comic"
+   },
+   "text": "Picasso lebt und malt im **Bateau-Lavoir**, einem heruntergekommenen Atelierhaus.\nDer Comic *Pablo* erzählt diese Jahre nach den Erinnerungen von **Fernande Olivier**, Picassos damaliger Partnerin.\nWer gehörte noch dazu?",
+   "id": "zxj0zr76"
+  },
+  {
+   "type": "werkbild",
+   "phase": 1,
+   "bild": {
+    "kuenstler": "Marie Laurencin",
+    "titel": "Gruppe von Künstlern",
+    "jahr": "1908",
+    "material": "Öl auf Leinwand, 65,1 × 81 cm",
+    "ort": "Baltimore Museum of Art, The Cone Collection",
+    "art": "werk"
+   },
+   "id": "9mftp455"
+  },
+  {
+   "type": "werk",
+   "phase": 1,
+   "titel": "Eine Malerin malt ihre Gruppe",
+   "bild": {
+    "kuenstler": "Marie Laurencin",
+    "titel": "Gruppe von Künstlern",
+    "jahr": "1908",
+    "material": "Öl auf Leinwand, 65,1 × 81 cm",
+    "ort": "Baltimore Museum of Art, The Cone Collection",
+    "art": "werk"
+   },
+   "text": "**Marie Laurencin** malt 1908 den Kreis, zu dem sie selbst gehört: Picasso, Fernande Olivier, den Dichter **Guillaume Apollinaire** und sich selbst.\nApollinaire wird zum wichtigsten Fürsprecher der Kubisten.",
+   "id": "tzfqekaj"
+  },
+  {
+   "type": "werkbild",
+   "phase": 1,
+   "bild": {
+    "kuenstler": "Pablo Picasso",
+    "titel": "Les Demoiselles d'Avignon",
+    "jahr": "1907",
+    "material": "Öl auf Leinwand, 243,9 × 233,7 cm",
+    "ort": "The Museum of Modern Art, New York",
+    "art": "werk"
+   },
+   "id": "wydkrtyx"
+  },
+  {
+   "type": "werk",
+   "phase": 1,
+   "titel": "Ein Bild, das kaum jemand sah",
+   "bild": {
+    "kuenstler": "Pablo Picasso",
+    "titel": "Les Demoiselles d'Avignon",
+    "jahr": "1907",
+    "material": "Öl auf Leinwand, 243,9 × 233,7 cm",
+    "ort": "The Museum of Modern Art, New York",
+    "art": "werk"
+   },
+   "text": "Fünf nackte Frauen, die Gesichter wie Masken, fast zweieinhalb Meter hoch.\nKaum jemand bekam das Bild damals zu sehen.\nHeute gilt es als **Bruch mit der Tradition**: kein Raum nach der Zentralperspektive, Körper aus kantigen Flächen.\nSeit 1939 hängt es im Museum of Modern Art in New York.",
+   "id": "9q9b3s2t"
   },
   {
    "type": "auftrag",
    "phase": 2,
    "titel": "Ein Gegenstand, drei Ansichten",
-   "schritte": "Stellen Sie einen Gegenstand vor sich: Tasse, Flasche oder Schuh.\nZeichnen Sie ihn in drei kleinen Skizzen: von vorn, von der Seite, von oben.\nVerbinden Sie die drei Ansichten zu einem Bild. Teile dürfen sich überlagern und brechen.\nLassen Sie alle Linien stehen, radieren Sie nicht.",
+   "schritte": "Stellen Sie einen Gegenstand vor sich: Tasse, Flasche oder Schuh.\nZeichnen Sie ihn in drei kleinen Skizzen auf Arbeitsblatt 8: von vorn, von der Seite, von oben.\nVerbinden Sie die drei Ansichten zu einem Bild. Teile dürfen sich überlagern und brechen.\nLassen Sie alle Linien stehen, radieren Sie nicht.",
    "extra": "Schnell fertig? Fügen Sie eine vierte Ansicht von unten hinzu.",
-   "id": "5yxcupoe"
+   "id": "0aumb8g3"
   },
   {
-   "type": "text",
+   "type": "werkbild",
+   "phase": 3,
+   "bild": {
+    "kuenstler": "Georges Braque",
+    "titel": "Häuser in L'Estaque",
+    "jahr": "1908",
+    "material": "Öl auf Leinwand, 40,5 × 32,5 cm",
+    "ort": "LaM, Lille Métropole",
+    "art": "werk"
+   },
+   "id": "l45bc2q5"
+  },
+  {
+   "type": "werk",
+   "phase": 3,
+   "titel": "Kleine Würfel",
+   "bild": {
+    "kuenstler": "Georges Braque",
+    "titel": "Häuser in L'Estaque",
+    "jahr": "1908",
+    "material": "Öl auf Leinwand, 40,5 × 32,5 cm",
+    "ort": "LaM, Lille Métropole",
+    "art": "werk"
+   },
+   "text": "Herbst 1908: Die Jury des **Salon d'Automne** lehnt Braques neue Bilder ab. Matisse spricht von „kleinen Würfeln“.\nDer Kritiker **Louis Vauxcelles** schreibt am 14. November 1908, Braque „verachtet die Form, reduziert alles, Orte, Figuren und Häuser, auf geometrische Schemata, auf Würfel“.\nAus dem Spott wird ein Name: **Kubismus**.",
+   "id": "ag4hyjnu"
+  },
+  {
+   "type": "werkbild",
+   "phase": 3,
+   "bild": {
+    "kuenstler": "Pablo Picasso",
+    "titel": "Stillleben mit Rohrstuhlgeflecht",
+    "jahr": "1912",
+    "material": "Öl und Wachstuch auf Leinwand, mit Seil gerahmt",
+    "ort": "Musée national Picasso-Paris",
+    "art": "werk"
+   },
+   "id": "sbsfacjm"
+  },
+  {
+   "type": "werk",
    "phase": 3,
    "titel": "Vom Würfel zum Zeitungspapier",
-   "text": "[nach Freigabe]",
-   "id": "3nxfzmgh"
+   "bild": {
+    "kuenstler": "Pablo Picasso",
+    "titel": "Stillleben mit Rohrstuhlgeflecht",
+    "jahr": "1912",
+    "material": "Öl und Wachstuch auf Leinwand, mit Seil gerahmt",
+    "ort": "Musée national Picasso-Paris",
+    "art": "werk"
+   },
+   "text": "Frühjahr 1912: Picasso klebt ein Stück **Wachstuch** mit dem Muster eines Rohrstuhls auf die Leinwand. Der Rahmen ist ein echtes Seil.\nDie Buchstaben JOU stehen für *journal*, Zeitung.\nDas Bild gilt als erste **Collage** der modernen Malerei.\n**Analytischer Kubismus**: zerlegen. **Synthetischer Kubismus**: aus Flächen und Fundstücken zusammensetzen.",
+   "id": "rofdfvg8"
   },
   {
    "type": "auftrag",
    "phase": 4,
    "titel": "Stimmen der Zeit",
    "schritte": "Lesen Sie zu zweit Ihren Text (Handout 2 bis 6).\nMarkieren Sie: Wer spricht, wann, für oder gegen den Kubismus?\nNotieren Sie das stärkste Argument in einem Satz.\nWählen Sie ein Wort aus dem Text, das Sie den anderen erklären.",
-   "id": "xpo6apgq"
+   "extra": "Texte: Vauxcelles 1908, Apollinaire 1913, Abgeordnetenkammer 1912, Gleizes und Metzinger 1912, Apollinaire über Marie Laurencin 1913.",
+   "id": "480ax5nl"
   },
   {
    "type": "auftrag",
    "phase": 5,
    "titel": "Wer feierte, wer bekämpfte?",
    "schritte": "Bilden Sie Gruppen mit je einer Person aus jedem Expertenpaar.\nStellen Sie Ihren Text in einer Minute vor.\nOrdnen Sie alle Stimmen auf einer Linie von Ablehnung bis Begeisterung (Arbeitsblatt 7).\nFormulieren Sie einen gemeinsamen Satz: Der Kubismus war 1912 umstritten, weil ...",
-   "id": "9m7lzc59"
+   "id": "q60s17a5"
+  },
+  {
+   "type": "zitat",
+   "phase": 6,
+   "zitat": "Wenn Ihnen ein Bild schlecht vorkommt, haben Sie ein unbestreitbares Recht: es nicht anzusehen und sich andere anzusehen. Aber man ruft nicht die Gendarmen.",
+   "quelle": "Marcel Sembat verteidigt die Kubisten in der Abgeordnetenkammer, Paris, 3. Dezember 1912",
+   "id": "qg149gws"
   },
   {
    "type": "text",
    "phase": 6,
    "titel": "1937",
-   "text": "[nach Freigabe]",
-   "id": "9sd17ujz"
+   "text": "1937 beschlagnahmen die Nationalsozialisten in deutschen Museen Tausende Werke als „**entartete Kunst**“, darunter Werke von Picasso.\nAm 30. Juni 1939 werden 125 davon in **Luzern** versteigert. Die Stadt Lüttich kauft dort Picassos *Die Familie Soler*.\nMehr dazu in der Stunde „Diffamierung der Moderne“ am 22. Januar.",
+   "id": "ev4nospm"
   },
   {
    "type": "auftrag",
@@ -156,19 +302,24 @@
    "titel": "Steckbrief Kubismus",
    "abgabe": true,
    "schritte": "Ergänzen Sie den Steckbrief (Handout 1): Zeit, Ort, Personen, Merkmale.\nNennen Sie ein Werk und eine Stimme der Zeit.\nLegen Sie den Steckbrief in Ihre Mappe.",
-   "id": "1v65dp6g"
+   "id": "he56r9gb"
   },
   {
    "type": "text",
    "phase": 8,
    "titel": "Nächste Woche: Expressionismus",
-   "text": "[nach Freigabe]",
-   "id": "zkekysbv"
+   "text": "Freitag, 20. November: Wir schauen nach München ins **Lenbachhaus**.\nFrage zum Mitnehmen: Kann eine Farbe ein Gefühl zeigen?",
+   "id": "y2t2jgtg"
   },
   {
    "type": "quellen",
-   "text": "Abbildungen\n[nach Freigabe]\nTexte\n[nach Freigabe]",
-   "id": "v43nhj40"
+   "text": "Abbildungen\nPablo Picasso, *Daniel-Henry Kahnweiler*, 1910, Öl auf Leinwand, 100,4 × 72,4 cm, Art Institute of Chicago, artic.edu, abgerufen am 29.10.2026\nJulie Birmant und Clément Oubrerie, *Pablo*, Band 4: *Picasso*, Dargaud, Paris\nMarie Laurencin, *Gruppe von Künstlern*, 1908, Öl auf Leinwand, 65,1 × 81 cm, Baltimore Museum of Art, The Cone Collection, artbma.org, abgerufen am 29.10.2026\nPablo Picasso, *Les Demoiselles d'Avignon*, 1907, Öl auf Leinwand, 243,9 × 233,7 cm, The Museum of Modern Art, New York, moma.org, abgerufen am 29.10.2026\nGeorges Braque, *Häuser in L'Estaque*, 1908, Öl auf Leinwand, 40,5 × 32,5 cm, LaM Lille\nPablo Picasso, *Stillleben mit Rohrstuhlgeflecht*, 1912, Öl und Wachstuch auf Leinwand, mit Seil gerahmt, Musée national Picasso-Paris (MP36), museepicassoparis.fr, abgerufen am 29.10.2026\n",
+   "id": "m0fg54ij"
+  },
+  {
+   "type": "quellen",
+   "text": "Texte\nLouis Vauxcelles, Kritik zu Georges Braque, *Gil Blas*, Paris, 14.11.1908 (eigene Übersetzung)\nGuillaume Apollinaire, *Les Peintres cubistes. Méditations esthétiques*, Paris 1913, Project Gutenberg Nr. 55638\nMarcel Sembat, Abgeordnetenkammer, 3.12.1912, *Journal officiel*, Débats parlementaires, S. 2924 bis 2929; Wortlaut nach Larousse, Encyclopédie de la peinture, Artikel „cubisme“, larousse.fr, abgerufen am 29.10.2026 (eigene Übersetzung)\nAlbert Gleizes und Jean Metzinger, *Du Cubisme*, Paris 1912\nVille de Liège, La Boverie, Ankäufe bei der Versteigerung in Luzern 1939, liege.be, abgerufen am 29.10.2026",
+   "id": "33avuz5e"
   }
  ]
 }

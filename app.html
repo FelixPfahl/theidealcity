@@ -536,8 +536,9 @@ function check(p){
     const t = slideText(s);
     TEACHER_WORDS.forEach(w => { if (new RegExp("(^|[^\\wäöüß])" + w + "(?![\\wäöüß])", "i").test(t)) add(`Folie ${i + 1}: „${w}“ ist ein Lehrerbegriff oder eine Anweisung an dich.`, i); });
     if (/[\u2013\u2014]/.test(t)) add(`Folie ${i + 1}: langer Gedankenstrich.`, i);
-    if (O && /\b(ihr|euch|euer|eure|du|dein|deine|dir|dich)\b/i.test(t)) add(`Folie ${i + 1}: Oberstufe wird gesiezt.`, i);
-    if (!O && /(^|[.!?:]\s+|\s)(Sie|Ihnen|Ihr(e|en|em)?)\s/.test(" " + t.replace(/^Sie /, "")) && /\b(Sie|Ihnen)\b/.test(t)) add(`Folie ${i + 1}: Bis Klasse 10 wird geduzt („ihr“, „du“).`, i, true);
+    const anrede = s.type !== "quellen" && s.type !== "zitat";
+    if (O && anrede && /\b(ihr|euch|euer|eure|du|dein|deine|dir|dich)\b/.test(t)) add(`Folie ${i + 1}: Oberstufe wird gesiezt.`, i);
+    if (!O && anrede && /(^|[.!?:]\s+|\s)(Sie|Ihnen|Ihr(e|en|em)?)\s/.test(" " + t.replace(/^Sie /, "")) && /\b(Sie|Ihnen)\b/.test(t)) add(`Folie ${i + 1}: Bis Klasse 10 wird geduzt („ihr“, „du“).`, i, true);
     if (!O && (s.type === "bewertung" || /\b(Note|Noten|Punkte|bewertet|Bewertung)\b/.test(t))) add(`Folie ${i + 1}: In Unter- und Mittelstufe steht auf Folien nichts zur Bewertung.`, i);
     if (s.type === "auftrag"){
       if (!Number.isInteger(s.phase)) add(`Folie ${i + 1}: Arbeitsauftrag ohne eigene Phase (Uhrzeit, Sozialform, Dauer).`, i);

@@ -1165,23 +1165,56 @@ html[style*="--pbtrack"] .progress{background:var(--paper)}
 .plab-g{color:var(--ink)}
 .plab-w{color:#000}
 html.calm .plab .fat .l{transition:none}
-/* Barrierefreiheit, Ziel WCAG 2.2 AA (Josef, 29.10.): Lesefarben für kleine Schrift, Tippziele, Fokus */
-html[data-mode=dunkel]{--red:#EA3A30;--accent:var(--red)}
-html[data-mode=dunkel] .comicpage{--accent:var(--blue-ink)}
-html[data-mode=dunkel] body.textbody{--accent:var(--green)}
-#newsletter,.nlform{--red:#EA3A30}
-html:not([data-mode=dunkel]) .comicpage .meta .acc,html:not([data-mode=dunkel]) .comicpage .marg a.src,html:not([data-mode=dunkel]) .comicpage .figs a.src{color:#347D99}
-html:not([data-mode=dunkel]) body.textbody .meta .acc{color:#008742}
-body.start .ctaline .n,body.start .ctaline .sep,body.start .sbcount span{color:#000}
-.bleed figcaption .n{color:#9a9a9a}
-.nlrow button[type=submit]{color:#fff;background:#E2231A}
-sup.fn,sup.plotsup{padding:3px 0 3px 14px;margin:-3px 0 -3px -14px;box-sizing:content-box}   /* Tippziel 24 px, wächst nach links, nie über den Rand */
+/* Barrierefreiheit (Josef, 29.10., 16:14: optional). Immer aktiv ist nur Unsichtbares: Tippflächen ohne sichtbare Änderung, Fokusrahmen nur bei Tastatur,
+   Spielobjekte in Listen. Alle sichtbaren Korrekturen (Lesefarben, größere Knöpfe, ruhiger Ton-Hinweis) gelten nur mit Lesehilfe "Hoher Kontrast". */
+sup.fn,sup.plotsup{padding:3px 0 3px 14px;margin:-3px 0 -3px -14px;box-sizing:content-box}   /* Tippziel 24 px, wächst nach links, unsichtbar */
 .plotlink.focus{outline:3px solid var(--accent);outline-offset:2px}
 li.sbli{list-style:none;margin:0;padding:0;height:0;overflow:visible}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-@media (max-width:700px){.modes button{width:24px;height:24px}}   /* Tippziel mindestens 24 px (WCAG 2.5.8) */
-.nlform .nlrow button[type=submit],.nlform.big .nlrow button[type=submit],.landing .nlform.big .nlrow button[type=submit],html[data-mode=dunkel] .nlform .nlrow button[type=submit]{background:#E2231A;border-color:#E2231A;color:#fff}
-/* "Klick für Ton": pulsiert nur der Rahmen, die Schrift bleibt voll lesbar (Kontrast, 29.10.) */
-.mute.wait{animation:mutewait2 1.6s ease-in-out infinite}
+html.lh-hc #newsletter a,html.lh-hc .nlform a{color:var(--ink)!important;text-decoration:underline}
+html.lh-hc:not([data-mode=dunkel]) .comicpage .meta .acc,html.lh-hc:not([data-mode=dunkel]) .comicpage .marg a.src,html.lh-hc:not([data-mode=dunkel]) .comicpage .figs a.src{color:#1F5E78}
+html.lh-hc:not([data-mode=dunkel]) body.textbody .meta .acc{color:#006B34}
+html.lh-hc body.start .ctaline .n,html.lh-hc body.start .ctaline .sep,html.lh-hc body.start .sbcount span{color:#000}
+html.lh-hc .bleed figcaption .n{color:#c8c8c8}
+html.lh-hc .nlform .nlrow button[type=submit],html.lh-hc .nlform.big .nlrow button[type=submit],html.lh-hc .landing .nlform.big .nlrow button[type=submit],html.lh-hc[data-mode=dunkel] .nlform .nlrow button[type=submit]{background:#B5160F;border-color:#B5160F;color:#fff}
+@media (max-width:700px){html.lh-hc .modes button{width:24px;height:24px}}
+html.lh-hc .mute.wait{animation:mutewait2 1.6s ease-in-out infinite}
 @keyframes mutewait2{50%{border-color:transparent}}
 html.calm .mute.wait{animation:none}
+.skip{position:absolute;left:8px;top:-100px;z-index:9500;background:var(--ink);color:var(--paper);padding:8px 12px;font:16px/1.2 var(--body);text-decoration:none}
+.skip:focus{top:8px}
+/* Lesehilfe (Josef, 29.10., Barrierefreiheit) */
+@font-face{font-family:"Atkinson";src:url(fonts/Atkinson-Regular.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Atkinson";src:url(fonts/Atkinson-Bold.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Atkinson";src:url(fonts/Atkinson-Italic.woff2) format("woff2");font-weight:400;font-style:italic;font-display:swap}
+.lhbtn{font:inherit;color:inherit;background:none;border:0;border-bottom:1px solid currentColor;padding:0 0 1px;cursor:pointer}
+.lhpanel{position:fixed;right:clamp(8px,3vw,32px);bottom:clamp(8px,3vw,32px);z-index:520;width:min(420px,calc(100vw - 16px));max-height:calc(100vh - 32px);overflow:auto;background:var(--paper);color:var(--ink);border:2px solid var(--line);box-shadow:6px 6px 0 var(--accent);font-family:var(--body);font-size:16px;line-height:1.4}
+.lhpanel .lhin{padding:16px 18px}
+.lhpanel h2{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:.04em;font-size:24px;margin:0 0 10px}
+.lhpanel .lhopt{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--hair);cursor:pointer}
+.lhpanel .lhopt input{width:22px;height:22px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.lhpanel small{display:block;color:var(--grey);font-size:13px;margin-top:2px}
+.lhpanel fieldset{border:0;border-bottom:1px solid var(--hair);margin:0;padding:7px 0}
+.lhpanel legend{padding:0;margin-bottom:4px}
+.lhpanel fieldset label{margin-right:14px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;min-height:24px}
+.lhpanel fieldset input{width:20px;height:20px;accent-color:var(--accent)}
+.lhpanel .lhclose{margin-top:12px;font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 14px;cursor:pointer}
+.lhpanel .lhclose:hover{background:var(--ink);color:var(--paper)}
+html.lh-s1 .sertext{font-size:calc(clamp(20px,1.55vw,28px) * 1.2)}
+html.lh-s2 .sertext{font-size:calc(clamp(20px,1.55vw,28px) * 1.45)}
+html.lh-s1 figcaption,html.lh-s1 .marg,html.lh-s1 .notes,html.lh-s1 .cvl,html.lh-s1 .info,html.lh-s1 footer{zoom:1.15}
+html.lh-s2 figcaption,html.lh-s2 .marg,html.lh-s2 .notes,html.lh-s2 .cvl,html.lh-s2 .info,html.lh-s2 footer{zoom:1.35}
+html.lh-lines .sertext,html.lh-lines .cvl,html.lh-lines .info,html.lh-lines .notes{line-height:1.9;letter-spacing:.03em;word-spacing:.12em}
+html.lh-lines .sertext p{margin-bottom:1.5em}
+html.lh-hc:not([data-mode=dunkel]){--grey:#000;--hair:#000;--red:#B5160F;--blue-ink:#1F5E78;--accent:var(--red)}
+html.lh-hc:not([data-mode=dunkel]) body.textbody{--accent:#006B34}
+html.lh-hc[data-mode=dunkel]{--grey:#fff;--hair:#fff;--ink:#fff;--line:#fff;--red:#FF5A4F;--blue-ink:#7CC7E6;--green:#3FD68A;--accent:var(--red)}
+html.lh-hc .comicpage{--accent:var(--blue-ink)}html.lh-hc body.textbody{--accent:var(--green)}
+html.lh-hc .woodcut .fat .w,html.lh-hc .fat .w{filter:none!important}
+html.lh-hc main a,html.lh-hc footer a{text-decoration:underline;text-underline-offset:3px}
+html.lh-hc :focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+html.lh-font{--body:"Atkinson","Helvetica Neue",Arial,sans-serif;--sans:"Atkinson","Helvetica Neue",Arial,sans-serif}
+html.lh-bigobj .sbobj{filter:drop-shadow(0 0 0 #000) drop-shadow(2px 0 0 #000) drop-shadow(-2px 0 0 #000) drop-shadow(0 2px 0 #000) drop-shadow(0 -2px 0 #000)}
+.sbsnd{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--pbh) + 10px);z-index:470;background:var(--ink);color:var(--paper);font:14px/1.3 var(--body);padding:6px 12px;border-radius:3px;pointer-events:none;opacity:0;transition:opacity .2s}
+.sbsnd.on{opacity:1}
+.lhpanel .lhall,.lhpanel .lhnone{font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:4px 12px;cursor:pointer;margin:2px 6px 8px 0}.lhpanel .lhall:hover,.lhpanel .lhnone:hover{background:var(--ink);color:var(--paper)}

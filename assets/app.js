@@ -23,6 +23,10 @@
   var FF = document.documentElement.classList.contains('ff'); window.JK_FF = FF;
   var REDUCED = FF; try { REDUCED = FF || localStorage.getItem('jk_calm') === '1'; } catch(e){}
   window.JK_CALM = REDUCED;
+  /* Lesehilfe (Josef, 29.10., Barrierefreiheit WCAG 2.2 AA): Text sofort, Schrift größer, Zeilen weiter, hoher Kontrast, Leseschrift; Spiel: größere Dinge, Screenreader-Modus, Töne anzeigen */
+  var LH = {}; try { LH = JSON.parse(localStorage.getItem('jk_lesehilfe') || '{}') || {}; } catch(e){}
+  window.JK_LH = LH;
+  (function(){ var c = document.documentElement.classList; if (LH.now) c.add('lh-now'); if (LH.size) c.add('lh-s' + LH.size); if (LH.lines) c.add('lh-lines'); if (LH.hc) c.add('lh-hc'); if (LH.font) c.add('lh-font'); if (LH.bigobj) c.add('lh-bigobj'); if (LH.sr) c.add('lh-sr'); if (LH.sndvis) c.add('lh-sndvis'); })();
   document.addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('.calmtoggle'); if (!t) return; e.preventDefault(); try { localStorage.setItem('jk_calm', REDUCED ? '0' : '1'); } catch(x){} location.reload(); });
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
   var FX_DEFAULT = {ton:5, vol:50, bewegung:2, modem:true};   /* Josef, 28.10., 06:35: alle Sounds auf die Hälfte (Master 50 %) */   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
@@ -476,6 +480,31 @@
         if (max > avail){ var fs = parseFloat(getComputedStyle(h).fontSize); h.style.fontSize = Math.floor(fs * avail / max * 0.97) + 'px'; } }); }
     fit(true); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fit(true); });
     window.addEventListener('load', function(){ fit(true); }); var t = null; window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(function(){ fit(false); }, 120); }); });
+  /* ---------- Lesehilfe: Menü in der Fußzeile ---------- */
+  safe(function(){ var btn = document.querySelector('.lhbtn'); if (!btn) return;
+    var OPTS = [['now', 'Text sofort zeigen', 'Der Plotter schreibt nicht, der Text steht gleich da.', true], ['size', 'Schrift größer', '', false], ['lines', 'Zeilen weiter', 'Mehr Abstand zwischen Zeilen, Wörtern und Buchstaben.', false],
+      ['hc', 'Hoher Kontrast', 'Schwarz auf Weiß (oder Weiß auf Schwarz), kräftigere Akzente, keine Holzschnitt-Struktur, Links unterstrichen.', false], ['font', 'Leseschrift', 'Atkinson Hyperlegible statt der Plotterschrift; der Text steht gleich da.', true],
+      ['bigobj', 'Spiel: größere Dinge', 'Versteckte Dinge doppelt so groß, mit kräftiger Kontur.', true], ['sr', 'Spiel für Screenreader', 'Versteckte Dinge sind mit der Tabulatortaste erreichbar und werden mit Namen angesagt.', true], ['sndvis', 'Töne anzeigen', 'Ein kleines Schild zeigt, wenn ein Klang etwas bedeutet (Fund, Ruf, Stempel).', false]];
+    var pan = document.createElement('div'); pan.id = 'lhpanel'; pan.className = 'lhpanel'; pan.setAttribute('role', 'dialog'); pan.setAttribute('aria-label', 'Lesehilfe'); pan.hidden = true;
+    var html = '<div class="lhin"><h2>Lesehilfe</h2><p class="lhnote"><small>Alles hier ist freiwillig; ohne Lesehilfe bleibt die Seite, wie sie gestaltet ist.</small></p><button type="button" class="lhall">Alles an</button> <button type="button" class="lhnone">Alles aus</button>';
+    OPTS.forEach(function(o){ if (o[0] === 'size'){ html += '<fieldset><legend>Schriftgröße</legend>' + ['normal', 'größer', 'groß'].map(function(l, i){ return '<label><input type="radio" name="lhsize" value="' + i + '"' + ((LH.size || 0) === i ? ' checked' : '') + '> ' + l + '</label>'; }).join(' ') + '</fieldset>'; return; }
+      html += '<label class="lhopt"><input type="checkbox" data-k="' + o[0] + '"' + (LH[o[0]] ? ' checked' : '') + '> <span>' + o[1] + (o[2] ? '<small>' + o[2] + '</small>' : '') + '</span></label>'; });
+    html += '<p class="lhnote"><small>Die Einstellungen bleiben in diesem Browser gespeichert (siehe Datenschutz). Manche Änderungen laden die Seite neu.</small></p><button type="button" class="lhclose">Schließen</button></div>';
+    pan.innerHTML = html; document.body.appendChild(pan);
+    function save(){ try { localStorage.setItem('jk_lesehilfe', JSON.stringify(LH)); } catch(e){} }
+    function open(){ pan.hidden = false; btn.setAttribute('aria-expanded', 'true'); var f = pan.querySelector('input'); if (f) f.focus(); }
+    function close(){ pan.hidden = true; btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
+    btn.addEventListener('click', function(){ if (pan.hidden) open(); else close(); });
+    document.querySelectorAll('a[data-lh]').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); open(); }); });
+    function setAll(on){ OPTS.forEach(function(o){ if (o[0] === 'size') return; if (on) LH[o[0]] = true; else delete LH[o[0]]; }); if (on) LH.size = 1; else delete LH.size; save(); setTimeout(function(){ location.reload(); }, 100); }
+    pan.querySelector('.lhall').addEventListener('click', function(){ setAll(true); }); pan.querySelector('.lhnone').addEventListener('click', function(){ setAll(false); });
+    pan.querySelector('.lhclose').addEventListener('click', close);
+    pan.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ e.stopPropagation(); close(); } });
+    pan.addEventListener('change', function(e){ var t = e.target; if (t.name === 'lhsize'){ var c = document.documentElement.classList; c.remove('lh-s1', 'lh-s2'); LH.size = +t.value; if (LH.size) c.add('lh-s' + LH.size); save(); if (window.JK_PLOT_REBUILD) setTimeout(window.JK_PLOT_REBUILD, 60); return; }
+      var k = t.getAttribute('data-k'); if (!k) return; LH[k] = t.checked; if (!t.checked) delete LH[k]; save();
+      var o = OPTS.filter(function(x){ return x[0] === k; })[0]; document.documentElement.classList.toggle('lh-' + k, !!t.checked);
+      if (o && o[3]){ setTimeout(function(){ location.reload(); }, 150); return; } if (k === 'lines' && window.JK_PLOT_REBUILD) setTimeout(window.JK_PLOT_REBUILD, 60); }); });
+
   /* ---------- Zufällige Neigung der Werke (dezent) ---------- */
   document.querySelectorAll('.work.rot').forEach(function(w,i){ w.style.setProperty('--tilt', (((i*7919)%7)-3)*0.5+'deg'); });
 
@@ -1079,7 +1108,7 @@
      Betonungen mit fetterem Farbstift (Wechsel nur hörbar), Stift kratzt selten, alles leicht zufällig. Startseite: JO SEF beim Laden.
      ============================================================ */
   safe(function(){
-    if (FF) return; var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p, .grptitle'));
+    if (FF || LH.now || LH.font) return; var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p, .grptitle'));
     if (!targets.length || !window.fetch || !window.Path2D) return;
     var F = null, built = [], raf = false, humT = null, hum = null, lastScrollT = performance.now(), lastScrollY = window.scrollY, speed = 0;
     var rnd = Math.random, R = function(a, b){ return a + rnd() * (b - a); };

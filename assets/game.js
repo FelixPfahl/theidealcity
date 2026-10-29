@@ -41,7 +41,8 @@
   /* Regler (Josef, 29.10., 14:44): Werte aus cfg.js, sonst die Standards hier */
   function CF(k, d){ var v = window.JK_CF ? window.JK_CF(k) : undefined; return (v === undefined || v === null || v === '') ? d : v; }
   var SIZE = TOUCH ? {1:85, 2:58, 3:40} : {1:64, 2:44, 3:30};   /* am Handy ein Drittel größer (Josef, 28.10., 01:53) */
-  SIZE = {1:CF('game.size1', SIZE[1]), 2:CF('game.size2', SIZE[2]), 3:CF('game.size3', SIZE[3])};
+  var LHG = window.JK_LH || {}, BIGF = LHG.bigobj ? 2 : 1;   /* Lesehilfe: größere Dinge */
+  SIZE = {1:CF('game.size1', SIZE[1]) * BIGF, 2:CF('game.size2', SIZE[2]) * BIGF, 3:CF('game.size3', SIZE[3]) * BIGF};
   var S = load(); if (!S.seed) S.seed = (Math.random() * 4294967295) >>> 0; PLACES = deal();
   function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
@@ -104,7 +105,15 @@
   var dlg = null;
   function blip(){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = 'square'; o.frequency.value = 520 + Math.random() * 90; var g = ac.createGain(); g.gain.setValueAtTime(.07, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
   var GV = {'g-fund':'gsnd.find', 'g-stempel':'gsnd.stamp'};
-  function sp(tool, opt){ if (window.JK_SPRITE){ opt = opt || {}; opt.bus = 'game'; opt.force = true; if (GV[tool]) opt.vol = (opt.vol || 1) * CF(GV[tool], 1); window.JK_SPRITE(tool, opt); return true; } return false; }
+  /* Lesehilfe "Töne anzeigen": ein Schild, wenn ein Klang etwas bedeutet */
+  var SNDLAB = {'g-fund':'♪ Fund', 'g-stempel':'♪ Stempel', 'g-kraehe':'♪ Inka ruft', 'g-gojira':'♪ Gojira bebt'}, sndEl = null, sndT = null;
+  function sndShow(tool){ if (!LHG.sndvis || !SNDLAB[tool]) return; if (!sndEl){ sndEl = document.createElement('div'); sndEl.className = 'sbsnd'; sndEl.setAttribute('role', 'status'); document.body.appendChild(sndEl); }
+    sndEl.textContent = SNDLAB[tool]; sndEl.classList.add('on'); clearTimeout(sndT); sndT = setTimeout(function(){ sndEl.classList.remove('on'); }, 1800); }
+  /* Tastatur und Screenreader: Dinge mit gekauftem Hinweis (oder alle im Screenreader-Modus) sind mit Tab erreichbar und haben einen Namen */
+  function a11yObj(img, p){ if (S.found[p.id] || img._a11y) return; if (!(LHG.sr || (S.hinted && S.hinted[p.id]))) return; img._a11y = true;
+    img.tabIndex = 0; img.setAttribute('role', 'button'); img.setAttribute('aria-label', 'Verstecktes Ding: ' + NAMES[p.id] + '. Enter zum Finden.');
+    img.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); var r = img.getBoundingClientRect(); found(p, img, {clientX:r.left + r.width / 2, clientY:r.top + r.height / 2, preventDefault:function(){}, stopPropagation:function(){}}); } }); }
+  function sp(tool, opt){ sndShow(tool); if (window.JK_SPRITE){ opt = opt || {}; opt.bus = 'game'; opt.force = true; if (GV[tool]) opt.vol = (opt.vol || 1) * CF(GV[tool], 1); window.JK_SPRITE(tool, opt); return true; } return false; }
   function spLoad(t){ if (window.JK_SPRITE_LOAD) try { window.JK_SPRITE_LOAD(t); } catch(e){} }
   function blipFor(c, who){ var st = CF('dlg.pitch.' + who, 0), bv = CF('dlg.blipvol', 1); if (bv <= 0) return; if (sp('g-' + who, {vol:.55 * bv, max:.2, semi:st + (Math.random() * 2 - 1)})) return;
     var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = c.blip[1]; o.frequency.value = c.blip[0] * Math.pow(2, st / 12) * (.94 + Math.random() * .12); var g = ac.createGain(); g.gain.setValueAtTime(c.blip[1] === 'sine' ? .12 : .05, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
@@ -113,9 +122,9 @@
   function dialog(lines, done){ if (dlg){ dq = (dq || []).concat(lines); return; } var k = 0, typing = null; dq = [];
     lines = lines.map(function(l){ return typeof l === 'string' ? ['inka', l] : l; });
     dlg = document.createElement('div'); dlg.className = 'sbdlg'; dlg.setAttribute('role', 'dialog');
-    dlg.innerHTML = '<div class="win"><img alt=""><div class="txt"><b class="who"></b><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
+    dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><img alt=""><div class="txt"><b class="who"></b><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
     document.body.appendChild(dlg); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), cur;
-    function show(i){ var who_ = lines[i][0], text = lines[i][1]; cur = CH[who_] || CH.inka; dlg.className = 'sbdlg c-' + who_; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; img.src = '../assets/game/char-' + who_ + '.png'; dlg.style.setProperty('--c', cur.col);
+    function show(i){ var who_ = lines[i][0], text = lines[i][1]; var lv = dlg.querySelector('.dlglive'); if (lv) lv.textContent = ((CH[who_] || CH.inka).name) + ': ' + text; cur = CH[who_] || CH.inka; dlg.className = 'sbdlg c-' + who_; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; img.src = '../assets/game/char-' + who_ + '.png'; dlg.style.setProperty('--c', cur.col);
       p.textContent = ''; more.style.visibility = 'hidden'; var n = 0; clearInterval(typing); if (who_ === 'gojira' && k === 0) rumble(); if (who_ === 'inka' && i === 0 && lines.length > 1) sp('g-kraehe', {vol:.5, max:.3});
       typing = setInterval(function(){ n++; p.textContent = text.slice(0, n); if (who_ !== 'gojira' && n % Math.max(1, Math.round(CF('dlg.blipevery', 2))) === 1 % Math.max(1, Math.round(CF('dlg.blipevery', 2))) && text[n - 1] !== ' ') blipFor(cur, who_); if (n >= text.length){ clearInterval(typing); typing = null; more.style.visibility = 'visible'; } }, CF('dlg.ms.' + who_, cur.speed)); }
     function next(e){ if (e) { e.preventDefault(); e.stopPropagation(); } if (typing){ clearInterval(typing); typing = null; p.textContent = lines[k][1]; more.style.visibility = 'visible'; return; }
@@ -149,7 +158,7 @@
     call.addEventListener('click', function(){ if (dlg) return; sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); }); }
   function refresh(){ if (num) num.textContent = count(); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return;
-    var p = left[Math.floor(Math.random() * left.length)]; S.hints++; save(); tick();
+    var p = left[Math.floor(Math.random() * left.length)]; S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
     dialog([['inka', NAMES[p.id] + ': ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '')], ['wagner', 'Fünfzig Punkte. Koordinaten kosten.']]); }
 
   /* Regler-Leiste: Dialogprobe und Spielstand (nur für Josefs Feintuning) */
@@ -166,7 +175,7 @@
       if (!a.style.zIndex) a.style.zIndex = String(29 - ZI++);   /* jeder Anker liegt über seinen Nachbarn (Test 29.10., 09:20: Sonne im Startseitenfuß unter der folgenden Zeile); bleibt unter Unternavigation (45) und Kopf (50) */
       var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false;
       var sz = SIZE[p.d]; img.style.width = sz + 'px'; var IN = 10; img.style.left = 'clamp(' + IN + 'px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))'; img.style.top = 'clamp(' + IN + 'px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))';   /* 10 px Abstand zum Ankerrand: gedrehte Nachbarbilder überlappen die Ecken um einige Pixel (Test 29.10., 09:00) */   /* nie über den Anker hinaus */
-      img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); img.addEventListener('load', function(){ clearTimeout(window.__jkUn); window.__jkUn = setTimeout(unstack, 60); });
+      img._p = p; a11yObj(img, p); img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); img.addEventListener('load', function(){ clearTimeout(window.__jkUn); window.__jkUn = setTimeout(unstack, 60); });
       if (/^(UL|OL)$/.test(a.tagName)){ var li = document.createElement('li'); li.setAttribute('aria-hidden', 'true'); li.className = 'sbli'; li.appendChild(img); a.appendChild(li); } else a.appendChild(img); });   /* Listen dürfen nur li enthalten (axe, 29.10.) */
     unstack(); window.addEventListener('load', unstack); window.addEventListener('resize', unstack); }
   /* Zwei Dinge dürfen nie übereinander liegen (Test 28.10., 06:00: Bombe lag unter einem anderen Objekt): das spätere wird im Anker verschoben, bis es frei liegt */

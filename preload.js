@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld("atelierDesktop", {
   open: () => ipcRenderer.invoke("open"),
   openPath: p => ipcRenderer.invoke("openPath", p),
   info: () => ipcRenderer.invoke("info"),
-  notizen: list => ipcRenderer.invoke("notizen", list)
+  notizen: list => ipcRenderer.invoke("notizen", list),
+  pdf: muster => ipcRenderer.invoke("pdf", muster)
 });

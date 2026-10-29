@@ -200,6 +200,24 @@ ipcMain.handle("notizen", (e, list) => {
     return { ok: true, wo: z.wo };
   } catch (err) { return { ok: false }; }
 });
+/* PDFs der Stunden aus dem Drive-Schultagsordner (Google Drive für Desktop) oder Downloads lesen, Dateiname nach Muster */
+ipcMain.handle("pdf", (e, muster) => {
+  try {
+    const re = new RegExp(String(muster).slice(0, 200), "i");
+    const dirs = driveFolders().concat(folders());
+    let best = null;
+    for (const d of dirs) {
+      let names = []; try { names = fs.readdirSync(d); } catch (err) { continue; }
+      for (const n of names) if (/\.pdf$/i.test(n) && re.test(n)) {
+        const f = path.join(d, n); let st; try { st = fs.statSync(f); } catch (err) { continue; }
+        if (st.isFile() && st.size < 60 * 1024 * 1024 && (!best || st.mtimeMs > best.mtime)) best = { path: f, name: n, mtime: st.mtimeMs };
+      }
+      if (best) break;   /* Drive zuerst, dann Downloads, Desktop, Dokumente */
+    }
+    if (!best) return null;
+    return { name: best.name, b64: fs.readFileSync(best.path).toString("base64") };
+  } catch (err) { return null; }
+});
 ipcMain.handle("info", () => ({ version: app.getVersion(), downloads: app.getPath("downloads"), updateReady }));
 
 app.whenReady().then(() => {

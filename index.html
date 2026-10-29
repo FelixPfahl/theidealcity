@@ -65,8 +65,8 @@ textarea:focus{outline:2px solid var(--accent-text)}
 .seg{display:flex;gap:8px}
 .seg .chip{flex:1;text-align:center}
 .saved{color:var(--ok);font-size:14px;min-height:1.2em;margin-top:6px}
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:6px}
-.nav button{min-height:60px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:17px;color:var(--muted)}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:6px}
+.nav button{min-height:60px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:16px;padding:0 2px;color:var(--muted)}
 .nav button[aria-current="page"]{background:var(--surface);color:var(--fg)}
 .small{font-size:14px;color:var(--muted)}
 input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
@@ -75,6 +75,11 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .remote{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .remote .btn{min-height:64px}
 @media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px}
+.kt{min-height:76px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:8px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.kt b{font-size:17px;line-height:1.15}
+.kt span{font-size:18px;letter-spacing:.12em;color:var(--accent-text)}
+.kt.ha{background:var(--accent);border-color:var(--accent);color:#fff}.kt.ha span{color:#fff;font-weight:800;letter-spacing:.04em}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
 .count.paused b{color:var(--muted)}
 .fern{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
@@ -111,11 +116,12 @@ body.has-appbar .wrap{padding-bottom:170px}
   </header>
   <main id="view"></main>
   <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
-  <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 4 = Ansichten.</p>
+  <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 5 = Ansichten.</p>
 </div>
 
 <nav class="nav" aria-label="Ansichten">
   <button data-v="jetzt">Jetzt</button>
+  <button data-v="klasse">Klasse</button>
   <button data-v="tag">Tag</button>
   <button data-v="spick">Spick</button>
   <button data-v="notiz">Notiz</button>
@@ -469,9 +475,133 @@ function renderNotiz(){
     <p class="small">Gespeichert nur auf diesem Handy. Im Ausbau lese ich die Notizen im Morgenlauf mit. Bitte keine Noten eintragen.</p>`;
 }
 
+/* ===== Klasse: Störungen, Verspätungen, Hausaufgaben =====
+   Namen und Einträge liegen nur auf diesem Gerät. Mit Atelier-Schlüssel gleichen Handy und Notebook sie verschlüsselt ab. */
+const KL = { klassen: store.get("pult-klassen", {}), log: store.get("pult-klog", {stoer:{}, spaet:[], ha:[], nach:[]}) };
+KL.log.stoer = KL.log.stoer || {}; KL.log.stoerU = KL.log.stoerU || {}; KL.log.spaet = KL.log.spaet || []; KL.log.ha = KL.log.ha || []; KL.log.nach = KL.log.nach || [];
+let klDirty = false;
+function klSave(sync){ store.set("pult-klassen", KL.klassen); store.set("pult-klog", KL.log); if (sync !== false) klSync(); }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+/* Halbjahr: 1 = September bis 14. Februar, 2 = 15. Februar bis August */
+function halbjahr(iso){ const [y, m, d] = iso.split("-").map(Number); if (m >= 9) return y + "-1"; if (m < 2 || (m === 2 && d <= 14)) return (y - 1) + "-1"; return (y - 1) + "-2"; }
+/* "Nachname, Vorname" -> Vorname; bei gleichen Vornamen mit Initiale */
+function klNames(klasse){
+  const raw = (KL.klassen[klasse] || []).filter(Boolean);
+  const first = r => { const p = r.split(","); return (p.length > 1 ? p[1] : p[0]).trim().split(/\s+/)[0] || r.trim(); };
+  const last = r => { const p = r.split(","); return p.length > 1 ? p[0].trim() : (r.trim().split(/\s+/).slice(1).join(" ") || ""); };
+  const cnt = {}; raw.forEach(r => { const f = first(r); cnt[f] = (cnt[f] || 0) + 1; });
+  return raw.map(r => ({raw: r.trim(), show: cnt[first(r)] > 1 && last(r) ? first(r) + " " + last(r)[0] + "." : first(r)}));
+}
+const lkey = l => DAY.date + ":" + l.id;
+function klasseOf(l){ return String(l.klasse || "").trim(); }
+/* Störung zählen; beim dritten Mal Hausaufgabe */
+function stoer(l, name, d){
+  const k = lkey(l), m = KL.log.stoer[k] = KL.log.stoer[k] || {};
+  const before = m[name] || 0;
+  KL.log.stoerU[k] = Date.now();
+  m[name] = Math.max(0, before + d);
+  if (!m[name]) delete m[name];
+  const has = KL.log.ha.find(h => h.lesson === k && h.name === name && !h.del);
+  if (before < 3 && (m[name] || 0) >= 3 && !has){
+    KL.log.ha.push({id: uid(), klasse: klasseOf(l), name, date: DAY.date, lesson: k, done: false, u: Date.now()});
+    try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(700); else if (navigator.vibrate) navigator.vibrate([300, 120, 300]); } catch(e){}
+  } else if ((m[name] || 0) < 3 && has && !has.done){ has.del = true; has.u = Date.now(); }
+  else { try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(40); else if (navigator.vibrate) navigator.vibrate(40); } catch(e){} }
+  klSave();
+}
+function spaetSum(klasse, name, iso){
+  const h = halbjahr(iso || DAY.date);
+  const s = KL.log.spaet.filter(e => e.klasse === klasse && e.name === name && !e.del && !e.ent && halbjahr(e.date) === h).reduce((a, e) => a + e.min, 0);
+  const n = KL.log.nach.filter(e => e.klasse === klasse && e.name === name && !e.del && halbjahr(e.date) === h).reduce((a, e) => a + e.min, 0);
+  return {sum: s, open: s - n};
+}
+function elternText(name, art, l){
+  const n = name.split(",").reverse().join(" ").trim();
+  if (art === "ha") return `Liebe Eltern von ${n},\n\nIhr Kind hat heute im Kunstunterricht (${klasseOf(l)}) wiederholt den Unterricht gestört. Wie in der Klasse vereinbart, bekommt es dafür eine zusätzliche Übung zur Zentralperspektive, die zur nächsten Kunststunde abzugeben ist.\n\nVielen Dank für Ihre Unterstützung.\n\nMit freundlichen Grüßen`;
+  return `Liebe Eltern von ${n},\n\nIhr Kind ist in diesem Halbjahr im Kunstunterricht (${klasseOf(l)}) insgesamt mehr als 30 Minuten zu spät gekommen. Wie in der Klasse vereinbart, wird diese Zeit nachgeholt. Den Termin teile ich Ihrem Kind mit.\n\nVielen Dank für Ihre Unterstützung.\n\nMit freundlichen Grüßen`;
+}
+let klText = null;
+function renderKlasse(){
+  if (!lessons.length) return noLessons();
+  if (!lessons.find(l => l.id === selected)){ const loc = locate(nowSec()); selected = loc ? loc.lesson.id : defaultSel(); }
+  const l = lessons.find(x => x.id === selected), kl = klasseOf(l), N = klNames(kl), k = lkey(l);
+  const m = KL.log.stoer[k] || {};
+  const head = lessonChips() + `<div class="eyebrow">Klasse · ${esc(kl)} · ${esc(l.titel)}</div>`;
+  const edit = `<details${N.length ? "" : " open"}><summary>Klassenliste ${N.length ? "bearbeiten (" + N.length + ")" : "anlegen"}</summary>
+    <label for="klList">Ein Name pro Zeile, z. B. „Bohn, Leonard“</label>
+    <textarea id="klList" data-kl="${esc(kl)}" style="min-height:220px">${esc((KL.klassen[kl] || []).join("\n"))}</textarea>
+    <div class="ctrl"><button class="btn primary" data-act="klsave" data-kl="${esc(kl)}">Speichern</button></div>
+    <p class="small">Namen bleiben auf diesem Handy (und verschlüsselt auf deinem Notebook). Nie im Netz im Klartext.</p></details>`;
+  if (!N.length) return head + `<div class="form">Noch keine Klassenliste</div>` + edit;
+  const tiles = N.map(n => {
+    const c = m[n.raw] || 0;
+    return `<button class="kt${c >= 3 ? " ha" : ""}" data-st="${esc(n.raw)}" aria-label="${esc(n.show)}, ${c} Störungen"><b>${esc(n.show)}</b><span>${c >= 3 ? "HA" : "●".repeat(c) + "○".repeat(3 - c)}</span></button>`;
+  }).join("");
+  const has = KL.log.ha.filter(h => h.lesson === k && !h.del);
+  const collect = KL.log.ha.filter(h => h.klasse === kl && !h.del && !h.done && h.lesson !== k);
+  const late = KL.log.spaet.filter(e => e.klasse === kl && e.date === DAY.date && !e.del);
+  const open = N.map(n => ({n, s: spaetSum(kl, n.raw)})).filter(x => x.s.open >= 30);
+  const show = raw => (N.find(n => n.raw === raw) || {show: raw}).show;
+  return head + `<p class="small">Tippen: Störung zählen. Lange drücken: eine zurücknehmen. Beim dritten Mal: Hausaufgabe.</p>
+    <div class="kgrid">${tiles}</div>
+    ${has.length ? `<h2>Hausaufgabe heute</h2><ul class="list">${has.map(h => `<li><b>${esc(show(h.name))}</b>: Übung Zentralperspektive bis zur nächsten Stunde <button class="chip" data-act="kltext" data-art="ha" data-name="${esc(h.name)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
+    ${collect.length ? `<h2>Einsammeln</h2><ul class="list">${collect.map(h => `<li>${esc(show(h.name))} <span class="small">(${esc(h.date.slice(8,10) + "." + h.date.slice(5,7) + ".")})</span> <button class="chip" data-act="hadone" data-id="${h.id}">abgegeben</button></li>`).join("")}</ul>` : ""}
+    <h2>Verspätet heute</h2>
+    ${late.length ? `<ul class="list">${late.map(e => `<li><b>${esc(show(e.name))}</b> ${e.ent ? "entschuldigt" : e.min + " Min."} <button class="chip" data-act="spent" data-id="${e.id}" aria-pressed="${!!e.ent}">entschuldigt</button> <button class="chip" data-act="spdel" data-id="${e.id}">löschen</button></li>`).join("")}</ul>` : `<p class="small">Niemand. Die Kinder tragen sich am Notebook mit Taste V selbst ein.</p>`}
+    ${open.length ? `<h2>Nachholen offen</h2><ul class="list">${open.map(x => `<li><b>${esc(x.n.show)}</b> ${Math.round(x.s.open)} Min. <button class="chip" data-act="nach" data-name="${esc(x.n.raw)}" data-min="${Math.round(x.s.open)}">nachgeholt</button> <button class="chip" data-act="kltext" data-art="spaet" data-name="${esc(x.n.raw)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
+    ${klText ? `<h2>Text für Eltern</h2><textarea id="klTextOut" readonly style="min-height:240px">${esc(klText)}</textarea><div class="ctrl"><button class="btn" data-act="klcopy">Kopieren</button><button class="btn" data-act="kltextx">Schließen</button></div>` : ""}
+    ${edit}`;
+}
+/* Tippen und langes Drücken auf die Namenskacheln */
+let klPress = null, klLong = false;
+document.addEventListener("pointerdown", e => {
+  const t = e.target.closest && e.target.closest("[data-st]"); if (!t) return;
+  klLong = false; clearTimeout(klPress);
+  klPress = setTimeout(() => { klLong = true; const l = lessons.find(x => x.id === selected); if (l){ stoer(l, t.dataset.st, -1); render(); } }, 550);
+});
+["pointerup", "pointercancel", "pointerleave"].forEach(ev => document.addEventListener(ev, () => clearTimeout(klPress), true));
+document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("[data-st]")) e.preventDefault(); });
+function klClick(b){
+  if (b.dataset.st){ if (klLong){ klLong = false; return true; } const l = lessons.find(x => x.id === selected); if (l){ stoer(l, b.dataset.st, 1); render(); } return true; }
+  const act = b.dataset.act, l = lessons.find(x => x.id === selected);
+  if (act === "klsave"){ const v = ($("#klList").value || "").split(/\n+/).map(s => s.trim()).filter(Boolean); KL.klassen[b.dataset.kl] = v; KL.klassen._u = Date.now(); klSave(); render(); return true; }
+  if (act === "hadone"){ const h = KL.log.ha.find(x => x.id === b.dataset.id); if (h){ h.done = true; h.u = Date.now(); klSave(); render(); } return true; }
+  if (act === "spent"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.ent = !e.ent; e.u = Date.now(); klSave(); render(); } return true; }
+  if (act === "spdel"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.del = true; e.u = Date.now(); klSave(); render(); } return true; }
+  if (act === "nach"){ KL.log.nach.push({id: uid(), klasse: klasseOf(l), name: b.dataset.name, date: DAY.date, min: Number(b.dataset.min), u: Date.now()}); klSave(); render(); return true; }
+  if (act === "kltext"){ klText = elternText(b.dataset.name, b.dataset.art, l); render(); const t = $("#klTextOut"); if (t) t.scrollIntoView({block: "center"}); return true; }
+  if (act === "kltextx"){ klText = null; render(); return true; }
+  if (act === "klcopy"){ const t = $("#klTextOut"); try { navigator.clipboard.writeText(t.value); b.textContent = "Kopiert"; } catch(e){ t.select(); } return true; }
+  return false;
+}
+/* Abgleich mit dem Notebook: nur mit Atelier-Schlüssel (sonst bleiben Namen auf dem Gerät) */
+function klMerge(o){
+  if (!o) return false;
+  let ch = false;
+  if (o.klassen) for (const [k, v] of Object.entries(o.klassen)) if (k !== "_u" && Array.isArray(v) && v.length && !(KL.klassen[k] || []).length){ KL.klassen[k] = v; ch = true; }
+  for (const key of ["spaet", "ha", "nach"]) for (const e of (o[key] || [])){
+    const i = KL.log[key].findIndex(x => x.id === e.id);
+    if (i < 0){ KL.log[key].push(e); ch = true; } else if ((e.u || 0) > (KL.log[key][i].u || 0)){ KL.log[key][i] = e; ch = true; }
+  }
+  if (o.stoer) for (const [k, v] of Object.entries(o.stoer)){ const u = (o.stoerU || {})[k] || 0; if (u > (KL.log.stoerU[k] || 0)){ KL.log.stoer[k] = v; KL.log.stoerU[k] = u; ch = true; } }
+  if (ch) klSave(false);
+  return ch;
+}
+let klTimer = null;
+function klSync(){
+  if (!pair.code || !Geheim.get()) return;
+  clearTimeout(klTimer);
+  klTimer = setTimeout(() => {
+    const today = {}, tu = {}; for (const [k, v] of Object.entries(KL.log.stoer)) if (k.startsWith(DAY.date)){ today[k] = v; tu[k] = KL.log.stoerU[k] || 0; }
+    const h = halbjahr(DAY.date), cut = x => halbjahr(x.date) === h;
+    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
+    pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method: "POST", body: await pack(msg)})).catch(() => {});
+  }, 400);
+}
+
 function render(){
   const v = $("#view");
-  const map = {jetzt:renderJetzt, tag:renderTag, spick:renderSpick, notiz:renderNotiz, fern:renderFern};
+  const map = {jetzt:renderJetzt, klasse:renderKlasse, tag:renderTag, spick:renderSpick, notiz:renderNotiz, fern:renderFern};
   const focusId = document.activeElement && document.activeElement.id;
   v.innerHTML = map[view]() + (view === "jetzt" ? remoteHtml() : "");
   document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
@@ -539,7 +669,7 @@ function timeAct(act, id, i, k){
 document.addEventListener("keydown", e => {
   if (e.target.closest && e.target.closest("textarea,input")) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
-  const views = {"1":"jetzt","2":"tag","3":"spick","4":"notiz"};
+  const views = {"1":"jetzt","2":"klasse","3":"tag","4":"spick","5":"notiz"};
   let btn = null;
   if (views[e.key]) btn = document.querySelector(`.nav button[data-v="${views[e.key]}"]`);
   else if (view === "jetzt" && (e.key === " " || e.key === "ArrowRight")) btn = document.querySelector('[data-act="weiter"]');
@@ -550,6 +680,7 @@ document.addEventListener("keydown", e => {
 document.addEventListener("click", e => {
   const b = e.target.closest("button");
   if (!b) return;
+  if (klClick(b)) return;
   if (b.dataset.fern){ sendFern(b.dataset.fern); return; }
   if (b.dataset.v){ view = b.dataset.v; if (view !== "tag" && selected === "__morgen") selected = null; render(); window.scrollTo(0,0); keepAwake(); return; }
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
@@ -636,6 +767,7 @@ function pairStatus(){
 function showPairState(){ const s2 = $("#pairState"); if (s2) s2.textContent = pairStatus(); }
 const led = {};
 function applySync(m){
+  if (m && m.kind === "klog"){ if (klMerge(m)) render(); return; }
   if (!m || m.v !== 1 || m.date !== DAY.date) return;
   const l = lessons.find(x => toMin(x.start) === toMin(m.lesson));
   if (!l) return;
@@ -732,7 +864,7 @@ function connectPair(){
   try { const u = new URL(location.href); u.searchParams.delete("koppeln"); history.replaceState(null, "", u.toString()); } catch(e){}
 })();
 /* Ansicht von außen setzen: Handy-App-Leiste, Adresse ?ansicht=fern oder #fern */
-const VIEWS = ["jetzt","tag","spick","notiz","fern"];
+const VIEWS = ["jetzt","klasse","tag","spick","notiz","fern"];
 window.AtelierSetView = function(v){ if (VIEWS.indexOf(v) < 0) return; view = v; render(); window.scrollTo(0,0); try { keepAwake(); } catch(e){} };
 (function(){
   const q = new URLSearchParams(location.search).get("ansicht"), h = (location.hash || "").slice(1);

@@ -11,10 +11,26 @@ let win = null, current = null, told = null, updateReady = false;
 if (!app.requestSingleInstanceLock()) { app.quit(); }
 app.on("second-instance", () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
 
+/* Google Drive für Desktop: Schultagsordner auf einem Laufwerk G: bis Z: (Meine Ablage oder My Drive) */
+let driveCache = null, driveAt = 0;
+function driveFolders() {
+  if (driveCache && Date.now() - driveAt < 300000) return driveCache;
+  const out = [];
+  if (process.platform === "win32") {
+    for (const L of "GHIJKLMNOPQRSTUVWXYZ") {
+      for (const root of ["Meine Ablage", "My Drive"]) {
+        const d = L + ":\\" + root + "\\Schule_Material\\00_dateien_für_den_schultag";
+        try { if (fs.existsSync(d)) out.push(d); } catch (e) {}
+      }
+    }
+  }
+  driveCache = out; driveAt = Date.now();
+  return out;
+}
 function folders() {
   const out = [];
   for (const k of ["downloads", "desktop", "documents"]) { try { out.push(app.getPath(k)); } catch (e) {} }
-  return out;
+  return out.concat(driveFolders());
 }
 /* alle Folien-Dateien, neueste zuerst */
 function candidates() {

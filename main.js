@@ -139,6 +139,10 @@ function createWindow() {
     else if (input.control && !input.shift && (input.key === "o" || input.key === "O")) { e.preventDefault(); chooseFile(); }
   });
 
+  /* nur für die automatische Probe nach dem Bau */
+  if (process.env.ATELIER_PROBE) win.webContents.on("did-finish-load", () => {
+    try { fs.writeFileSync(process.env.ATELIER_PROBE, JSON.stringify({ current, url: win.webContents.getURL(), title: win.getTitle(), version: app.getVersion() })); } catch (e) {}
+  });
   win.on("focus", watchNewer);
   setInterval(watchNewer, 60000);
   loadNewest();

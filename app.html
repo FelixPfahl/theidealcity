@@ -217,10 +217,11 @@ function nowSec(){
    {back:true, at, cut, src, d}  Phase at endet nach cut Min., danach noch einmal Phase src für d Min.
    {drop:true, at}               Phase at fällt weg
    {at, delta, shift:true}       (alt) Phase länger, Stunde verschiebt sich
-   Ausgleich: fehlende Zeit kommt erst aus dem Puffer, dann aus der längsten späteren Arbeitsphase (nie unter 5 Min.,
-   Aufräumen und Abschluss nie). Gewonnene Zeit geht in die nächste Arbeitsphase. Reicht es nicht, bleibt ein Rest (debt):
+   Ausgleich: fehlende Zeit kommt erst aus dem Puffer, dann aus dem Input (lehrerzentrierte Phasen, längste zuerst),
+   erst dann aus der längsten späteren Arbeitsphase (nie unter 5 Min.; Aufräumen, Exit-Ticket und Abschluss nie). Gewonnene Zeit geht in die nächste Arbeitsphase. Reicht es nicht, bleibt ein Rest (debt):
    dann schlägt Pult vor, eine Phase zu streichen. */
-const ARBEIT = /arbeit/i, SCHUTZ = /aufräum|aufraeum|abschluss/i, MINPH = 5;
+const ARBEIT = /arbeit/i, SCHUTZ = /aufräum|aufraeum|abschluss|exit|ausblick/i, MINPH = 5;
+const INPUT = /hinschauen|besprechen|plenum|input|vortrag|demonstr|gespräch|kamera/i;
 function planCore(base, adj, pause, nowMin){
   let ph = base.map((p, i) => ({...p, src: i, uid: i, again: false, pl: p.puffer || 0, dropped: false}));
   let uids = base.length;
@@ -229,6 +230,7 @@ function planCore(base, adj, pause, nowMin){
   const list = (adj || []).slice();
   if (pause && nowMin != null) list.push({at: pause.at, delta: Math.max(0, nowMin - pause.t0), pause: true, live: true});
   const work = q => ARBEIT.test(q.form || "") && !q.dropped && !SCHUTZ.test((q.titel || "") + " " + (q.form || ""));
+  const inp = q => INPUT.test(q.form || "") && !ARBEIT.test(q.form || "") && !q.dropped && !SCHUTZ.test((q.titel || "") + " " + (q.form || ""));
   const free = q => !q.dropped && !SCHUTZ.test((q.titel || "") + " " + (q.form || ""));
   /* D Minuten aus späteren Phasen nehmen; Rückgabe: was übrig bleibt, und wo genommen wurde */
   function take(from, D){
@@ -237,9 +239,9 @@ function planCore(base, adj, pause, nowMin){
       const q = ph[j];
       if (q.pl > 0 && free(q)){ const t = Math.min(left, q.pl, Math.max(0, q.d - MINPH)); if (t > 0){ ph[j] = {...q, d: q.d - t, pl: q.pl - t}; taken.push({uid: ph[j].uid, t, pl: true}); left -= t; if (first < 0) first = j; } }
     }
-    while (left > 1e-6){
+    for (const pick of [inp, work]) while (left > 1e-6){
       let best = -1, bd = MINPH;
-      for (let j = from + 1; j < ph.length; j++) if (work(ph[j]) && ph[j].d > bd){ bd = ph[j].d; best = j; }
+      for (let j = from + 1; j < ph.length; j++) if (pick(ph[j]) && ph[j].d > bd){ bd = ph[j].d; best = j; }
       if (best < 0) break;
       const t = Math.min(left, bd - MINPH);
       ph[best] = {...ph[best], d: bd - t}; taken.push({uid: ph[best].uid, t, pl: false}); left -= t; if (first < 0) first = best;

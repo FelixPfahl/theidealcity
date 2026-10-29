@@ -68,14 +68,51 @@ const APPS = [
   {id:"morgenrunde", n:"Morgenrunde", d:"Auf dem Schulweg: Quiz zum Tag", web:"https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html", claude:"https://claude.ai/artifact/ERAHwi2MdJkdHW2Unc5inF"},
   {id:"folien", n:"Folien", d:"Am PC vorführen, am Handy fernsteuern", web:"https://raw.githack.com/FelixPfahl/theidealcity/folien/index.html"}
 ];
-/* Ersatz, falls heute.json nicht geladen werden kann */
-const FALLBACK = {"datum":"2026-10-28","label":"Mittwoch, 28.10.","termine":[
-  {"start":"8:00","ende":"9:30","titel":"6a Weihnachtskarte 2 von 2","unterricht":true},
-  {"start":"9:30","ende":"9:45","titel":"Aufsicht Halle"},
-  {"start":"9:45","ende":"10:30","titel":"Präsenzstunde"},
-  {"start":"11:30","ende":"13:00","titel":"5 Weihnachtskarte","unterricht":true},
-  {"start":"13:15","ende":"14:45","titel":"9a Figur 4 von 4","unterricht":true},
-  {"start":"15:00","ende":"16:30","titel":"12 Eigenes Objekt 1 von 3","unterricht":true}]};
+/* Ersatz gibt es keinen mehr im Klartext: ohne Netz zeigt Atelier den letzten Stand auf diesem Gerät */
+const FALLBACK = null;
+/* Atelier-Schlüssel: Verschlüsselung der Tagesdaten und der Kopplung (AES-GCM, Schlüssel per PBKDF2 aus dem 16-stelligen Atelier-Schlüssel).
+   Der Schlüssel liegt nur auf Josefs Geräten (localStorage) und wird nie über das Netz geschickt. */
+const Geheim = (() => {
+  const te = new TextEncoder(), td = new TextDecoder();
+  const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const b64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); };
+  const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const cache = {};
+  async function key(s, salt){
+    const id = salt + ":" + norm(s); if (cache[id]) return cache[id];
+    const base = await crypto.subtle.importKey("raw", te.encode(norm(s)), "PBKDF2", false, ["deriveKey"]);
+    return cache[id] = await crypto.subtle.deriveKey({name:"PBKDF2", salt: te.encode(salt), iterations: 150000, hash: "SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+  }
+  async function open(box, s, salt){
+    const k = await key(s, salt || "atelier-daten-v1");
+    const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv: unb64(box.iv)}, k, unb64(box.ct));
+    return JSON.parse(td.decode(pt));
+  }
+  async function seal(obj, s, salt){
+    const k = await key(s, salt || "atelier-daten-v1");
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, k, te.encode(JSON.stringify(obj))));
+    return {v:1, iv: b64(iv), ct: b64(ct)};
+  }
+  async function topic(s){
+    const h = new Uint8Array(await crypto.subtle.digest("SHA-256", te.encode("atelier-topic-v1:" + norm(s))));
+    return "atelier-" + Array.from(h.slice(0, 12), b => b.toString(16).padStart(2, "0")).join("");
+  }
+  const get = () => { try { return localStorage.getItem("atelier-schluessel") || ""; } catch(e){ return ""; } };
+  const set = v => { try { if (v) localStorage.setItem("atelier-schluessel", norm(v)); else localStorage.removeItem("atelier-schluessel"); } catch(e){} };
+  const valid = v => norm(v).length === 16;
+  const pretty = v => norm(v).toUpperCase().replace(/(.{4})(?=.)/g, "$1-");
+  /* Schlüssel aus dem Link-Anker (#s=...) übernehmen; der Anker geht nie an einen Server */
+  function fromHash(){
+    const m = location.hash.match(/[#&]s=([A-Za-z0-9-]+)/);
+    if (m && valid(m[1])){ set(m[1]); try { history.replaceState(null, "", location.pathname + location.search); } catch(e){} return true; }
+    return false;
+  }
+  const isBox = o => !!(o && typeof o === "object" && o.iv && o.ct);
+  return {norm, open, seal, topic, get, set, valid, pretty, fromHash, isBox};
+})();
+
+Geheim.fromHash();
 
 const IN_APP = (() => { try { return !!(window.AtelierApp && AtelierApp.isApp()); } catch(e){ return false; } })();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -121,7 +158,10 @@ function renderToday(){
   document.getElementById("clock").textContent = now.getHours() + "." + String(now.getMinutes()).padStart(2,"0");
   const tk = document.getElementById("tk"), tv = document.getElementById("tv"), ts = document.getElementById("ts");
   let live = false;
-  if (!DAY){ renderApps(false); return; }
+  if (!DAY){
+    if (KEYMSG){ tk.textContent = "Schlüssel nötig"; tv.textContent = KEYMSG === "falsch" ? "Der Schlüssel passt nicht" : "Tagesdaten verschlüsselt"; ts.textContent = "Einmal in Pult unter „Tag“ den Atelier-Schlüssel eingeben."; }
+    renderApps(false); return;
+  }
   if (DAY.datum !== iso(now)){
     tk.textContent = "Heute";
     tv.textContent = "Noch nicht aktualisiert";
@@ -162,13 +202,22 @@ function fromPult(p){
   return {datum:p.date, label:p.label, termine:(p.items||[]).map(it => ({start:it.start, ende:it.end,
     titel:(it.type==="lesson" ? it.klasse + " " : "") + it.titel, unterricht:it.type==="lesson"}))};
 }
+/* Tagesdaten sind verschlüsselt; der Atelier-Schlüssel liegt nur auf diesem Gerät (einmal in Pult unter „Tag“ eingeben) */
+let KEYMSG = "";
+async function unbox(x){
+  if (!Geheim.isBox(x)) return x;
+  const k = Geheim.get();
+  if (!k){ KEYMSG = "fehlt"; throw new Error("kein Schlüssel"); }
+  try { const o = await Geheim.open(x, k); KEYMSG = ""; return o; } catch(e){ KEYMSG = "falsch"; throw e; }
+}
 async function load(){
-  try { DAY = fromPult(await getJson(PULT_DATA)); }
+  let got = null;
+  try { got = fromPult(await unbox(await getJson(PULT_DATA))); }
   catch(e){
-    try { DAY = await getJson("heute.json"); }
-    catch(e2){ DAY = FALLBACK; }
+    try { got = await unbox(await getJson("heute.json")); }
+    catch(e2){ got = FALLBACK; }
   }
-  try { localStorage.setItem("atelier-last", JSON.stringify(DAY)); } catch(e){}
+  if (got){ DAY = got; try { localStorage.setItem("atelier-last", JSON.stringify(DAY)); } catch(e){} }
   renderToday();
 }
 try { const c = JSON.parse(localStorage.getItem("atelier-last") || "null"); if (c && c.termine) DAY = c; } catch(e){}

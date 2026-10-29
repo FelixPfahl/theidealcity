@@ -44,7 +44,7 @@
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
-  function points(){ return Math.max(0, count() * 100 - secs() - S.hints * HINT_COST); }
+  function points(){ return Math.max(0, count() * 100 - S.hints * HINT_COST); }   /* kein Zeitabzug (Josef, 29.10., 13:14) */
   function fmt(t){ var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   function accent(el){ return getComputedStyle(el.closest('.comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A'; }
 
@@ -86,11 +86,11 @@
   var RULES = [
     ['inka', 'Psst. Ich bin Inka. Ich beobachte diese Seiten schon eine Weile. Ich beobachte eigentlich alles.'],
     ['inka', 'Sigma ist weg. Der Homunkulus, Wagners Testobjekt. Er hat Risse im Raster gefunden und ist durch. Und er hat zwanzig Dinge aus Josefs Suchbildern mitgenommen, die er mit eigenen Augen sehen wollte.'],
-    ['inka', 'Du findest sie zwischen den Bildern und Texten. Klick drauf, wenn du eins siehst. Die Lupe oben zählt mit. Jeder Fund gibt 100 Punkte, jede Sekunde ab dem ersten Fund nimmt einen.'],
+    ['inka', 'Du findest sie zwischen den Bildern und Texten. Klick drauf, wenn du eins siehst. Die Lupe oben zählt mit. Jeder Fund gibt 100 Punkte. Die Zeit zählt nicht, lass dir Zeit.'],
     ['inka', 'Kommst du nicht weiter, klick auf die Lupe. Dann sag ich dir, wo ich eins gesehen habe. Aber Wagner liest mit und nimmt dafür 50 Punkte. Koordinaten kosten, sagt er.'],
     ['inka', 'Die leichten sind groß und liegen offen. Die schweren sind klein und blass, am Rand, in den Fußzeilen, tief in den langen Rastern. In jeder Partie liegen sie woanders. Bei zwanzig kommt Gojira.']
   ];
-  var FIRST = [['inka', 'Der erste. Jetzt läuft die Uhr. Sigma hat noch neunzehn verstreut.']];
+  var FIRST = [['inka', 'Der erste. Er ist zurück in seinem Suchbild, schau später nach. Sigma hat noch neunzehn verstreut.']];
   var FIVE = [['wagner', 'Rohrschach. Ich sehe, Sie sammeln meine Versuchsanordnung ein. Fünf von zwanzig.'], ['wagner', 'Jedes Ding, das Sie finden, ist ein Punkt im Raster, den ich wieder einsetzen kann. Machen Sie ruhig weiter. Ich notiere die Koordinaten.']];
   function TEN(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }).map(function(p){ return NAMES[p.id]; });
     return [['xae', 'X Æ A-13. Zehn Objekte in dieser Zeit. Ich hätte alle zwanzig in vier Sekunden gehabt. Fotografisches Gedächtnis, Nil-Augmentation, dritte Generation.'],
@@ -125,7 +125,7 @@
     var hereTxt = here ? (here === 1 ? ' Auf dieser Seite liegt noch eins.' : ' Auf dieser Seite liegen noch ' + here + '.') : ' Hier ist nichts mehr, such auf den anderen Seiten.';
     if (S.done) return [['inka', pickOne(['Du hast alle zwanzig. ' + points() + ' Punkte. Die Urkunde zeige ich dir über die Lupe. Neustart, wenn du willst, dann liegen die Dinge woanders.', 'Alles gefunden, ' + points() + ' Punkte. Sigma ist zurück hinter dem Glas und schweigt. Nochmal? Über die Lupe.'])]];
     if (!n) return RULES;
-    if (n < 10) return [['inka', pickOne(['Da bist du wieder. ' + n + ' von zwanzig, ' + points() + ' Punkte. Die Uhr läuft weiter.' + hereTxt, 'Wieder da. ' + n + ' hast du. Wagner hat inzwischen die Koordinaten nachgerechnet, er ist unzufrieden.' + hereTxt, n + ' von zwanzig. Sigma fragt nach dir. Er sagt, du suchst zu weit oben.' + hereTxt])]];
+    if (n < 10) return [['inka', pickOne(['Da bist du wieder. ' + n + ' von zwanzig, ' + points() + ' Punkte. Lass dir Zeit.' + hereTxt, 'Wieder da. ' + n + ' hast du. Wagner hat inzwischen die Koordinaten nachgerechnet, er ist unzufrieden.' + hereTxt, n + ' von zwanzig. Sigma fragt nach dir. Er sagt, du suchst zu weit oben.' + hereTxt])]];
     if (n < 15) return [['inka', pickOne([n + ' von zwanzig, ' + points() + ' Punkte. Die Hälfte ist geschafft, der Rest ist kleiner.' + hereTxt, 'X Æ A-13 hat dir die Liste gegeben, ich weiß. Er hätte es in vier Sekunden gehabt, sagt er. ' + n + ' hast du.' + hereTxt])], ['wagner', 'Rohrschach. Ich lese mit. ' + (N - n) + ' Punkte fehlen im Raster.']];
     if (n < N) return [['sigma', pickOne(['… du bist zurück. ' + (N - n) + ' fehlen noch. Ich warte hinter dem Glas.', 'Noch ' + (N - n) + '. Wagner hat heute nicht nach mir gesehen. Gut so.'])], ['inka', 'Die letzten liegen am Rand, in den Fußzeilen, tief in den langen Rastern.' + hereTxt]];
     return RULES; }
@@ -185,7 +185,7 @@
   function cert(){ if (ov) return; ov = document.createElement('div'); ov.className = 'sbcert'; var date = new Date(S.done || Date.now()); var ds = date.toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'});
     var mono = document.querySelector('header .mark svg'); var mh = mono ? mono.outerHTML.replace('class="mono"', 'class="mono cm"') : '';
     ov.innerHTML = '<div class="sq" role="dialog" aria-label="Urkunde"><button type="button" class="x" aria-label="Schließen">×</button><h2 class="ct">SUCHBILD</h2>' +
-      '<p class="cp">Alle ' + N + ' Dinge auf theidealcity.gg gefunden. Eingegraben von Gojira.</p><p class="cp">' + points() + ' Punkte in ' + fmt(secs()) + ' Minuten, ' + S.hints + (S.hints === 1 ? ' Hinweis' : ' Hinweise') + '. ' + ds + '.</p>' +
+      '<p class="cp">Alle ' + N + ' Dinge auf theidealcity.gg gefunden. Eingegraben von Gojira.</p><p class="cp">' + points() + ' Punkte, ' + S.hints + (S.hints === 1 ? ' Hinweis' : ' Hinweise') + '. ' + ds + '.</p>' +
       '<div class="cname"><label>Name <input type="text" maxlength="16" pattern="[A-Za-zÄÖÜäöüß0-9 ]{1,16}" placeholder="bis 16 Zeichen"></label></div>' +
       '<div class="cbtn"><button type="button" class="png">Als Bild speichern</button>' + (BOARD ? '<button type="button" class="send">In die Bestenliste</button>' : '') + '<button type="button" class="again">Neustart</button></div>' +
       '<p class="cnote">' + (BOARD ? 'Die Bestenliste speichert Name, Punkte, Zeit und Datum in einer Google-Tabelle von Josef Knoll (siehe Datenschutz). ' : '') + 'Dein Stand liegt nur in diesem Browser.</p>' + mh + '</div>';
@@ -197,28 +197,50 @@
     if (window.JK_PLOT_ONCE) ov.querySelectorAll('.cp').forEach(function(q, i){ setTimeout(function(){ window.JK_PLOT_ONCE(q, 1800); }, 200 + i * 900); }); }
   function png(name){ var W = 1200, cv = document.createElement('canvas'); cv.width = W; cv.height = W; var c = cv.getContext('2d'); c.fillStyle = '#00A651'; c.fillRect(0, 0, W, W);
     var draw = function(){ c.fillStyle = '#000'; c.textAlign = 'center'; c.font = '400 150px Duerer1525, serif'; c.fillText('SUCHBILD', W / 2, 300);
-      c.font = '30px Relief, "Relief SingleLine", sans-serif'; var lines = ['Alle ' + N + ' Dinge auf theidealcity.gg gefunden.', points() + ' Punkte in ' + fmt(secs()) + ' Minuten, ' + S.hints + ' Hinweise.', new Date(S.done || Date.now()).toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'})];
+      c.font = '30px Relief, "Relief SingleLine", sans-serif'; var lines = ['Alle ' + N + ' Dinge auf theidealcity.gg gefunden.', points() + ' Punkte, ' + S.hints + ' Hinweise.', new Date(S.done || Date.now()).toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'})];
       if (name) lines.unshift(name); lines.forEach(function(l, i){ c.fillText(l, W / 2, 430 + i * 56); });
       c.font = '48px DuererHand, cursive'; c.fillText('eingegraben von Gojira', W / 2, 760);
       var mono = document.querySelector('header .mark svg'); var fin = function(){ var a = document.createElement('a'); a.download = 'suchbild-urkunde.png'; a.href = cv.toDataURL('image/png'); a.click(); };
       if (mono){ var im = new Image(); var sv = mono.outerHTML.replace(/currentColor/g, '#000'); if (sv.indexOf('xmlns=') < 0) sv = sv.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '); im.onload = function(){ c.drawImage(im, W / 2 - 90, 860, 180, 228); fin(); }; im.onerror = fin; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sv); } else fin(); };
     if (document.fonts && document.fonts.load){ Promise.all([document.fonts.load('150px Duerer1525'), document.fonts.load('48px DuererHand')]).then(draw, draw); } else draw(); }
   function send(name, b){ if (!/^[A-Za-zÄÖÜäöüß0-9 ]{1,16}$/.test(name)){ alert('Name: 1 bis 16 Zeichen, nur Buchstaben, Ziffern und Leerzeichen.'); return; } b.disabled = true; b.textContent = 'Sende …';
-    var body = JSON.stringify({name:name, points:points(), secs:secs(), hints:S.hints, found:count(), date:new Date(S.done || Date.now()).toISOString()});
+    var body = JSON.stringify({name:name, points:points(), secs:0, hints:S.hints, found:count(), date:new Date(S.done || Date.now()).toISOString()});
     fetch(BOARD, {method:'POST', body:body, headers:{'Content-Type':'text/plain'}}).then(function(r){ return r.json(); }).then(function(j){ b.textContent = j && j.ok ? 'Eingetragen' : ('Abgelehnt: ' + (j && j.error || '?')); }).catch(function(){ b.textContent = 'Keine Verbindung'; b.disabled = false; }); }
 
   /* ---------- Bestenliste im Abschnitt Suchbilder ---------- */
   function board(){ var sec = document.getElementById('suchbilder'); if (!sec) return; var box = document.createElement('div'); box.className = 'sbboard'; var grid = sec.querySelector('.grid, .textwrap'); 
-    box.innerHTML = '<h3>Bestenliste</h3><p>Diese Website ist selbst ein Suchbild: ' + N + ' Dinge aus den drei Blättern sind auf den Seiten versteckt. Jeder Fund zählt 100 Punkte, jede Sekunde eine weniger, jeder Hinweis (Klick auf die Lupe) ' + HINT_COST + '.</p><ol></ol><p class="sbme"></p><p><a href="#" class="sbrules">Regeln noch einmal</a></p>';
+    box.innerHTML = '<h3>Bestenliste</h3><p>Diese Website ist selbst ein Suchbild: ' + N + ' Dinge aus den drei Blättern sind auf den Seiten versteckt. Jeder Fund zählt 100 Punkte, jeder Hinweis (Klick auf die Lupe) kostet ' + HINT_COST + '. Die Zeit zählt nicht.</p><ol></ol><p class="sbme"></p><p><a href="#" class="sbrules">Regeln noch einmal</a></p>';
     (grid ? grid.parentNode.insertBefore(box, grid.nextSibling) : sec.appendChild(box));
     var ol = box.querySelector('ol'), me = box.querySelector('.sbme'); box.querySelector('.sbrules').addEventListener('click', function(e){ e.preventDefault(); dialog(RULES); });
-    var mine = count() ? ('Dein Stand: ' + count() + ' von ' + N + ', ' + points() + ' Punkte' + (S.done ? ', fertig in ' + fmt(secs()) + '.' : '.')) : ''; me.textContent = mine;
-    function show(list){ ol.innerHTML = ''; list.slice(0, 10).forEach(function(r){ var li = document.createElement('li'); li.innerHTML = '<em class="kw">' + r.points + '</em> ' + esc(r.name) + ' <span>' + fmt(r.secs) + '</span>'; ol.appendChild(li); }); }
+    var mine = count() ? ('Dein Stand: ' + count() + ' von ' + N + ', ' + points() + ' Punkte' + (S.done ? ', alles gefunden.' : '.')) : ''; me.textContent = mine;
+    function show(list){ ol.innerHTML = ''; list.slice(0, 10).forEach(function(r){ var li = document.createElement('li'); li.innerHTML = '<em class="kw">' + r.points + '</em> ' + esc(r.name); ol.appendChild(li); }); }
     var seed = [{name:'Josef Knoll', points:1540, secs:412}];
     if (!BOARD){ show(seed); return; }
-    fetch(BOARD).then(function(r){ return r.json(); }).then(function(j){ var l = (j && j.list) || []; if (!l.some(function(r){ return r.name === 'Josef Knoll'; })) l = l.concat(seed); l.sort(function(a, b){ return b.points - a.points || a.secs - b.secs; }); show(l); }).catch(function(){ show(seed); }); }
+    fetch(BOARD).then(function(r){ return r.json(); }).then(function(j){ var l = (j && j.list) || []; if (!l.some(function(r){ return r.name === 'Josef Knoll'; })) l = l.concat(seed); l.sort(function(a, b){ return b.points - a.points; }); show(l); }).catch(function(){ show(seed); }); }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
-  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); place(); board(); intro(); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
+  /* ---------- Suchbilder mit Löchern (Josef, 29.10., 13:14): gefundene Dinge kehren in ihr Suchbild zurück, beim nächsten Blick mit Aufblitzen und Stempel ---------- */
+  var HOLES = null;
+  function holes(){ if (!document.getElementById('w-suchbild1') && !document.getElementById('w-suchbild2')) return;
+    fetch('../assets/game/suchbild/fundorte.json').then(function(r){ return r.json(); }).then(function(d){ HOLES = d; [1, 2].forEach(function(i){ paintSB(i); watchSB(i); }); }).catch(function(){}); }
+  function paintSB(i, then){ var el = document.getElementById('w-suchbild' + i); if (!el || !HOLES) return; var img = el.querySelector('img'); if (!img) return; var a = el.querySelector('a[data-full]');
+    var ids = Object.keys(HOLES).filter(function(k){ return HOLES[k].bild === i && S.found[k]; }); if (!ids.length){ if (then) then(); return; }
+    var key = ids.sort().join(','); if (el._sbkey === key){ if (then) then(); return; } el._sbkey = key;
+    var base = new Image(); base.onload = function(){ var cv = document.createElement('canvas'); cv.width = base.naturalWidth; cv.height = base.naturalHeight; var c = cv.getContext('2d'); c.drawImage(base, 0, 0);
+      var left = ids.length; ids.forEach(function(k){ var h = HOLES[k], im = new Image(); im.onload = im.onerror = function(){ try { c.drawImage(im, h.x * cv.width / h.W, h.y * cv.height / h.H, h.w * cv.width / h.W, h.h * cv.height / h.H); } catch(e){}
+          if (--left === 0) cv.toBlob(function(b){ if (!b) return; var url = URL.createObjectURL(b); img.removeAttribute('srcset'); img.src = url; if (a){ a.setAttribute('href', url); a.setAttribute('data-full', url); } if (then) then(); }, 'image/jpeg', .9); };
+        im.src = '../assets/game/suchbild/' + k + '.png'; }); };
+    base.src = '../img/suchbild' + i + '-l.jpg'; }
+  function watchSB(i){ var el = document.getElementById('w-suchbild' + i); if (!el || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (!e.isIntersecting || !HOLES) return;
+      S.back = S.back || {}; var fresh = Object.keys(HOLES).filter(function(k){ return HOLES[k].bild === i && S.found[k] && !S.back[k]; }); if (!fresh.length) return;
+      paintSB(i, function(){ var img = el.querySelector('img'); if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+        fresh.forEach(function(k, n){ var h = HOLES[k], r = img.getBoundingClientRect(), er = el.getBoundingClientRect(); var sz = Math.max(30, Math.max(h.w, h.h) / h.W * r.width * 1.3);
+          var f = document.createElement('span'); f.className = 'sbflash'; f.style.width = f.style.height = sz + 'px'; f.style.left = (r.left - er.left + (h.x + h.w / 2) / h.W * r.width - sz / 2) + 'px'; f.style.top = (r.top - er.top + (h.y + h.h / 2) / h.H * r.height - sz / 2) + 'px'; f.style.animationDelay = (n * .25) + 's';
+          el.appendChild(f); setTimeout(function(){ f.remove(); }, 2200 + n * 250); S.back[k] = Date.now(); });
+        save(); setTimeout(function(){ sp('g-stempel', {vol:.7, max:.4}); }, 200); }); }); }, {threshold:.25});
+    io.observe(el); }
+
+  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); place(); board(); intro(); holes(); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

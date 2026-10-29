@@ -602,6 +602,7 @@
       if (save){ try { localStorage.setItem('jk_mode', m); } catch(e){} } }
     /* Standard: hell (Josef, 28.10., 06:32); alte gespeicherte Wahl wird einmalig verworfen (jk_mode_v2) */
     var cur = 'hell'; try { if (!localStorage.getItem('jk_mode_v2')){ localStorage.removeItem('jk_mode'); localStorage.setItem('jk_mode_v2', '1'); } cur = localStorage.getItem('jk_mode') || 'hell'; } catch(e){}
+    if (cur !== 'dunkel') cur = 'hell';   /* Rot gestrichen (Josef, 29.10., 13:34): gespeichertes Rot wird Hell */
     set(cur, false);
     btns.forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); set(b.getAttribute('data-mode'), true); play('ratchet'); }); });   /* Lichtschalter-Knacken */
   });
@@ -778,7 +779,7 @@
         /* Josef, 29.10., 12:12: Vorschau immer dreimal so groß wie das Vorschaubild, höchstens 90 % des Fensters (Seitenverhältnis bleibt) */
         var tw = tr.width * 3, thh = tr.height * 3, k = Math.min(1, window.innerWidth * .9 / Math.max(1, tw), (window.innerHeight * .9 - 34) / Math.max(1, thh));
         him.style.width = Math.round(tw * k) + 'px'; him.style.height = Math.round(thh * k) + 'px';
-        him.src = a.getAttribute('data-full') || a.getAttribute('href'); var fc = f.querySelector('figcaption'); hcap.innerHTML = fc ? fc.innerHTML : '';
+        him.src = a.getAttribute('data-full') || a.getAttribute('href'); var fc = f.querySelector('figcaption'); hcap.innerHTML = (fc && !document.body.classList.contains('workpage')) ? fc.innerHTML : '';   /* Bildunterschrift erst nach Klick (Josef, 29.10., 13:48) */
         hov.classList.add('on'); place(e); if (Date.now() - lastSnd > 350){ lastSnd = Date.now(); softPlay(secSound(f), .25); } });
       f.addEventListener('pointermove', function(e){ if (cur === f && e.pointerType === 'mouse') place(e); });
       f.addEventListener('pointerleave', function(){ if (cur === f){ cur = null; hov.classList.remove('on'); } });
@@ -804,6 +805,11 @@
       var fc = f.querySelector('figcaption'); cap.innerHTML = fc ? fc.innerHTML : ''; cap.classList.remove('plotted'); cap.style.minHeight = ''; cnt.textContent = group.length > 1 ? (idx + 1) + ' / ' + group.length : '';
       if (window.JK_PLOT_ONCE) setTimeout(function(){ window.JK_PLOT_ONCE(cap, 900); }, 30);
       lb.querySelector('.p').style.display = lb.querySelector('.nx').style.display = group.length > 1 ? '' : 'none';
+      /* Suchbilder mit Löchern: kleiner Link "vollständig" zeigt das Original, nochmal klicken zeigt wieder den Spielstand (Josef, 29.10.) */
+      var voll = a.getAttribute('data-voll'); var old = lb.querySelector('button.voll'); if (old) old.remove();
+      if (voll){ var vb = document.createElement('button'); vb.type = 'button'; vb.className = 'voll'; vb.textContent = 'vollständig'; var cur0 = img.src; lb.appendChild(vb);
+        vb.addEventListener('click', function(ev){ ev.stopPropagation(); var on = vb.classList.toggle('on'); img.src = on ? voll : cur0; vb.textContent = on ? 'mit Löchern' : 'vollständig'; }); }
+      window.dispatchEvent(new CustomEvent('jk:lb', {detail:{a:a}}));
       resetZoom(); lensOn = !!a.closest('#suchbilder'); lens.classList.remove('on');
       if (spotBox){ spotBox.remove(); spotBox = null; } if (playBtn){ playBtn.remove(); playBtn = null; }
       var fig = a.closest('figure'); var song = fig && fig.getAttribute('data-song');

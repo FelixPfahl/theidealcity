@@ -1071,3 +1071,11 @@ img.sbobj:not(.found){filter:none!important}
 .hov,.hov img{max-width:none;max-height:none}
 .hov img{object-fit:contain}
 .progress2{display:none!important}
+
+/* Josef, 29.10., 13:48: Bildunterschriften bei seinen Arbeiten (Kunst, Comic) erst nach Klick, in der Großansicht; für Screenreader bleiben sie im Text */
+body.workpage .work figcaption,body.workpage .bleed figcaption{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;padding:0!important;margin:0!important;border:0!important}
+.hov .cap:empty{display:none}
+.lb2 button.voll{position:absolute;right:16px;bottom:16px;z-index:3;font:inherit;font-size:13px;padding:5px 10px;border:1px solid #fff;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+.lb2 button.voll.on{background:#fff;color:#000}
+.sbflash{position:absolute;pointer-events:none;z-index:31;border-radius:50%;box-shadow:0 0 0 3px #00A651,0 0 24px 8px rgba(255,255,255,.9);animation:sbflash 1.6s ease-out forwards}
+@keyframes sbflash{0%{opacity:0;transform:scale(.4)}20%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(1.6)}}

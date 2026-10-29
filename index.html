@@ -60,7 +60,7 @@ h1{margin:0;font-size:clamp(44px,14vw,72px);font-weight:800;font-stretch:70%;let
 const APPS = [
   {id:"pult", n:"Pult", d:"Im Unterricht: Phase, Restzeit, Spickzettel", web:"https://raw.githack.com/FelixPfahl/theidealcity/pult/index.html", claude:"https://claude.ai/artifact/PtrmwGZWHN8FpjA8t6w5cP"},
   {id:"morgenrunde", n:"Morgenrunde", d:"Auf dem Schulweg: Quiz zum Tag", web:"https://raw.githack.com/FelixPfahl/theidealcity/morgenrunde/morgenrunde/web/index.html", claude:"https://claude.ai/artifact/ERAHwi2MdJkdHW2Unc5inF"},
-  {id:"folien", n:"Folien", d:"Am PC: Präsentationen bauen, prüfen, vorführen", web:"https://raw.githack.com/FelixPfahl/theidealcity/folien/index.html"}
+  {id:"folien", n:"Folien", d:"Am PC vorführen, am Handy fernsteuern", web:"https://raw.githack.com/FelixPfahl/theidealcity/folien/index.html"}
 ];
 /* Ersatz, falls heute.json nicht geladen werden kann */
 const FALLBACK = {"datum":"2026-10-28","label":"Mittwoch, 28.10.","termine":[
@@ -81,7 +81,7 @@ let DAY = null;
 function renderApps(live){
   document.getElementById("apps").innerHTML = APPS.map(a => `
     <div>
-      <a class="tile${live && a.id==="pult" ? " live" : ""}" href="${esc(a.web)}">
+      <a class="tile${live && a.id==="pult" ? " live" : ""}" href="${esc(a.web)}"${IN_APP && a.id==="folien" ? ' data-tab="pult"' : ""}>
         ${live && a.id==="pult" ? '<span class="badge">Läuft</span>' : ""}
         <div class="n">${esc(a.n)}</div><div class="d">${esc(a.d)}</div>
       </a>
@@ -89,6 +89,11 @@ function renderApps(live){
     </div>`).join("");
 }
 
+/* In der Handy-App: Folien öffnet die Fernbedienung (Pult, Ansicht Jetzt) */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-tab]"); if (!t || !IN_APP) return;
+  e.preventDefault(); try { AtelierApp.openTab(t.dataset.tab); } catch(err){}
+});
 function renderToday(){
   const now = new Date();
   const days = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];

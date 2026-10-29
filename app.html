@@ -877,7 +877,8 @@ function tick(){
   lastKey = key;
   appPlan(); appFern();
   if (view === "jetzt" || view === "fern"){
-    if (changed || !loc) render();
+    const typing = document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+    if (changed || (!loc && !typing)) render();
     else {
       const ph = loc.plan.phases[loc.idx];
       const left = Math.max(0, (ph.s+ph.d)*60 - sec);

@@ -76,6 +76,9 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .remote .btn{min-height:64px}
 @media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
 .verlauf{display:grid;gap:6px;margin-top:8px}.vrow{display:grid;grid-template-columns:52px 1fr 60px 1fr 44px;gap:6px;align-items:center;font-size:14px;color:var(--muted)}.vb{height:10px;background:var(--line);border-radius:6px;overflow:hidden}.vb i{display:block;height:100%;background:var(--accent)}.vb.s i{background:var(--muted)}
+.toolbox{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0 18px;background:var(--surface)}
+.zufall{font-size:46px;font-weight:800;line-height:1.05;margin:6px 0 4px;color:var(--fg);word-break:break-word}
+.gruppen li{margin:8px 0}
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px}
 .kt{min-height:76px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:8px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .kt b{font-size:17px;line-height:1.15}
@@ -523,12 +526,78 @@ function renderNotiz(){
     <p class="small">Gespeichert nur auf diesem Handy. Im Ausbau lese ich die Notizen im Morgenlauf mit. Bitte keine Noten eintragen.</p>`;
 }
 
-/* ===== Klasse: Störungen, Verspätungen, Hausaufgaben =====
+/* ===== Klasse: Störungen, Verspätungen, Hausaufgaben, Zufall, Gruppen, Ämter =====
    Namen und Einträge liegen nur auf diesem Gerät. Mit Atelier-Schlüssel gleichen Handy und Notebook sie verschlüsselt ab. */
 const KL = { klassen: store.get("pult-klassen", {}), log: store.get("pult-klog", {stoer:{}, spaet:[], ha:[], nach:[]}) };
 KL.log.stoer = KL.log.stoer || {}; KL.log.stoerU = KL.log.stoerU || {}; KL.log.stunden = KL.log.stunden || {};
 KL.verborgen = store.get("pult-verborgen", {});   /* Kinder, die nicht öffentlich erscheinen (ohne Grund) */ KL.log.spaet = KL.log.spaet || []; KL.log.ha = KL.log.ha || []; KL.log.nach = KL.log.nach || [];
 let klDirty = false;
+/* Zufall, Gruppen, Ämter: wer heute fehlt (je Stunde), Topf für den Zufallsaufruf (je Klasse), Ämterliste (je Klasse) */
+KL.da = store.get("pult-da", {}); KL.topf = store.get("pult-topf", {}); KL.aemter = store.get("pult-aemter", {});
+const AMT_STD = ["Material austeilen", "Material einsammeln", "Tische", "Waschbecken und Pinsel", "Boden"];
+const ROLLEN = ["Sprecher", "Zeitwächter", "Materialchef", "Schreiber"];
+let klTool = null;   /* {art:"zufall", name} | {art:"gruppen", size, gr} | {art:"aemter"} | {art:"da"} */
+/* Ämter der Woche: rotiert jede Woche um so viele Plätze, wie es Ämter gibt (gleiche Rechnung am Notebook) */
+function aemterPlan(names, cfg, iso){
+  const liste = cfg && cfg.liste && cfg.liste.length ? cfg.liste : AMT_STD, je = Math.max(1, (cfg && cfg.je) || 2), n = names.length;
+  if (!n) return [];
+  const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+  const w = Math.round(d.getTime() / 6048e5), total = Math.min(n, liste.length * je), off = (w * total) % n;
+  return liste.map((a, i) => ({amt: a, wer: Array.from({length: je}, (_, j) => i * je + j).filter(x => x < total).map(x => names[(off + x) % n])}));
+}
+function anwesend(l){ const ab = KL.da[lkey(l)] || []; return klNames(klasseOf(l)).map(n => n.raw).filter(r => !ab.includes(r)); }
+/* Zufallsaufruf: niemand doppelt, bevor alle dran waren */
+function ziehen(l){
+  const kl = klasseOf(l), all = anwesend(l);
+  let t = (KL.topf[kl] || []).filter(r => all.includes(r));
+  if (!t.length) t = all.slice();
+  if (!t.length) return null;
+  const r = t.splice(Math.floor(Math.random() * t.length), 1)[0];
+  KL.topf[kl] = t; store.set("pult-topf", KL.topf);
+  return r;
+}
+function mischen(raws, size){
+  const a = raws.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  const g = Math.max(1, Math.round(a.length / size)), out = Array.from({length: g}, () => []);
+  a.forEach((r, i) => out[i % g].push(r));
+  return out;
+}
+/* Gruppen oder Ämter verschlüsselt ans Notebook (nur mit Atelier-Schlüssel und Kopplung) */
+function zeigeAmPC(art, kl, daten){
+  if (!pair.code || typeof Geheim === "undefined" || !Geheim.get()) return false;
+  const msg = {v: 1, cmd: "zeige", at: Date.now(), art, klasse: kl, daten};
+  pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method: "POST", body: await pack(msg)})).catch(() => {});
+  return true;
+}
+function toolHtml(l){
+  const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show, k = lkey(l);
+  const kann = !!(pair.code && typeof Geheim !== "undefined" && Geheim.get());
+  const pcBtn = art => kann ? `<button class="btn" data-act="zeige" data-art="${art}">Am Bildschirm zeigen</button>` : `<p class="small">Am Bildschirm zeigen geht mit Atelier-Schlüssel und Kopplung.</p>`;
+  const tabs = `<div class="chips">${[["zufall","Zufall"],["gruppen","Gruppen"],["aemter","Ämter"],["da","Wer fehlt?"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
+  if (!klTool) return tabs;
+  let body = "";
+  if (klTool.art === "zufall"){
+    const rest = (KL.topf[kl] || []).filter(r => anwesend(l).includes(r)).length;
+    body = klTool.name ? `<div class="zufall">${esc(show(klTool.name))}</div>` : `<p class="small">Erst Denkzeit geben, dann ziehen. „Weiter“ ist erlaubt.</p>`;
+    body += `<div class="ctrl"><button class="btn primary" data-act="ziehen">${klTool.name ? "Nächste Person" : "Ziehen"}</button>${klTool.name ? `<button class="btn" data-act="fehlt" data-name="${esc(klTool.name)}">Fehlt heute</button>` : ""}</div><p class="small">Noch ${klTool.name ? rest : anwesend(l).length} im Topf. Niemand kommt doppelt dran, bevor alle dran waren.</p>`;
+  } else if (klTool.art === "gruppen"){
+    body = `<div class="chips seg">${[2,3,4,5].map(n => `<button class="chip" data-act="gsize" data-n="${n}" aria-pressed="${klTool.size === n}">${n}er</button>`).join("")}</div>`;
+    if (klTool.gr) body += `<ol class="list gruppen">${klTool.gr.map(g => `<li>${g.map((r, j) => `<b>${esc(show(r))}</b>${ROLLEN[j] ? ` <span class="small">${ROLLEN[j]}</span>` : ""}`).join("<br>")}</li>`).join("")}</ol>
+      <div class="ctrl"><button class="btn" data-act="gsize" data-n="${klTool.size}">Neu mischen</button>${pcBtn("gruppen")}</div>`;
+  } else if (klTool.art === "aemter"){
+    const cfg = KL.aemter[kl] || {}, plan = aemterPlan(N.map(n => n.raw), cfg, DAY.date);
+    body = `<ul class="list">${plan.map(p => `<li><b>${esc(p.amt)}</b>: ${p.wer.map(r => esc(show(r))).join(", ") || "niemand"}</li>`).join("")}</ul>
+      <div class="ctrl">${pcBtn("aemter")}</div><p class="small">Wechselt jeden Montag. Am Notebook: Taste A, und beim Aufräumen von selbst.</p>
+      <details><summary>Ämter bearbeiten</summary><label for="amtList">Ein Amt pro Zeile</label><textarea id="amtList" style="min-height:150px">${esc((cfg.liste && cfg.liste.length ? cfg.liste : AMT_STD).join("\n"))}</textarea>
+      <div class="chips seg">${[1,2,3].map(n => `<button class="chip" data-act="amtje" data-n="${n}" aria-pressed="${(cfg.je || 2) === n}">${n} je Amt</button>`).join("")}</div>
+      <div class="ctrl"><button class="btn primary" data-act="amtsave">Speichern</button></div></details>`;
+  } else if (klTool.art === "da"){
+    const ab = KL.da[k] || [];
+    body = `<p class="small">Antippen, wer heute fehlt. Gilt für Zufall und Gruppen in dieser Stunde.</p><div class="chips">${N.map(n => `<button class="chip" data-act="fehlt" data-name="${esc(n.raw)}" aria-pressed="${ab.includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div>`;
+  }
+  return tabs + `<div class="toolbox">${body}</div>`;
+}
 function klSave(sync){ store.set("pult-klassen", KL.klassen); store.set("pult-klog", KL.log); store.set("pult-verborgen", KL.verborgen); if (sync !== false) klSync(); }
 /* Stunde der Klasse merken (für das Klassenziel „3 Stunden ohne Verspätung“) */
 function klStunde(l){ const kl = klasseOf(l), k = lkey(l), a = KL.log.stunden[kl] = KL.log.stunden[kl] || []; if (!a.includes(k)){ a.push(k); a.sort(); klSave(); } }
@@ -593,7 +662,7 @@ function renderKlasse(){
   const late = KL.log.spaet.filter(e => e.klasse === kl && e.date === DAY.date && !e.del);
   const open = N.map(n => ({n, s: spaetSum(kl, n.raw)})).filter(x => x.s.open >= 30);
   const show = raw => (N.find(n => n.raw === raw) || {show: raw}).show;
-  return head + `<p class="small">Tippen: Störung zählen. Lange drücken: eine zurücknehmen. Beim dritten Mal: Hausaufgabe.</p>
+  return head + toolHtml(l) + `<p class="small">Tippen: Störung zählen. Lange drücken: eine zurücknehmen. Beim dritten Mal: Hausaufgabe.</p>
     <div class="kgrid">${tiles}</div>
     ${has.length ? `<h2>Hausaufgabe heute</h2><ul class="list">${has.map(h => `<li><b>${esc(show(h.name))}</b>: Übung Zentralperspektive bis zur nächsten Stunde <button class="chip" data-act="kltext" data-art="ha" data-name="${esc(h.name)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
     ${collect.length ? `<h2>Einsammeln</h2><ul class="list">${collect.map(h => `<li>${esc(show(h.name))} <span class="small">(${esc(h.date.slice(8,10) + "." + h.date.slice(5,7) + ".")})</span> <button class="chip" data-act="hadone" data-id="${h.id}">abgegeben</button></li>`).join("")}</ul>` : ""}
@@ -629,6 +698,20 @@ document.addEventListener("contextmenu", e => { if (e.target.closest && e.target
 function klClick(b){
   if (b.dataset.st){ if (klLong){ klLong = false; return true; } const l = lessons.find(x => x.id === selected); if (l){ stoer(l, b.dataset.st, 1); render(); } return true; }
   const act = b.dataset.act, l = lessons.find(x => x.id === selected);
+  if (act === "tool"){ klTool = klTool && klTool.art === b.dataset.art ? null : {art: b.dataset.art, size: 4}; render(); return true; }
+  if (act === "ziehen"){ klTool = {art: "zufall", name: ziehen(l)}; try { if (navigator.vibrate) navigator.vibrate(30); } catch(e){} render(); return true; }
+  if (act === "fehlt"){ const k = lkey(l), a = KL.da[k] = KL.da[k] || [], i = a.indexOf(b.dataset.name); if (i < 0) a.push(b.dataset.name); else a.splice(i, 1); store.set("pult-da", KL.da); if (klTool && klTool.art === "zufall") klTool = {art: "zufall", name: ziehen(l)}; render(); return true; }
+  if (act === "gsize"){ const n = Number(b.dataset.n); klTool = {art: "gruppen", size: n, gr: mischen(anwesend(l), n)}; render(); return true; }
+  if (act === "amtje"){ const kl = klasseOf(l), c = KL.aemter[kl] = KL.aemter[kl] || {}; c.je = Number(b.dataset.n); c._u = Date.now(); store.set("pult-aemter", KL.aemter); klSync(); render(); return true; }
+  if (act === "amtsave"){ const kl = klasseOf(l), c = KL.aemter[kl] = KL.aemter[kl] || {}; c.liste = ($("#amtList").value || "").split(/\n+/).map(x => x.trim()).filter(Boolean); c._u = Date.now(); store.set("pult-aemter", KL.aemter); klSync(); render(); return true; }
+  if (act === "zeige"){
+    const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show;
+    let daten = null;
+    if (b.dataset.art === "gruppen" && klTool && klTool.gr) daten = klTool.gr.map(g => g.map((r, j) => ({name: show(r), rolle: ROLLEN[j] || ""})));
+    if (b.dataset.art === "aemter") daten = aemterPlan(N.map(n => n.raw), KL.aemter[kl] || {}, DAY.date).map(p => ({amt: p.amt, wer: p.wer.map(show)}));
+    if (daten && zeigeAmPC(b.dataset.art, kl, daten)) b.textContent = "Gesendet";
+    return true;
+  }
   if (act === "klsave"){ const v = ($("#klList").value || "").split(/\n+/).map(s => s.trim()).filter(Boolean); KL.klassen[b.dataset.kl] = v; KL.klassen._u = Date.now(); klSave(); render(); return true; }
   if (act === "hadone"){ const h = KL.log.ha.find(x => x.id === b.dataset.id); if (h){ h.done = true; h.u = Date.now(); klSave(); render(); } return true; }
   if (act === "spok"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.ok = true; e.u = Date.now(); klSave(); render(); } return true; }
@@ -651,6 +734,7 @@ function klMerge(o){
     if (i < 0){ KL.log[key].push(e); ch = true; } else if ((e.u || 0) > (KL.log[key][i].u || 0)){ KL.log[key][i] = e; ch = true; }
   }
   if (o.verborgen && (o.verborgen._u || 0) > (KL.verborgen._u || 0)){ KL.verborgen = o.verborgen; ch = true; }
+  if (o.aemter) for (const [k, v] of Object.entries(o.aemter)) if (v && (v._u || 0) > ((KL.aemter[k] || {})._u || 0)){ KL.aemter[k] = v; store.set("pult-aemter", KL.aemter); ch = true; }
   if (o.stunden) for (const [k, v] of Object.entries(o.stunden)){ const a = KL.log.stunden[k] = KL.log.stunden[k] || []; for (const x of v) if (!a.includes(x)){ a.push(x); ch = true; } a.sort(); }
   if (o.stoer) for (const [k, v] of Object.entries(o.stoer)){ const u = (o.stoerU || {})[k] || 0; if (u > (KL.log.stoerU[k] || 0)){ KL.log.stoer[k] = v; KL.log.stoerU[k] = u; ch = true; } }
   if (ch) klSave(false);
@@ -663,7 +747,7 @@ function klSync(){
   klTimer = setTimeout(() => {
     const today = {}, tu = {}; for (const [k, v] of Object.entries(KL.log.stoer)) if (k.startsWith(DAY.date)){ today[k] = v; tu[k] = KL.log.stoerU[k] || 0; }
     const h = halbjahr(DAY.date), cut = x => halbjahr(x.date) === h;
-    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, verborgen: KL.verborgen, stunden: KL.log.stunden, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
+    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, aemter: KL.aemter, verborgen: KL.verborgen, stunden: KL.log.stunden, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
     pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method: "POST", body: await pack(msg)})).catch(() => {});
   }, 400);
 }

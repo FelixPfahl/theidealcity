@@ -1,14 +1,23 @@
 Testtag laut Daten: 2026-10-29
-FEHLER  Update über die vorige Fassung (anderer Signaturschlüssel)
+OK      Update über die vorige Fassung ohne Neuinstallation
 Erwartet: Auflösung, Kriterien, Abstimmung / Skizze wählen / Karte beginnen
+OK      Atelier-Schlüssel über den Link übernommen
 FEHLER  Start während der Stunde öffnet Pult (erwartet: Auflösung, Kriterien, Abstimmung)
-OK      Leiste: Heute
-OK      Kachel Morgenrunde
+  (nicht gefunden: Heute)
+FEHLER  Leiste: Heute (erwartet: Auf dem Schulweg)
+  (nicht gefunden: Morgenrunde)
+FEHLER  Kachel Morgenrunde (erwartet: archiv)
+  (nicht gefunden: Pult)
 FEHLER  Leiste: Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+  (nicht gefunden: Fernbedienung)
 FEHLER  Leiste: Fernbedienung (erwartet: Noch nicht gekoppelt)
+  (nicht gefunden: Pult)
 FEHLER  Leiste: zurück von Fernbedienung zu Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+  (nicht gefunden: Heute)
   (nicht gefunden: Folien)
 FEHLER  Kachel Folien öffnet die Fernbedienung (erwartet: Noch nicht gekoppelt)
+  (nicht gefunden: Heute)
+  (nicht gefunden: Pult)
 FEHLER  Kachel Pult wechselt jederzeit (erwartet: Auflösung, Kriterien, Abstimmung|Noch nicht gekoppelt)
   (nicht gefunden: Jetzt)
   (nicht gefunden: +5 Min.)
@@ -42,4 +51,4 @@ FEHLER  Ohne Netz: Morgenrunde (erwartet: archiv)
 FEHLER  Ohne Netz: Heute (erwartet: Auf dem Schulweg)
 FEHLER  Heute bleibt Heute, auch während der Stunde (erwartet: Auf dem Schulweg)
 ---
-Fehler insgesamt: 23
+Fehler insgesamt: 24

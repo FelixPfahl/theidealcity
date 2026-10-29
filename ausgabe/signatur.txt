@@ -1,1 +1,1 @@
-Schlüssel: Test-Schlüssel (kein Secret hinterlegt)
+Schlüssel: eigener (Secret)

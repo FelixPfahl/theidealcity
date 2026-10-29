@@ -161,7 +161,9 @@ function createWindow() {
   });
   win.on("focus", watchNewer);
   setInterval(watchNewer, 60000);
-  loadNewest();
+  /* Folien-Datei als Startparameter (z. B. Doppelklick oder Probe) */
+  const arg = process.argv.slice(1).find(a => /\.html?$/i.test(a) && fs.existsSync(a));
+  if (arg) openFile(arg); else loadNewest();
 }
 
 ipcMain.handle("list", () => candidates().slice(0, 12).map(c => ({ path: c.path, name: c.name, folder: c.folder, mtime: c.mtime })));

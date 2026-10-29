@@ -79,10 +79,11 @@
     if ((opt.bus || 'tools') === 'tools') duck(ac); }
   /* Plotter-Loop beim Scrollen: läuft mit Fade, solange gescrollt wird */
   var LOOP = null;
+  var HEAR = 1;   /* Hörbarkeit des gerade schreibenden Absatzes (1 im Bild, 0 weit weg) */
   function plotterLoop(on){ var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR.plotter; if (!st){ spriteLoad('plotter'); return; } if (!st.buf) return;
     if (on){ if (!LOOP){ var src = ac.createBufferSource(); src.buffer = st.buf; src.loop = true; var c = st.clips[Math.floor(Math.random() * st.clips.length)]; src.loopStart = c[0]; src.loopEnd = c[0] + c[1]; src.playbackRate.value = .9 + Math.random() * .2;
         var g = ac.createGain(); g.gain.value = 0; src.connect(g); g.connect(bus(ac, 'tools')); src.start(ac.currentTime, c[0]); LOOP = {src:src, g:g}; }
-      LOOP.g.gain.setTargetAtTime(.27, ac.currentTime, .08);   /* Josef, 28.10., 01:45: ein Drittel */ clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
+      LOOP.g.gain.setTargetAtTime(.27 * HEAR, ac.currentTime, .08);   /* Josef, 28.10., 01:45: ein Drittel */ clearTimeout(LOOP.t); LOOP.t = setTimeout(function(){ plotterLoop(false); }, 260); }
     else if (LOOP){ LOOP.g.gain.setTargetAtTime(0, ac.currentTime, .15); var L = LOOP; LOOP = null; setTimeout(function(){ try { L.src.stop(); } catch(e){} }, 700); } }
   window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
@@ -1134,19 +1135,23 @@
         if (b.done - done > 400){ c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); b.done = 0; }
         else { c.setTransform(DPR, 0, 0, DPR, 0, 0); for (var k = b.done - 1; k >= done; k--){ var g = items[k]; if (g.gap) continue; c.clearRect(g.x - 4, g.y - b.sc * F.asc - 6, g.adv + 8, b.sc * (F.asc - F.desc) + 12); }
           for (var m = Math.max(0, done - 3); m < done; m++){ if (!items[m].gap){ travelTo(c, b, m); strokeItem(c, b, items[m], items[m].len); } } b.done = done; } }
-      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35) spritePlay('feder', {vol:.3, max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
+      for (var i = b.done; i < done; i++){ var it = items[i]; if (it.hand && !it.link && AC && b.fwd && Math.random() < .35 && (b.hear === undefined || b.hear > .02)) spritePlay('feder', {vol:.3 * (b.hear === undefined ? 1 : b.hear), max:.35, x:it.x}); if (it.gap){ if (it.snd && b.fwd && !b.played[i]){ b.played[i] = true; if (AC) penSound(it.snd); } continue; } travelTo(c, b, i); strokeItem(c, b, it, it.len); }
       b.done = done;
       if (b.cleared.length){ c.setTransform(DPR, 0, 0, DPR, 0, 0); b.cleared.forEach(function(q){ c.clearRect(q[0], q[1], q[2], q[3]); }); }
       L.setTransform(1, 0, 0, 1, 0, 0); L.clearRect(0, 0, lv.width, lv.height);
       var penAt = null;
       if (done < n){ var cur = items[done], d = D - cur.cum;
-        if (cur.gap){ if (d > 0) penAt = cur.at; if (cur.snd && d > 0 && b.fwd && !b.played[done]){ b.played[done] = true; if (AC) penSound(cur.snd); } }
+        if (cur.gap){ if (d > 0) penAt = cur.at; if (cur.snd && d > 0 && b.fwd && !b.played[done]){ b.played[done] = true; if (AC && (b.hear === undefined || b.hear > .02)) penSound(cur.snd, b.hear); } }
         else if (d > 0){ travelTo(L, b, done); strokeItem(L, b, cur, d); mpath.setAttribute('d', cur.g.d); var pt = mpath.getPointAtLength(d); penAt = [cur.x + pt.x * (cur.sc || b.sc), cur.y - pt.y * (cur.sc || b.sc)]; } }
       for (var j = done; j < n; j++) if (D - items[j].cum <= 0 && items[j].gap) b.played[j] = false;
       if (penAt){ L.setTransform(DPR, 0, 0, DPR, 0, 0); L.globalAlpha = 1; L.fillStyle = b.col.acc; L.beginPath(); L.arc(penAt[0], penAt[1], b.hero ? 6 : 3, 0, 6.283); L.fill(); }
     }
     function update(){ raf = false; var vh = window.innerHeight, moved = false, lag = false, now = performance.now();
       var dy = Math.abs(window.scrollY - lastScrollY), dt = Math.max(1, now - lastScrollT); speed = speed * .6 + (dy / dt) * .4; lastScrollY = window.scrollY; lastScrollT = now;
+      var hearMax = 0;
+      /* sichtbarer Bereich je Fenstergröße und Auflösung (Josef, 29.10., 14:02): unter Kopfzeile und Unternavigation, mit Zoom am Handy (visualViewport); Ausblendweg = ein Drittel der sichtbaren Höhe */
+      var VV = window.visualViewport, cs = getComputedStyle(document.documentElement), hh = (parseFloat(cs.getPropertyValue('--headh')) || 0) + (parseFloat(cs.getPropertyValue('--subh')) || 0);
+      var VIS = {top:(VV ? VV.offsetTop : 0) + Math.min(hh, vh * .3), bot:VV ? VV.offsetTop + VV.height : vh}; VIS.fade = Math.max(60, (VIS.bot - VIS.top) * .35);
       built.forEach(function(b){ var r = b.el.getBoundingClientRect();
         if (r.bottom < -vh * 2 || r.top > vh * 3){ if (b.alive && !b.hero){ b.cv.width = 0; b.cv.height = 0; b.lv.width = 0; b.lv.height = 0; b.alive = false; b.dirty = true; } return; }   /* weit weg: Speicher frei */
         var f;
@@ -1157,12 +1162,16 @@
           if (seen || cur > 0){ var step = Math.min(1, 1.8 / Math.max(1, b.items.length)); f = Math.min(1, cur + step); if (f < 1) lag = true; }
           if (f >= 1 && !b.fin){ b.fin = true; b.el.classList.add('plotdone'); } }
         if (REDUCED) f = 1;
+        /* Josef, 29.10., 14:00: Schreiben außerhalb des Bildschirms wird leiser und schließlich unhörbar (Plotter und Dürers Feder) */
+        /* Josef, 29.10., 14:01: nur was man sieht, bleibt laut; maßgeblich ist die Stelle, an der der Stift gerade schreibt; sonst graduell ausblenden */
+        var penY = r.top + r.height * Math.max(0, Math.min(1, f)); b.hear = (penY >= VIS.top && penY <= VIS.bot) ? 1 : Math.max(0, 1 - (penY > VIS.bot ? penY - VIS.bot : VIS.top - penY) / VIS.fade);
+        if (f !== b.f && b.hear > hearMax) hearMax = b.hear;
         if (f !== b.f || b.dirty){ b.fwd = f > b.f; moved = moved || f !== b.f; b.f = f; b.dirty = false; if (r.bottom > -vh && r.top < vh * 2) draw(b); else b.dirty = true; } });
-      if (moved && AC){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
+      HEAR = hearMax; if (moved && AC && HEAR > .02){ if (SPR.plotter && SPR.plotter.buf) plotterLoop(true); else { spriteLoad('plotter'); humOn(); } }
       if (lag || built.some(function(b){ return b.hero && b.f < 1; })){ if (!raf){ raf = true; requestAnimationFrame(update); } } }
-    function penSound(kind){ var ac = ctx(); if (!ac) return; var t = ac.currentTime + .01; vary(); V.len = 1; V.vol = .8;
-      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:.4, force:true}); spritePlay('plotter', {vol:.2, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
-      if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8, max:.3, force:true}); return; }
+    function penSound(kind, hv){ var ac = ctx(); if (!ac) return; hv = hv === undefined ? 1 : hv; var t = ac.currentTime + .01; vary(); V.len = 1; V.vol = .8 * hv;
+      if (kind === 'feder' && SPR.feder && SPR.feder.buf){ spritePlay('feder', {vol:.4 * hv, force:true}); spritePlay('plotter', {vol:.2 * hv, max:.25, semi:-5}); return; } if (kind === 'feder') spriteLoad('feder');
+      if (kind === 'swap' && SPR.plotter && SPR.plotter.buf){ spritePlay('plotter', {vol:.8 * hv, max:.3, force:true}); return; }
       if (kind === 'swap'){ [0, .09].forEach(function(dt){ noise(ac, t + dt, .025, .5, 'lowpass', 900, 1, .025); osc(ac, 'square', 180, t + dt, .03, .25); }); }
       else if (kind === 'feder'){ /* Feder wird aufgenommen und eingetaucht: Klirren, Tropfen, Kratzen */ noise(ac, t, .05, .35, 'highpass', 2600, 1, .05); osc(ac, 'triangle', 1900, t + .06, .05, .12, .002); noise(ac, t + .18, .22, .4, 'bandpass', 3200, 3, .1); }
       else { var n = 9; for (var k = 0; k < n; k++){ osc(ac, 'square', 70 + k * 4, t + k * .035, .02, .14); } noise(ac, t + .34, .04, .5, 'lowpass', 700, 1, .04); osc(ac, 'sine', 60, t + .34, .12, .45, .004); noise(ac, t + .5, .03, .4, 'lowpass', 900, 1, .03); } }

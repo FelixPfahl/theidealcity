@@ -41,6 +41,11 @@ h1{margin:0;font-size:clamp(44px,14vw,72px);font-weight:800;font-stretch:70%;let
 .tile .badge{position:absolute;top:16px;right:16px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
 .alt{display:inline-block;margin:8px 0 0 4px;color:var(--muted);font-size:14px}
 .foot{margin-top:32px;font-size:13px;color:var(--muted)}
+.help{display:block;margin-top:22px;color:var(--accent-text);font-size:17px;font-weight:600;text-decoration:none}
+.appbar{position:fixed;left:0;right:0;bottom:0;z-index:7;height:44px;display:flex;background:#07080b;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.appbar a{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;font-size:15px;font-weight:600}
+.appbar a[aria-current="page"]{color:var(--fg);box-shadow:inset 0 2px 0 var(--accent)}
+body.has-appbar .wrap{padding-bottom:90px}
 </style>
 </head>
 <body>
@@ -53,6 +58,7 @@ h1{margin:0;font-size:clamp(44px,14vw,72px);font-weight:800;font-stretch:70%;let
     <div class="s" id="ts"></div>
   </section>
   <nav class="grid" id="apps" aria-label="Apps"></nav>
+  <a class="help" href="anleitung.html">Anleitung: Installieren, Koppeln, Bedienen ›</a>
   <p class="foot">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).</p>
 </div>
 <script>
@@ -81,7 +87,7 @@ let DAY = null;
 function renderApps(live){
   document.getElementById("apps").innerHTML = APPS.map(a => `
     <div>
-      <a class="tile${live && a.id==="pult" ? " live" : ""}" href="${esc(a.web)}"${IN_APP && a.id==="folien" ? ' data-tab="pult"' : ""}>
+      <a class="tile${live && a.id==="pult" ? " live" : ""}" href="${esc(IN_APP && a.id==="folien" ? PULT_WEB + "?ansicht=fern" : a.web)}" data-app="${a.id}">
         ${live && a.id==="pult" ? '<span class="badge">Läuft</span>' : ""}
         <div class="n">${esc(a.n)}</div><div class="d">${esc(a.d)}</div>
       </a>
@@ -89,11 +95,25 @@ function renderApps(live){
     </div>`).join("");
 }
 
-/* In der Handy-App: Folien öffnet die Fernbedienung (Pult, Ansicht Jetzt) */
+/* In der Handy-App: Kachel wechselt den Reiter (neue App: switchTab; ältere App: der Link selbst wechselt zu Pult bzw. Morgenrunde).
+   Folien öffnet am Handy die Fernbedienung in Pult. */
+const PULT_WEB = "https://raw.githack.com/FelixPfahl/theidealcity/pult/index.html";
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-tab]"); if (!t || !IN_APP) return;
-  e.preventDefault(); try { AtelierApp.openTab(t.dataset.tab); } catch(err){}
+  const t = e.target.closest("a.tile[data-app]"); if (!t || !IN_APP) return;
+  try {
+    if (window.AtelierApp && AtelierApp.switchTab){
+      e.preventDefault();
+      AtelierApp.switchTab(t.dataset.app === "folien" ? "fern" : t.dataset.app);
+    }
+  } catch(err){}
 });
+/* Im Browser: Leiste unten zwischen den Apps */
+if (!IN_APP && !/claude\.ai|claudeusercontent/.test(location.hostname)){
+  const bar = document.createElement("nav");
+  bar.className = "appbar"; bar.setAttribute("aria-label", "Apps");
+  bar.innerHTML = '<a aria-current="page" href="index.html">Atelier</a><a href="' + PULT_WEB + '#jetzt">Pult</a><a href="' + PULT_WEB + '#fern">Fernbedienung</a>';
+  document.body.appendChild(bar); document.body.classList.add("has-appbar");
+}
 function renderToday(){
   const now = new Date();
   const days = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b0c10">
+<title>Anleitung</title>
+<style>
+:root{--bg:#0b0c10;--surface:#15171d;--line:#262a33;--fg:#eceef3;--muted:#8b91a0;--accent:#0028ff;--accent-text:#8296ff;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.wrap{max-width:680px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left,0px)) 60px}
+a{color:var(--accent-text)}
+.back{display:inline-block;margin:6px 0 4px;font-size:16px;text-decoration:none}
+h1{font-size:44px;line-height:1;margin:10px 0 6px;font-weight:800;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:0 0 10px}
+h2{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:30px 0 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:10px 0}
+.card h3{margin:0 0 6px;font-size:19px}
+ol,ul{margin:6px 0;padding-left:22px}
+li{margin:6px 0}
+b{color:#fff}
+kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 6px;font:600 15px/1.5 system-ui,sans-serif;background:#0f1116}
+.code{font-weight:800;letter-spacing:.08em;color:var(--accent-text)}
+.small{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">‹ Atelier</a>
+  <h1>Anleitung</h1>
+  <p class="lead">Atelier, Pult und Folien in fünf Minuten.</p>
+
+  <h2>Installieren (einmal)</h2>
+  <div class="card">
+    <h3>Handy</h3>
+    <ol>
+      <li><b>App:</b> <a href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/app/ausgabe/atelier.apk">atelier.apk</a> laden und öffnen. Fragt Android nach „Unbekannte Apps“, für den Browser erlauben.</li>
+      <li>Eine ältere Atelier-App vorher deinstallieren.</li>
+      <li><b>Ohne App:</b> Pult im Browser öffnen und im Menü „Zum Startbildschirm hinzufügen“.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h3>Notebook</h3>
+    <ol>
+      <li>Die Folien-Datei des Tages aus dem Chat speichern und mit <b>Chrome</b> öffnen.</li>
+      <li>Einmal die Canva-PDFs aus dem Schultagsordner wählen. Die Datei merkt sie sich.</li>
+    </ol>
+  </div>
+
+  <h2>Koppeln (einmal)</h2>
+  <div class="card">
+    <ol>
+      <li>Am Notebook auf <b>QR-Code zum Koppeln zeigen</b> klicken und mit der Handy-Kamera scannen. Den Code nur zeigen, bevor die Klasse da ist.</li>
+      <li>Oder in Pult unter <b>Tag</b> den Code eingeben, der am Notebook steht.</li>
+    </ol>
+    <p class="small">Danach folgt Pult den Folien, und das Handy steuert das Notebook.</p>
+  </div>
+
+  <h2>Im Unterricht</h2>
+  <div class="card">
+    <h3>Notebook</h3>
+    <ul>
+      <li>Stunde anklicken, <kbd>F11</kbd> für Vollbild.</li>
+      <li><kbd>→</kbd> oder <kbd>Leertaste</kbd> weiter, <kbd>←</kbd> zurück.</li>
+      <li><kbd>B</kbd> Schwarzbild, <kbd>T</kbd> großer Timer, <kbd>N</kbd> nächste Phase von Hand, <kbd>Esc</kbd> zurück zur Auswahl.</li>
+      <li>In Arbeitsphasen stehen unten rechts Sozialform und Restzeit in Minuten. In den letzten 3 Minuten kommt der große Timer mit Sekunden von selbst, <kbd>T</kbd> blendet ihn aus.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Handy: Pult</h3>
+    <ul>
+      <li><b>Jetzt:</b> laufende Phase, Restzeit (Sekunden erst in den letzten 3 Minuten), Regie.</li>
+      <li><b>+5 Min.</b> verlängert, <b>Weiter</b> beendet die Phase, <b>Zurück</b> nimmt das zurück. Der Rest der Stunde gleicht sich aus.</li>
+      <li><b>Schul-PC:</b> ‹ Folie, Folie ›, Schwarz, Timer steuern das Notebook. Steht das Notebook noch auf der Auswahl, startet Folie › die laufende Stunde.</li>
+      <li><b>Tag:</b> Ablauf, Drucksachen, offene Bewertung, Koppeln. <b>Spick:</b> Werke, Impulsfragen, Plan B. <b>Notiz:</b> Notizen und Kurzcheck, nur auf dem Handy gespeichert.</li>
+      <li>Das Handy vibriert beim Phasenwechsel.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Atelier</h3>
+    <ul>
+      <li>Zeigt, was jetzt läuft und was danach kommt. Während einer Stunde springt die App von selbst zu Pult.</li>
+      <li>Die Kachel <b>Folien</b> öffnet am Handy die Fernbedienung, am Notebook die Folien-App.</li>
+    </ul>
+  </div>
+
+  <h2>Wenn etwas hakt</h2>
+  <div class="card">
+    <ul>
+      <li><b>Kein Netz:</b> Folien laufen weiter, nur das Handy folgt nicht. Pult rechnet mit dem letzten Stand.</li>
+      <li><b>Folie springt nicht in die richtige Phase:</b> am Notebook <kbd>N</kbd>, am Handy <b>Weiter</b>.</li>
+      <li><b>Gar nichts geht:</b> die PDFs aus dem Schultagsordner im Vollbild zeigen.</li>
+      <li><b>Fehler melden:</b> kurz im Claude-Chat beschreiben.</li>
+    </ul>
+  </div>
+  <p class="small">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).</p>
+</div>
+</body>
+</html>

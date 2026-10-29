@@ -22,7 +22,47 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win nsis --publish always
+      - name: Installer für die zweite Probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup
+          path: dist/Atelier-Folien-Setup.exe
       - name: Installieren und starten (Probe)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Continue"
+          Write-Host "::notice::Dateien: $((Get-ChildItem dist -File | ForEach-Object { $_.Name + ' ' + $_.Length }) -join ', ')"
+          $dl = Join-Path $env:USERPROFILE "Downloads"
+          New-Item -ItemType Directory -Force $dl | Out-Null
+          Set-Content (Join-Path $dl "Atelier_Folien_Probe.html") '<!doctype html><title>Probe</title><h1>Probe</h1>'
+          $inst = Start-Process "dist\Atelier-Folien-Setup.exe" -ArgumentList "/S" -PassThru -Wait
+          Write-Host "::notice::Installer beendet mit $($inst.ExitCode)"
+          Start-Sleep 5
+          $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Programs" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName
+          if (!$exe) { $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "C:\Program Files" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName }
+          if (!$exe) { Write-Host "::error::Programm nicht installiert. Programs: $((Get-ChildItem $env:LOCALAPPDATA\Programs -ErrorAction SilentlyContinue | ForEach-Object Name) -join ', ')"; exit 1 }
+          Write-Host "::notice::Installiert: $exe"
+          $probe = Join-Path $env:RUNNER_TEMP "probe.json"
+          $env:ATELIER_PROBE = $probe
+          $p = Start-Process $exe -PassThru
+          Start-Sleep 20
+          if ($p.HasExited) { Write-Host "::error::Programm hat sich beendet (Code $($p.ExitCode))"; exit 1 }
+          if (!(Test-Path $probe)) { Write-Host "::error::Keine Seite geladen"; exit 1 }
+          $r = Get-Content $probe -Raw
+          Write-Host "::notice::Probe: $r"
+          if ($r -notlike "*Atelier_Folien_Probe*") { Write-Host "::error::Folien-Datei wurde nicht geöffnet: $r"; exit 1 }
+          Stop-Process -Name "Atelier Folien" -Force -ErrorAction SilentlyContinue
+          Write-Host "Probe OK"
+
+  probe-win11:
+    needs: build
+    runs-on: windows-2025
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: setup
+          path: dist
+      - name: Installieren und starten (Probe Windows 11 / Server 2025)
         shell: pwsh
         run: |
           $ErrorActionPreference = "Continue"

@@ -1,21 +1,22 @@
+android.webkit.WebView | Pult
+android.widget.TextView | DONNERSTAG, 29.10.
+android.widget.TextView | 8.10
+android.widget.TextView | 7A · WEIHNACHTSKARTE 2 VON 2 · 8.00 BIS 9.30
+android.widget.TextView | Partnerarbeit
+android.widget.TextView | Skizze wählen
+android.widget.TextView | 10 Min.
+android.widget.TextView | bis 8.20
+android.widget.TextView | Arbeitsauftrag 4: Skizze wählen, Satz und Farbplan auf Handout 05.
+android.widget.TextView | Danach 8.20 Einzelarbeit, 20 Min.: Karte beginnen
+android.widget.Button | +5 Min.
+android.widget.Button | Weiter
+android.widget.TextView | Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).
+android.widget.TextView | Stand der Daten: Donnerstag, 29.10.
+android.view.View | Ansichten
+android.widget.Button | Jetzt
+android.widget.Button | Tag
+android.widget.Button | Spick
+android.widget.Button | Notiz
 android.widget.TextView | Heute
 android.widget.TextView | Pult
-android.widget.TextView | Morgenrunde
-android.webkit.WebView | Atelier
-android.widget.TextView | Atelier
-android.widget.TextView | 11.50
-android.widget.TextView | DONNERSTAG, 29.10.
-android.widget.TextView | ALS NÄCHSTES
-android.widget.TextView | 12.15 6a Klassenstunde: Schullandheim abschließen
-android.widget.TextView | in 25 Min.
-android.view.View | Apps
-android.view.View | Pult Im Unterricht: Phase, Restzeit, Spickzettel
-android.widget.TextView | Pult
-android.widget.TextView | Im Unterricht: Phase, Restzeit, Spickzettel
-android.view.View | Morgenrunde Auf dem Schulweg: Quiz zum Tag
-android.widget.TextView | Morgenrunde
-android.widget.TextView | Auf dem Schulweg: Quiz zum Tag
-android.view.View | Folien Am PC: Präsentationen bauen, prüfen, vorführen
-android.widget.TextView | Folien
-android.widget.TextView | Am PC: Präsentationen bauen, prüfen, vorführen
-android.widget.TextView | Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).
+android.widget.TextView | Fernbedienung

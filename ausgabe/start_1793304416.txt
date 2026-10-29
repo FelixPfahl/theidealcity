@@ -1,0 +1,7 @@
+Starting: Intent { cmp=de.theidealcity.atelier/.MainActivity (has extras) }
+Status: ok
+LaunchState: COLD
+Activity: de.theidealcity.atelier/.MainActivity
+TotalTime: 1416
+WaitTime: 1427
+Complete

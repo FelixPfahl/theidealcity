@@ -39,8 +39,8 @@ jobs:
           Set-Content (Join-Path $dl "Atelier_Folien_Probe.html") '<!doctype html><title>Probe</title><h1>Probe</h1>'
           $inst = Start-Process "dist\Atelier-Folien-Setup.exe" -ArgumentList "/S" -PassThru -Wait
           Write-Host "::notice::Installer beendet mit $($inst.ExitCode)"
-          Start-Sleep 5
-          $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Programs" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName
+          $exe = $null
+          for ($i = 0; $i -lt 30 -and !$exe; $i++) { Start-Sleep 2; $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Programs" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName }
           if (!$exe) { $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "C:\Program Files" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName }
           if (!$exe) { Write-Host "::error::Programm nicht installiert. Programs: $((Get-ChildItem $env:LOCALAPPDATA\Programs -ErrorAction SilentlyContinue | ForEach-Object Name) -join ', ')"; exit 1 }
           Write-Host "::notice::Installiert: $exe"
@@ -86,8 +86,8 @@ jobs:
           Set-Content (Join-Path $dl "Atelier_Folien_Probe.html") '<!doctype html><title>Probe</title><h1>Probe</h1>'
           $inst = Start-Process "dist\Atelier-Folien-Setup.exe" -ArgumentList "/S" -PassThru -Wait
           Write-Host "::notice::Installer beendet mit $($inst.ExitCode)"
-          Start-Sleep 5
-          $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Programs" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName
+          $exe = $null
+          for ($i = 0; $i -lt 30 -and !$exe; $i++) { Start-Sleep 2; $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Programs" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName }
           if (!$exe) { $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "C:\Program Files" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName }
           if (!$exe) { Write-Host "::error::Programm nicht installiert. Programs: $((Get-ChildItem $env:LOCALAPPDATA\Programs -ErrorAction SilentlyContinue | ForEach-Object Name) -join ', ')"; exit 1 }
           Write-Host "::notice::Installiert: $exe"

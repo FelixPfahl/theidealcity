@@ -11,6 +11,8 @@ import android.os.Vibrator;
 import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
+import android.content.pm.PackageManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -67,6 +69,8 @@ public class MainActivity extends Activity {
     /** Darf die Startseite einmal automatisch zu Pult springen? Nur beim normalen Start, bis du selbst einen Reiter tippst. */
     private boolean autoTabAllowed = false;
     private WebView web; // aktuelle Ansicht
+    /** Lautstärketasten als Fernbedienung, solange Pult mit dem Notebook gekoppelt ist */
+    private volatile boolean fernAktiv = false;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -110,6 +114,33 @@ public class MainActivity extends Activity {
         show(startTab);
         String u = getIntent() != null ? getIntent().getStringExtra("url") : null;
         if (state == null && u != null) open(startUrl(getIntent()));
+        /* Benachrichtigungen (Phasenwechsel bei gesperrtem Handy) einmal erlauben lassen */
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED
+                && !getSharedPreferences(PhaseAlarm.PREFS, 0).getBoolean("gefragt", false)) {
+            getSharedPreferences(PhaseAlarm.PREFS, 0).edit().putBoolean("gefragt", true).apply();
+            requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 7);
+        }
+    }
+
+    @Override
+    protected void onResume() { super.onResume(); PhaseAlarm.appVisible = true; }
+
+    @Override
+    protected void onPause() { PhaseAlarm.appVisible = false; super.onPause(); }
+
+    /** Lauter = Folie weiter, Leiser = Folie zurück (nur gekoppelt; sonst normale Lautstärke) */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent ev) {
+        int k = ev.getKeyCode();
+        int p = indexOf("pult");
+        if (fernAktiv && p >= 0 && views[p] != null && (k == KeyEvent.KEYCODE_VOLUME_UP || k == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            if (ev.getAction() == KeyEvent.ACTION_DOWN && ev.getRepeatCount() == 0) {
+                String cmd = k == KeyEvent.KEYCODE_VOLUME_UP ? "next" : "prev";
+                views[p].evaluateJavascript("window.AtelierFern&&AtelierFern('" + cmd + "')", null);
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(ev);
     }
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
@@ -382,10 +413,11 @@ public class MainActivity extends Activity {
         else super.onBackPressed();
     }
 
-    /** Für die Web-Apps: window.AtelierApp.vibrate(ms), .retry(), .openTab(app), .isApp() */
+    /** Für die Web-Apps: window.AtelierApp.vibrate(ms), .retry(), .openTab(app), .switchTab(app), .pultView(v), .isApp(), .plan(json), .fern(an) */
     class Bridge {
         @JavascriptInterface
         public void vibrate(long ms) {
+            if (!PhaseAlarm.appVisible) return;   /* im Hintergrund vibriert der Wecker (PhaseAlarm), nicht doppelt */
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (v == null) return;
             if (Build.VERSION.SDK_INT >= 26) v.vibrate(VibrationEffect.createOneShot(ms, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -422,5 +454,16 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean isApp() { return true; }
+
+        /** Pult übergibt den Phasenplan des Tages (JSON): Wecker und Benachrichtigung bei gesperrtem Handy */
+        @JavascriptInterface
+        public void plan(String json) {
+            if (json == null || json.length() > 200000) return;
+            PhaseAlarm.setPlan(getApplicationContext(), json);
+        }
+
+        /** Pult meldet, ob es gekoppelt ist (dann steuern die Lautstärketasten die Folien) */
+        @JavascriptInterface
+        public void fern(boolean an) { fernAktiv = an; }
     }
 }

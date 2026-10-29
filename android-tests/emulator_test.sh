@@ -29,8 +29,22 @@ else
   adb install "$NEU" > /dev/null
 fi
 
+adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
+
 # Erwartungen kommen aus den Tagesdaten (android-tests/erwartung.py): E_P1, E_P2, E_P3, E_BIS, T_P1, T_WECHSEL, T_OFFLINE
+if [ "${MIT_DATEN:-0}" != "1" ]; then
+  echo "Kein Atelier-Schlüssel: nur Start- und Leistentest" | tee -a "$R"
+  adb shell settings put global auto_time 1
+  start; sleep 20; shot 01_start
+  check "Start ohne Schlüssel zeigt Heute" "Auf dem Schulweg|Schlüssel"
+  tap "Pult"; sleep 4; check "Leiste: Pult" "Schlüssel|Pult"
+  echo "---" >> "$R"; echo "Fehler insgesamt: $N" | tee -a "$R"; exit 0
+fi
 echo "Erwartet: $E_P1 / $E_P2 / $E_P3" | tee -a "$R"
+# Atelier-Schlüssel einmal über den Link-Anker übergeben (Pult speichert ihn lokal, Atelier liest ihn mit)
+setclock "$T_P1" 00
+adb shell am start -W -n "$PKG/.MainActivity" --es url "https://app.atelier/pult/index.html#s=$ATELIER_SCHLUESSEL" > /dev/null; sleep 12
+adb shell am force-stop "$PKG"
 
 # 2. Start mitten in der Stunde springt zu Pult
 setclock "$T_P1" 00
@@ -79,6 +93,20 @@ check "Phase wechselt nach Uhrzeit" "$E_P2"
 if adb shell dumpsys vibrator_manager 2>/dev/null | grep -q "$PKG"; then ok "Vibration beim Phasenwechsel ausgelöst"
 else bad "Vibration beim Phasenwechsel nicht nachweisbar"; fi
 shot 08_phasenwechsel
+
+# 8b. Benachrichtigung bei gesperrtem Handy: App in den Hintergrund, Wecker zur nächsten Phase
+adb shell input keyevent KEYCODE_HOME; sleep 2
+if adb shell dumpsys notification --noredact 2>/dev/null | grep -q "$PKG"; then ok "Benachrichtigung mit laufender Phase im Hintergrund"
+else bad "Keine Benachrichtigung im Hintergrund"; fi
+if adb shell dumpsys alarm 2>/dev/null | grep -q "$PKG"; then ok "Wecker für den nächsten Phasenwechsel gestellt"
+else bad "Kein Wecker für den Phasenwechsel"; fi
+shot 08b_hintergrund
+start; sleep 4
+
+# 8c. Lautstärketasten: ohne Kopplung normale Lautstärke, kein Absturz
+adb shell input keyevent KEYCODE_VOLUME_UP; sleep 1
+if adb shell dumpsys activity activities | grep -E "ResumedActivity" | grep -q "$PKG"; then ok "Lautstärketaste ohne Kopplung: App läuft weiter"
+else bad "App nach Lautstärketaste weg"; fi
 
 # 9. Zurück-Taste
 tap "Heute"; sleep 3; tap "Morgenrunde"; sleep 4

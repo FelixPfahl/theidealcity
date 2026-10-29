@@ -76,6 +76,7 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .remote .btn{min-height:64px}
 @media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
+.count.paused b{color:var(--muted)}
 .fern{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .fern .btn{min-height:min(12vh,96px);font-size:22px}
 .fern .btn.wide{grid-column:1 / -1;min-height:min(20vh,150px);font-size:32px}
@@ -134,13 +135,13 @@ const store = {
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
 };
 const todayIso = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
-let DAY = null, MORGEN = null, KEY = "", state = {adj:{}, notes:{}, sim:null}, lessons = [];
+let DAY = null, MORGEN = null, KEY = "", state = {adj:{}, notes:{}, sim:null, pause:{}}, lessons = [];
 function setDay(d){
   DAY = d && d.items ? d : {date:"", label:"", items:[], drucken:[], bewertung:[], bewertungHinweis:""};
   DAY.drucken = DAY.drucken || []; DAY.bewertung = DAY.bewertung || []; DAY.bewertungHinweis = DAY.bewertungHinweis || "";
   KEY = "pult-" + DAY.date;
   state = store.get(KEY, {adj:{}, notes:{}, sim:null});
-  state.adj = state.adj || {}; state.notes = state.notes || {};
+  state.adj = state.adj || {}; state.notes = state.notes || {}; state.pause = state.pause || {};
   lessons = DAY.items.filter(i => i.type === "lesson");
 }
 const fresh = () => DAY && DAY.date === todayIso();
@@ -158,24 +159,62 @@ function nowSec(){
 
 /* Phasen mit Verzug neu berechnen: die aktuelle Phase wird länger oder kürzer,
    der Ausgleich kommt aus der nächsten Phase mit Puffer, sonst aus der längsten späteren Phase. */
-function plan(lesson){
-  const base = lesson.phases.map(p => ({t:p[0], d:p[1], form:p[2], titel:p[3], regie:p[4], puffer:p[5]||0}));
-  const durs = base.map(p => p.d);
+/* ===== Gemeinsame Zeitrechnung (identisch in Pult und Folien) =====
+   base: Phasen [{d, puffer, form, ...}], adj: Liste der Eingriffe, pause: {at, t0} oder null, nowMin: jetzt in Minuten.
+   Eingriffe:
+   {at, delta}                       Phase länger/kürzer, Ausgleich aus der nächsten Pufferphase, sonst der längsten späteren
+   {at, delta, shift:true}           Phase länger, die Stunde verschiebt sich (Pause)
+   {back:true, at, cut, src, d}      Phase at endet nach cut Min., danach noch einmal Phase src für d Min.; die Stunde verschiebt sich */
+const ARBEIT = /arbeit/i;
+function planCore(base, adj, pause, nowMin){
+  let ph = base.map((p, i) => ({...p, src: i, again: false}));
   const notes = [];
-  for (const a of (state.adj[lesson.id] || [])){
-    durs[a.at] = Math.max(0, durs[a.at] + a.delta);
-    let target = -1;
-    for (let j = a.at+1; j < base.length; j++) if (base[j].puffer > 0){ target = j; break; }
-    if (target < 0){
-      let best = 0;
-      for (let j = a.at+1; j < base.length; j++) if (durs[j] > best){ best = durs[j]; target = j; }
+  const list = (adj || []).slice();
+  if (pause && nowMin != null) list.push({at: pause.at, delta: Math.max(0, nowMin - pause.t0), shift: true, live: true});
+  for (const a of list){
+    if (a.back){
+      if (a.at < ph.length && ph[a.src]){
+        ph[a.at] = {...ph[a.at], d: Math.max(0, a.cut)};
+        ph.splice(a.at + 1, 0, {...ph[a.src], d: a.d, puffer: 0, again: true});
+      }
+      notes.push({a, target: -1});
+      continue;
     }
-    if (target >= 0) durs[target] = Math.max(5, durs[target] - a.delta);
+    if (!ph[a.at]) continue;
+    ph[a.at] = {...ph[a.at], d: Math.max(0, ph[a.at].d + a.delta)};
+    let target = -1;
+    if (!a.shift){
+      for (let j = a.at + 1; j < ph.length; j++) if (ph[j].puffer > 0){ target = j; break; }
+      if (target < 0){ let best = 0; for (let j = a.at + 1; j < ph.length; j++) if (ph[j].d > best){ best = ph[j].d; target = j; } }
+      if (target >= 0) ph[target] = {...ph[target], d: Math.max(5, ph[target].d - a.delta)};
+    }
     notes.push({a, target});
   }
-  let t = toMin(base[0].t);
-  const out = base.map((p,i) => { const o = {...p, s:t, d:durs[i]}; t += durs[i]; return o; });
-  return {phases:out, end:t, planEnd:toMin(lesson.end), notes};
+  return {ph, notes};
+}
+/* Startzeiten dazurechnen */
+function withStarts(ph, start){ let t = start; return ph.map(p => { const o = {...p, s: t}; t += p.d; return o; }); }
+/* Phase nach Uhrzeit */
+function phaseAt(phases, nowMin){ for (let i = 0; i < phases.length; i++) if (nowMin < phases[i].s + phases[i].d) return i; return phases.length - 1; }
+/* Letzte Arbeitsphase vor idx und ihre Restzeit (was beim Weitergehen übrig war, sonst 5 Min.) */
+function backInfo(phases, adj, idx){
+  let k = -1;
+  for (let i = idx - 1; i >= 0; i--) if (ARBEIT.test(phases[i].form)){ k = i; break; }
+  if (k < 0) return null;
+  let cut = 0;
+  for (const a of (adj || [])) if (!a.back && !a.shift && a.at === k && a.delta < 0) cut += -a.delta;
+  let r = Math.round(cut); if (r < 1) r = 5;
+  return {k, r, titel: phases[k].titel};
+}
+/* Kennung der Phasenfolge: nur wenn beide Seiten gleich rechnen, werden Eingriffe übernommen */
+function phaseSig(list){ return list.map(p => p.d + "/" + (p.puffer || 0)).join(","); }
+
+function plan(lesson){
+  const base = lesson.phases.map(p => ({t:p[0], d:p[1], form:p[2], titel:p[3], regie:p[4], puffer:p[5]||0}));
+  const {ph, notes} = planCore(base, state.adj[lesson.id], state.pause[lesson.id] || null, nowSec()/60);
+  const out = withStarts(ph, toMin(base[0].t));
+  const last = out[out.length - 1];
+  return {phases:out, end:last.s + last.d, planEnd:toMin(lesson.end), notes};
 }
 
 function locate(sec){
@@ -226,25 +265,33 @@ function renderJetzt(){
     const nx = p.phases[idx+1];
     const verzug = p.end - p.planEnd;
     const adjs = state.adj[lesson.id] || [];
+    const paused = state.pause[lesson.id];
+    const bk = backInfo(p.phases, adjs, idx);
     let status = "";
-    if (adjs.length){
+    if (paused) status = "Pause seit " + fmt(Math.floor(paused.t0)) + ". Die Uhr steht, die Stunde verschiebt sich.";
+    else if (adjs.length){
       const last = p.notes[p.notes.length-1];
       const tgt = last && last.target >= 0 ? p.phases[last.target].titel : null;
       status = (verzug > 0 ? "Stunde endet " + verzug + " Min. später. " : "") + (tgt ? "Ausgleich in: " + tgt + "." : "");
     }
     return `
       <div class="eyebrow">${esc(lesson.klasse)} · ${esc(lesson.titel)} · ${fmt(toMin(lesson.start))} bis ${fmt(toMin(lesson.end))}</div>
-      <div class="form">${esc(ph.form)}</div>
+      <div class="form">${esc(ph.form)}${paused ? '<span class="pill warn">Pause</span>' : ""}${ph.again ? '<span class="pill">noch einmal</span>' : ""}</div>
       <div class="ptitle">${esc(ph.titel)}</div>
-      <div class="count"><b id="cd">${leftText(left)}</b><span>bis ${fmt(ph.s+ph.d)}</span></div>
+      <div class="count${paused ? " paused" : ""}"><b id="cd">${leftText(left)}</b><span>${paused ? "angehalten" : "bis " + fmt(ph.s+ph.d)}</span></div>
       <div class="bar"><i id="pg" style="width:${(prog*100).toFixed(1)}%"></i></div>
       <div class="regie">${esc(ph.regie)}</div>
       ${nx ? `<div class="next">Danach <strong>${fmt(nx.s)} ${esc(nx.form)}</strong>, ${nx.d} Min.: ${esc(nx.titel)}</div>` : `<div class="next">Letzte Phase. Danach: Kurzcheck unter „Notiz“.</div>`}
       <div class="ctrl">
         <button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>
         ${nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : ""}
-        ${adjs.length ? `<button class="btn" data-act="undo" data-id="${lesson.id}">Zurück</button>` : ""}
+        ${adjs.length || paused ? `<button class="btn" data-act="undo" data-id="${lesson.id}">Zurück</button>` : ""}
       </div>
+      <div class="ctrl">
+        <button class="btn${paused ? " primary" : ""}" data-act="pause" data-id="${lesson.id}" data-i="${idx}">${paused ? "Fortsetzen" : "Pause"}</button>
+        ${bk ? `<button class="btn" data-act="back" data-id="${lesson.id}" data-i="${idx}">↩ Arbeitsphase</button>` : ""}
+      </div>
+      ${bk ? `<div class="small">↩ öffnet noch einmal „${esc(bk.titel)}“ für ${bk.r} Min.</div>` : ""}
       <div class="status">${esc(status)}</div>
       ${lesson.mb ? `<div class="hint">${esc(lesson.mb)}</div>` : ""}`;
   }
@@ -395,6 +442,34 @@ function tick(){
 }
 
 /* ===== Bedienung ===== */
+/* Zeit-Eingriffe: am Handy sofort, und bei Kopplung auch am Notebook (das Notebook führt, Pult übernimmt dessen Stand) */
+function resumeIfPaused(id){
+  const pz = state.pause[id]; if (!pz) return;
+  (state.adj[id] = state.adj[id] || []).push({at: pz.at, delta: Math.max(0, nowSec()/60 - pz.t0), shift: true});
+  delete state.pause[id];
+}
+function timeAct(act, id, i){
+  const l = lessons.find(x => x.id === id); if (!l) return;
+  const now = nowSec()/60;
+  const list = state.adj[id] = state.adj[id] || [];
+  if (act === "undo"){
+    if (state.pause[id]) delete state.pause[id]; else list.pop();
+  } else if (act === "pause"){
+    if (state.pause[id]) resumeIfPaused(id); else state.pause[id] = {at: i, t0: now};
+  } else {
+    resumeIfPaused(id);
+    const p = plan(l), ph = p.phases[i];
+    if (act === "plus") list.push({at: i, delta: 5});
+    else if (act === "weiter") list.push({at: i, delta: Math.max(0, now - ph.s) - ph.d});
+    else if (act === "back"){
+      const bk = backInfo(p.phases, list, i); if (!bk) return;
+      list.push({back: true, at: i, cut: Math.max(0, now - ph.s), src: bk.k, d: bk.r});
+    }
+  }
+  save(); lastKey = null; render();
+  if (pair.code) sendFern(act === "weiter" ? "phase" : act, {lesson: l.start});
+}
+
 /* Tastatur am PC */
 document.addEventListener("keydown", e => {
   if (e.target.closest && e.target.closest("textarea,input")) return;
@@ -415,6 +490,7 @@ document.addEventListener("click", e => {
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
   if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
   const act = b.dataset.act;
+  if (["plus","weiter","undo","pause","back"].includes(act)){ timeAct(act, b.dataset.id, Number(b.dataset.i)); return; }
   if (act === "plus" || act === "weiter"){
     const id = b.dataset.id, i = Number(b.dataset.i);
     let delta = 5;
@@ -493,10 +569,28 @@ function pairStatus(){
   return pairLast ? "Gekoppelt. Letzte Folie: " + pairLast : "Gekoppelt und bereit.";
 }
 function showPairState(){ const s2 = $("#pairState"); if (s2) s2.textContent = pairStatus(); }
+const led = {};
 function applySync(m){
   if (!m || m.v !== 1 || m.date !== DAY.date) return;
   const l = lessons.find(x => toMin(x.start) === toMin(m.lesson));
   if (!l) return;
+  const mySig = phaseSig(l.phases.map(p => ({d: p[1], puffer: p[5] || 0})));
+  if (Array.isArray(m.adj) && m.sig === mySig){
+    const mine = state.adj[l.id] || [];
+    if (!led[l.id] && !m.adj.length && !m.pause && (mine.length || state.pause[l.id])){
+      /* Notebook frisch geöffnet, Handy hat schon Eingriffe: Stand ans Notebook geben */
+      led[l.id] = true;
+      sendFern("adj", {lesson: l.start, adj: mine, pause: state.pause[l.id] || null});
+    } else {
+      led[l.id] = true;
+      state.adj[l.id] = m.adj.slice();
+      if (m.pause) state.pause[l.id] = m.pause; else delete state.pause[l.id];
+      save();
+    }
+    pairLast = l.klasse + ", Folie " + m.page;
+    lastKey = null; render(); tick();
+    return;
+  }
   const i = l.phases.findIndex(ph => toMin(ph[0]) === toMin(m.phase));
   if (i < 0) return;
   const p = plan(l);
@@ -537,15 +631,17 @@ function renderFern(){
     <button class="btn primary wide" data-fern="next" aria-label="Folie weiter">Folie ›</button>
     <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
     <button class="btn" data-fern="black">Schwarz</button>
-    <button class="btn" data-fern="timer" style="grid-column:1 / -1">Timer groß</button></div>
+    <button class="btn" data-fern="timer">Timer groß</button>
+    ${loc ? `<button class="btn${state.pause[loc.lesson.id] ? " primary" : ""}" data-act="pause" data-id="${loc.lesson.id}" data-i="${loc.idx}">${state.pause[loc.lesson.id] ? "Fortsetzen" : "Pause"}</button>` : `<button class="btn" disabled>Pause</button>`}
+    ${loc && backInfo(loc.plan.phases, state.adj[loc.lesson.id], loc.idx) ? `<button class="btn" data-act="back" data-id="${loc.lesson.id}" data-i="${loc.idx}" style="grid-column:1 / -1">↩ Zurück zur Arbeitsphase</button>` : ""}</div>
     <div class="small" id="fernState">${esc(fernMsg)}</div>
     <div class="small">${esc(pairStatus())}</div>`;
 }
 function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textContent = t; }
-function sendFern(cmd){
+function sendFern(cmd, extra){
   try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
-  fetch(NTFY + "/atelier-pult-" + pair.code + "-fern", {method:"POST", body: JSON.stringify({v:1, cmd, at: Date.now()})})
-    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer"}[cmd] || cmd)); })
+  fetch(NTFY + "/atelier-pult-" + pair.code + "-fern", {method:"POST", body: JSON.stringify(Object.assign({v:1, cmd, at: Date.now()}, extra || {}))})
+    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer", pause:"Pause", back:"zurück zur Arbeitsphase", plus:"+5 Min.", phase:"nächste Phase", undo:"rückgängig", adj:"Stand"}[cmd] || cmd)); })
     .catch(() => setFern("Nicht gesendet: kein Netz. Am PC mit Tasten weiter."));
 }
 function connectPair(){

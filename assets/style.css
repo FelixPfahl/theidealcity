@@ -1054,3 +1054,10 @@ html.ff .ffwarn{display:block;position:relative;z-index:200;background:#000;colo
 html.ff .divider,html.ff .net,html.ff .calmtoggle,html.ff .mute,html.ff .sbcall,html.ff .sbcount,html.ff .sbobj,html.ff .veil,html.ff .modem,html.ff .hov,html.ff .peek,html.ff .peekbig,html.ff .imprint,html.ff canvas.plot{display:none!important}
 html.ff *,html.ff *::before,html.ff *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 html.ff .grid.wild .work{transform:none}
+
+/* Nichts ragt über den rechten Rand (Test 29.10., 08:25: Startseite und "Nächster Teil" waren bei 320 px breiter als das Fenster und wurden abgeschnitten) */
+.landing{grid-template-columns:minmax(0,1fr)}
+h1,h2,h3,.nextpart a,.bigtabs a,.minititle{overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
+.nextpart a{max-width:100%}
+@media (max-width:600px){.nlform.big h2{font-size:clamp(22px,8vw,40px)}}
+@media (max-width:440px){.nextpart{font-size:clamp(18px,6vw,26px)}}

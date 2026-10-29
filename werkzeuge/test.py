@@ -11,7 +11,7 @@ os.makedirs(os.path.join(tmp, "daten"))
 shutil.copy(os.path.join(root, "daten", "heute.json"), os.path.join(tmp, "daten"))
 morgen = dict(heute, label="Testmorgen")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import geheim
-json.dump(geheim.seal(morgen, KEY), open(os.path.join(tmp, "daten", "morgen.json"), "w"))
+json.dump(geheim.seal(morgen, KEY) if KEY else morgen, open(os.path.join(tmp, "daten", "morgen.json"), "w"))
 class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 H = functools.partial(Q, directory=tmp)

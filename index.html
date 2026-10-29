@@ -161,7 +161,9 @@ const Geheim = (() => {
     const h = new Uint8Array(await crypto.subtle.digest("SHA-256", te.encode("atelier-topic-v1:" + norm(s))));
     return "atelier-" + Array.from(h.slice(0, 12), b => b.toString(16).padStart(2, "0")).join("");
   }
-  const get = () => { try { return localStorage.getItem("atelier-schluessel") || ""; } catch(e){ return ""; } };
+  /* Klartext-Modus bis zum Umzug ins private Repo: kein Schlüssel, keine Namen übers Netz (Abgleich-Funktionen aus) */
+  const KLAR_MODUS = true;
+  const get = () => { if (KLAR_MODUS) return ""; try { return localStorage.getItem("atelier-schluessel") || ""; } catch(e){ return ""; } };
   const set = v => { try { if (v) localStorage.setItem("atelier-schluessel", norm(v)); else localStorage.removeItem("atelier-schluessel"); } catch(e){} };
   const valid = v => norm(v).length === 16;
   const pretty = v => norm(v).toUpperCase().replace(/(.{4})(?=.)/g, "$1-");
@@ -466,7 +468,6 @@ function renderTag(){
     <h2>Bewertung offen</h2>
     <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
     <p class="small">${esc(DAY.bewertungHinweis)}</p>
-    ${keyHtml(true)}
     <h2>Mit dem Schul-PC koppeln</h2>
     <p class="small">Code von der Folien-Datei am Schul-PC eingeben. Dann folgt Pult den Folien.</p>
     <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
@@ -671,7 +672,7 @@ function zeigeAmPC(art, kl, daten){
 function toolHtml(l){
   const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show, k = lkey(l);
   const kann = !!(pair.code && typeof Geheim !== "undefined" && Geheim.get());
-  const pcBtn = art => kann ? `<button class="btn" data-act="zeige" data-art="${art}">Am Bildschirm zeigen</button>` : `<p class="small">Am Bildschirm zeigen geht mit Atelier-Schlüssel und Kopplung.</p>`;
+  const pcBtn = art => kann ? `<button class="btn" data-act="zeige" data-art="${art}">Am Bildschirm zeigen</button>` : ``;
   const tabs = `<div class="chips">${[["zufall","Zufall"],["gruppen","Gruppen"],["aemter","Ämter"],["da","Wer fehlt?"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
   if (!klTool) return tabs;
   let body = "";
@@ -802,6 +803,7 @@ function klClick(b){
   if (act === "gsize"){ const n = Number(b.dataset.n); klTool = {art: "gruppen", size: n, gr: mischen(anwesend(l), n)}; render(); return true; }
   if (act === "amtje"){ const kl = klasseOf(l), c = KL.aemter[kl] = KL.aemter[kl] || {}; c.je = Number(b.dataset.n); c._u = Date.now(); store.set("pult-aemter", KL.aemter); klSync(); render(); return true; }
   if (act === "amtsave"){ const kl = klasseOf(l), c = KL.aemter[kl] = KL.aemter[kl] || {}; c.liste = ($("#amtList").value || "").split(/\n+/).map(x => x.trim()).filter(Boolean); c._u = Date.now(); store.set("pult-aemter", KL.aemter); klSync(); render(); return true; }
+  if (act === "zeige" && !Geheim.get()){ b.textContent = "Erst nach dem Umzug ins private Repo"; return true; }
   if (act === "zeige"){
     const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show;
     let daten = null;

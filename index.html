@@ -611,7 +611,7 @@ function klMerge(o){
 }
 let klTimer = null;
 function klSync(){
-  if (!pair.code || !Geheim.get()) return;
+  if (!pair.code || typeof Geheim === "undefined" || !Geheim.get()) return;
   clearTimeout(klTimer);
   klTimer = setTimeout(() => {
     const today = {}, tu = {}; for (const [k, v] of Object.entries(KL.log.stoer)) if (k.startsWith(DAY.date)){ today[k] = v; tu[k] = KL.log.stoerU[k] || 0; }

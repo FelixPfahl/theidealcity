@@ -86,7 +86,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           mkdir -p ausgabe
-          rm -f ausgabe/test_*.png ausgabe/fehler_*.png ausgabe/ui_fehler_*.txt
+          rm -f ausgabe/test_*.png ausgabe/fehler_*.png ausgabe/ui_fehler_*.txt ausgabe/absturz_*.txt ausgabe/start_*.txt
 
       - name: Emulator-Test (Android 13, Pixel)
         continue-on-error: true

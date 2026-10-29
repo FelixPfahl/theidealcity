@@ -11,7 +11,8 @@ ok()   { echo "OK      $1" | tee -a "$R"; }
 bad()  { echo "FEHLER  $1" | tee -a "$R"; N=$((N+1)); $UI texts > "ausgabe/ui_fehler_$N.txt" 2>/dev/null; adb exec-out screencap -p > "ausgabe/fehler_$N.png"; }
 check(){ for _ in 1 2 3 4; do if $UI has "$2"; then ok "$1"; return; fi; sleep 4; done; bad "$1 (erwartet: $2)"; }
 shot() { adb exec-out screencap -p > "ausgabe/test_$1.png"; }
-start(){ adb shell am start -W -n "$PKG/.MainActivity" "$@" > /dev/null; }
+start(){ adb shell am start -W -n "$PKG/.MainActivity" "$@" > "ausgabe/start_$(date +%s).txt" 2>&1; }
+absturz(){ adb logcat -d 2>/dev/null | grep -B2 -A40 "FATAL EXCEPTION\|Process $PKG" | grep -v uiautomator > "ausgabe/absturz_$1.txt"; if adb logcat -d 2>/dev/null | grep -q "FATAL EXCEPTION.*\|AndroidRuntime.*$PKG"; then bad "Absturz ($1), siehe ausgabe/absturz_$1.txt"; fi; }
 tap()  { $UI tap "$1" > /dev/null || echo "  (nicht gefunden: $1)" | tee -a "$R"; }
 
 echo "Testtag laut Daten: ${DATA_DATE:-unbekannt}" | tee -a "$R"
@@ -47,11 +48,12 @@ setclock "$T_P1" 00
 # (Anführungszeichen für die Shell auf dem Gerät, sonst gilt # dort als Kommentar)
 adb shell am start -W -n "$PKG/.MainActivity" --es url "'https://app.atelier/pult/index.html#s=$ATELIER_SCHLUESSEL'" > /dev/null; sleep 14
 if $UI has "Schlüssel nötig|Schlüssel eingeben"; then bad "Atelier-Schlüssel wurde nicht übernommen"; else ok "Atelier-Schlüssel über den Link übernommen"; fi
+absturz "schluessel"
 adb shell am force-stop "$PKG"
 
 # 2. Start mitten in der Stunde springt zu Pult
 setclock "$T_P1" 00
-start; sleep 22; shot 01_start_in_der_stunde
+adb logcat -c; start; sleep 22; shot 01_start_in_der_stunde; absturz "start"
 check "Start während der Stunde öffnet Pult" "$E_P1"
 
 # 3. Leiste unten und Kacheln

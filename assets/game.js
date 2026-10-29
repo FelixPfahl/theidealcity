@@ -154,7 +154,7 @@
       /* Anker mit Objekt liegt über seinen Nachbarn (gedrehte Figuren im wilden Raster bilden eigene Stapelkontexte, Test 28.10., 08:15: Betonmischer unter dem Nachbarbild) */
       if (a.matches('figure') && !a.style.zIndex) a.style.zIndex = String(29 - ZI++);
       var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false;
-      var sz = SIZE[p.d]; img.style.width = sz + 'px'; img.style.left = 'clamp(0px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))'; img.style.top = 'clamp(0px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))';   /* nie über den Anker hinaus */
+      var sz = SIZE[p.d]; img.style.width = sz + 'px'; var IN = 10; img.style.left = 'clamp(' + IN + 'px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))'; img.style.top = 'clamp(' + IN + 'px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))';   /* 10 px Abstand zum Ankerrand: gedrehte Nachbarbilder überlappen die Ecken um einige Pixel (Test 29.10., 09:00) */   /* nie über den Anker hinaus */
       img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); a.appendChild(img); });
     unstack(); window.addEventListener('load', unstack); window.addEventListener('resize', unstack); }
   /* Zwei Dinge dürfen nie übereinander liegen (Test 28.10., 06:00: Bombe lag unter einem anderen Objekt): das spätere wird im Anker verschoben, bis es frei liegt */
@@ -163,7 +163,7 @@
     var de = document.documentElement, DH = de.scrollHeight, DW = de.clientWidth, sy = window.pageYOffset || de.scrollTop; var corners = [{left:0, right:80, top:DH - 80 - sy, bottom:DH - sy}, {left:DW - 80, right:DW, top:DH - 80 - sy, bottom:DH - sy}];
     objs.forEach(function(o){ var a = o.offsetParent || o.parentNode; if (!a) return; var aw = a.clientWidth, ah = a.clientHeight; var sz = o.offsetWidth || 40; var tries = 0;
       function hits(){ var r = o.getBoundingClientRect(); var ov = function(q){ return r.left < q.right + 6 && r.right > q.left - 6 && r.top < q.bottom + 6 && r.bottom > q.top - 6; }; return corners.some(ov) || done.some(function(d){ return ov(d.getBoundingClientRect()); }); }
-      while (hits() && tries < 40){ tries++; var l = o.offsetLeft, t = o.offsetTop; var nl = l + sz + 10, nt = t; if (nl + sz > aw){ nl = 0; nt = t + sz + 10; } if (nt + sz > ah){ nt = 0; } o.style.left = nl + 'px'; o.style.top = nt + 'px'; }
+      while (hits() && tries < 40){ tries++; var l = o.offsetLeft, t = o.offsetTop; var nl = l + sz + 10, nt = t; if (nl + sz > aw - 10){ nl = 10; nt = t + sz + 10; } if (nt + sz > ah - 10){ nt = 10; } o.style.left = nl + 'px'; o.style.top = nt + 'px'; }
       /* nie rechts oder links aus dem Fenster (Test 29.10., 08:25: Anker breiter als das Fenster) */
       var rr = o.getBoundingClientRect(); if (rr.right > DW - 4) o.style.left = Math.max(0, o.offsetLeft - (rr.right - DW + 4)) + 'px'; rr = o.getBoundingClientRect(); if (rr.left < 4) o.style.left = (o.offsetLeft + (4 - rr.left)) + 'px';
       done.push(o); }); }

@@ -2853,7 +2853,7 @@ function check(p){
   });
   if (O){
     const auf = p.slides.filter(s => s.type === "auftrag").length, bew = p.slides.filter(s => s.type === "bewertung");
-    if (auf && !bew.length) add("Oberstufe: Zu jeder Aufgabe gehört eine Bewertungsfolie mit Punkten.");
+    if (auf && !bew.length && !p.meta.ohneBewertung) add("Oberstufe: Zu jeder Aufgabe gehört eine Bewertungsfolie mit Punkten (oder unter „Stunde“ ankreuzen, dass nichts bewertet wird).");
     bew.forEach(s => {
       const i = p.slides.indexOf(s);
       const rows = lines(s.kriterien).map(l => { const m = l.match(/^(.*?)\s*\|\s*(\d+)\s*$/); return m ? {k:m[1], p:+m[2]} : null; }).filter(Boolean);
@@ -3184,6 +3184,7 @@ function renderSide(){
       <label class="f">Titel der Stunde</label><input type="text" data-mf="titel" value="${esc(pres.meta.titel)}">
       <div class="row" style="margin:0;gap:8px"><div style="flex:1"><label class="f">Datum</label><input type="date" data-mf="datum" value="${esc(pres.meta.datum)}"></div><div style="width:90px"><label class="f">Beginn</label><input type="text" data-mf="start" value="${esc(pres.meta.start)}"></div><div style="width:90px"><label class="f">Ende</label><input type="text" data-mf="ende" value="${esc(pres.meta.ende)}"></div></div>
       <label class="f">Stundenziel (ein Satz)</label><textarea data-mf="ziel" rows="2">${esc(pres.meta.ziel || "")}</textarea>
+      ${ober(pres) ? `<label class="row" style="margin-top:8px"><input type="checkbox" data-mcheck="ohneBewertung"${pres.meta.ohneBewertung ? " checked" : ""}> In dieser Stunde wird nichts bewertet</label>` : ""}
       <label class="f">Phasen (spiegeln den Verlaufsplan; Zeiten ergeben sich)</label>
       <table class="ptable"><tbody>${pres.phases.map((ph, k) => `<tr><td class="t">${fmt(pt[k].s)}</td><td style="width:62px"><input type="number" step="5" min="0" data-pf="${k}.d" value="${esc(ph.d)}" aria-label="Dauer"></td><td><select data-pf="${k}.form" aria-label="Sozialform">${forms.concat(forms.includes(ph.form) ? [] : [ph.form]).map(f => opt(f, ph.form)).join("")}</select><input type="text" data-pf="${k}.titel" value="${esc(ph.titel)}" aria-label="Titel" style="margin-top:3px"><div class="row" style="margin:3px 0 6px;gap:4px"><span class="meta">Puffer</span><input type="number" step="5" min="0" data-pf="${k}.puffer" value="${esc(ph.puffer || 0)}" style="width:60px" aria-label="Puffer darin"><button class="btn small" data-ph="up:${k}" type="button" title="nach oben">↑</button><button class="btn small" data-ph="del:${k}" type="button" title="entfernen">×</button></div></td></tr>`).join("")}</tbody></table>
       <div class="row"><button class="btn small" data-ph="add" type="button">+ Phase</button><span class="meta">Ende: ${fmt(toMin(pres.meta.start) + pres.phases.reduce((a, ph) => a + (+ph.d || 0), 0))}</span></div>
@@ -3212,7 +3213,9 @@ $("#sideBody").addEventListener("input", e => {
 });
 function refreshTimes(){ const pt = phaseTimes(pres); $$(".ptable .t").forEach((td, k) => { if (pt[k]) td.textContent = fmt(pt[k].s); }); }
 $("#sideBody").addEventListener("change", e => {
-  const t = e.target, s = pres.slides[sel]; if (!t.dataset.sf) { if (t.dataset.pf || t.dataset.mf) renderSide(); return; }
+  const t = e.target, s = pres.slides[sel];
+  if (t.dataset.mcheck){ pres.meta[t.dataset.mcheck] = t.checked; changed(); return; }
+  if (!t.dataset.sf) { if (t.dataset.pf || t.dataset.mf) renderSide(); return; }
   const f = t.dataset.sf;
   if (f === "phase") s.phase = t.value === "" ? undefined : +t.value;
   else if (f === "nr") s.nr = t.value ? +t.value : undefined;

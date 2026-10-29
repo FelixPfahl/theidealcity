@@ -1,14 +1,15 @@
 {
  "format": "atelier-folien",
  "version": 1,
- "id": "vv94xja6",
+ "id": "1kyitgmk",
  "meta": {
   "klasse": "11",
   "titel": "Klassische Moderne 2 von 4: Kubismus",
   "datum": "2026-11-13",
   "start": "11:30",
   "ende": "13:00",
-  "ziel": "Sie erklären, wie der Kubismus einen Gegenstand von mehreren Seiten zugleich zeigt, und wer ihn zwischen 1908 und 1914 feierte oder bekämpfte."
+  "ziel": "Sie erklären, wie der Kubismus einen Gegenstand von mehreren Seiten zugleich zeigt, und wer ihn zwischen 1908 und 1914 feierte oder bekämpfte.",
+  "ohneBewertung": true
  },
  "konzept": {
   "schrift": "Archivo",
@@ -79,7 +80,7 @@
    "kicker": "Klassische Moderne 2 von 4",
    "thema": "Kubismus",
    "unter": "Ein Ding, von allen Seiten zugleich",
-   "id": "rz1owonp"
+   "id": "plrrzhc9"
   },
   {
    "type": "frage",
@@ -87,31 +88,31 @@
    "frage": "In diesem Bild sitzt ein Mann. Wo sind seine Hände, seine Haare, seine Uhrkette?",
    "hinweis": "Suchen Sie zu zweit und zeigen Sie mit dem Finger.",
    "mitBild": true,
-   "id": "dfjacvsk"
+   "id": "3bigs8nt"
   },
   {
    "type": "ablauf",
    "phase": 0,
-   "id": "li9t8veo"
+   "id": "ghgr8e3y"
   },
   {
    "type": "werkbild",
    "phase": 1,
-   "id": "ngl90dca"
+   "id": "xreoi6dz"
   },
   {
    "type": "werk",
    "phase": 1,
    "titel": "Die Auflösung",
    "text": "[nach Freigabe]",
-   "id": "kay061jm"
+   "id": "ekuwfly3"
   },
   {
    "type": "text",
    "phase": 1,
    "titel": "Paris 1907: ein Bild, das keiner wollte",
    "text": "[nach Freigabe]",
-   "id": "gas5a8qs"
+   "id": "4o4h41tl"
   },
   {
    "type": "auftrag",
@@ -119,42 +120,35 @@
    "titel": "Ein Gegenstand, drei Ansichten",
    "schritte": "Stellen Sie einen Gegenstand vor sich: Tasse, Flasche oder Schuh.\nZeichnen Sie ihn in drei kleinen Skizzen: von vorn, von der Seite, von oben.\nVerbinden Sie die drei Ansichten zu einem Bild. Teile dürfen sich überlagern und brechen.\nLassen Sie alle Linien stehen, radieren Sie nicht.",
    "extra": "Schnell fertig? Fügen Sie eine vierte Ansicht von unten hinzu.",
-   "id": "m26eugo8"
-  },
-  {
-   "type": "bewertung",
-   "phase": 2,
-   "titel": "Bewertung: Ein Gegenstand, drei Ansichten",
-   "kriterien": "Prozess: drei Ansichten als eigene Skizzen | 10\nKonzept: Ansichten bewusst zu einem Bild verbunden | 10\nUmsetzung: klare Linien, Gegenstand bleibt erkennbar | 10",
-   "id": "jfy0k16m"
+   "id": "5yxcupoe"
   },
   {
    "type": "text",
    "phase": 3,
    "titel": "Vom Würfel zum Zeitungspapier",
    "text": "[nach Freigabe]",
-   "id": "purt11gk"
+   "id": "3nxfzmgh"
   },
   {
    "type": "auftrag",
    "phase": 4,
    "titel": "Stimmen der Zeit",
    "schritte": "Lesen Sie zu zweit Ihren Text (Handout 2 bis 6).\nMarkieren Sie: Wer spricht, wann, für oder gegen den Kubismus?\nNotieren Sie das stärkste Argument in einem Satz.\nWählen Sie ein Wort aus dem Text, das Sie den anderen erklären.",
-   "id": "quliwadq"
+   "id": "xpo6apgq"
   },
   {
    "type": "auftrag",
    "phase": 5,
    "titel": "Wer feierte, wer bekämpfte?",
    "schritte": "Bilden Sie Gruppen mit je einer Person aus jedem Expertenpaar.\nStellen Sie Ihren Text in einer Minute vor.\nOrdnen Sie alle Stimmen auf einer Linie von Ablehnung bis Begeisterung (Arbeitsblatt 7).\nFormulieren Sie einen gemeinsamen Satz: Der Kubismus war 1912 umstritten, weil ...",
-   "id": "2gr16puq"
+   "id": "9m7lzc59"
   },
   {
    "type": "text",
    "phase": 6,
    "titel": "1937",
    "text": "[nach Freigabe]",
-   "id": "sc1xw5a5"
+   "id": "9sd17ujz"
   },
   {
    "type": "auftrag",
@@ -162,19 +156,19 @@
    "titel": "Steckbrief Kubismus",
    "abgabe": true,
    "schritte": "Ergänzen Sie den Steckbrief (Handout 1): Zeit, Ort, Personen, Merkmale.\nNennen Sie ein Werk und eine Stimme der Zeit.\nLegen Sie den Steckbrief in Ihre Mappe.",
-   "id": "337zdgv0"
+   "id": "1v65dp6g"
   },
   {
    "type": "text",
    "phase": 8,
    "titel": "Nächste Woche: Expressionismus",
    "text": "[nach Freigabe]",
-   "id": "8al9oavh"
+   "id": "zkekysbv"
   },
   {
    "type": "quellen",
    "text": "Abbildungen\n[nach Freigabe]\nTexte\n[nach Freigabe]",
-   "id": "me031ct9"
+   "id": "v43nhj40"
   }
  ]
 }

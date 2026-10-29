@@ -22,7 +22,6 @@ p = pres("11", "Klassische Moderne 2 von 4: Kubismus", "2026-11-13", "11:30", "1
    {"type": "werk", "phase": 1, "titel": "Die Auflösung", "text": F},
    {"type": "text", "phase": 1, "titel": "Paris 1907: ein Bild, das keiner wollte", "text": F},
    {"type": "auftrag", "phase": 2, "titel": "Ein Gegenstand, drei Ansichten", "schritte": "Stellen Sie einen Gegenstand vor sich: Tasse, Flasche oder Schuh.\nZeichnen Sie ihn in drei kleinen Skizzen: von vorn, von der Seite, von oben.\nVerbinden Sie die drei Ansichten zu einem Bild. Teile dürfen sich überlagern und brechen.\nLassen Sie alle Linien stehen, radieren Sie nicht.", "extra": "Schnell fertig? Fügen Sie eine vierte Ansicht von unten hinzu."},
-   {"type": "bewertung", "phase": 2, "titel": "Bewertung: Ein Gegenstand, drei Ansichten", "kriterien": "Prozess: drei Ansichten als eigene Skizzen | 10\nKonzept: Ansichten bewusst zu einem Bild verbunden | 10\nUmsetzung: klare Linien, Gegenstand bleibt erkennbar | 10"},
    {"type": "text", "phase": 3, "titel": "Vom Würfel zum Zeitungspapier", "text": F},
    {"type": "auftrag", "phase": 4, "titel": "Stimmen der Zeit", "schritte": "Lesen Sie zu zweit Ihren Text (Handout 2 bis 6).\nMarkieren Sie: Wer spricht, wann, für oder gegen den Kubismus?\nNotieren Sie das stärkste Argument in einem Satz.\nWählen Sie ein Wort aus dem Text, das Sie den anderen erklären."},
    {"type": "auftrag", "phase": 5, "titel": "Wer feierte, wer bekämpfte?", "schritte": "Bilden Sie Gruppen mit je einer Person aus jedem Expertenpaar.\nStellen Sie Ihren Text in einer Minute vor.\nOrdnen Sie alle Stimmen auf einer Linie von Ablehnung bis Begeisterung (Arbeitsblatt 7).\nFormulieren Sie einen gemeinsamen Satz: Der Kubismus war 1912 umstritten, weil ..."},
@@ -33,5 +32,6 @@ p = pres("11", "Klassische Moderne 2 von 4: Kubismus", "2026-11-13", "11:30", "1
   ], schrift="Archivo", titelschrift="Archivo", akzent="#A8571B",
   notiz="Facetten. Archivo, Überschriften schmal und hoch wie gebrochene Bildflächen, Fließtext in normaler Breite. Akzent Ocker aus der Palette des analytischen Kubismus, sonst nur Schwarz und Grau. Werke immer unbeschnitten auf Weiß, Text links ausgerichtet, ruhiger Wechsel von Bild und Text.")
 p["konzept"]["breite"] = 72
+p["meta"]["ohneBewertung"] = True
 save(p, os.path.join(os.path.dirname(os.path.abspath(__file__)), "11_Screen_Klassische_Moderne_02_Kubismus.atelier.json"))
 print("ok", len(p["slides"]))

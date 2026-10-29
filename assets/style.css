@@ -1047,3 +1047,10 @@ body{overflow-x:clip}
 /* Danksagungen (Josef, 28.10., 06:32): eigene Akzentfarbe Prozessgrün für Handschrift und Unterschrift Josef Knoll */
 p.handp,p.sig.sigdank{--accent:#00A651;--red:#00A651}
 p.handp em.kw,p.sig.sigdank em.kw{color:#00A651}
+
+/* Firefox (Josef, 29.10., 07:43): Warnung oben, nur Basisseite ohne Spiel, Plotter, Modem, Ton und Animationen */
+.ffwarn{display:none}
+html.ff .ffwarn{display:block;position:relative;z-index:200;background:#000;color:#fff;font-family:var(--sans);font-size:14px;line-height:1.45;padding:10px var(--gutter,16px);text-align:center}
+html.ff .divider,html.ff .net,html.ff .calmtoggle,html.ff .mute,html.ff .sbcall,html.ff .sbcount,html.ff .sbobj,html.ff .veil,html.ff .modem,html.ff .hov,html.ff .peek,html.ff .peekbig,html.ff .imprint,html.ff canvas.plot{display:none!important}
+html.ff *,html.ff *::before,html.ff *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html.ff .grid.wild .work{transform:none}

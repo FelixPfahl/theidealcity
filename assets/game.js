@@ -3,6 +3,7 @@
    bei 20: Urkunde (grünes Quadrat, als PNG), Bestenliste (Google Apps Script, nur mit Einwilligung per Klick). Stand nur im Local Storage. */
 (function(){
   'use strict';
+  if (document.documentElement.classList.contains('ff')) return;   /* Firefox: kein Spiel (Josef, 29.10., 07:43) */
   var PAGE = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
   var BOARD = window.JK_BOARD || '';
   var N = 20, HINT_COST = 50;

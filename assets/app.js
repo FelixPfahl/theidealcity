@@ -19,13 +19,16 @@
   /* ---------- Feste Werte (Regler abgeschafft, Josef, 27.10.): Ton alle 2 bis 5 Klicks, Bewegung voll, bei Systemeinstellung "weniger Bewegung" ruhig ---------- */
   /* Josef, 28.10., 00:53: auf dem Cloud-PC (Remotedesktop) meldet Windows "weniger Bewegung", dadurch waren Plotter-Animation und Ton aus.
      Darum wird die Systemeinstellung nicht mehr ausgewertet; "Ruhig" ist ein eigener Schalter in der Fußzeile (localStorage jk_calm). */
-  var REDUCED = false; try { REDUCED = localStorage.getItem('jk_calm') === '1'; } catch(e){}
+  /* Firefox (Josef, 29.10., 07:43): Seite ist für Firefox nicht optimiert; Warnung und nur die Basisseite, ohne Spiel, Plotter, Modem, Ton und Animationen */
+  var FF = document.documentElement.classList.contains('ff'); window.JK_FF = FF;
+  var REDUCED = FF; try { REDUCED = FF || localStorage.getItem('jk_calm') === '1'; } catch(e){}
   window.JK_CALM = REDUCED;
   document.addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('.calmtoggle'); if (!t) return; e.preventDefault(); try { localStorage.setItem('jk_calm', REDUCED ? '0' : '1'); } catch(x){} location.reload(); });
   /* Bewegung: 2 voll, 1 ruhig (nur Ein- und Ausblenden, kein Wackeln), 0 aus. Wer im System "weniger Bewegung" eingestellt hat, startet mit ruhig. */
   var FX_DEFAULT = {ton:5, vol:50, bewegung:2, modem:true};   /* Josef, 28.10., 06:35: alle Sounds auf die Hälfte (Master 50 %) */   /* Josef, 27.10.: alle Effekte an, Systemeinstellung "weniger Bewegung" wird nicht mehr ausgewertet (Firefox zeigte sonst keinen Zeiger und keine Laufschrift) */   /* Ton bei jedem Klick, volle Stärke (viertes Interview) */
   var FX = {}; for (var k0 in FX_DEFAULT) FX[k0] = FX_DEFAULT[k0];
-  if (REDUCED){ FX.vol = 0; FX.ton = 0; FX.bewegung = 1; FX.modem = false; }   /* Reduced Motion (Josef, 27.10.): Text sofort komplett, kein Einflug, Ton aus */
+  if (REDUCED){ FX.vol = 0; FX.ton = 0; FX.bewegung = 1; FX.modem = false; }
+  if (FF){ FX.bewegung = 0; }   /* Reduced Motion (Josef, 27.10.): Text sofort komplett, kein Einflug, Ton aus */
   try { localStorage.removeItem('jk_fx'); } catch(e){}   /* Regler abgeschafft (Josef, 27.10., 18:30): nichts mehr gespeichert */
   function applyMotion(){ var h = document.documentElement; h.classList.toggle('calm', FX.bewegung < 2); h.classList.toggle('still', FX.bewegung === 0); }
   applyMotion();
@@ -124,7 +127,7 @@
     function hook(){ document.querySelectorAll('.pagehead h1, .serhead h2, .opener h2, .bigtabs a').forEach(function(h){ if (h._net) return; h._net = 1; h.addEventListener('pointerenter', function(e){ if (e.pointerType !== 'mouse') return; net(h, e); }); }); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook(); })();
   /* geplottete Trenner: eine leicht unregelmäßige Linie, die der Plotter zieht, sobald der Trenner ins Bild kommt */
-  (function(){ var divs = document.querySelectorAll('.divider canvas'); if (!divs.length) return;
+  (function(){ if (FF) return; var divs = document.querySelectorAll('.divider canvas'); if (!divs.length) return;
     function draw(cv, f){ var W = cv.clientWidth, H = cv.clientHeight, d = Math.min(2, window.devicePixelRatio || 1); if (cv.width !== W * d){ cv.width = W * d; cv.height = H * d; }
       var c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); c.clearRect(0, 0, W, H); c.strokeStyle = getComputedStyle(cv).color; c.lineWidth = 1.3; c.lineCap = 'round'; c.globalAlpha = .9;
       var pts = cv._pts; if (!pts){ pts = []; var y = H / 2, n = Math.max(12, Math.round(W / 18)); for (var i = 0; i <= n; i++){ y += (Math.random() - .5) * 2.2; y = Math.max(H * .3, Math.min(H * .7, y)); pts.push([W * i / n, y]); } cv._pts = pts; }
@@ -329,7 +332,7 @@
   /* Großansicht: siehe unten (lb2, zweites Interview) */
 
   /* ---------- Felix Pfahl: Gesicht aus dem Holzschnitt, unheimlicher Ton ---------- */
-  var pf = document.querySelectorAll('.pfahl');
+  var pf = FF ? [] : document.querySelectorAll('.pfahl');
   if (pf.length){
     var face = document.createElement('img'); face.id='pfahlface'; face.src='../assets/pfahl-face.png'; face.alt=''; document.body.appendChild(face);
     var water = document.createElement('img'); water.id='pfahlwater'; water.src='../assets/pfahl-face.png'; water.alt=''; document.body.appendChild(water);   /* riesiges Wasserzeichen hinter dem Text (Josef, 27.10.) */
@@ -406,7 +409,7 @@
   }
 
   /* ---------- Motivationsrede ---------- */
-  var mo = document.querySelector('[data-moti]');
+  var mo = FF ? null : document.querySelector('[data-moti]');
   if (mo && window.JK_MOTI){
     mo.addEventListener('click', function(){
       var d = document.createElement('div'); d.className='moti on';
@@ -526,7 +529,7 @@
 
   /* ---------- Fette Buchstaben: Maus oder Finger macht sie frei, sie wachsen langsam wieder zu ---------- */
   safe(function(){
-    var fats = document.querySelectorAll('.fat'); if (!fats.length) return;
+    if (FF) return; var fats = document.querySelectorAll('.fat'); if (!fats.length) return;
     function ready(){ document.documentElement.classList.add('fatready'); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ setTimeout(ready, 60); }); else setTimeout(ready, 300);
     var pending = null, raf = false;
@@ -624,7 +627,7 @@
 
   /* ---------- Seitenwechsel: weicher Farbübergang in der Serienfarbe (kein harter Blitz) ---------- */
   safe(function(){
-    var veil = document.querySelector('.veil'); if (!veil) return;
+    if (FF) return; var veil = document.querySelector('.veil'); if (!veil) return;
     var h = document.documentElement;
     if (h.classList.contains('arrive')){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ h.classList.add('go'); setTimeout(function(){ h.classList.remove('arrive', 'go'); }, 450); }); }); }
     document.addEventListener('click', function(e){
@@ -641,7 +644,7 @@
 
   /* ---------- Serienköpfe kleben oben und schrumpfen; Marginalien laufen langsamer mit (Parallax) ---------- */
   safe(function(){
-    var heads = Array.prototype.slice.call(document.querySelectorAll('section.series .serhead'));
+    if (FF) return; var heads = Array.prototype.slice.call(document.querySelectorAll('section.series .serhead'));
     /* Josef, 28.10., 01:30: das klebende Werkgruppen-Schild links nervt, komplett weg */
     heads = [];
     var par = [];   /* Parallax gestrichen (siebtes Interview) */
@@ -715,7 +718,7 @@
   safe(function(){
     var b = document.querySelector('.mute'); if (!b) return; var muted = false;
     try { muted = localStorage.getItem('jk_mute') === '1'; } catch(e){}
-    function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton an' : 'Ton aus'); FX.vol = muted ? 0 : FX_DEFAULT.vol; if (MASTER) MASTER.node.gain.value = FX.vol/100; }
+    function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton an' : 'Ton aus'); FX.vol = (muted || REDUCED) ? 0 : FX_DEFAULT.vol;   /* Ruhig und Firefox bleiben stumm */ if (MASTER) MASTER.node.gain.value = FX.vol/100; }
     apply();
     b.addEventListener('click', function(e){ e.stopPropagation(); muted = !muted; try { localStorage.setItem('jk_mute', muted ? '1' : '0'); } catch(err){} apply(); if (!muted) play('click'); });
   });
@@ -760,7 +763,7 @@
 
   /* ---------- Hover-Vorschau: Bild sofort groß über dem Raster; leiser Ton ---------- */
   var hov = null;
-  if (MOUSE) safe(function(){
+  if (MOUSE && !FF) safe(function(){
     hov = document.createElement('div'); hov.className = 'hov'; hov.innerHTML = '<img alt=""><div class="cap"></div>'; document.body.appendChild(hov);
     var him = hov.querySelector('img'), hcap = hov.querySelector('.cap'), cur = null, lastSnd = 0;
     var lastE = null;
@@ -861,7 +864,7 @@
 
   /* ---------- Stinger je Serie beim Auftakt; Atmo nur auf Knopfdruck ---------- */
   safe(function(){
-    var ops = document.querySelectorAll('section.series .opener'); if (!ops.length || !('IntersectionObserver' in window)) return;
+    if (FF) return; var ops = document.querySelectorAll('section.series .opener'); if (!ops.length || !('IntersectionObserver' in window)) return;
     var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting && e.intersectionRatio > .5 && !e.target._stung){ e.target._stung = true; if (AC) softPlay(secSound(e.target), .7); } }); }, {threshold:[.5]});
     ops.forEach(function(o){ io.observe(o); });
     var ATMO = { lickitcutit:[180, 'square', .03, 6], clickclickboom:[55, 'sawtooth', .03, .3], suchbilder:[320, 'sine', .02, .2], cowboykaugummi:[0, 'wind', .05, .1], egoshooter:[70, 'sawtooth', .03, .5],
@@ -919,7 +922,7 @@
   });
   /* Abdruck beim Klick (Maus) bzw. Tippen (Touch), je Serie ein Motiv, verblasst */
   safe(function(){
-    var SH = { clickclickboom:'<svg viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="8" fill="currentColor"/><rect x="34" y="78" width="32" height="12" rx="3" fill="currentColor"/></svg>',
+    if (FF) return; var SH = { clickclickboom:'<svg viewBox="0 0 100 100"><rect x="38" y="10" width="24" height="80" rx="8" fill="currentColor"/><rect x="34" y="78" width="32" height="12" rx="3" fill="currentColor"/></svg>',
       cowboykaugummi:'<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="#f6a4c8"/><circle cx="38" cy="38" r="8" fill="#fff" opacity=".7"/></svg>',
       princeofwales:'<svg viewBox="0 0 100 100"><path d="M50 20 l-22 30 h14 v30 h16 v-30 h14z" fill="#f2b400"/></svg>',
       comic:'<svg viewBox="0 0 100 100"><path d="M20 70 Q40 20 60 55 T90 35" fill="none" stroke="#3F97B8" stroke-width="10" stroke-linecap="round"/></svg>' };
@@ -937,7 +940,7 @@
      Betonungen mit fetterem Farbstift (Wechsel nur hörbar), Stift kratzt selten, alles leicht zufällig. Startseite: JO SEF beim Laden.
      ============================================================ */
   safe(function(){
-    var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p'));
+    if (FF) return; var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p'));
     if (!targets.length || !window.fetch || !window.Path2D) return;
     var F = null, built = [], raf = false, humT = null, hum = null, lastScrollT = performance.now(), lastScrollY = window.scrollY, speed = 0;
     var rnd = Math.random, R = function(a, b){ return a + rnd() * (b - a); };

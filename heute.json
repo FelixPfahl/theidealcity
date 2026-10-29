@@ -1,1 +1,28 @@
-{"v": 1, "iv": "fPYIvuF2zWGCR3WL", "ct": "vwjF9W46Vhm86N8vlH2lUoHodSpoKvEmx16ddDNEX6Js+mORK3f5uBWmZg31bD2YduajZM8LqZzvYoBx6zldVqsdT/tYrCAuqwa9diIpayOaw6pa0JFt/IrIHkLGIgRcxN3B9AXCefUhXB/SXu4m8TsP2bkjApiBxKYTvbX/DEpXljS0qi24HmK3iNlnu7+qU0NQaxTtTeruZlEY947WB+iSmdhFM/LwLb3CbNkvLGJzWf2XseLuIMEAIPwIOOIdCHrtWA/9OnxP5oIqTUm1eqQfugT9wC89lab24lWA6m0aIz5Pq9tNxitpeFqVmlfaB2wls4QgTy2cGDjK7snudPrC8LBixdl2vGSnH9mkKPSybXk992ypi2O6pwnmxS5qE/a8VOp9rDdf1IHtMMDfby5PCEBVKz1WRkFK3oeSoFIe1D66yGpH5P4oPgqOGOZenENZu+s/nYFdWb/E9+/5ijxYkYP+uKD5KLG+JaA0M/zB6Cthyf2Io0GoLslIAZuHLjk93lIu/HjXCj1AEozS4925ytq7XAb9IrwG6GjW60WxflW99xAjmwqWuMEnUjQdiGWZNIcIr/0="}
+{
+ "datum": "2026-10-30",
+ "label": "Freitag, 30.10.",
+ "termine": [
+  {
+   "start": "11:30",
+   "ende": "13:00",
+   "titel": "11 Klassische Moderne 1 von 4",
+   "unterricht": true
+  },
+  {
+   "start": "13:00",
+   "ende": "13:15",
+   "titel": "Mittagessen"
+  },
+  {
+   "start": "13:15",
+   "ende": "14:45",
+   "titel": "Comic-AG Dokumentarischer Strip: Vom Bleistift zur Tusche",
+   "unterricht": true
+  },
+  {
+   "start": "17:00",
+   "ende": "19:00",
+   "titel": "Unterrichtsvorbereitung"
+  }
+ ]
+}

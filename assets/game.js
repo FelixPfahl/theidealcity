@@ -147,8 +147,11 @@
     dialog([['inka', NAMES[p.id] + ': ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '')], ['wagner', 'Fünfzig Punkte. Koordinaten kosten.']]); }
 
   /* ---------- Gegenstände verstecken ---------- */
+  var ZI = 0;
   function place(){ PLACES.filter(function(p){ return p.p === PAGE; }).forEach(function(p){ var all = document.querySelectorAll(p.sel); if (!all.length) all = document.querySelectorAll('footer .footgrid'); if (!all.length) return; var a = all[(p.i - 1) % all.length];
       if (getComputedStyle(a).position === 'static') a.style.position = 'relative';
+      /* Anker mit Objekt liegt über seinen Nachbarn (gedrehte Figuren im wilden Raster bilden eigene Stapelkontexte, Test 28.10., 08:15: Betonmischer unter dem Nachbarbild) */
+      if (a.matches('figure') && !a.style.zIndex) a.style.zIndex = String(29 - ZI++);
       var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false;
       var sz = SIZE[p.d]; img.style.width = sz + 'px'; img.style.left = 'clamp(0px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))'; img.style.top = 'clamp(0px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + sz + 'px))';   /* nie über den Anker hinaus */
       img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); a.appendChild(img); });

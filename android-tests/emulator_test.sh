@@ -29,6 +29,7 @@ else
   adb install "$NEU" > /dev/null
 fi
 
+ATELIER_SCHLUESSEL=$(printf %s "${ATELIER_SCHLUESSEL:-}" | tr -d ' \n\r')
 adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 
 # Erwartungen kommen aus den Tagesdaten (android-tests/erwartung.py): E_P1, E_P2, E_P3, E_BIS, T_P1, T_WECHSEL, T_OFFLINE

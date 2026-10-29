@@ -75,6 +75,7 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .remote{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .remote .btn{min-height:64px}
 @media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
+.verlauf{display:grid;gap:6px;margin-top:8px}.vrow{display:grid;grid-template-columns:52px 1fr 60px 1fr 44px;gap:6px;align-items:center;font-size:14px;color:var(--muted)}.vb{height:10px;background:var(--line);border-radius:6px;overflow:hidden}.vb i{display:block;height:100%;background:var(--accent)}.vb.s i{background:var(--muted)}
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px}
 .kt{min-height:76px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:8px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .kt b{font-size:17px;line-height:1.15}
@@ -478,9 +479,12 @@ function renderNotiz(){
 /* ===== Klasse: Störungen, Verspätungen, Hausaufgaben =====
    Namen und Einträge liegen nur auf diesem Gerät. Mit Atelier-Schlüssel gleichen Handy und Notebook sie verschlüsselt ab. */
 const KL = { klassen: store.get("pult-klassen", {}), log: store.get("pult-klog", {stoer:{}, spaet:[], ha:[], nach:[]}) };
-KL.log.stoer = KL.log.stoer || {}; KL.log.stoerU = KL.log.stoerU || {}; KL.log.spaet = KL.log.spaet || []; KL.log.ha = KL.log.ha || []; KL.log.nach = KL.log.nach || [];
+KL.log.stoer = KL.log.stoer || {}; KL.log.stoerU = KL.log.stoerU || {}; KL.log.stunden = KL.log.stunden || {};
+KL.verborgen = store.get("pult-verborgen", {});   /* Kinder, die nicht öffentlich erscheinen (ohne Grund) */ KL.log.spaet = KL.log.spaet || []; KL.log.ha = KL.log.ha || []; KL.log.nach = KL.log.nach || [];
 let klDirty = false;
-function klSave(sync){ store.set("pult-klassen", KL.klassen); store.set("pult-klog", KL.log); if (sync !== false) klSync(); }
+function klSave(sync){ store.set("pult-klassen", KL.klassen); store.set("pult-klog", KL.log); store.set("pult-verborgen", KL.verborgen); if (sync !== false) klSync(); }
+/* Stunde der Klasse merken (für das Klassenziel „3 Stunden ohne Verspätung“) */
+function klStunde(l){ const kl = klasseOf(l), k = lkey(l), a = KL.log.stunden[kl] = KL.log.stunden[kl] || []; if (!a.includes(k)){ a.push(k); a.sort(); klSave(); } }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 /* Halbjahr: 1 = September bis 14. Februar, 2 = 15. Februar bis August */
 function halbjahr(iso){ const [y, m, d] = iso.split("-").map(Number); if (m >= 9) return y + "-1"; if (m < 2 || (m === 2 && d <= 14)) return (y - 1) + "-1"; return (y - 1) + "-2"; }
@@ -492,7 +496,7 @@ function klNames(klasse){
   const cnt = {}; raw.forEach(r => { const f = first(r); cnt[f] = (cnt[f] || 0) + 1; });
   return raw.map(r => ({raw: r.trim(), show: cnt[first(r)] > 1 && last(r) ? first(r) + " " + last(r)[0] + "." : first(r)}));
 }
-const lkey = l => DAY.date + ":" + l.id;
+const lkey = l => DAY.date + ":" + toMin(l.start);
 function klasseOf(l){ return String(l.klasse || "").trim(); }
 /* Störung zählen; beim dritten Mal Hausaufgabe */
 function stoer(l, name, d){
@@ -547,10 +551,24 @@ function renderKlasse(){
     ${has.length ? `<h2>Hausaufgabe heute</h2><ul class="list">${has.map(h => `<li><b>${esc(show(h.name))}</b>: Übung Zentralperspektive bis zur nächsten Stunde <button class="chip" data-act="kltext" data-art="ha" data-name="${esc(h.name)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
     ${collect.length ? `<h2>Einsammeln</h2><ul class="list">${collect.map(h => `<li>${esc(show(h.name))} <span class="small">(${esc(h.date.slice(8,10) + "." + h.date.slice(5,7) + ".")})</span> <button class="chip" data-act="hadone" data-id="${h.id}">abgegeben</button></li>`).join("")}</ul>` : ""}
     <h2>Verspätet heute</h2>
-    ${late.length ? `<ul class="list">${late.map(e => `<li><b>${esc(show(e.name))}</b> ${e.ent ? "entschuldigt" : e.min + " Min."} <button class="chip" data-act="spent" data-id="${e.id}" aria-pressed="${!!e.ent}">entschuldigt</button> <button class="chip" data-act="spdel" data-id="${e.id}">löschen</button></li>`).join("")}</ul>` : `<p class="small">Niemand. Die Kinder tragen sich am Notebook mit Taste V selbst ein.</p>`}
+    ${late.length ? `<ul class="list">${late.map(e => `<li><b>${esc(show(e.name))}</b> ${e.ent ? "entschuldigt" : e.min + " Min."}${e.ok ? "" : ` <button class="chip" data-act="spok" data-id="${e.id}" aria-pressed="false">bestätigen</button>`} <button class="chip" data-act="spent" data-id="${e.id}" aria-pressed="${!!e.ent}">entschuldigt</button> <button class="chip" data-act="spdel" data-id="${e.id}">löschen</button></li>`).join("")}</ul>${late.some(e => !e.ok && !e.ent) ? `<p class="small">Unbestätigte Einträge erscheinen am Bildschirm erst nach deinem OK.</p>` : ""}` : `<p class="small">Niemand. Die Kinder tragen sich am Notebook mit Taste V selbst ein.</p>`}
     ${open.length ? `<h2>Nachholen offen</h2><ul class="list">${open.map(x => `<li><b>${esc(x.n.show)}</b> ${Math.round(x.s.open)} Min. <button class="chip" data-act="nach" data-name="${esc(x.n.raw)}" data-min="${Math.round(x.s.open)}">nachgeholt</button> <button class="chip" data-act="kltext" data-art="spaet" data-name="${esc(x.n.raw)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
     ${klText ? `<h2>Text für Eltern</h2><textarea id="klTextOut" readonly style="min-height:240px">${esc(klText)}</textarea><div class="ctrl"><button class="btn" data-act="klcopy">Kopieren</button><button class="btn" data-act="kltextx">Schließen</button></div>` : ""}
+    <details><summary>Nicht öffentlich zeigen</summary><p class="small">Diese Kinder zählen weiter, erscheinen aber in keiner Liste am Bildschirm. Ein Grund wird nicht gespeichert.</p>
+      <div class="chips">${N.map(n => `<button class="chip" data-act="hide" data-kl="${esc(kl)}" data-name="${esc(n.raw)}" aria-pressed="${(KL.verborgen[kl] || []).includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div></details>
+    <details><summary>Verlauf der letzten Wochen</summary>${verlaufHtml(kl)}</details>
     ${edit}`;
+}
+/* Verlauf je Woche: Verspätungsminuten und Störungen (nur für dich) */
+function wk(iso){ const d = new Date(iso + "T12:00:00"); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.toISOString().slice(0, 10); }
+function verlaufHtml(kl){
+  const weeks = {};
+  for (const e of KL.log.spaet) if (e.klasse === kl && !e.del && !e.ent){ const w = wk(e.date); (weeks[w] = weeks[w] || {m: 0, s: 0}).m += e.min; }
+  for (const [k, v] of Object.entries(KL.log.stoer)){ const l = lessons.find(x => lkey(x) === k); const kk = l ? klasseOf(l) : null; if (kk !== kl && !(KL.log.stunden[kl] || []).includes(k)) continue; const w = wk(k.slice(0, 10)); (weeks[w] = weeks[w] || {m: 0, s: 0}).s += Object.values(v).reduce((a, b) => a + b, 0); }
+  const keys = Object.keys(weeks).sort().slice(-6);
+  if (!keys.length) return `<p class="small">Noch keine Daten.</p>`;
+  const max = Math.max(1, ...keys.map(w => Math.max(weeks[w].m, weeks[w].s)));
+  return `<div class="verlauf">${keys.map(w => `<div class="vrow"><span>${w.slice(8,10)}.${w.slice(5,7)}.</span><span class="vb"><i style="width:${(weeks[w].m / max * 100).toFixed(0)}%"></i></span><span>${Math.round(weeks[w].m)} Min.</span><span class="vb s"><i style="width:${(weeks[w].s / max * 100).toFixed(0)}%"></i></span><span>${weeks[w].s} St.</span></div>`).join("")}</div><p class="small">Oben je Woche: Verspätungsminuten (blau) und Störungen (grau).</p>`;
 }
 /* Tippen und langes Drücken auf die Namenskacheln */
 let klPress = null, klLong = false;
@@ -566,6 +584,8 @@ function klClick(b){
   const act = b.dataset.act, l = lessons.find(x => x.id === selected);
   if (act === "klsave"){ const v = ($("#klList").value || "").split(/\n+/).map(s => s.trim()).filter(Boolean); KL.klassen[b.dataset.kl] = v; KL.klassen._u = Date.now(); klSave(); render(); return true; }
   if (act === "hadone"){ const h = KL.log.ha.find(x => x.id === b.dataset.id); if (h){ h.done = true; h.u = Date.now(); klSave(); render(); } return true; }
+  if (act === "spok"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.ok = true; e.u = Date.now(); klSave(); render(); } return true; }
+  if (act === "hide"){ const a = KL.verborgen[b.dataset.kl] = KL.verborgen[b.dataset.kl] || []; const i = a.indexOf(b.dataset.name); if (i < 0) a.push(b.dataset.name); else a.splice(i, 1); KL.verborgen._u = Date.now(); klSave(); render(); return true; }
   if (act === "spent"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.ent = !e.ent; e.u = Date.now(); klSave(); render(); } return true; }
   if (act === "spdel"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.del = true; e.u = Date.now(); klSave(); render(); } return true; }
   if (act === "nach"){ KL.log.nach.push({id: uid(), klasse: klasseOf(l), name: b.dataset.name, date: DAY.date, min: Number(b.dataset.min), u: Date.now()}); klSave(); render(); return true; }
@@ -583,6 +603,8 @@ function klMerge(o){
     const i = KL.log[key].findIndex(x => x.id === e.id);
     if (i < 0){ KL.log[key].push(e); ch = true; } else if ((e.u || 0) > (KL.log[key][i].u || 0)){ KL.log[key][i] = e; ch = true; }
   }
+  if (o.verborgen && (o.verborgen._u || 0) > (KL.verborgen._u || 0)){ KL.verborgen = o.verborgen; ch = true; }
+  if (o.stunden) for (const [k, v] of Object.entries(o.stunden)){ const a = KL.log.stunden[k] = KL.log.stunden[k] || []; for (const x of v) if (!a.includes(x)){ a.push(x); ch = true; } a.sort(); }
   if (o.stoer) for (const [k, v] of Object.entries(o.stoer)){ const u = (o.stoerU || {})[k] || 0; if (u > (KL.log.stoerU[k] || 0)){ KL.log.stoer[k] = v; KL.log.stoerU[k] = u; ch = true; } }
   if (ch) klSave(false);
   return ch;
@@ -594,7 +616,7 @@ function klSync(){
   klTimer = setTimeout(() => {
     const today = {}, tu = {}; for (const [k, v] of Object.entries(KL.log.stoer)) if (k.startsWith(DAY.date)){ today[k] = v; tu[k] = KL.log.stoerU[k] || 0; }
     const h = halbjahr(DAY.date), cut = x => halbjahr(x.date) === h;
-    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
+    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, verborgen: KL.verborgen, stunden: KL.log.stunden, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
     pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method: "POST", body: await pack(msg)})).catch(() => {});
   }, 400);
 }
@@ -621,6 +643,7 @@ function tick(){
   if (lastKey !== null && key !== lastKey && loc){
     try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(450); else if (navigator.vibrate) navigator.vibrate([180, 80, 180]); } catch(e){}
   }
+  if (loc && fresh()) { const kk = lkey(loc.lesson), kl = klasseOf(loc.lesson); if (!((KL.log.stunden[kl] || []).includes(kk))) klStunde(loc.lesson); }
   const changed = key !== lastKey;
   lastKey = key;
   if (view === "jetzt" || view === "fern"){
@@ -807,7 +830,8 @@ function remoteHtml(){
     <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
     <button class="btn primary" data-fern="next" aria-label="Folie weiter">Folie ›</button>
     <button class="btn" data-fern="black">Schwarz</button>
-    <button class="btn" data-fern="timer">Timer</button></div>
+    <button class="btn" data-fern="timer">Timer</button>
+    <button class="btn" data-fern="cam">Kamera</button></div>
     <div class="small" id="fernState">${esc(fernMsg)}</div>`;
 }
 function renderFern(){
@@ -829,6 +853,7 @@ function renderFern(){
     <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
     <button class="btn" data-fern="black">Schwarz</button>
     <button class="btn" data-fern="timer">Timer groß</button>
+    <button class="btn" data-fern="cam">Kamera</button>
     ${loc ? `<button class="btn${state.pause[loc.lesson.id] ? " primary" : ""}" data-act="pause" data-id="${loc.lesson.id}" data-i="${loc.idx}">${state.pause[loc.lesson.id] ? "Fortsetzen" : "Pause"}</button>` : `<button class="btn" disabled>Pause</button>`}
     ${loc && backInfo(loc.plan.phases, state.adj[loc.lesson.id], loc.idx) ? `<button class="btn" data-act="back" data-id="${loc.lesson.id}" data-i="${loc.idx}" style="grid-column:1 / -1">↩ Zurück zur Arbeitsphase</button>` : ""}</div>
     <div class="small" id="fernState">${esc(fernMsg)}</div>
@@ -838,7 +863,7 @@ function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textCon
 function sendFern(cmd, extra){
   try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
   fetch(NTFY + "/atelier-pult-" + pair.code + "-fern", {method:"POST", body: JSON.stringify(Object.assign({v:1, cmd, at: Date.now()}, extra || {}))})
-    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer", pause:"Pause", back:"zurück zur Arbeitsphase", plus:"+5 Min.", phase:"nächste Phase", undo:"rückgängig", adj:"Stand"}[cmd] || cmd)); })
+    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer", cam:"Kamera", pause:"Pause", back:"zurück zur Arbeitsphase", plus:"+5 Min.", phase:"nächste Phase", undo:"rückgängig", adj:"Stand"}[cmd] || cmd)); })
     .catch(() => setFern("Nicht gesendet: kein Netz. Am PC mit Tasten weiter."));
 }
 function connectPair(){

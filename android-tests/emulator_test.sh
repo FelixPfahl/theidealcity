@@ -29,24 +29,32 @@ else
   adb install "$NEU" > /dev/null
 fi
 
-# 2. Start mitten in der Stunde springt zu Pult
-setclock 1150 00
-start; sleep 22; shot 01_start_in_der_stunde
-check "Start während der Stunde öffnet Pult" "Mini-Skizzen"
+# Erwartungen kommen aus den Tagesdaten (android-tests/erwartung.py): E_P1, E_P2, E_P3, E_BIS, T_P1, T_WECHSEL, T_OFFLINE
+echo "Erwartet: $E_P1 / $E_P2 / $E_P3" | tee -a "$R"
 
-# 3. Reiter
-tap "Heute"; sleep 3; check "Reiter Heute" "Auf dem Schulweg"; shot 02_heute
-tap "Morgenrunde"; sleep 10; check "Reiter Morgenrunde" "archiv"; shot 03_morgenrunde
-tap "Pult"; sleep 3; check "Reiter Pult" "Mini-Skizzen"
+# 2. Start mitten in der Stunde springt zu Pult
+setclock "$T_P1" 00
+start; sleep 22; shot 01_start_in_der_stunde
+check "Start während der Stunde öffnet Pult" "$E_P1"
+
+# 3. Leiste unten und Kacheln
+tap "Heute"; sleep 3; check "Leiste: Heute" "Auf dem Schulweg"; shot 02_heute
+tap "Morgenrunde"; sleep 10; check "Kachel Morgenrunde" "archiv"; shot 03_morgenrunde
+tap "Pult"; sleep 3; check "Leiste: Pult" "$E_P1"
+tap "Fernbedienung"; sleep 3; check "Leiste: Fernbedienung" "Noch nicht gekoppelt"; shot 03_fernbedienung
+tap "Pult"; sleep 3; check "Leiste: zurück von Fernbedienung zu Pult" "$E_P1"
+tap "Heute"; sleep 3; tap "Folien"; sleep 4; check "Kachel Folien öffnet die Fernbedienung" "Noch nicht gekoppelt"
+tap "Heute"; sleep 3; tap "Pult"; sleep 4; check "Kachel Pult wechselt jederzeit" "$E_P1|Noch nicht gekoppelt"
+tap "Jetzt"; sleep 2
 
 # 4. Pult-Tasten
 tap "+5 Min."; sleep 2; check "+5 Min. verlängert und gleicht aus" "Ausgleich in"
-tap "Weiter"; sleep 2; check "Weiter springt zur nächsten Phase" "Zwischenhalt"
-tap "Zurück"; sleep 2; tap "Zurück"; sleep 2; check "Zurück nimmt beides zurück" "Mini-Skizzen"
+tap "Weiter"; sleep 2; check "Weiter springt zur nächsten Phase" "$E_P2"
+tap "Zurück"; sleep 2; tap "Zurück"; sleep 2; check "Zurück nimmt beides zurück" "$E_P1"
 shot 04_pult
 
 # 5. Ansichten Tag und Spick
-tap "Tag"; sleep 2; check "Pult-Ansicht Tag" "Noch zu drucken"; shot 05_tag
+tap "Tag"; sleep 2; check "Pult-Ansicht Tag" "drucken|Ablauf"; shot 05_tag
 tap "Spick"; sleep 2; check "Pult-Ansicht Spick" "Impulsfragen"; shot 05_spick
 
 # 6. Notiz bleibt nach Neustart
@@ -61,19 +69,19 @@ check "Notiz bleibt nach Neustart" "Testnotiz_Emulator"; shot 06_notiz
 tap "Jetzt"; sleep 2
 adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1; sleep 4; shot 07_quer
-check "Querformat: Restzeit sichtbar" "bis 12."
+check "Querformat: Restzeit sichtbar" "$E_BIS"
 adb shell settings put system user_rotation 0; sleep 3
-check "Nach dem Drehen weiter in Pult" "Mini-Skizzen"
+check "Nach dem Drehen weiter in Pult" "$E_P1"
 
 # 8. Phasenwechsel nach Uhrzeit, mit Vibration
-setclock 1224 50; sleep 22
-check "Phase wechselt nach Uhrzeit" "Zwischenhalt"
+setclock "$T_WECHSEL" 50; sleep 22
+check "Phase wechselt nach Uhrzeit" "$E_P2"
 if adb shell dumpsys vibrator_manager 2>/dev/null | grep -q "$PKG"; then ok "Vibration beim Phasenwechsel ausgelöst"
 else bad "Vibration beim Phasenwechsel nicht nachweisbar"; fi
 shot 08_phasenwechsel
 
 # 9. Zurück-Taste
-tap "Morgenrunde"; sleep 3
+tap "Heute"; sleep 3; tap "Morgenrunde"; sleep 4
 adb shell input keyevent KEYCODE_BACK; sleep 3
 check "Zurück-Taste führt zu Heute" "Auf dem Schulweg"
 adb shell input keyevent KEYCODE_BACK; sleep 3
@@ -81,10 +89,10 @@ if adb shell dumpsys activity activities | grep -E "ResumedActivity" | grep -q "
 else ok "Zweites Zurück schließt die App"; fi
 
 # 10. Ohne Netz
-setclock 1226 00
+setclock "$T_OFFLINE" 00
 adb shell svc wifi disable; adb shell svc data disable; sleep 3
 adb shell am force-stop "$PKG"; start --es tab pult; sleep 14
-check "Ohne Netz: Pult mit gespeichertem Stand" "Zwischenhalt|Stern und Wunsch"; shot 10_offline_pult
+check "Ohne Netz: Pult mit gespeichertem Stand" "$E_P2|$E_P3"; shot 10_offline_pult
 start --es tab morgenrunde; sleep 6
 check "Ohne Netz: Morgenrunde" "archiv"; shot 10_offline_morgenrunde
 start --es tab atelier; sleep 4

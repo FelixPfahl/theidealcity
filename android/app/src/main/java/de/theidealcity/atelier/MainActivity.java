@@ -55,10 +55,13 @@ public class MainActivity extends Activity {
         APPS.put("morgenrunde", new String[]{"morgenrunde", "morgenrunde/web/"});
     }
     static final String[] TABS = {"atelier", "pult", "morgenrunde"};
-    static final String[] LABELS = {"Heute", "Pult", "Morgenrunde"};
+    /** Leiste unten: Heute (Atelier), Pult, Fernbedienung (Pult, Ansicht fern). Morgenrunde läuft als Reiter ohne Knopf, geöffnet über die Kachel. */
+    static final String[] BAR = {"atelier", "pult", "fern"};
+    static final String[] LABELS = {"Heute", "Pult", "Fernbedienung"};
     static final int BG = 0xFF0B0C10, LINE = 0xFF262A33, FG = 0xFFECEEF3, MUTED = 0xFF8B91A0, ACCENT = 0xFF0028FF;
     private final WebView[] views = new WebView[TABS.length];
-    private final TextView[] tabs = new TextView[TABS.length];
+    private final TextView[] tabs = new TextView[BAR.length];
+    private volatile String pultView = "jetzt";
     private FrameLayout stage;
     private int current = 0;
     /** Darf die Startseite einmal automatisch zu Pult springen? Nur beim normalen Start, bis du selbst einen Reiter tippst. */
@@ -74,29 +77,29 @@ public class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(BG);
 
+        stage = new FrameLayout(this);
+        root.addView(stage, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+        View line = new View(this);
+        line.setBackgroundColor(LINE);
+        root.addView(line, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)));
+
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
-        bar.setBackgroundColor(BG);
-        for (int i = 0; i < TABS.length; i++) {
-            final int idx = i;
+        bar.setBackgroundColor(0xFF07080B);
+        for (int i = 0; i < BAR.length; i++) {
+            final String id = BAR[i];
             TextView t = new TextView(this);
             t.setText(LABELS[i]);
             t.setGravity(Gravity.CENTER);
-            t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
             t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-            t.setPadding(0, dp(12), 0, dp(10));
-            t.setOnClickListener(v -> { autoTabAllowed = false; show(idx); });
+            t.setPadding(0, dp(12), 0, dp(12));
+            t.setOnClickListener(v -> { autoTabAllowed = false; go(id, true); });
             t.setContentDescription(LABELS[i]);
             tabs[i] = t;
             bar.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         }
         root.addView(bar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        View line = new View(this);
-        line.setBackgroundColor(LINE);
-        root.addView(line, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)));
-
-        stage = new FrameLayout(this);
-        root.addView(stage, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(root);
 
         int startTab = 0;
@@ -124,13 +127,66 @@ public class MainActivity extends Activity {
         return s > 0 ? rest.substring(0, s) : null;
     }
 
-    private WebView view(int i) {
+    private WebView view(int i) { return view(i, null); }
+
+    private WebView view(int i, String query) {
         if (views[i] != null) return views[i];
         WebView w = makeView(i);
         views[i] = w;
         stage.addView(w, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        w.loadUrl(ORIGIN + TABS[i] + "/index.html");
+        w.loadUrl(ORIGIN + TABS[i] + "/index.html" + (query != null ? query : ""));
         return w;
+    }
+
+    /** Wechsel per Leiste oder Kachel. "fern" = Pult in der Ansicht Fernbedienung. Der Stand jeder App bleibt erhalten. */
+    void go(String id, boolean fromBar) {
+        if ("fern".equals(id)) {
+            int p = indexOf("pult");
+            boolean fresh = views[p] == null;
+            view(p, "?ansicht=fern");
+            show(p);
+            if (!fresh) views[p].evaluateJavascript("window.AtelierSetView&&AtelierSetView('fern')", null);
+            pultView = "fern";
+            updateBar();
+            return;
+        }
+        int i = indexOf(id);
+        if (i < 0) return;
+        show(i);
+        if (fromBar && "pult".equals(id) && "fern".equals(pultView) && views[i] != null) {
+            views[i].evaluateJavascript("window.AtelierSetView&&AtelierSetView('jetzt')", null);
+            pultView = "jetzt";
+            updateBar();
+        }
+    }
+
+    /** Welcher Knopf der Leiste leuchtet */
+    int barIndex() {
+        String t = TABS[current];
+        if ("pult".equals(t)) return "fern".equals(pultView) ? 2 : 1;
+        if ("atelier".equals(t)) return 0;
+        return -1;
+    }
+
+    void updateBar() {
+        int sel = barIndex();
+        for (int k = 0; k < BAR.length; k++) {
+            tabs[k].setTextColor(k == sel ? FG : MUTED);
+            tabs[k].setSelected(k == sel);
+            android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
+            g.setColor(k == sel ? 0xFF15171D : 0xFF07080B);
+            android.graphics.drawable.LayerDrawable ld;
+            if (k == sel) {
+                android.graphics.drawable.ColorDrawable u = new android.graphics.drawable.ColorDrawable(ACCENT);
+                ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{g, u});
+                ld.setLayerInset(1, dp(24), 0, dp(24), 0);
+                ld.setLayerGravity(1, Gravity.TOP);
+                ld.setLayerHeight(1, dp(3));
+            } else {
+                ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{g});
+            }
+            tabs[k].setBackground(ld);
+        }
     }
 
     /** Reiter zeigen; die anderen Ansichten laufen im Hintergrund weiter (Pult-Uhr, Vibration). */
@@ -139,26 +195,8 @@ public class MainActivity extends Activity {
         web = view(i);
         for (int k = 0; k < TABS.length; k++) {
             if (views[k] != null) views[k].setVisibility(k == i ? View.VISIBLE : View.GONE);
-            tabs[k].setTextColor(k == i ? FG : MUTED);
-            tabs[k].setBackgroundColor(k == i ? 0xFF15171D : BG);
         }
-        tabs[i].setSelected(true);
-        // blauer Strich unter dem aktiven Reiter
-        for (int k = 0; k < TABS.length; k++) {
-            android.graphics.drawable.GradientDrawable g = new android.graphics.drawable.GradientDrawable();
-            g.setColor(k == i ? 0xFF15171D : BG);
-            android.graphics.drawable.LayerDrawable ld;
-            if (k == i) {
-                android.graphics.drawable.ColorDrawable u = new android.graphics.drawable.ColorDrawable(ACCENT);
-                ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{g, u});
-                ld.setLayerInset(1, dp(24), 0, dp(24), 0);
-                ld.setLayerGravity(1, Gravity.BOTTOM);
-                ld.setLayerHeight(1, dp(3));
-            } else {
-                ld = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{g});
-            }
-            tabs[k].setBackground(ld);
-        }
+        updateBar();
     }
 
     /** Adresse im passenden Reiter öffnen */
@@ -367,6 +405,19 @@ public class MainActivity extends Activity {
                 autoTabAllowed = false;
                 show(i);
             });
+        }
+
+        /** Wechsel auf Wunsch (Kachel): wirkt immer. app = atelier, pult, fern oder morgenrunde. */
+        @JavascriptInterface
+        public void switchTab(String app) {
+            runOnUiThread(() -> { autoTabAllowed = false; go(app, false); });
+        }
+
+        /** Pult meldet seine Ansicht, damit die Leiste Pult oder Fernbedienung zeigt. */
+        @JavascriptInterface
+        public void pultView(String v) {
+            pultView = v == null ? "jetzt" : v;
+            runOnUiThread(() -> updateBar());
         }
 
         @JavascriptInterface

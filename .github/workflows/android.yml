@@ -36,6 +36,8 @@ jobs:
           git archive origin/morgenrunde morgenrunde/web | tar -x -C "$RUNNER_TEMP"
           cp -r "$RUNNER_TEMP/morgenrunde/web/." "$A/morgenrunde/"
           echo "DATA_DATE=$(git show origin/pult:daten/heute.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["date"])')" >> "$GITHUB_ENV"
+          git show origin/pult:daten/heute.json > "$RUNNER_TEMP/heute.json"
+          python3 android-tests/erwartung.py "$RUNNER_TEMP/heute.json" >> "$GITHUB_ENV"
           find "$A" -type f | sort
 
       - name: Signaturschlüssel (falls als Secret hinterlegt)

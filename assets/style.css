@@ -1101,3 +1101,8 @@ html.calm .mute .x{animation:none}
 /* Newsletter-Überschrift nie trennen (Test 29.10., 14:00: "NEWSLET-TER" auf der Info-Seite) */
 .nlform h2{hyphens:manual;-webkit-hyphens:manual;overflow-wrap:normal}
 @media (min-width:601px){.nlform.big h2{font-size:clamp(30px,4.2vw,72px)}}
+/* Ton erlaubt, aber der Browser wartet noch auf einen Klick */
+.mute.wait{border-style:dotted;animation:mutewait 1.6s ease-in-out infinite}
+@keyframes mutewait{50%{opacity:.45}}
+html.calm .mute.wait{animation:none}
+@media (max-width:700px){.mute.wait .mutelab{display:inline;font-size:10px}.mute.wait{width:auto;padding:0 8px 0 5px}}

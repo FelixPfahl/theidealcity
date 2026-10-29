@@ -79,6 +79,7 @@
     if ((opt.bus || 'tools') === 'tools') duck(ac); }
   /* Plotter-Loop beim Scrollen: läuft mit Fade, solange gescrollt wird */
   var LOOP = null;
+  var SPEED = 1.25;   /* Josef, 29.10., 14:07: alles 25 Prozent schneller schreiben */
   var HEAR = 1;   /* Hörbarkeit des gerade schreibenden Absatzes (1 im Bild, 0 weit weg) */
   function plotterLoop(on){ var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR.plotter; if (!st){ spriteLoad('plotter'); return; } if (!st.buf) return;
     if (on){ if (!LOOP){ var src = ac.createBufferSource(); src.buffer = st.buf; src.loop = true; var c = st.clips[Math.floor(Math.random() * st.clips.length)]; src.loopStart = c[0]; src.loopEnd = c[0] + c[1]; src.playbackRate.value = .9 + Math.random() * .2;
@@ -139,6 +140,9 @@
       (function step(now){ var f = Math.min(1, (now - t0) / dur); draw(cv, f); if (f < 1) requestAnimationFrame(step); })(t0); }); }, {rootMargin:'0px 0px -10% 0px'});
     divs.forEach(function(cv){ io.observe(cv); }); })();
   ['pointerdown', 'keydown', 'touchstart'].forEach(function(ev){ window.addEventListener(ev, unlock, {passive:true, once:true}); });
+  /* Josef, 29.10., 14:04: "beim Neuladen ist der Ton teilweise aus". Ursache: Browser starten Ton erst nach einer Geste (Klick, Taste, Tippen; Scrollen zählt nicht).
+     Darum: Audio schon beim Laden anlegen; erlaubt der Browser es (oft bei wiederkehrenden Besuchern), läuft der Ton sofort. Sonst zeigt der Ton-Knopf "Klick für Ton", bis die erste Geste kommt. */
+  if (FX.vol > 0 && !FF){ try { var a0 = ctx(); if (a0){ var rs = function(){ if (a0.state === 'running' && !unlocked) unlock(); if (window.JK_SNDSTATE) window.JK_SNDSTATE(); }; a0.onstatechange = rs; setTimeout(rs, 60); } } catch(e){} }
   function vary(){ V.cents = (Math.random()*1000-500); V.len = .75+Math.random()*.6; V.vol = .7+Math.random()*.45; }
   function osc(ac, type, f, t, d, vol, env){ d*=V.len; vol*=V.vol; var o=ac.createOscillator(), g=ac.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); o.detune.value=V.cents;
     g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+(env||.01)); g.gain.exponentialRampToValueAtTime(.0005,t+d); o.connect(g); g.connect(OUT(ac)); o.start(t); o.stop(t+d+.02); return o; }
@@ -450,13 +454,20 @@
   });
   function applause(){ /* dunkel: Sub-Schwell mit Glocke (Josef, 27.10.: kein Applaus mehr) */ var ac = ctx(); if (!ac) return 0; vary(); V.len = 1; V.vol = 1; var t = ac.currentTime + .02;
     SND['d_sub05'](ac, t); SND['d_bell07'](ac, t + .25); SND['d_choir03'](ac, t + .5); return 1900; }
-  document.querySelectorAll('form[data-nl]').forEach(function(f){
+  document.querySelectorAll('form[data-nl], form[data-mail]').forEach(function(f){
     var busy = false;
     f.addEventListener('submit', function(e){
       if (busy) return; e.preventDefault(); busy = true;
       var btn = f.querySelector('button[type=submit]'); if (btn){ btn.disabled = true; btn.textContent = 'Danke!'; }
       var wait = applause() || 300;
       var brevo = /sibforms|brevo/.test(f.action);
+      /* Josef, 29.10., 14:05: ohne Dienst dazwischen. Das Formular öffnet eine fertige Mail im eigenen Mailprogramm. */
+      if (f.hasAttribute('data-mail')){ var to = 'josef@theidealcity.gg', kind = f.getAttribute('data-mail'), val = function(sel){ var el = f.querySelector(sel); return el ? el.value.trim() : ''; };
+        var subj, body; if (kind === 'nl'){ subj = 'Newsletter-Anmeldung theidealcity.gg'; body = 'Bitte trag mich in den Newsletter ein: ' + val('input[type=email]') + '\n\n(Abmelden geht jederzeit mit einer kurzen Mail an ' + to + '.)'; }
+        else { subj = 'Nachricht über theidealcity.gg' + (val('input[name=name]') ? ' von ' + val('input[name=name]') : ''); body = val('textarea') + '\n\n' + val('input[name=name]') + ' <' + val('input[type=email]') + '>'; }
+        setTimeout(function(){ window.location.href = 'mailto:' + to + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body);
+          var ok = f.querySelector('.nlok') || f.parentNode.querySelector('.nlok'); if (ok) ok.hidden = false; else { var p = document.createElement('p'); p.className = 'nlok'; p.textContent = 'Dein Mailprogramm ist offen. Mail abschicken, dann ist sie bei Josef.'; f.appendChild(p); }
+          if (btn){ btn.disabled = false; btn.textContent = kind === 'nl' ? 'Anmelden' : 'Abschicken'; } busy = false; }, Math.min(wait, 900)); return; }
       if (brevo && window.fetch && window.FormData){
         fetch(f.action, {method:'POST', body:new FormData(f), mode:'no-cors'}).then(function(){
           var row = f.querySelector('.nlrow'); if (row) row.hidden = true; var ok = f.querySelector('.nlok') || f.parentNode.querySelector('.nlok'); if (ok) ok.hidden = false;
@@ -725,8 +736,8 @@
     var sv = b.querySelector('svg'); if (sv && !sv.querySelector('.x')){ var x = document.createElementNS('http://www.w3.org/2000/svg', 'path'); x.setAttribute('class', 'x'); x.setAttribute('d', 'M3 3l18 18'); sv.appendChild(x); }
     var lab = document.createElement('span'); lab.className = 'mutelab'; b.appendChild(lab);
     try { muted = localStorage.getItem('jk_mute') === '1'; } catch(e){}
-    function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton ist aus, einschalten' : 'Ton ist an, ausschalten'); b.title = muted ? 'Ton ist aus. Klicken zum Einschalten.' : 'Ton ist an. Klicken zum Ausschalten.'; lab.textContent = muted ? 'Ton aus' : 'Ton an'; FX.vol = (muted || REDUCED) ? 0 : FX_DEFAULT.vol;   /* Ruhig und Firefox bleiben stumm */ if (MASTER) MASTER.node.gain.value = FX.vol/100; }
-    apply();
+    function apply(){ b.classList.toggle('off', muted); b.setAttribute('aria-pressed', muted ? 'true' : 'false'); b.setAttribute('aria-label', muted ? 'Ton ist aus, einschalten' : 'Ton ist an, ausschalten'); b.title = muted ? 'Ton ist aus. Klicken zum Einschalten.' : 'Ton ist an. Klicken zum Ausschalten.'; var waiting = !muted && (!AC || AC.state !== 'running'); b.classList.toggle('wait', waiting); lab.textContent = muted ? 'Ton aus' : (waiting ? 'Klick für Ton' : 'Ton an'); FX.vol = (muted || REDUCED) ? 0 : FX_DEFAULT.vol;   /* Ruhig und Firefox bleiben stumm */ if (MASTER) MASTER.node.gain.value = FX.vol/100; }
+    apply(); window.JK_SNDSTATE = apply;
     /* Josef, 29.10., 13:56: der Plotter streicht den Lautsprecher durch (mit Stiftgeräusch, erst danach ist es still) */
     b.addEventListener('click', function(e){ e.stopPropagation(); muted = !muted; try { localStorage.setItem('jk_mute', muted ? '1' : '0'); } catch(err){}
       if (muted){ b.classList.add('off', 'plotx'); lab.textContent = 'Ton aus'; try { spritePlay('plotter', {vol:.6, max:.45, force:true}); } catch(x){} setTimeout(function(){ apply(); b.classList.remove('plotx'); }, 520); }
@@ -1108,7 +1119,7 @@
     function unbuild(b){ var src = b.el.querySelector('.plotsrc'); b.el.querySelectorAll('.plotsup').forEach(function(s){ s.classList.remove('plotsup'); s.style.left = s.style.top = ''; src.appendChild(s); }); b.el.querySelectorAll('.plotlink,.plothand').forEach(function(a){ a.remove(); }); b.cv.remove(); b.lv.remove(); if (src){ while (src.firstChild) b.el.appendChild(src.firstChild); src.remove(); } b.el.classList.remove('plotted'); b.el.style.minHeight = ''; }
     /* Neuaufbau (nur bei geänderter Breite) behält den Fortschritt: was geschrieben war, steht sofort wieder da (Josef, 29.10., 12:10: am Handy verschwand der Text beim Hochscrollen und Tippen, weil die Adressleiste die Fensterhöhe ändert) */
     function buildAll(){ var prev = []; built.forEach(function(b){ prev.push([b.el, b.f, b.fin]); }); built.forEach(unbuild); built = []; targets.forEach(function(el){ try { build(el); } catch(e){ try { console.warn('plot', e); } catch(_){} } });
-      built.forEach(function(b){ for (var i = 0; i < prev.length; i++){ if (prev[i][0] === b.el){ if (prev[i][1] > 0){ b.f = prev[i][1]; b.dirty = true; if (b.hero) b.t0 = performance.now() - (b.ms || 2800) * prev[i][1]; if (prev[i][2]){ b.fin = true; b.el.classList.add('plotdone'); } } break; } } }); update(); }
+      built.forEach(function(b){ for (var i = 0; i < prev.length; i++){ if (prev[i][0] === b.el){ if (prev[i][1] > 0){ b.f = prev[i][1]; b.dirty = true; if (b.hero) b.t0 = performance.now() - (b.ms || 2800) / SPEED * prev[i][1]; if (prev[i][2]){ b.fin = true; b.el.classList.add('plotdone'); } } break; } } }); update(); }
     function strokeItem(c, b, it, d){ /* einen Glyph (ganz oder teilweise) auf einen Kontext zeichnen */
       var col = b.col, sc = it.sc || b.sc, full = d >= it.len, stroke = it.acc ? col.acc : (it.tone > 0 ? col.warm : (it.tone < 0 ? col.cool : col.ink));
       if (it.o0 === undefined) it.o0 = speed > 2.2 ? R(.45, .65) : 1;
@@ -1155,11 +1166,11 @@
       built.forEach(function(b){ var r = b.el.getBoundingClientRect();
         if (r.bottom < -vh * 2 || r.top > vh * 3){ if (b.alive && !b.hero){ b.cv.width = 0; b.cv.height = 0; b.lv.width = 0; b.lv.height = 0; b.alive = false; b.dirty = true; } return; }   /* weit weg: Speicher frei */
         var f;
-        if (b.hero){ f = Math.min(1, (now - b.t0) / (b.ms || 2800)); if (f < 1) moved = true; }
+        if (b.hero){ f = Math.min(1, (now - b.t0) / ((b.ms || 2800) / SPEED)); if (f < 1) moved = true; }
         else {
           /* Josef, 28.10., 01:41: nichts mehr mit dem Scrollen zu tun. Sobald der Absatz im Bild ist, schreibt der Plotter in eigenem Tempo bis zum Ende, nie rückwärts */
           var cur = b.f < 0 ? 0 : b.f; var seen = r.top < vh * .9 && r.bottom > 0; f = cur;
-          if (seen || cur > 0){ var step = Math.min(1, 1.8 / Math.max(1, b.items.length)); f = Math.min(1, cur + step); if (f < 1) lag = true; }
+          if (seen || cur > 0){ var step = Math.min(1, 1.8 * SPEED / Math.max(1, b.items.length)); f = Math.min(1, cur + step); if (f < 1) lag = true; }
           if (f >= 1 && !b.fin){ b.fin = true; b.el.classList.add('plotdone'); } }
         if (REDUCED) f = 1;
         /* Josef, 29.10., 14:00: Schreiben außerhalb des Bildschirms wird leiser und schließlich unhörbar (Plotter und Dürers Feder) */

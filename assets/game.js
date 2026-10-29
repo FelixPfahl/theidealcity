@@ -76,12 +76,13 @@
 
   /* ---------- Dialogfenster (Josef, 00:23: wie Leute in einem Fenster bei einem SNES-Mega-Man-Spiel): Porträt, Text Buchstabe für Buchstabe mit Blip, Klick oder Taste blättert ---------- */
   /* Figuren aus THE IDEAL CITY (Josef, 00:31 bis 00:38: nur Ideal-City-Figuren, Felix Pfahl bleibt draußen; je Figur eine Farbe und ein Fensterstil nach der Comicsprache, die sie selbst lesen würde) */
+  /* Josef, 29.10., 14:08: Dialoge langsamer, SNES-Tempo (etwa 40 bis 65 ms je Zeichen) */
   var CH = {
-    inka:   {name:'INKA SCHALTER', col:'#3F97B8', speed:24, blip:[760, 'square']},      /* Manga mit Rasterfolie: Punktraster, schnell */
-    wagner: {name:'WAGNER ROHRSCHACH', col:'#E2231A', speed:36, blip:[300, 'square']},  /* frankobelgisch, ligne claire: klarer Rahmen, gemessen */
-    xae:    {name:'X Æ A-13', col:'#000', speed:16, blip:[1200, 'triangle']},            /* dokumentarisch: nüchtern, sehr schnell */
-    sigma:  {name:'TEST SIGMA', col:'#00A651', speed:48, blip:[520, 'sine']},            /* Indie: wackliger Rahmen, langsam, hinter Glas */
-    gojira: {name:'GOJIRA', col:'#00A651', speed:120, blip:[60, 'sine']}                 /* nur Punkte und ein Beben */
+    inka:   {name:'INKA SCHALTER', col:'#3F97B8', speed:45, blip:[760, 'square']},      /* Manga mit Rasterfolie: Punktraster, schnell */
+    wagner: {name:'WAGNER ROHRSCHACH', col:'#E2231A', speed:55, blip:[300, 'square']},  /* frankobelgisch, ligne claire: klarer Rahmen, gemessen */
+    xae:    {name:'X Æ A-13', col:'#000', speed:38, blip:[1200, 'triangle']},            /* dokumentarisch: nüchtern, sehr schnell */
+    sigma:  {name:'TEST SIGMA', col:'#00A651', speed:66, blip:[520, 'sine']},            /* Indie: wackliger Rahmen, langsam, hinter Glas */
+    gojira: {name:'GOJIRA', col:'#00A651', speed:150, blip:[60, 'sine']}                 /* nur Punkte und ein Beben */
   };
   var RULES = [
     ['inka', 'Psst. Ich bin Inka. Ich beobachte diese Seiten schon eine Weile. Ich beobachte eigentlich alles.'],

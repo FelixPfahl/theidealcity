@@ -1127,3 +1127,9 @@ section[id],.series[id],[id].powlead{scroll-margin-top:calc(var(--headh,70px) + 
 @media (max-width:700px){.plab{left:10px;font-size:13px}}
 .progress{background:linear-gradient(rgba(128,128,128,.18),rgba(128,128,128,.18)),var(--paper)}   /* deckend: der Inhalt scrollt nicht sichtbar darunter durch */
 .fat .w{white-space:nowrap}   /* Wörter der Überschriften bleiben ganz (Josef, Test 29.10., 14:40) */
+/* Werkgruppen im Raster (Josef, 29.10., 15:08): kleine geplottete Zwischentitel */
+.wgroup{margin-top:clamp(36px,5vw,72px)}
+.wgroup:first-of-type{margin-top:clamp(28px,4vw,56px)}
+.grptitle{font-family:var(--body);font-weight:400;font-size:clamp(18px,1.3vw,22px);line-height:1.4;letter-spacing:.06em;margin:0;color:var(--ink);text-transform:none;max-width:62ch}
+.wgroup > .grid,.wgroup > .einzelgrid{margin-top:14px}
+.song > *,.song .sbody{min-width:0}   /* Songzitate: Spalte darf schmaler als das längste Wort werden, app.js verkleinert dann die Schrift (Test 29.10., 15:25) */

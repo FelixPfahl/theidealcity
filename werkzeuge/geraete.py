@@ -23,6 +23,7 @@ with sync_playwright() as p:
         cfg.pop("default_browser_type", None)
         ctx = b.new_context(**cfg)
         ctx.add_init_script(CLOCK)
+        if os.environ.get("ATELIER_SCHLUESSEL"): ctx.add_init_script("try{localStorage.setItem('atelier-schluessel', %s)}catch(e){}" % json.dumps("".join(c for c in os.environ["ATELIER_SCHLUESSEL"].lower() if c.isalnum())))
         ctx.route("https://fonts.*/**", lambda r: r.abort())
         ctx.route("https://raw.githack.com/**", lambda r: r.abort())
         pg = ctx.new_page(); errs = []

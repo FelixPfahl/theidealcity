@@ -130,6 +130,49 @@ body.has-appbar .wrap{padding-bottom:170px}
 
 <script>
 /* ===== Tagesdaten (später vom Morgenlauf befüllt) ===== */
+/* Atelier-Schlüssel: Verschlüsselung der Tagesdaten und der Kopplung (AES-GCM, Schlüssel per PBKDF2 aus dem 16-stelligen Atelier-Schlüssel).
+   Der Schlüssel liegt nur auf Josefs Geräten (localStorage) und wird nie über das Netz geschickt. */
+const Geheim = (() => {
+  const te = new TextEncoder(), td = new TextDecoder();
+  const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const b64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); };
+  const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const cache = {};
+  async function key(s, salt){
+    const id = salt + ":" + norm(s); if (cache[id]) return cache[id];
+    const base = await crypto.subtle.importKey("raw", te.encode(norm(s)), "PBKDF2", false, ["deriveKey"]);
+    return cache[id] = await crypto.subtle.deriveKey({name:"PBKDF2", salt: te.encode(salt), iterations: 150000, hash: "SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt", "decrypt"]);
+  }
+  async function open(box, s, salt){
+    const k = await key(s, salt || "atelier-daten-v1");
+    const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv: unb64(box.iv)}, k, unb64(box.ct));
+    return JSON.parse(td.decode(pt));
+  }
+  async function seal(obj, s, salt){
+    const k = await key(s, salt || "atelier-daten-v1");
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM", iv}, k, te.encode(JSON.stringify(obj))));
+    return {v:1, iv: b64(iv), ct: b64(ct)};
+  }
+  async function topic(s){
+    const h = new Uint8Array(await crypto.subtle.digest("SHA-256", te.encode("atelier-topic-v1:" + norm(s))));
+    return "atelier-" + Array.from(h.slice(0, 12), b => b.toString(16).padStart(2, "0")).join("");
+  }
+  const get = () => { try { return localStorage.getItem("atelier-schluessel") || ""; } catch(e){ return ""; } };
+  const set = v => { try { if (v) localStorage.setItem("atelier-schluessel", norm(v)); else localStorage.removeItem("atelier-schluessel"); } catch(e){} };
+  const valid = v => norm(v).length === 16;
+  const pretty = v => norm(v).toUpperCase().replace(/(.{4})(?=.)/g, "$1-");
+  /* Schlüssel aus dem Link-Anker (#s=...) übernehmen; der Anker geht nie an einen Server */
+  function fromHash(){
+    const m = location.hash.match(/[#&]s=([A-Za-z0-9-]+)/);
+    if (m && valid(m[1])){ set(m[1]); try { history.replaceState(null, "", location.pathname + location.search); } catch(e){} return true; }
+    return false;
+  }
+  const isBox = o => !!(o && typeof o === "object" && o.iv && o.ct);
+  return {norm, open, seal, topic, get, set, valid, pretty, fromHash, isBox};
+})();
+
+Geheim.fromHash();
 const EMBED = /*EMBED*/null/*EMBED_END*/;
 
 /* ===== Hilfsfunktionen ===== */
@@ -319,6 +362,7 @@ function leftText(sec){
   return String(Math.floor(sec / 60)).padStart(2, "0") + ":" + String(Math.floor(sec % 60)).padStart(2, "0");
 }
 function renderJetzt(){
+  if (keyProblem && !fresh()) return `<div class="eyebrow">Heute</div><div class="form">Schlüssel nötig</div>${keyHtml(false)}`;
   if (!fresh()) return `
     <div class="eyebrow">Heute</div>
     <div class="form">Noch keine Daten</div>
@@ -417,6 +461,7 @@ function renderTag(){
     <h2>Bewertung offen</h2>
     <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
     <p class="small">${esc(DAY.bewertungHinweis)}</p>
+    ${keyHtml(true)}
     <h2>Mit dem Schul-PC koppeln</h2>
     <p class="small">Code von der Folien-Datei am Schul-PC eingeben. Dann folgt Pult den Folien.</p>
     <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
@@ -727,6 +772,8 @@ document.addEventListener("click", e => {
     if (v.length < 6){ const s2 = $("#pairState"); if (s2) s2.textContent = "Der Code hat 8 Zeichen."; return; }
     pair = {code: v}; store.set("pult-kopplung", pair); connectPair(); render(); return;
   }
+  if (act === "key"){ const s0 = $("#keyState"); setKey(($("#keyIn") || {}).value || "").then(t => { render(); const s2 = $("#keyState"); if (s2) s2.textContent = t; }); if (s0) s0.textContent = "Prüfe …"; return; }
+  if (act === "unkey"){ Geheim.set(""); connectPair(); render(); return; }
   if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); render(); return; }
   if (act === "simreset"){ state.sim = null; save(); lastKey = null; render(); tick(); return; }
   if (b.dataset.check){
@@ -761,8 +808,18 @@ async function getJson(path){
   if (!r.ok) throw new Error(path + " " + r.status);
   return r.json();
 }
+/* Verschlüsselte Tagesdaten öffnen; ohne passenden Schlüssel bleibt der letzte Stand auf dem Handy */
+let keyProblem = null;
+async function unbox(x){
+  if (!Geheim.isBox(x)) return x;
+  const k = Geheim.get();
+  if (!k){ keyProblem = "fehlt"; throw new Error("kein Schlüssel"); }
+  try { const o = await Geheim.open(x, k); keyProblem = null; return o; }
+  catch(e){ keyProblem = "falsch"; throw e; }
+}
 async function init(){
-  const emb = EMBED || {};
+  let emb = {};
+  try { emb = (await unbox(EMBED)) || {}; } catch(e){ emb = {}; }
   let cached = store.get("pult-last", null);
   let best = emb.heute || null;
   if (cached && cached.heute && (!best || cached.heute.date > best.date)) best = cached.heute;
@@ -770,14 +827,31 @@ async function init(){
   showDay(); keepAwake();
   setInterval(tick, 1000);
   try {
-    const h = await getJson("daten/heute.json");
-    let m = null; try { m = await getJson("daten/morgen.json"); } catch(e){}
+    const h = await unbox(await getJson("daten/heute.json"));
+    let m = null; try { m = await unbox(await getJson("daten/morgen.json")); } catch(e){}
     if (h && h.items && (!DAY.date || h.date >= DAY.date)){
       setDay(h); MORGEN = m;
       store.set("pult-last", {heute:h, morgen:m});
       showDay();
     }
-  } catch(e){ /* offline oder in Claude: eingebettete bzw. letzte Daten bleiben */ }
+  } catch(e){ /* offline, in Claude oder ohne Schlüssel: eingebettete bzw. letzte Daten bleiben */ }
+  if (keyProblem) render();
+}
+async function setKey(raw){
+  if (!Geheim.valid(raw)) return "Der Schlüssel hat 16 Zeichen.";
+  const prev = Geheim.get();
+  Geheim.set(raw); keyProblem = null;
+  await init();
+  if (keyProblem === "falsch"){ Geheim.set(prev); keyProblem = prev ? null : "fehlt"; if (prev) await init(); return "Dieser Schlüssel passt nicht. Bitte noch einmal prüfen."; }
+  connectPair();
+  return "Schlüssel gespeichert.";
+}
+function keyHtml(full){
+  const has = !!Geheim.get();
+  const msg = keyProblem === "falsch" ? "Der gespeicherte Schlüssel passt nicht zu den Daten." : keyProblem === "fehlt" ? "Die Tagesdaten sind verschlüsselt. Einmal den Atelier-Schlüssel eingeben." : has ? "Schlüssel ist auf diesem Gerät gespeichert." : "Noch kein Schlüssel auf diesem Gerät.";
+  return `${full ? "<h2>Atelier-Schlüssel</h2>" : ""}<div class="regie">${esc(msg)}</div>
+    <div class="ctrl"><input id="keyIn" aria-label="Atelier-Schlüssel" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="key">Speichern</button>${has && full ? '<button class="btn" data-act="unkey">Entfernen</button>' : ""}</div>
+    <div class="small" id="keyState">Der Schlüssel bleibt auf diesem Gerät und geht nie übers Netz.</div>`;
 }
 /* ===== Kopplung mit dem Schul-PC: Folie führt, Pult folgt (über ntfy.sh, nur Phase und Uhrzeit) ===== */
 const NTFY = (new URLSearchParams(location.search).get("ntfy")) || "https://ntfy.sh";
@@ -862,21 +936,33 @@ function renderFern(){
 function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textContent = t; }
 function sendFern(cmd, extra){
   try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
-  fetch(NTFY + "/atelier-pult-" + pair.code + "-fern", {method:"POST", body: JSON.stringify(Object.assign({v:1, cmd, at: Date.now()}, extra || {}))})
+  pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method:"POST", body: await pack(Object.assign({v:1, cmd, at: Date.now()}, extra || {}))}))
     .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer", cam:"Kamera", pause:"Pause", back:"zurück zur Arbeitsphase", plus:"+5 Min.", phase:"nächste Phase", undo:"rückgängig", adj:"Stand"}[cmd] || cmd)); })
     .catch(() => setFern("Nicht gesendet: kein Netz. Am PC mit Tasten weiter."));
+}
+/* Kanal und Inhalt: mit Atelier-Schlüssel ein geheimer Kanal und verschlüsselte Nachrichten, sonst wie bisher */
+async function pairTopic(){ const k = Geheim.get(); return k ? (await Geheim.topic(k)) + "-" + pair.code : "atelier-pult-" + pair.code; }
+async function pack(obj){ const k = Geheim.get(); return JSON.stringify(k ? await Geheim.seal(obj, k, "atelier-kopplung-v1") : obj); }
+async function unpack(s){
+  const o = JSON.parse(s), k = Geheim.get();
+  if (Geheim.isBox(o)){ if (!k) return null; try { return await Geheim.open(o, k, "atelier-kopplung-v1"); } catch(e){ return null; } }
+  return k ? null : o;
 }
 function connectPair(){
   if (pairES){ try { pairES.close(); } catch(e){} pairES = null; }
   pairLive = false; showPairState();
   if (!pair.code || typeof EventSource === "undefined") return;
   try {
-    pairES = new EventSource(NTFY + "/atelier-pult-" + pair.code + "/sse");
-    pairES.onopen = () => { pairLive = true; showPairState(); };
-    pairES.onerror = () => { pairLive = false; showPairState(); };
-    pairES.onmessage = ev => {
-      try { const d = JSON.parse(ev.data); if (d.event === "message") applySync(JSON.parse(d.message)); } catch(e){}
-    };
+    const code = pair.code;
+    pairTopic().then(t => {
+      if (pair.code !== code || pairES) return;
+      pairES = new EventSource(NTFY + "/" + t + "/sse");
+      pairES.onopen = () => { pairLive = true; showPairState(); };
+      pairES.onerror = () => { pairLive = false; showPairState(); };
+      pairES.onmessage = async ev => {
+        try { const d = JSON.parse(ev.data); if (d.event !== "message") return; const m = await unpack(d.message); if (m) applySync(m); } catch(e){}
+      };
+    });
   } catch(e){}
 }
 

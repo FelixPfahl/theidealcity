@@ -4,10 +4,23 @@ import json, os, re, sys
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 p = lambda *a: os.path.join(root, *a)
 app = open(p("app.html"), encoding="utf-8").read()
-heute = json.load(open(p("daten", "heute.json"), encoding="utf-8"))
-morgen = None
-if os.path.exists(p("daten", "morgen.json")):
-    morgen = json.load(open(p("daten", "morgen.json"), encoding="utf-8"))
+# Klartext liegt nur lokal in daten/klar/ (nicht im Repo). Öffentlich gehen nur verschlüsselte Dateien raus.
+# Schlüssel: Umgebungsvariable ATELIER_SCHLUESSEL (16 Zeichen). Übergangsweise wird Klartext aus daten/ übernommen.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import geheim
+KEY = os.environ.get("ATELIER_SCHLUESSEL", "")
+assert len(geheim.norm(KEY)) == 16, "ATELIER_SCHLUESSEL fehlt oder hat nicht 16 Zeichen"
+os.makedirs(p("daten", "klar"), exist_ok=True)
+def lade(name):
+    k, o = p("daten", "klar", name), p("daten", name)
+    if os.path.exists(o):
+        d = json.load(open(o, encoding="utf-8"))
+        if "items" in d and (not os.path.exists(k) or json.load(open(k, encoding="utf-8")).get("date", "") <= d.get("date", "")):
+            json.dump(d, open(k, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return json.load(open(k, encoding="utf-8")) if os.path.exists(k) else None
+heute = lade("heute.json")
+morgen = lade("morgen.json")
+assert heute, "keine Tagesdaten (daten/klar/heute.json)"
 # Pflichtfelder prüfen
 for k in ("date", "label", "items"):
     assert k in heute, "heute.json: Feld fehlt: " + k
@@ -21,9 +34,16 @@ for it in heute["items"]:
             assert len(ph) >= 5 and isinstance(ph[1], int), ph
 bad = [c for c in ("–", "—") if c in json.dumps([heute, morgen], ensure_ascii=False)]
 assert not bad, "Lange Gedankenstriche in den Daten"
-embed = json.dumps({"heute": heute, "morgen": morgen}, ensure_ascii=False).replace("</", "<\\/")
-frag = re.sub(r"/\*EMBED\*/.*?/\*EMBED_END\*/", lambda m: "/*EMBED*/" + embed + "/*EMBED_END*/", app, flags=re.S)
-open(p("artifact.html"), "w", encoding="utf-8").write(frag)
+klar = json.dumps({"heute": heute, "morgen": morgen}, ensure_ascii=False).replace("</", "<\\/")
+box = json.dumps(geheim.seal({"heute": heute, "morgen": morgen}, KEY))
+put = lambda e: re.sub(r"/\*EMBED\*/.*?/\*EMBED_END\*/", lambda m: "/*EMBED*/" + e + "/*EMBED_END*/", app, flags=re.S)
+# artifact.html (Claude, privat) mit Klartext; bleibt lokal, nicht im Repo
+open(p("artifact.html"), "w", encoding="utf-8").write(put(klar))
+frag = put(box)
+# Tagesdaten verschlüsselt ablegen
+json.dump(geheim.seal(heute, KEY), open(p("daten", "heute.json"), "w"))
+if morgen: json.dump(geheim.seal(morgen, KEY), open(p("daten", "morgen.json"), "w"))
+elif os.path.exists(p("daten", "morgen.json")): os.remove(p("daten", "morgen.json"))
 head_end = frag.index("</style>") + len("</style>")
 doc = ('<!doctype html><html lang="de"><head><meta charset="utf-8">'
        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'

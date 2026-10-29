@@ -2,14 +2,16 @@
 import json, os, shutil, sys, tempfile, threading, functools, http.server
 from playwright.sync_api import sync_playwright
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-heute = json.load(open(os.path.join(root, "daten", "heute.json"), encoding="utf-8"))
+KEY = os.environ.get("ATELIER_SCHLUESSEL", "")
+heute = json.load(open(os.path.join(root, "daten", "klar", "heute.json"), encoding="utf-8"))
 Y, M, D = map(int, heute["date"].split("-"))
 tmp = tempfile.mkdtemp()
 shutil.copy(os.path.join(root, "index.html"), tmp)
 os.makedirs(os.path.join(tmp, "daten"))
 shutil.copy(os.path.join(root, "daten", "heute.json"), os.path.join(tmp, "daten"))
 morgen = dict(heute, label="Testmorgen")
-json.dump(morgen, open(os.path.join(tmp, "daten", "morgen.json"), "w"), ensure_ascii=False)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import geheim
+json.dump(geheim.seal(morgen, KEY), open(os.path.join(tmp, "daten", "morgen.json"), "w"))
 class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 H = functools.partial(Q, directory=tmp)
@@ -32,6 +34,7 @@ with sync_playwright() as p:
     def page(d, m, block_data=False):
         ctx = b.new_context(viewport={"width": 390, "height": 844})
         ctx.add_init_script(clock(d, m))
+        ctx.add_init_script("try{localStorage.setItem('atelier-schluessel', %s)}catch(e){}" % json.dumps(geheim.norm(KEY)))
         if block_data: ctx.route("**/daten/*", lambda r: r.abort())
         ctx.route("https://fonts.*/**", lambda r: r.abort())
         pg = ctx.new_page()

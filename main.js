@@ -27,8 +27,30 @@ function driveFolders() {
   driveCache = out; driveAt = Date.now();
   return out;
 }
+/* Folien-Datei des Tages kommt von selbst: GitHub (Zweig pult, folien/Atelier_Folien_aktuell.html), beim Start und dann stündlich geprüft */
+const FOLIEN_URL = "https://raw.githubusercontent.com/FelixPfahl/theidealcity/pult/folien/Atelier_Folien_aktuell.html";
+function autoDir() { const d = path.join(app.getPath("userData"), "folien"); try { fs.mkdirSync(d, { recursive: true }); } catch (e) {} return d; }
+function holeFolien(cb) {
+  const https = require("https");
+  const req = https.get(FOLIEN_URL + "?t=" + Date.now(), { headers: { "Cache-Control": "no-cache" } }, res => {
+    if (res.statusCode !== 200) { res.resume(); return cb && cb(false); }
+    const chunks = []; res.on("data", c => chunks.push(c));
+    res.on("end", () => {
+      try {
+        const buf = Buffer.concat(chunks); if (buf.length < 10000) return cb && cb(false);
+        const m = buf.toString("utf8", 0, 200000).match(/const DATE = "(\d{4}-\d{2}-\d{2})"/);
+        const f = path.join(autoDir(), "Atelier_Folien_" + (m ? m[1] : "aktuell") + ".html");
+        let same = false; try { same = fs.existsSync(f) && fs.readFileSync(f).equals(buf); } catch (e) {}
+        if (!same) { fs.writeFileSync(f, buf); try { for (const n of fs.readdirSync(autoDir())) if (n !== path.basename(f)) fs.unlinkSync(path.join(autoDir(), n)); } catch (e) {} }
+        cb && cb(!same, f);
+      } catch (e) { cb && cb(false); }
+    });
+  });
+  req.on("error", () => cb && cb(false));
+  req.setTimeout(15000, () => { req.destroy(); });
+}
 function folders() {
-  const out = [];
+  const out = [autoDir()];
   for (const k of ["downloads", "desktop", "documents"]) { try { out.push(app.getPath(k)); } catch (e) {} }
   return out.concat(driveFolders());
 }
@@ -164,6 +186,8 @@ function createWindow() {
   /* Folien-Datei als Startparameter (z. B. Doppelklick oder Probe) */
   const arg = process.argv.slice(1).find(a => /\.html?$/i.test(a) && fs.existsSync(a));
   if (arg) openFile(arg); else loadNewest();
+  if (!arg) holeFolien((neu, f) => { if (neu && f && (!current || !/^Atelier_Folien_\d{4}-\d{2}-\d{2}\.html$/.test(path.basename(current)) || path.basename(f) > path.basename(current))) openFile(f); });
+  setInterval(() => holeFolien((neu, f) => { if (neu && f && !current) openFile(f); else if (neu) watchNewer(); }), 3600 * 1000);
 }
 
 ipcMain.handle("list", () => candidates().slice(0, 12).map(c => ({ path: c.path, name: c.name, folder: c.folder, mtime: c.mtime })));

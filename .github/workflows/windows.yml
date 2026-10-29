@@ -25,12 +25,18 @@ jobs:
       - name: Installieren und starten (Probe)
         shell: pwsh
         run: |
-          Get-ChildItem dist
-          New-Item -ItemType Directory -Force "$env:USERPROFILE\Downloads" | Out-Null
-          Set-Content "$env:USERPROFILE\Downloads\Atelier_Folien_Probe.html" '<!doctype html><title>Probe</title><h1>Probe</h1>'
-          Start-Process -Wait "dist\Atelier-Folien-Setup.exe" -ArgumentList "/S"
-          $exe = Join-Path $env:LOCALAPPDATA "Programs\atelier-folien\Atelier Folien.exe"
-          if (!(Test-Path $exe)) { Get-ChildItem -Recurse "$env:LOCALAPPDATA\Programs" | Select-Object -First 40; throw "Programm nicht installiert" }
+          $ErrorActionPreference = "Continue"
+          Write-Host "::notice::Dateien: $((Get-ChildItem dist -File | ForEach-Object { $_.Name + ' ' + $_.Length }) -join ', ')"
+          $dl = Join-Path $env:USERPROFILE "Downloads"
+          New-Item -ItemType Directory -Force $dl | Out-Null
+          Set-Content (Join-Path $dl "Atelier_Folien_Probe.html") '<!doctype html><title>Probe</title><h1>Probe</h1>'
+          $inst = Start-Process "dist\Atelier-Folien-Setup.exe" -ArgumentList "/S" -PassThru -Wait
+          Write-Host "::notice::Installer beendet mit $($inst.ExitCode)"
+          Start-Sleep 5
+          $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Programs" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName
+          if (!$exe) { $exe = Get-ChildItem -Recurse -ErrorAction SilentlyContinue "C:\Program Files" -Filter "Atelier Folien.exe" | Select-Object -First 1 -ExpandProperty FullName }
+          if (!$exe) { Write-Host "::error::Programm nicht installiert. Programs: $((Get-ChildItem $env:LOCALAPPDATA\Programs -ErrorAction SilentlyContinue | ForEach-Object Name) -join ', ')"; exit 1 }
+          Write-Host "::notice::Installiert: $exe"
           $probe = Join-Path $env:RUNNER_TEMP "probe.json"
           $env:ATELIER_PROBE = $probe
           $p = Start-Process $exe -PassThru

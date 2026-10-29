@@ -21,7 +21,7 @@ jobs:
       - name: Bauen und als Release veröffentlichen
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win nsis --publish always
+        run: npx electron-builder --win --publish always
       - name: Installer für die zweite Probe
         uses: actions/upload-artifact@v4
         with:

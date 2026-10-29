@@ -206,7 +206,13 @@ ipcMain.handle("notizen", (e, list) => {
 ipcMain.handle("pdf", (e, muster) => {
   try {
     const re = new RegExp(String(muster).slice(0, 200), "i");
-    const dirs = driveFolders().concat(folders());
+    /* Reihenfolge: Schultagsordner (füllt der Morgenlauf), dann die Klassenordner in Schule_Material, dann Downloads, Desktop, Dokumente */
+    const dirs = driveFolders().slice();
+    for (const d of driveFolders()) {
+      const root = path.dirname(d);
+      try { for (const n of fs.readdirSync(root)) { const f = path.join(root, n); if (!/^(00_|_alt|Tagesmemos)/i.test(n) && !/_alt/i.test(n) && fs.statSync(f).isDirectory()) dirs.push(f); } } catch (err) {}
+    }
+    for (const d of folders()) if (!dirs.includes(d)) dirs.push(d);
     let best = null;
     for (const d of dirs) {
       let names = []; try { names = fs.readdirSync(d); } catch (err) { continue; }

@@ -471,6 +471,12 @@ function renderTag(){
     <p class="small">Code von der Folien-Datei am Schul-PC eingeben. Dann folgt Pult den Folien.</p>
     <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
     <div class="status" id="pairState">${esc(pairStatus())}</div>
+    <h2>Sicherung</h2>
+    <p class="small">Klassenlisten, Störungen, Verspätungen, Ämter und Notizen dieses Handys. Mit Atelier-Schlüssel verschlüsselt. Vor dem Neuinstallieren: erstellen, kopieren und irgendwo einfügen (z. B. Notiz-App); danach hier einfügen und einlesen.</p>
+    <div class="ctrl"><button class="btn" data-act="sich">Sicherung erstellen</button><button class="btn" data-act="sichein">Einlesen</button></div>
+    <textarea id="sichText" aria-label="Sicherung" spellcheck="false" placeholder="Hier steht die Sicherung, oder hier einfügen" style="min-height:120px;font-size:13px">${esc(sichText)}</textarea>
+    <div class="ctrl"><button class="btn" data-act="sichcopy">Kopieren</button></div>
+    <div class="small" id="sichState">${esc(sichMsg)}</div>
     <h2>Uhrzeit testen</h2>
     <p class="small">Zum Ausprobieren eine andere Uhrzeit einstellen.</p>
     <div class="ctrl"><input type="time" id="simTime" aria-label="Testuhrzeit"><button class="btn" data-act="simreset">Echte Zeit</button></div>`;
@@ -528,6 +534,53 @@ function renderNotiz(){
     <p class="small" id="notizState">${notizStatus(n)}</p>
     <p class="small">Bitte keine Noten eintragen.</p>`;
 }
+
+/* ===== Sicherung: alles, was nur auf diesem Handy liegt, als Text (mit Schlüssel verschlüsselt) ===== */
+let sichText = "", sichMsg = "";
+async function sicherungErstellen(){
+  const notes = {};
+  for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (/^pult-\d{4}-\d{2}-\d{2}$/.test(k)){ const st = store.get(k, {}); if (st.notes && Object.keys(st.notes).length) notes[k] = st.notes; } }
+  const data = {v: 1, at: Date.now(), klassen: KL.klassen, log: KL.log, verborgen: KL.verborgen, aemter: KL.aemter, notes};
+  const k = Geheim.get();
+  const body = k ? await Geheim.seal(data, k, "atelier-sicherung-v1") : data;
+  return "ATELIER-SICHERUNG " + (k ? "verschluesselt " : "klar ") + btoa(unescape(encodeURIComponent(JSON.stringify(body))));
+}
+async function sicherungEinlesen(t){
+  const m = String(t || "").trim().match(/^ATELIER-SICHERUNG (verschluesselt|klar) ([A-Za-z0-9+/=]+)$/);
+  if (!m) return "Das ist keine Sicherung.";
+  let o = JSON.parse(decodeURIComponent(escape(atob(m[2]))));
+  if (m[1] === "verschluesselt"){ const k = Geheim.get(); if (!k) return "Erst den Atelier-Schlüssel eingeben."; try { o = await Geheim.open(o, k, "atelier-sicherung-v1"); } catch(e){ return "Schlüssel passt nicht zu dieser Sicherung."; } }
+  if (!o || o.v !== 1) return "Sicherung unlesbar.";
+  for (const [kl, v] of Object.entries(o.klassen || {})) if (kl !== "_u" && Array.isArray(v) && v.length && !(KL.klassen[kl] || []).length) KL.klassen[kl] = v;
+  klMerge({spaet: (o.log || {}).spaet, ha: (o.log || {}).ha, nach: (o.log || {}).nach, stunden: (o.log || {}).stunden, stoer: (o.log || {}).stoer, stoerU: (o.log || {}).stoerU, verborgen: o.verborgen, aemter: o.aemter});
+  let n = 0;
+  for (const [k, notes] of Object.entries(o.notes || {})){ const st = k === KEY ? state : store.get(k, {adj: {}, notes: {}}); st.notes = st.notes || {}; for (const [id, x] of Object.entries(notes)) if (!st.notes[id] || (x.u || 0) > (st.notes[id].u || 0)){ st.notes[id] = x; n++; } store.set(k, st); }
+  klSave();
+  return "Eingelesen: " + Object.keys(o.klassen || {}).filter(x => x !== "_u").length + " Klassenlisten, " + n + " Notizen.";
+}
+
+/* ===== Android-App: Phasenplan für Benachrichtigung und Vibration bei gesperrtem Handy, Lautstärketasten als Fernbedienung ===== */
+let appPlanSig = null;
+function appPlan(){
+  if (!(window.AtelierApp && AtelierApp.plan)) return;
+  let json;
+  if (!fresh() || state.sim != null) json = JSON.stringify({v: 1, pause: false, ph: []});
+  else {
+    const [y, mo, d] = DAY.date.split("-").map(Number), base = new Date(y, mo - 1, d).getTime(), out = [];
+    let pause = false;
+    for (const l of lessons){
+      if (state.pause[l.id]) pause = true;
+      const p = plan(l), ph = p.phases.filter(x => !x.dropped && x.d > 0);
+      ph.forEach((x, i) => out.push({s: Math.round(base + x.s * 60000), e: Math.round(base + (x.s + x.d) * 60000), k: String(l.klasse), t: x.form + ": " + x.titel, n: i + 1, z: ph.length, f: /arbeit/i.test(x.form || "")}));
+    }
+    json = JSON.stringify({v: 1, pause, ph: pause ? [] : out.filter(x => x.e > Date.now() - 60000)});
+  }
+  if (json === appPlanSig) return;
+  appPlanSig = json;
+  try { AtelierApp.plan(json); } catch(e){}
+}
+window.AtelierFern = cmd => { if (pair.code && (cmd === "next" || cmd === "prev")) sendFern(cmd); };
+function appFern(){ try { if (window.AtelierApp && AtelierApp.fern) AtelierApp.fern(!!pair.code); } catch(e){} }
 
 /* ===== Notizen ans Notebook: verschlüsselt über die Kopplung; das Programm Atelier Folien legt sie in Drive ab ===== */
 function notizTouch(l, n){ n.u = Date.now(); n.klasse = l.klasse; n.titel = l.titel; n.start = l.start; notizSync(); }
@@ -822,6 +875,7 @@ function tick(){
   if (loc && fresh()) { const kk = lkey(loc.lesson), kl = klasseOf(loc.lesson); if (!((KL.log.stunden[kl] || []).includes(kk))) klStunde(loc.lesson); }
   const changed = key !== lastKey;
   lastKey = key;
+  appPlan(); appFern();
   if (view === "jetzt" || view === "fern"){
     if (changed || !loc) render();
     else {
@@ -903,6 +957,9 @@ document.addEventListener("click", e => {
     if (v.length < 6){ const s2 = $("#pairState"); if (s2) s2.textContent = "Der Code hat 8 Zeichen."; return; }
     pair = {code: v}; store.set("pult-kopplung", pair); connectPair(); render(); return;
   }
+  if (act === "sich"){ sicherungErstellen().then(t => { sichText = t; sichMsg = Geheim.get() ? "Sicherung erstellt (verschlüsselt). Jetzt kopieren." : "Sicherung erstellt, ohne Schlüssel unverschlüsselt: enthält Namen."; render(); }); return; }
+  if (act === "sichein"){ sicherungEinlesen(($("#sichText") || {}).value).then(t => { sichMsg = t; render(); }).catch(() => { sichMsg = "Sicherung unlesbar."; render(); }); return; }
+  if (act === "sichcopy"){ const t = $("#sichText"); if (!t || !t.value) return; t.select(); let ok = false; try { ok = document.execCommand("copy"); } catch(e){} try { navigator.clipboard.writeText(t.value).then(() => { const s2 = $("#sichState"); if (s2) s2.textContent = "Kopiert."; }); } catch(e){} const s2 = $("#sichState"); if (s2) s2.textContent = ok ? "Kopiert." : "Text ist markiert: lange drücken, Kopieren."; return; }
   if (act === "key"){ const s0 = $("#keyState"); setKey(($("#keyIn") || {}).value || "").then(t => { render(); const s2 = $("#keyState"); if (s2) s2.textContent = t; }); if (s0) s0.textContent = "Prüfe …"; return; }
   if (act === "unkey"){ Geheim.set(""); connectPair(); render(); return; }
   if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); render(); return; }

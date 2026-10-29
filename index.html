@@ -486,8 +486,8 @@ function klSave(sync){ store.set("pult-klassen", KL.klassen); store.set("pult-kl
 /* Stunde der Klasse merken (für das Klassenziel „3 Stunden ohne Verspätung“) */
 function klStunde(l){ const kl = klasseOf(l), k = lkey(l), a = KL.log.stunden[kl] = KL.log.stunden[kl] || []; if (!a.includes(k)){ a.push(k); a.sort(); klSave(); } }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-/* Halbjahr: 1 = September bis 14. Februar, 2 = 15. Februar bis August */
-function halbjahr(iso){ const [y, m, d] = iso.split("-").map(Number); if (m >= 9) return y + "-1"; if (m < 2 || (m === 2 && d <= 14)) return (y - 1) + "-1"; return (y - 1) + "-2"; }
+/* Halbjahr: 1 = September bis Januar (Ablaufplan: Ende etwa 01.02.), 2 = Februar bis August */
+function halbjahr(iso){ const [y, m] = iso.split("-").map(Number); if (m >= 9) return y + "-1"; if (m < 2) return (y - 1) + "-1"; return (y - 1) + "-2"; }
 /* "Nachname, Vorname" -> Vorname; bei gleichen Vornamen mit Initiale */
 function klNames(klasse){
   const raw = (KL.klassen[klasse] || []).filter(Boolean);

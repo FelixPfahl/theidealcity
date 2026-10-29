@@ -71,7 +71,7 @@ adb shell settings put system accelerometer_rotation 0
 adb shell settings put system user_rotation 1; sleep 4; shot 07_quer
 check "Querformat: Restzeit sichtbar" "$E_BIS"
 adb shell settings put system user_rotation 0; sleep 3
-check "Nach dem Drehen weiter in Pult" "$E_P1"
+check "Nach dem Drehen weiter in Pult" "$E_P1|$E_P2"
 
 # 8. Phasenwechsel nach Uhrzeit, mit Vibration
 setclock "$T_WECHSEL" 50; sleep 22

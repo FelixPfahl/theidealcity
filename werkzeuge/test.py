@@ -45,7 +45,8 @@ with sync_playwright() as p:
         ctx, pg = page(D, m)
         txt = pg.inner_text("#leiste") + " | " + pg.inner_text("#view")
         for v in ("tag", "spick", "notiz", "jetzt"):
-            pg.click(f'.nav button[data-v="{v}"]'); pg.wait_for_timeout(30)
+            if v in ("tag", "spick", "notiz"): pg.click('#mehrBtn'); pg.wait_for_timeout(30)
+            pg.click(f'.nav button[data-v="{v}"], #mehr button[data-v="{v}"]'); pg.wait_for_timeout(30)
             if pg.evaluate("document.documentElement.scrollWidth") > 390: fails.append(f"{m//60}.{m%60:02d} Überlauf in {v}")
         if pg.locator('[data-act="weiter"]').count():
             before = pg.inner_text("#lph")
@@ -61,10 +62,10 @@ with sync_playwright() as p:
     if "Noch keine Daten" not in pg.inner_text("#leiste"): fails.append("Folgetag ohne Daten wird nicht erkannt")
     ctx.close()
     ctx, pg = page(D, 7*60)
-    pg.click('.nav button[data-v="tag"]'); pg.click('[data-day="morgen"]'); pg.wait_for_timeout(50)
+    pg.click('#mehrBtn'); pg.click('#mehr button[data-v="tag"]'); pg.click('[data-day="morgen"]'); pg.wait_for_timeout(50)
     if "testmorgen" not in pg.inner_text("#view").lower(): fails.append("Morgen-Ansicht zeigt morgen.json nicht")
-    pg.click('.nav button[data-v="notiz"]'); pg.fill("#nText", "Test"); pg.wait_for_timeout(600); pg.reload(); pg.wait_for_timeout(400)
-    pg.click('.nav button[data-v="notiz"]')
+    pg.click('#mehrBtn'); pg.click('#mehr button[data-v="notiz"]'); pg.fill("#nText", "Test"); pg.wait_for_timeout(600); pg.reload(); pg.wait_for_timeout(400)
+    pg.click('#mehrBtn'); pg.click('#mehr button[data-v="notiz"]')
     if pg.input_value("#nText") != "Test": fails.append("Notiz wird nicht gespeichert")
     ctx.close()
     b.close()

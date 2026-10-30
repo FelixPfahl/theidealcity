@@ -96,9 +96,12 @@ textarea:focus{outline:2px solid var(--accent-text)}
 .seg{display:flex;gap:8px}
 .seg .chip{flex:1;text-align:center}
 .saved{color:var(--ok);font-size:14px;min-height:1.2em;margin-top:6px}
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:6px}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:6px}
 .nav button{min-height:60px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:16px;padding:0 2px;color:var(--muted)}
 .nav button[aria-current="page"]{background:var(--surface);color:var(--fg)}
+#mehr{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:8;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;display:none;flex-direction:column;min-width:180px;box-shadow:0 10px 30px rgba(0,0,0,.5)}#mehr.on{display:flex}
+#mehr button{background:transparent;border:0;color:var(--fg);font:inherit;font-size:19px;font-weight:700;text-align:left;padding:14px 16px;border-radius:12px}#mehr button[aria-current="page"]{background:var(--bg);color:var(--accent-text)}
+body.has-appbar #mehr{bottom:calc(124px + env(safe-area-inset-bottom,0px))}
 .small{font-size:14px;color:var(--muted)}
 input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
 .pill{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--line);color:var(--muted);margin-left:6px;vertical-align:2px}
@@ -116,12 +119,16 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .kt span{font-size:18px;letter-spacing:.12em;color:var(--accent-text)}
 .kt.ha{background:var(--accent);border-color:var(--accent);color:#fff}.kt.ha span{color:#fff;font-weight:800;letter-spacing:.04em}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
+.fthumb{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;margin-top:12px;color:var(--muted);font:inherit;font-size:15px;text-align:left}
+.fthumb img{width:38%;max-width:200px;aspect-ratio:16/9;object-fit:contain;background:#fff;border-radius:8px;display:block}
+#fgross{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center}#fgross.on{display:flex}
+#fgross button{background:transparent;border:0;padding:0;width:96vw;max-width:900px}#fgross img{width:100%;border-radius:8px;background:#fff;display:block}
 .zeit{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.zeit .btn{min-height:76px;font-size:22px}.zeit .klein{display:flex;gap:10px;grid-column:1 / -1}.zeit .klein .btn{min-height:54px;font-size:17px;color:var(--muted)}
 .verzug{margin-top:14px;color:var(--warn);font-size:17px;min-height:1.2em}
 .folie{background:linear-gradient(to top,var(--bg) 70%,rgba(11,12,16,0));padding-top:16px;position:fixed;right:max(12px,env(safe-area-inset-right,0px));left:max(12px,env(safe-area-inset-left,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:1fr 2fr;gap:10px;z-index:5;max-width:640px;margin:0 auto}
-.folie .btn{min-height:88px;font-size:26px;box-shadow:0 8px 30px rgba(0,0,0,.55)}.folie .btn.primary{font-size:30px}
+.folie .btn{min-height:56px;font-size:19px;box-shadow:0 8px 30px rgba(0,0,0,.55)}.folie .btn.primary{font-size:21px}
 .folie .mini{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end}.folie .mini .btn{flex:0 0 auto;min-height:44px;font-size:15px;padding:0 14px;color:var(--muted);box-shadow:none}
-body.mit-folie .wrap{padding-bottom:270px}body.has-appbar.mit-folie .wrap{padding-bottom:310px}body.has-appbar .folie{bottom:calc(126px + env(safe-area-inset-bottom,0px))}
+body.mit-folie .wrap{padding-bottom:220px}body.has-appbar.mit-folie .wrap{padding-bottom:260px}body.has-appbar .folie{bottom:calc(126px + env(safe-area-inset-bottom,0px))}
 .count.paused b{color:var(--muted)}
 .fern{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .fern .btn{min-height:min(12vh,96px);font-size:22px}
@@ -157,18 +164,18 @@ body.has-appbar .wrap{padding-bottom:170px}
     <div class="lbar"><i id="lbar"></i></div>
   </header>
   <main id="view"></main>
+<div id="fgross"><button data-act="fgrossx" aria-label="Schließen"><img alt="Aktuelle Folie groß"></button></div>
 <div id="blatt" role="dialog" aria-label="Testmodus"><div class="bl"><h2 id="blattH">Wirklich in den Testmodus?</h2><p id="blattP">Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
   <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
-  <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 5 = Ansichten.</p>
+  <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 5 = Ansichten (3 Spick, 4 Tag, 5 Notiz).</p>
 </div>
 
-<nav class="nav" aria-label="Ansichten">
+<nav class="nav" aria-label="Bereiche">
   <button data-v="jetzt">Jetzt</button>
   <button data-v="klasse">Klasse</button>
-  <button data-v="tag">Tag</button>
-  <button data-v="spick">Spick</button>
-  <button data-v="notiz">Notiz</button>
+  <button data-act="mehr" id="mehrBtn" aria-haspopup="menu">Mehr ▾</button>
 </nav>
+<div id="mehr" role="menu"><button data-v="spick">Spick</button><button data-v="tag">Tag</button><button data-v="notiz">Notiz</button></div>
 
 <script>
 /* ===== Tagesdaten (später vom Morgenlauf befüllt) ===== */
@@ -256,7 +263,7 @@ function nowSec(){
 /* ===== Gemeinsame Zeitrechnung (identisch in Pult und Folien) =====
    base: Phasen [{d, puffer, form, titel, ...}], adj: Liste der Eingriffe, pause: {at, t0} oder null, nowMin: jetzt in Minuten.
    Eingriffe:
-   {at, delta}                   Phase länger (+) oder kürzer (−)
+   {at, delta}                   Phase länger (+) oder kürzer (−); mit w:true = Wechsel per Folie oder Weiter (nächste Phase bleibt voll)
    {at, delta, pause:true}       Pause in Phase at (zählt wie länger)
    {back:true, at, cut, src, d}  Phase at endet nach cut Min., danach noch einmal Phase src für d Min.
    {drop:true, at}               Phase at fällt weg
@@ -337,7 +344,8 @@ function planCore(base, adj, pause, nowMin){
     ph[a.at] = {...ph[a.at], d: Math.max(0, ph[a.at].d + a.delta)};
     let target = -1;
     if (!a.shift){
-      if (a.delta > 0){ const r = take(a.at, a.delta); debt += r.left; target = r.first; }
+      /* w: Phasenwechsel per Folie oder Weiter; die Phase, die jetzt beginnt, behält ihre volle Dauer, Ausgleich erst danach */
+      if (a.delta > 0){ const r = take(a.w ? a.at + 1 : a.at, a.delta); debt += r.left; target = r.first; }
       else if (a.delta < 0) target = give(a.at, -a.delta);
     }
     notes.push({a, target});
@@ -440,6 +448,7 @@ function renderJetzt(){
     else if (verzug > 0) vz = "+" + verzug + " Min." + (tgt ? ", „" + tgt + "“ gekürzt" : "");
     else if (adjs.length && tgt) vz = "Ausgleich in „" + tgt + "“";
     return `
+      ${pair.code && folieBild ? `<button class="fthumb" data-act="fgross" aria-label="Aktuelle Folie groß zeigen"><img id="fbild" src="${esc(folieBild)}" alt="Aktuelle Folie"><span>Folie ${pairPage || ""}</span></button>` : ""}
       <div class="zeit">
         <button class="btn${paused ? " primary" : ""}" data-act="pause" data-id="${lesson.id}" data-i="${idx}">${paused ? "Fortsetzen" : "Pause"}</button>
         ${pair.code ? `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>` : (nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`)}
@@ -888,7 +897,7 @@ function klSync(){
 }
 
 /* kurzer Hinweis unten */
-let toastT = null;
+let toastT = null, fgT = null;
 function toast(t){ let el = $("#toast"); if (!el){ el = document.createElement("div"); el.id = "toast"; el.style.cssText = "position:fixed;left:16px;right:16px;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--warn);color:#000;font-weight:700;padding:14px 16px;border-radius:14px;text-align:center"; document.body.appendChild(el); } el.textContent = t; el.style.display = "block"; clearTimeout(toastT); toastT = setTimeout(() => { el.style.display = "none"; }, 4000); }
 $("#blatt").addEventListener("click", e => { if (e.target.id === "blatt") $("#blatt").classList.remove("on"); });
 /* Testmodus: Schalter in der Leiste, Rückfrage als Blättchen mit Phasenliste; das Notebook springt mit (Probe daheim) */
@@ -902,7 +911,13 @@ function testBlatt(vorher){
   $("#tliste").innerHTML = lessons.map(l => `<h2>${esc(l.klasse)} · ${esc(l.titel)}</h2>` + l.phases.map((ph, i) => `<button class="tl" data-act="testphase" data-id="${l.id}" data-i="${i}"><time>${fmt(toMin(ph[0]))}</time><div>${esc(ph[2])}<br><span>${esc(ph[3])}</span></div></button>`).join("")).join("");
   $("#blatt").classList.add("on");
 }
+function echteStunde(){
+  if (window.PULT_TESTFREI) return null;
+  const d = new Date(), real = (d.getHours()*60 + d.getMinutes());
+  return lessons.find(l => toMin(l.start) - real <= 10 && toMin(l.start) - real > -90) || null;
+}
 function testStart(l, i){
+  const es = echteStunde(); if (es){ $("#blatt").classList.remove("on"); toast("Kein Test: " + es.klasse + " läuft gerade oder beginnt gleich."); return; }
   const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
   state.sim = toMin(l.phases[i][0])*60 - real;
   for (const x of lessons){ state.adj[x.id] = []; delete state.pause[x.id]; }
@@ -929,8 +944,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* Sicherung: 10 Minuten vor der ersten echten Stunde schaltet sich der Test selbst aus */
 setInterval(() => {
   if (state.sim == null || !fresh()) return;
-  const d = new Date(), real = (d.getHours()*60 + d.getMinutes());
-  const nl = lessons.find(l => toMin(l.start) - real <= 10 && toMin(l.start) - real > -90);
+  const nl = echteStunde();
   if (nl) testEnde("Testmodus beendet: " + nl.klasse + " beginnt " + fmt(toMin(nl.start)) + ".");
 }, 30000);
 function render(){
@@ -940,7 +954,9 @@ function render(){
   v.innerHTML = map[view]() + (view === "jetzt" ? remoteHtml() : "");
   document.body.classList.toggle("mit-folie", view === "jetzt" && !!pair.code);
   leiste();
-  document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
+  document.querySelectorAll(".nav button, #mehr button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
+  const mb = $("#mehrBtn"); if (mb) mb.setAttribute("aria-current", ["tag","spick","notiz"].includes(view) ? "page" : "false");
+  $("#mehr").classList.remove("on");
   document.querySelectorAll(".appbar a").forEach(a => a.setAttribute("aria-current", a.dataset.app === (view === "fern" ? "fern" : "pult") ? "page" : "false"));
   try { if (window.AtelierApp && AtelierApp.pultView) AtelierApp.pultView(view); } catch(e){}
   if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
@@ -1019,7 +1035,7 @@ function timeAct(act, id, i, k){
     resumeIfPaused(id);
     const p = plan(l), ph = p.phases[i];
     if (act === "plus") list.push({at: i, delta: 5});
-    else if (act === "weiter") list.push({at: i, delta: Math.max(0, now - ph.s) - ph.d});
+    else if (act === "weiter") list.push({at: i, delta: Math.max(0, now - ph.s) - ph.d, w: true});
     else if (act === "drop"){ if (p.phases[k]) list.push({drop: true, at: k}); }
     else if (act === "back"){
       const bk = backInfo(p.phases, list, i); if (!bk) return;
@@ -1034,9 +1050,9 @@ function timeAct(act, id, i, k){
 document.addEventListener("keydown", e => {
   if (e.target.closest && e.target.closest("textarea,input")) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
-  const views = {"1":"jetzt","2":"klasse","3":"tag","4":"spick","5":"notiz"};
+  const views = {"1":"jetzt","2":"klasse","3":"spick","4":"tag","5":"notiz"};
   let btn = null;
-  if (views[e.key]) btn = document.querySelector(`.nav button[data-v="${views[e.key]}"]`);
+  if (views[e.key]) btn = document.querySelector(`.nav button[data-v="${views[e.key]}"], #mehr button[data-v="${views[e.key]}"]`);
   else if (view === "jetzt" && (e.key === " " || e.key === "ArrowRight")) btn = document.querySelector('[data-act="weiter"]');
   else if (view === "jetzt" && e.key === "+") btn = document.querySelector('[data-act="plus"]');
   else if (view === "jetzt" && (e.key === "z" || e.key === "Z")) btn = document.querySelector('[data-act="undo"]');
@@ -1060,7 +1076,7 @@ document.addEventListener("click", e => {
       const ran = Math.max(0, nowSec()/60 - ph.s);
       delta = ran - ph.d;
     }
-    (state.adj[id] = state.adj[id] || []).push({at:i, delta});
+    (state.adj[id] = state.adj[id] || []).push(act === "weiter" ? {at:i, delta, w: true} : {at:i, delta});
     save(); lastKey = null; render(); return;
   }
   if (act === "undo"){ const a = state.adj[b.dataset.id]; if (a) a.pop(); save(); lastKey = null; render(); return; }
@@ -1075,6 +1091,9 @@ document.addEventListener("click", e => {
   if (act === "key"){ const s0 = $("#keyState"); setKey(($("#keyIn") || {}).value || "").then(t => { render(); const s2 = $("#keyState"); if (s2) s2.textContent = t; }); if (s0) s0.textContent = "Prüfe …"; return; }
   if (act === "unkey"){ Geheim.set(""); connectPair(); render(); return; }
   if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); render(); return; }
+  if (act === "fgross"){ const o = $("#fgross"); o.querySelector("img").src = folieBild || ""; o.classList.add("on"); clearTimeout(fgT); fgT = setTimeout(() => o.classList.remove("on"), 3500); return; }
+  if (act === "fgrossx"){ $("#fgross").classList.remove("on"); return; }
+  if (act === "mehr"){ $("#mehr").classList.toggle("on"); return; }
   if (act === "testen"){ if (state.sim != null) testEnde(); else testBlatt(); return; }
   if (act === "testnein"){ $("#blatt").classList.remove("on"); store.set("pult-test-spaeter", Date.now()); return; }
   if (act === "testphase"){ const l = lessons.find(x => x.id === b.dataset.id); if (l) testStart(l, Number(b.dataset.i)); return; }
@@ -1163,7 +1182,7 @@ function keyHtml(full){
 const NTFY = (new URLSearchParams(location.search).get("ntfy")) || "https://ntfy.sh";
 /* Fester Kopplungscode des Notebooks: die App koppelt sich beim Start von selbst; „Lösen“ oder ein anderer Code überschreiben ihn */
 const CODE_STANDARD = "q93qauaj";
-let pair = store.get("pult-kopplung", null), pairES = null, pairLive = false, pairLast = null, pairPage = 0;
+let pair = store.get("pult-kopplung", null), pairES = null, pairLive = false, pairLast = null, pairPage = 0, folieBild = null, folieBildZeit = 0;
 if (!pair){ pair = {code: CODE_STANDARD}; store.set("pult-kopplung", pair); }
 function pairStatus(){
   if (!pair.code) return "Nicht gekoppelt.";
@@ -1261,7 +1280,9 @@ function connectPair(){
       pairES.onopen = () => { pairLive = true; showPairState(); notizSync(); };
       pairES.onerror = () => { pairLive = false; showPairState(); };
       pairES.onmessage = async ev => {
-        try { const d = JSON.parse(ev.data); if (d.event !== "message") return; const m = await unpack(d.message); if (m) applySync(m); } catch(e){}
+        try { const d = JSON.parse(ev.data); if (d.event !== "message") return;
+          if (d.attachment && d.attachment.url && /folie/.test(d.attachment.name || d.title || "")){ folieBild = d.attachment.url; folieBildZeit = Date.now(); const im = $("#fbild"); if (im) im.src = folieBild; else if (view === "jetzt") render(); return; }
+          const m = await unpack(d.message); if (m) applySync(m); } catch(e){}
       };
     });
   } catch(e){}

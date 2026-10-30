@@ -157,7 +157,7 @@ body.has-appbar .wrap{padding-bottom:170px}
     <div class="lbar"><i id="lbar"></i></div>
   </header>
   <main id="view"></main>
-<div id="blatt" role="dialog" aria-label="Testmodus"><div class="bl"><h2 id="blattH">Wirklich in den Testmodus?</h2><p id="blattP">Die Uhr springt in die gewählte Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
+<div id="blatt" role="dialog" aria-label="Testmodus"><div class="bl"><h2 id="blattH">Wirklich in den Testmodus?</h2><p id="blattP">Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
   <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
   <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 5 = Ansichten.</p>
 </div>
@@ -896,7 +896,7 @@ function testBlatt(vorher){
   if (!lessons.length){ toast("Keine Stunden heute."); return; }
   const nl = nextLesson(nowSec());
   $("#blattH").textContent = vorher ? nl.klasse + " beginnt in " + Math.round(toMin(nl.start) - nowSec() / 60) + " Min. Testen?" : "Wirklich in den Testmodus?";
-  $("#blattP").textContent = vorher ? "Ein Tipp startet den Test in der ersten Phase; das Notebook springt mit. Oder nur anschauen (Tag, Druckliste, Spick)." : "Die Uhr springt in die gewählte Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.";
+  $("#blattP").textContent = vorher ? "Die Uhr springt auf den Stundenbeginn, das Notebook springt mit. Oder nur anschauen (Tag, Druckliste, Spick)." : "Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.";
   $("#blattTop").innerHTML = vorher ? `<button class="btn ja" data-act="testphase" data-id="${nl.id}" data-i="0">Test: ${esc(nl.klasse)}, Phase 1</button><button class="btn" data-act="testnein">Nur anschauen</button>` : "";
   $("#blattNein").textContent = vorher ? "Später" : "Nein";
   $("#tliste").innerHTML = lessons.map(l => `<h2>${esc(l.klasse)} · ${esc(l.titel)}</h2>` + l.phases.map((ph, i) => `<button class="tl" data-act="testphase" data-id="${l.id}" data-i="${i}"><time>${fmt(toMin(ph[0]))}</time><div>${esc(ph[2])}<br><span>${esc(ph[3])}</span></div></button>`).join("")).join("");
@@ -904,7 +904,7 @@ function testBlatt(vorher){
 }
 function testStart(l, i){
   const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-  state.sim = toMin(l.phases[i][0])*60 + 60 - real;
+  state.sim = toMin(l.phases[i][0])*60 - real;
   for (const x of lessons){ state.adj[x.id] = []; delete state.pause[x.id]; }
   save(); lastKey = null; $("#blatt").classList.remove("on");
   if (pair.code) sendFern("sim", {offset: state.sim, phase: i, lesson: l.start});
@@ -1176,7 +1176,7 @@ function applySync(m){
   if (m && m.kind === "klog"){ if (klMerge(m)) render(); return; }
   if (m && m.kind === "notizOk"){ notizOk(m); return; }
   if (m && m.kind === "sim"){ if (m.offset == null){ if (state.sim != null){ state.sim = null; for (const x of lessons){ state.adj[x.id] = []; delete state.pause[x.id]; } save(); lastKey = null; render(); tick(); toast("Test beendet (vom Notebook)."); } }
-    else { const l = lessons.find(x => toMin(x.start) === toMin(m.lesson)); if (l){ const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds(); state.sim = toMin(l.phases[Math.min(m.phase || 0, l.phases.length - 1)][0])*60 + 60 - real; for (const x of lessons){ state.adj[x.id] = []; delete state.pause[x.id]; } save(); lastKey = null; $("#blatt").classList.remove("on"); view = "jetzt"; render(); tick(); toast("Test vom Notebook gestartet."); } } return; }
+    else { const l = lessons.find(x => toMin(x.start) === toMin(m.lesson)); if (l){ const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds(); state.sim = toMin(l.phases[Math.min(m.phase || 0, l.phases.length - 1)][0])*60 - real; for (const x of lessons){ state.adj[x.id] = []; delete state.pause[x.id]; } save(); lastKey = null; $("#blatt").classList.remove("on"); view = "jetzt"; render(); tick(); toast("Test vom Notebook gestartet."); } } return; }
   if (!m || m.v !== 1 || m.date !== DAY.date) return;
   const l = lessons.find(x => toMin(x.start) === toMin(m.lesson));
   if (!l) return;

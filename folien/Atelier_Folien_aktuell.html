@@ -3133,7 +3133,7 @@ function jumpTo(p){
 $("#testbtn").addEventListener("click", () => {
   const first = LESSONS.find(L => toMin(L.start) > nowMin()); if (!first) return;
   const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-  const off = toMin(first.start)*60 + 60 - real;
+  const off = toMin(first.start)*60 - real;
   setSim(off, 0);
   pack({v: 1, kind: "sim", date: DATE, offset: off, lesson: first.start, phase: 0}).then(body => fetch(NTFY + "/" + TOPIC, {method: "POST", body})).catch(() => {});
 });

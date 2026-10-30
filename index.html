@@ -186,9 +186,9 @@ function renderToday(){
     }
   }
   renderApps(live);
-  /* In der Android-App: läuft gerade eine Stunde, beim Start direkt Pult zeigen (einmal pro Start) */
+  /* In der Android-App: beim Start immer direkt Pult zeigen (einmal pro Start); die Startseite bleibt über „Heute“ erreichbar */
   try {
-    if (live && window.AtelierApp && AtelierApp.isApp() && !sessionStorage.getItem("autoPult")){
+    if (window.AtelierApp && AtelierApp.isApp() && !sessionStorage.getItem("autoPult")){
       sessionStorage.setItem("autoPult", "1");
       AtelierApp.openTab("pult");
     }

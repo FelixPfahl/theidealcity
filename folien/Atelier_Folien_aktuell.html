@@ -3513,7 +3513,7 @@ function neuAntwort(f, name){
   if (f === "ini2"){ const i = ($("#klini").value || "").trim().toUpperCase(); if (!/^[A-ZÄÖÜ]$/.test(i)){ $("#klini").focus(); return; } neuAnlegen(name, i + "."); }
 }
 function neuAnlegen(vorname, nach){
-  const L = klLesson(), kl = L.label, raw = nach ? nach + ", " + vorname : vorname;
+  const L = klLesson(), kl = L.label, raw = nach ? vorname + " " + nach : vorname;
   if (nowMin() - toMin(L.start) <= 0){ $("#klmsg").textContent = "Du bist pünktlich, nichts einzutragen."; klArm(6000); return; }
   const liste = KLP.klassen[kl] = (KLP.klassen[kl] || []).filter(Boolean);
   if (!liste.includes(raw)){ liste.push(raw); (KLP.neu[kl] = KLP.neu[kl] || []).push(raw); store.set("folien-neu", KLP.neu); klpSave(); }

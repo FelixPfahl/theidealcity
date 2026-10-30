@@ -1,182 +1,168 @@
 <!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#0b0c10"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png"><style>[hidden]{display:none!important}body{margin:0}</style><title>Pult</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Jost:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: eine Hand, ein Blick. Oben die Uhr, Mitte die laufende Phase riesig, unten vier Daumentasten. Dunkel, ruhig, ein Blau. */
+/* Pult: drei Bereiche (Jetzt, Klasse, Büro), oben die flache Leiste mit Restzeit und Stopp, unten Zurück, Weiter und ein Punkte-Menü.
+   Dunkel fest. Schrift Jost, Zahlen der Leiste in Archivo. Blau nur für Hauptknopf und Empfehlung, Gelb für Test und Warnung, Rot für überzogen. */
 :root{
   --bg:#0b0c10; --surface:#15171d; --line:#262a33; --fg:#ffffff; --muted:#aab0bd;
-  --accent:#0028ff; --accent-text:#8296ff; --warn:#e2b04a; --ok:#6fcf97;
-  --f:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --accent:#0028ff; --accent-text:#8296ff; --warn:#e2b04a; --ok:#6fcf97; --rot:#ff6b6b;
+  --f:"Jost","Helvetica Neue",Arial,sans-serif; --z:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --rand:16px; --radius:14px; --gap:8px;
   color-scheme:dark;
 }
+*{box-sizing:border-box}
 html,body{height:100%}
-body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:18px;line-height:1.4;-webkit-font-smoothing:antialiased}
-.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 120px;max-width:640px;margin:0 auto}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f);font-size:17px;line-height:1.4;-webkit-font-smoothing:antialiased}
+.wrap{padding-left:max(var(--rand),env(safe-area-inset-left,0px));padding-right:max(var(--rand),env(safe-area-inset-right,0px));padding-bottom:170px;max-width:640px;margin:0 auto}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:8px 0 0;border-bottom:1px solid var(--line);cursor:pointer;-webkit-tap-highlight-color:transparent}
-.lmeta{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.lmeta .date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lmain{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;min-height:calc(25vh - 54px);padding:4px 0 8px;overflow:hidden}
-.lzeit{display:flex;align-items:baseline;gap:4px;flex:0 0 auto}
-.lzeit b{font-size:clamp(76px,19vh,132px);font-weight:800;font-stretch:62%;line-height:.85;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--fg);transition:color .3s}
-.lzeit span{color:var(--muted);font-size:18px;font-weight:600}
-body.bald .lzeit b{color:var(--accent-text)}body.ueber .lzeit b{color:#ff6b6b}
-body.pause .lzeit b{animation:puls 1.6s ease-in-out infinite}@keyframes puls{50%{opacity:.45}}
-.ltext{flex:1 1 160px;min-width:0}
-.lform{color:var(--accent-text);font-weight:800;font-stretch:75%;font-size:clamp(22px,6vw,34px);line-height:1.05}
-.lph{font-size:clamp(17px,4.6vw,24px);font-weight:600;line-height:1.2;margin-top:4px;text-wrap:balance}
-.lnext{color:var(--muted);font-size:14px;margin-top:6px;line-height:1.25}
-.lbar{height:5px;background:var(--line);overflow:hidden}.lbar i{display:block;height:100%;background:var(--accent);width:0;transition:width 1s linear}
-body.frei .lmain{min-height:0}body.frei .lzeit b{font-size:clamp(40px,10vh,64px)}
-@media (orientation:landscape) and (min-width:640px){
-  .wrap{display:grid;grid-template-columns:38vw 1fr;column-gap:20px;max-width:none;align-items:start}
-  header{grid-column:1;position:sticky;top:0;align-self:start;min-height:calc(100vh - 70px);border-bottom:0;border-right:1px solid var(--line);padding:10px 16px 10px 0;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
-  main,.ki,.keys{grid-column:2}
-  .lmain{flex-direction:column;align-items:flex-start;min-height:0;gap:10px}.lzeit b{font-size:clamp(90px,16vw,200px)}
-  .lzeit b{font-size:clamp(70px,30vh,200px)}
-  #view .folie{left:calc(38vw + 20px);margin:0;max-width:none;grid-template-columns:1fr 2fr}#view .folie .btn{min-height:60px;font-size:22px}#view .folie .btn.primary{font-size:24px}#view .folie .mini .btn{min-height:38px;font-size:14px}
-  body.mit-folie .wrap,body.has-appbar.mit-folie .wrap{padding-bottom:230px}
-}
-}
-.date{color:var(--muted);font-size:15px;letter-spacing:.04em;text-transform:uppercase}
-.clock{font-variant-numeric:tabular-nums;font-weight:700;font-size:22px;font-stretch:80%}
-.sim{color:var(--warn);font-size:13px;margin-left:6px}
-.tog{margin-left:12px;display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;color:var(--muted);font:inherit;font-size:14px;font-weight:700;vertical-align:middle;padding:4px 0}
-.tog i{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:background .2s}.tog i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
-.tog[aria-checked="true"] i{background:var(--warn)}.tog[aria-checked="true"] i::after{left:21px}.tog[aria-checked="true"]{color:var(--warn)}
-body.test header{box-shadow:inset 0 0 0 3px var(--warn);border-radius:0 0 12px 12px}
-#blatt,#stopp{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:none;align-items:flex-end}#blatt.on,#stopp.on{display:flex}
-#stopp .bl{background:var(--surface);width:100%;max-width:640px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px))}
-#stopp h2{margin:0 0 6px;font-size:22px;text-transform:none;letter-spacing:0;color:var(--fg)}#stopp p{color:var(--muted);margin:0 0 10px}
+/* Leiste */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:6px 0 0;border-bottom:1px solid var(--line);-webkit-tap-highlight-color:transparent}
+.lmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:28px}
+.lmeta .date{color:var(--muted);font-size:14px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lright{display:flex;align-items:center;gap:10px}
+.clock{font-family:var(--z);font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;font-stretch:80%;color:var(--muted)}
+#simtag{display:none;background:var(--warn);color:#000;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.06em}
+body.test #simtag{display:inline-block}
+#zahn{background:transparent;border:0;color:var(--muted);font-size:22px;line-height:1;padding:4px 2px;min-width:36px;min-height:36px}
+.lmain{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:0 14px;padding:4px 0 8px;cursor:pointer}
+.lzeit{display:flex;align-items:baseline;gap:4px}
+.lzeit b{font-family:var(--z);font-size:clamp(64px,15vh,108px);font-weight:800;font-stretch:62%;line-height:.85;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--fg);transition:color .3s}
+.lzeit span{color:var(--muted);font-size:16px;font-weight:600}
+body.bald .lzeit b{color:var(--accent-text)}body.ueber .lzeit b{color:var(--rot)}
+body.pause .lzeit b{color:var(--muted);animation:puls 1.6s ease-in-out infinite}@keyframes puls{50%{opacity:.45}}
+.ltext{min-width:0}
+.lform{color:var(--accent-text);font-weight:700;font-size:clamp(19px,5vw,26px);line-height:1.05}
+body.pause .lform{color:var(--muted)}
+.lph{font-size:clamp(16px,4.2vw,21px);font-weight:500;line-height:1.2;margin-top:3px;text-wrap:balance}
+#stoppBtn{min-width:72px;min-height:72px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:var(--fg);font-weight:700;font-size:16px;display:none}
+body.in-stunde #stoppBtn{display:block}body.pause #stoppBtn{background:var(--fg);color:#000;border-color:var(--fg)}
+.lbar{height:4px;background:var(--line);overflow:hidden}.lbar i{display:block;height:100%;background:var(--accent);width:0;transition:width 1s linear}
+body.pause .lbar i{background:var(--muted)}
+body.frei .lmain{grid-template-columns:auto 1fr;padding:2px 0 6px}body.frei .lzeit b{font-size:clamp(34px,8vh,52px)}body.frei .lform{font-size:18px}body.frei .lph{font-size:15px;color:var(--muted)}
+body.test header{box-shadow:inset 0 0 0 3px var(--warn)}
+#lhint{display:none;margin:0 0 8px}#lhint.on{display:flex;gap:var(--gap);align-items:center}#lhint .btn{flex:1;min-height:44px;font-size:15px;background:var(--warn);border-color:var(--warn);color:#000}#lhint .x{min-height:44px;min-width:44px;flex:0 0 44px}
+/* Blätter (Stopp, Test, Einstellungen) */
+.sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:none;align-items:flex-end}.sheet.on{display:flex}
+.sheet .bl{background:var(--surface);width:100%;max-width:640px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:88vh;overflow:auto}
+.sheet h2{margin:0 0 6px;font-size:22px;text-transform:none;letter-spacing:0;color:var(--fg)}.sheet p{color:var(--muted);margin:0 0 10px}
 #stopp .gr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}#stopp .gr .btn{min-height:60px;font-size:19px}#stopp .gr .btn.alarm{border-color:var(--warn);color:var(--warn)}
-#lhint{display:none;margin-top:8px}#lhint.on{display:flex;gap:8px;align-items:center}#lhint .btn{flex:1;min-height:44px;font-size:16px;background:var(--warn);border-color:var(--warn);color:#000}#lhint .x{min-height:44px;min-width:44px}
-#blatt .bl{background:var(--surface);width:100%;max-width:640px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:85vh;overflow:auto}
-#blatt h2{margin:0 0 6px;font-size:22px;text-transform:none;letter-spacing:0;color:var(--fg)}#blatt .tliste h2{font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}#blatt p{color:var(--muted);margin:0 0 14px}#blatt .btn.ja{background:var(--warn);border-color:var(--warn);color:#000}
-.tliste{display:grid;gap:8px;margin-top:10px}.tliste h2{margin:16px 0 4px}.tl{display:flex;gap:12px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--fg);font:inherit;font-size:17px;min-height:58px}.tl time{font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent-text);flex:0 0 52px}.tl span{color:var(--muted)}
-.eyebrow{color:var(--muted);font-size:15px;letter-spacing:.05em;text-transform:uppercase;margin:18px 0 6px}
-.form{color:var(--accent-text);font-weight:800;font-stretch:75%;font-size:clamp(34px,10vw,52px);line-height:1;text-wrap:balance}
-.ptitle{font-size:24px;font-weight:600;margin-top:6px;text-wrap:balance}
-.count{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:14px;min-width:0}
-.count b{font-size:clamp(72px,26vw,140px);font-weight:800;font-stretch:62%;line-height:.9;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.count span{color:var(--muted);font-size:18px}
-.bar{height:6px;background:var(--line);border-radius:3px;margin-top:12px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--accent);width:0}
-.regie{font-size:21px;line-height:1.45;margin-top:18px}
-.next{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:17px}
-.next strong{color:var(--fg);font-weight:600}
-.ctrl{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
-button{font:inherit;color:inherit;cursor:pointer}
-.btn{flex:1 1 30%;min-height:64px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:19px;color:var(--fg)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn:focus-visible,.nav button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
-.status{margin-top:10px;font-size:15px;color:var(--warn);min-height:1.2em}
-.hint{margin-top:16px;font-size:15px;color:var(--muted);border-left:2px solid var(--accent);padding-left:10px}
-h2{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:26px 0 10px}
-.item{display:grid;grid-template-columns:92px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-.item time{font-variant-numeric:tabular-nums;font-weight:700;font-stretch:80%}
-.item .t{font-weight:600}
-.item .s{color:var(--muted);font-size:15px}
-.item.past{opacity:.45}
-.item.now time,.item.now .t{color:var(--accent-text)}
-.phases{grid-column:1/-1;margin:6px 0 0;padding:0;list-style:none}
-.phases li{display:grid;grid-template-columns:92px 1fr;gap:12px;font-size:16px;padding:4px 0;color:var(--muted)}
-.phases li.cur{color:var(--fg);font-weight:600}
-.phases li span{font-variant-numeric:tabular-nums}
-.list{margin:0;padding-left:20px}
-.list li{margin:6px 0}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 16px;font-weight:600;font-size:16px}
-.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:10px}
-.card p{margin:4px 0;overflow-wrap:anywhere}
-.work{font-weight:600}
-.work em{font-style:italic}
-details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-top:10px}
-summary{font-weight:600;cursor:pointer;min-height:32px}
-details p{color:var(--muted);margin:8px 0 2px}
-label{display:block;font-size:15px;color:var(--muted);margin:16px 0 6px}
-textarea{width:100%;box-sizing:border-box;min-height:120px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:12px;font:inherit;font-size:18px}
-textarea:focus{outline:2px solid var(--accent-text)}
-.seg{display:flex;gap:8px}
-.seg .chip{flex:1;text-align:center}
-.saved{color:var(--ok);font-size:14px;min-height:1.2em;margin-top:6px}
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:6px}
-.nav button{min-height:60px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:16px;padding:0 2px;color:var(--muted)}
-.nav button[aria-current="page"]{background:var(--surface);color:var(--fg)}
-#mehr{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:8;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;display:none;flex-direction:column;min-width:180px;box-shadow:0 10px 30px rgba(0,0,0,.5)}#mehr.on{display:flex}
-#mehr button{background:transparent;border:0;color:var(--fg);font:inherit;font-size:19px;font-weight:700;text-align:left;padding:14px 16px;border-radius:12px}#mehr button[aria-current="page"]{background:var(--bg);color:var(--accent-text)}
-body.has-appbar #mehr{bottom:calc(124px + env(safe-area-inset-bottom,0px))}
+#blatt .tliste h2{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}#blatt .btn.ja{background:var(--warn);border-color:var(--warn);color:#000}
+.tliste{display:grid;gap:var(--gap);margin-top:10px}.tliste h2{margin:16px 0 4px}.tl{display:flex;gap:12px;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;color:var(--fg);font:inherit;font-size:17px;min-height:56px}.tl time{font-variant-numeric:tabular-nums;font-weight:700;color:var(--accent-text);flex:0 0 52px}.tl span{color:var(--muted)}
+/* Text */
+.eyebrow{color:var(--muted);font-size:14px;letter-spacing:.05em;text-transform:uppercase;margin:16px 0 4px}
+.form{color:var(--accent-text);font-weight:700;font-size:clamp(28px,8vw,40px);line-height:1.05;text-wrap:balance}
+.ptitle{font-size:22px;font-weight:600;margin-top:6px;text-wrap:balance}
+.regie{font-size:19px;line-height:1.45;margin-top:14px}
+.danach{color:var(--muted);font-size:15px;margin-top:10px}
+.next{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:16px}.next strong{color:var(--fg);font-weight:600}
+h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:22px 0 8px}
 .small{font-size:14px;color:var(--muted)}
-input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
-.pill{display:inline-block;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--line);color:var(--muted);margin-left:6px;vertical-align:2px}
-.pill.warn{background:rgba(226,176,74,.15);color:var(--warn)}
-.remote{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.remote .btn{min-height:64px}
-@media (min-width:420px){.remote{grid-template-columns:repeat(4,1fr)}}
-.verlauf{display:grid;gap:6px;margin-top:8px}.vrow{display:grid;grid-template-columns:52px 1fr 60px 1fr 44px;gap:6px;align-items:center;font-size:14px;color:var(--muted)}.vb{height:10px;background:var(--line);border-radius:6px;overflow:hidden}.vb i{display:block;height:100%;background:var(--accent)}.vb.s i{background:var(--muted)}
-.toolbox{border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0 18px;background:var(--surface)}
-.zufall{font-size:46px;font-weight:800;line-height:1.05;margin:6px 0 4px;color:var(--fg);word-break:break-word}
+.status{margin-top:10px;font-size:15px;color:var(--warn);min-height:1.2em}
+.hint{margin-top:14px;font-size:15px;color:var(--muted);border-left:2px solid var(--accent);padding-left:10px}
+.hint .ctrl{margin-top:8px}
+.list{margin:0;padding-left:20px}.list li{margin:6px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-top:var(--gap)}.card p{margin:4px 0;overflow-wrap:anywhere}
+.work{font-weight:600}.work em{font-style:italic}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin-top:var(--gap)}
+summary{font-weight:600;cursor:pointer;min-height:32px}details p{color:var(--muted);margin:8px 0 2px}
+details .card{background:var(--bg)}
+.item{display:grid;grid-template-columns:72px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.item time{font-variant-numeric:tabular-nums;font-weight:700}.item .t{font-weight:600}.item .s{color:var(--muted);font-size:15px}.item.past{opacity:.45}.item.now time,.item.now .t{color:var(--accent-text)}
+.phases{grid-column:1/-1;margin:6px 0 0;padding:0;list-style:none}.phases li{display:grid;grid-template-columns:72px 1fr;gap:12px;font-size:15px;padding:3px 0;color:var(--muted)}.phases li.cur{color:var(--fg);font-weight:600}
+/* Knöpfe */
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ctrl{display:flex;gap:var(--gap);margin-top:14px;flex-wrap:wrap}
+.btn{flex:1 1 30%;min-height:56px;border-radius:var(--radius);border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:19px;color:var(--fg);padding:0 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.klein{min-height:44px;font-size:15px;color:var(--muted);flex:0 0 auto}
+.btn:active,.chip:active,.kt:active{filter:brightness(1.35)}
+.btn:focus-visible,.nav button:focus-visible,.chip:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+.chips{display:flex;gap:var(--gap);flex-wrap:wrap;margin-top:12px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 16px;font-weight:600;font-size:16px;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.seg{display:flex;gap:var(--gap)}.seg .chip{flex:1;text-align:center}
+label{display:block;font-size:14px;color:var(--muted);margin:14px 0 6px}
+textarea,input[type=text],input:not([type]){width:100%;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:var(--radius);padding:12px;font:inherit;font-size:17px}
+textarea{min-height:110px}textarea:focus,input:focus{outline:2px solid var(--accent-text)}
+.saved{color:var(--ok);font-size:14px;min-height:1.2em;margin-top:6px}
+/* Navigation */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));gap:4px}
+.nav button{min-height:56px;border:0;border-radius:12px;background:transparent;font-weight:600;font-size:16px;padding:0 2px;color:var(--muted);position:relative}
+.nav button[aria-current="page"]{background:var(--surface);color:var(--fg)}
+.nav button .punkt{position:absolute;top:8px;right:calc(50% - 34px);width:9px;height:9px;border-radius:50%;background:var(--accent-text)}
+/* Folienleiste in Jetzt */
+.folie{position:fixed;right:max(12px,env(safe-area-inset-right,0px));left:max(12px,env(safe-area-inset-left,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:6;display:grid;grid-template-columns:1fr 2fr 56px;gap:var(--gap);max-width:616px;margin:0 auto;background:linear-gradient(to top,var(--bg) 70%,rgba(11,12,16,0));padding-top:14px}
+.folie .btn{min-height:56px;font-size:19px;box-shadow:0 8px 30px rgba(0,0,0,.55)}.folie .btn.primary{font-size:21px}.folie .btn.punkte{flex:0;padding:0;font-size:24px;letter-spacing:.1em}
+body.mit-folie .wrap{padding-bottom:200px}
+#punkte{position:fixed;right:12px;bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:8;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;display:none;flex-direction:column;min-width:220px;box-shadow:0 10px 30px rgba(0,0,0,.5)}#punkte.on{display:flex}
+#punkte button{background:transparent;border:0;color:var(--fg);font:inherit;font-size:18px;font-weight:600;text-align:left;padding:13px 16px;border-radius:12px;min-height:48px}
+body.has-appbar .nav{bottom:40px}body.has-appbar .folie{bottom:calc(116px + env(safe-area-inset-bottom,0px))}body.has-appbar #punkte{bottom:calc(182px + env(safe-area-inset-bottom,0px))}body.has-appbar .wrap{padding-bottom:210px}
+/* Klasse */
+.toolbox{border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin:var(--gap) 0 14px;background:var(--surface)}
+.zufall{font-size:44px;font-weight:700;line-height:1.05;margin:6px 0 4px;color:var(--fg);word-break:break-word}
 .gruppen li{margin:8px 0}
-.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px}
-.kt{min-height:76px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:14px;padding:8px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.kt b{font-size:17px;line-height:1.15}
-.kt span{font-size:18px;letter-spacing:.12em;color:var(--accent-text)}
-.kt.ha{background:var(--accent);border-color:var(--accent);color:#fff}.kt.ha span{color:#fff;font-weight:800;letter-spacing:.04em}
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);margin-top:10px}
+.kt{min-height:64px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:var(--radius);padding:8px 10px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.kt b{font-size:17px;line-height:1.15;font-weight:600}.kt span{font-size:15px;letter-spacing:.12em;color:var(--accent-text)}
+.kt.ha{background:var(--accent);border-color:var(--accent);color:#fff}.kt.ha span{color:#fff;font-weight:700;letter-spacing:.04em}
+.verlauf{display:grid;gap:6px;margin-top:8px}.vrow{display:grid;grid-template-columns:52px 1fr 60px 1fr 44px;gap:6px;align-items:center;font-size:14px;color:var(--muted)}.vb{height:10px;background:var(--line);border-radius:6px;overflow:hidden}.vb i{display:block;height:100%;background:var(--accent)}
+/* Büro */
+.chat{display:flex;flex-direction:column;gap:10px;padding-top:12px}
+.msg{max-width:92%;border-radius:var(--radius);padding:12px 14px;font-size:17px;line-height:1.4;overflow-wrap:anywhere}
+.msg.ich{align-self:flex-end;background:#1f232c;border-bottom-right-radius:4px}
+.msg.buero{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg .meta{display:block;color:var(--muted);font-size:13px;margin-top:6px}
+.msg .zeile{display:grid;grid-template-columns:56px 1fr;gap:10px;padding:5px 0;border-top:1px solid var(--line)}.msg .zeile:first-of-type{border-top:0}.msg .zeile time{font-variant-numeric:tabular-nums;font-weight:700}.msg .zeile .k{color:var(--muted);font-size:14px}
+.msg .ctrl{margin-top:10px}.msg .ctrl .btn{min-height:48px;font-size:16px}
+.frage{align-self:stretch;max-width:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.frage .prog{color:var(--muted);font-size:14px;letter-spacing:.04em;text-transform:uppercase}.frage .q{font-size:22px;font-weight:600;line-height:1.3;margin:6px 0 12px;text-wrap:balance}
+.frage .opt{display:flex;flex-direction:column;gap:var(--gap)}.frage .opt .btn{text-align:left;min-height:56px;font-size:19px;font-weight:600;padding:10px 14px;flex:none;display:block}
+.frage .opt .btn small{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:2px}.frage .opt .btn.primary small{color:rgba(255,255,255,.8)}
+.frage .anders{display:flex;gap:var(--gap);margin-top:10px}.frage .anders input{flex:1}
+.check .z{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}.check .z:first-of-type{border-top:0}.check .z i{flex:0 0 26px;height:26px;border:2px solid var(--muted);border-radius:8px;display:inline-block;margin-top:1px}.check .z.ok i{background:var(--ok);border-color:var(--ok)}.check .z.ok span{color:var(--muted);text-decoration:line-through}
+#eingabe{position:fixed;left:0;right:0;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:6;background:var(--bg);border-top:1px solid var(--line);padding:8px max(var(--rand),env(safe-area-inset-right,0px)) 8px max(var(--rand),env(safe-area-inset-left,0px));display:none}
+body.im-buero #eingabe{display:block}body.im-buero .wrap{padding-bottom:230px}
+body.has-appbar #eingabe{bottom:calc(108px + env(safe-area-inset-bottom,0px))}
+#eingabe .chips{margin:0 0 8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}#eingabe .chips::-webkit-scrollbar{display:none}#eingabe .chip{white-space:nowrap;flex:0 0 auto}
+#eingabe .zeile{display:flex;gap:var(--gap);align-items:flex-end;max-width:608px;margin:0 auto}
+#eingabe textarea{min-height:48px;max-height:120px;resize:none;flex:1;padding:11px 12px}
+#eingabe .btn{flex:0 0 auto;min-height:48px;padding:0 18px}
+.pill{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--line);color:var(--muted);margin-left:6px;vertical-align:2px}
+.pill.warn{background:rgba(226,176,74,.15);color:var(--warn)}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
-.zeit{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.zeit .btn{min-height:76px;font-size:22px}.zeit .klein{display:flex;gap:10px;grid-column:1 / -1}.zeit .klein .btn{min-height:54px;font-size:17px;color:var(--muted)}
-.verzug{margin-top:14px;color:var(--warn);font-size:17px;min-height:1.2em}
-.folie{background:linear-gradient(to top,var(--bg) 70%,rgba(11,12,16,0));padding-top:16px;position:fixed;right:max(12px,env(safe-area-inset-right,0px));left:max(12px,env(safe-area-inset-left,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:1fr 2fr;gap:10px;z-index:5;max-width:640px;margin:0 auto}
-.folie .btn{min-height:56px;font-size:19px;box-shadow:0 8px 30px rgba(0,0,0,.55)}.folie .btn.primary{font-size:21px}
-.folie .mini{grid-column:1 / -1;display:flex;gap:8px;justify-content:flex-end}.folie .mini .btn{flex:0 0 auto;min-height:44px;font-size:15px;padding:0 14px;color:var(--muted);box-shadow:none}
-body.mit-folie .wrap{padding-bottom:220px}body.has-appbar.mit-folie .wrap{padding-bottom:260px}body.has-appbar .folie{bottom:calc(126px + env(safe-area-inset-bottom,0px))}
-.count.paused b{color:var(--muted)}
-.fern{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.fern .btn{min-height:min(12vh,96px);font-size:22px}
-.fern .btn.wide{grid-column:1 / -1;min-height:min(20vh,150px);font-size:32px}
-.fv .count{margin-top:2px}.fv .count b{font-size:min(15vw,64px)}
+.keys{display:none;font-size:13px;color:var(--muted);margin-top:8px}
+.fern{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.fern .btn{min-height:min(12vh,96px);font-size:22px}.fern .btn.wide{grid-column:1 / -1;min-height:min(20vh,150px);font-size:32px}
 .appbar{position:fixed;left:0;right:0;bottom:0;z-index:7;height:40px;display:flex;background:#07080b;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
 .appbar a{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;font-size:14px;font-weight:600}
 .appbar a[aria-current="page"]{color:var(--fg);box-shadow:inset 0 2px 0 var(--accent)}
-body.has-appbar .nav{bottom:40px}
-body.has-appbar .wrap{padding-bottom:170px}
-.keys{display:none;font-size:13px;color:var(--muted);margin-top:8px}
-@media (max-height:520px){
-  .eyebrow{margin:8px 0 2px}
-  .form{font-size:28px}
-  .ptitle{font-size:18px;margin-top:2px}
-  .count{margin-top:4px}
-  .count b{font-size:min(26vw,22vh,140px)}
-  .nav button{min-height:44px}
-  .nav{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
-}
-@media (min-width:760px){
-  .wrap{max-width:720px}
-  .nav{left:50%;right:auto;transform:translateX(-50%);width:min(720px,100%);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0}
-  .keys{display:block}
-}
-@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+@media (min-width:760px){.wrap{max-width:720px}.nav,#eingabe{left:50%;right:auto;transform:translateX(-50%);width:min(720px,100%)}.nav{border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0}.keys{display:block}}
+@media (prefers-reduced-motion:reduce){.lbar i{transition:none}}
 </style></head><body>
 
 <div class="wrap">
-  <header id="leiste" role="button" aria-label="Zur Ansicht Jetzt">
-    <div class="lmeta"><span class="date" id="date"></span><span><span class="clock" id="clock">--.--</span><button class="tog" id="testBtn" data-act="testen" role="switch" aria-checked="false" aria-label="Testmodus"><span>Test</span><i></i></button></span></div>
-    <div class="lmain"><div class="lzeit"><b id="lz">--</b><span id="lu"></span></div><div class="ltext"><div class="lform" id="lform"></div><div class="lph" id="lph"></div><div class="lnext" id="lnext"></div></div></div>
+  <header id="leiste">
+    <div class="lmeta"><span class="date" id="date"></span><span class="lright"><span class="clock" id="clock">--.--</span><span id="simtag">TEST</span><button id="zahn" data-act="zahn" aria-label="Einstellungen">⚙</button></span></div>
+    <div class="lmain" id="lmain" role="button" aria-label="Zur Ansicht Jetzt"><div class="lzeit"><b id="lz">--</b><span id="lu"></span></div><div class="ltext"><div class="lform" id="lform"></div><div class="lph" id="lph"></div></div><button id="stoppBtn" data-act="stoppL" aria-label="Stopp">Stopp</button></div>
     <div class="lbar"><i id="lbar"></i></div>
     <div id="lhint"></div>
   </header>
   <main id="view"></main>
-<div id="stopp" role="dialog" aria-label="Stopp"><div class="bl"><h2>Stopp: warum?</h2><p>Die Uhr steht, die laufende Phase behält ihre Restzeit. Der Grund kommt ins Protokoll des Tages.</p><div class="gr" id="stoppGr"></div><div class="ctrl" id="stoppExtra"></div><div class="ctrl"><button class="btn" data-act="stoppx">Abbrechen</button></div></div></div>
-<div id="blatt" role="dialog" aria-label="Testmodus"><div class="bl"><h2 id="blattH">Wirklich in den Testmodus?</h2><p id="blattP">Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
+<div id="stopp" class="sheet" role="dialog" aria-label="Stopp"><div class="bl"><h2>Stopp: warum?</h2><p>Die Uhr steht, die laufende Phase behält ihre Restzeit. Der Grund kommt ins Protokoll des Tages.</p><div class="gr" id="stoppGr"></div><div class="ctrl" id="stoppExtra"></div><div class="ctrl"><button class="btn" data-act="stoppx">Abbrechen</button></div></div></div>
+<div id="blatt" class="sheet" role="dialog" aria-label="Stunde proben"><div class="bl"><h2 id="blattH">Stunde proben?</h2><p id="blattP">Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; „Test beenden“ in der Leiste stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
+<div id="einst" class="sheet" role="dialog" aria-label="Einstellungen"><div class="bl" id="einstBl"></div></div>
+<div id="punkte" role="menu"></div>
   <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
-  <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 5 = Ansichten (3 Spick, 4 Tag, 5 Notiz).</p>
+  <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, Pfeil links = Zurück, + = 5 Min. länger, Z = Rückgängig, 1 bis 3 = Bereiche.</p>
 </div>
+<div id="eingabe"><div class="chips" id="chips"></div><div class="zeile"><textarea id="bText" rows="1" placeholder="Frage oder Änderung" aria-label="Nachricht ans Büro"></textarea><button class="btn primary" data-act="bsend">Senden</button></div></div>
 
 <nav class="nav" aria-label="Bereiche">
   <button data-v="jetzt">Jetzt</button>
   <button data-v="klasse">Klasse</button>
-  <button data-act="mehr" id="mehrBtn" aria-haspopup="menu">Mehr ▾</button>
+  <button data-v="buero">Büro<span class="punkt" id="bpunkt" style="display:none"></span></button>
 </nav>
-<div id="mehr" role="menu"><button data-v="spick">Spick</button><button data-v="tag">Tag</button><button data-v="notiz">Notiz</button></div>
 
 <script>
 /* ===== Tagesdaten (später vom Morgenlauf befüllt) ===== */
@@ -449,118 +435,83 @@ function leftText(sec){
 }
 function renderJetzt(){
   if (keyProblem && !fresh()) return `<div class="eyebrow">Heute</div><div class="form">Schlüssel nötig</div>${keyHtml(false)}`;
-  if (!fresh()) return `
-    <div class="eyebrow">Heute</div>
-    <div class="form">Noch keine Daten</div>
-    <div class="regie">${DAY.label ? "Letzter Stand: " + esc(DAY.label) + " Der Morgenlauf bringt die Stunden von heute." : "Der Morgenlauf bringt die Stunden von heute."}</div>
-    <div class="next">Unter „Tag“ siehst du den letzten Stand.</div>`;
+  if (!fresh()) return `<div class="eyebrow">Heute</div><div class="form">Noch keine Daten</div><div class="regie">Der Morgenlauf bringt die Stunden von heute.</div>`;
   const sec = nowSec(), loc = locate(sec);
   if (loc){
-    const {lesson, plan:p, idx} = loc;
-    const ph = p.phases[idx];
-    const endSec = (ph.s + ph.d)*60;
-    const left = Math.max(0, endSec - sec);
-    const prog = Math.min(1, 1 - left/(ph.d*60));
+    const {lesson, plan:p, idx} = loc, ph = p.phases[idx];
     const nx = p.phases.slice(idx+1).find(q => !q.dropped);
-    const verzug = p.end - p.planEnd;
-    const adjs = state.adj[lesson.id] || [];
-    const paused = state.pause[lesson.id];
-    const bk = backInfo(p.phases, adjs, idx);
-    let status = "";
+    const verzug = p.end - p.planEnd, adjs = state.adj[lesson.id] || [], paused = state.pause[lesson.id];
+    const tgt = p.notes.length && p.notes[p.notes.length-1].target >= 0 ? p.phases[p.notes[p.notes.length-1].target].titel : null;
+    let vz = "";
+    if (paused) vz = (paused.grund ? "Stopp: " + paused.grund : "Pause") + " seit " + fmt(Math.floor(paused.t0));
+    else if (verzug > 0) vz = "+" + verzug + " Min." + (tgt ? ", „" + tgt + "“ gekürzt" : "");
+    else if (adjs.length && tgt) vz = "Ausgleich in „" + tgt + "“";
+    /* höchstens ein Hinweis: Streichvorschlag, dann zu lang, dann MB */
     const dh = p.debt > 0.5 ? dropHint(p.phases, idx) : -1;
     const verl = verlust(adjs, paused || null, sec / 60);
     const sv = state.weg && state.weg[lesson.id] ? -1 : streichVorschlag(p.phases, idx, adjs, paused || null, sec / 60);
-    if (paused) status = "Pause seit " + fmt(Math.floor(paused.t0)) + ". Die Uhr steht, die Zeit kommt aus " + (p.notes.length && p.notes[p.notes.length-1].target >= 0 ? "„" + p.phases[p.notes[p.notes.length-1].target].titel + "“" : "späteren Phasen") + ".";
-    else if (adjs.length){
-      const last = p.notes[p.notes.length-1];
-      const tgt = last && last.target >= 0 ? p.phases[last.target].titel : null;
-      status = (verzug > 0 ? "Stunde endet " + verzug + " Min. später. " : "") + (tgt ? "Ausgleich in: " + tgt + "." : "");
-    }
-    const tgt = p.notes.length && p.notes[p.notes.length-1].target >= 0 ? p.phases[p.notes[p.notes.length-1].target].titel : null;
-    let vz = "";
-    if (paused) vz = (paused.grund ? "Stopp (" + paused.grund + ")" : "Pause") + " seit " + fmt(Math.floor(paused.t0)) + ", die Uhr steht.";
-    else if (verzug > 0) vz = "+" + verzug + " Min." + (tgt ? ", „" + tgt + "“ gekürzt" : "");
-    else if (adjs.length && tgt) vz = "Ausgleich in „" + tgt + "“";
-    return `
-      <div class="zeit">
-        <button class="btn${paused ? " primary" : ""}" data-act="${paused ? "pause" : "stopp"}" data-id="${lesson.id}" data-i="${idx}">${paused ? "Weiter" : "Stopp"}</button>
-        ${pair.code ? `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>` : (nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`)}
-        <div class="klein">
-          ${pair.code ? "" : `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>`}
-          ${bk ? `<button class="btn" data-act="back" data-id="${lesson.id}" data-i="${idx}">↩ ${esc(bk.titel)}</button>` : ""}
-          ${adjs.length || paused ? `<button class="btn" data-act="undo" data-id="${lesson.id}">Rückgängig</button>` : ""}
-        </div>
-      </div>
-      <div class="verzug">${esc(vz)}</div>
+    let hint = "";
+    if (sv >= 0) hint = `<div class="hint">Schon ${Math.round(verl)} Min. verloren. „${esc(p.phases[sv].titel)}“ (${Math.round(p.phases[sv].d)} Min.) streichen statt alles zu stauchen?<div class="ctrl"><button class="btn primary" data-act="drop" data-id="${lesson.id}" data-i="${idx}" data-k="${sv}">Streichen</button><button class="btn" data-act="stauchen" data-id="${lesson.id}">Stauchen</button></div></div>`;
+    else if (dh >= 0) hint = `<div class="hint">Die Stunde wird ${Math.round(p.debt)} Min. zu lang.<div class="ctrl"><button class="btn" data-act="drop" data-id="${lesson.id}" data-i="${idx}" data-k="${dh}">„${esc(p.phases[dh].titel)}“ streichen</button></div></div>`;
+    else if (lesson.mb) hint = `<div class="hint">${esc(lesson.mb)}</div>`;
+    return `<div class="danach">${nx ? "Danach " + fmt(nx.s) + " " + esc(nx.form) + ": " + esc(nx.titel) : "Letzte Phase, Ende " + fmt(ph.s + ph.d)}${vz ? " · " + esc(vz) : ""}</div>
       <div class="regie">${esc(ph.regie)}</div>
-      ${sv >= 0 ? `<div class="hint">Schon ${Math.round(verl)} Min. verloren. „${esc(p.phases[sv].titel)}“ (${Math.round(p.phases[sv].d)} Min.) streichen statt alles zu stauchen? <div class="ctrl"><button class="btn primary" data-act="drop" data-id="${lesson.id}" data-i="${idx}" data-k="${sv}">Streichen</button><button class="btn" data-act="stauchen" data-id="${lesson.id}">Stauchen</button></div></div>` : ""}
-      ${dh >= 0 ? `<div class="hint">Die Stunde wird ${Math.round(p.debt)} Min. zu lang. <button class="btn" data-act="drop" data-id="${lesson.id}" data-i="${idx}" data-k="${dh}">„${esc(p.phases[dh].titel)}“ streichen</button></div>` : ""}
-      ${lesson.mb ? `<div class="hint">${esc(lesson.mb)}</div>` : ""}`;
+      ${hint}
+      ${spickHtml(lesson, loc)}`;
   }
   const nl = nextLesson(sec);
   if (nl){
-    const inMin = Math.round(toMin(nl.start) - sec/60);
-    const first = nl.phases[0];
-    return `
-      <div class="eyebrow">Ziel der Stunde</div>
+    const first = nl.phases[0], offen = offenHtml(nl);
+    return `<div class="eyebrow">Nächste Stunde ${fmt(toMin(nl.start))}</div>
+      <div class="form">${esc(nl.klasse)} · ${esc(nl.titel)}</div>
       <div class="regie">${esc(nl.ziel)}</div>
       <div class="next">Start <strong>${fmt(toMin(first[0]))} ${esc(first[2])}</strong>, ${first[1]} Min.: ${esc(first[3])}</div>
-      <h2>Mitnehmen</h2>
-      <ul class="list">${nl.mitnehmen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>
-      ${nl.mb ? `<div class="hint">${esc(nl.mb)}</div>` : ""}`;
+      ${offen}
+      <h2>Mitnehmen</h2><ul class="list">${(nl.mitnehmen || []).map(m => `<li>${esc(m)}</li>`).join("")}</ul>
+      ${nl.mb ? `<div class="hint">${esc(nl.mb)}</div>` : ""}
+      <div class="ctrl"><button class="btn" data-act="testen">Proben</button></div>`;
   }
-  return `
-    <div class="eyebrow">Unterricht vorbei</div>
-    <div class="form">Feierabend für die Klassen</div>
-    <h2>Bewertung offen</h2>
-    <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
-    <p class="small">${esc(DAY.bewertungHinweis)}</p>
-    <div class="next">Kurzcheck je Stunde unter „Notiz“.</div>`;
+  return `<div class="eyebrow">Unterricht vorbei</div><div class="form">Feierabend</div>
+    ${DAY.bewertung.length ? `<h2>Bewertung offen</h2><ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>` : `<div class="regie">Nichts mehr offen.</div>`}`;
 }
-
-function renderTag(){
-  const sec = nowSec(), min = sec/60, loc = locate(sec);
-  const morgen = selected === "__morgen";
-  const seg = `<div class="chips seg"><button class="chip" data-day="heute" aria-pressed="${!morgen}">Heute</button><button class="chip" data-day="morgen" aria-pressed="${morgen}">Morgen</button></div>`;
-  if (morgen){
-    if (!MORGEN || !MORGEN.items || !MORGEN.items.length) return seg + `<div class="card"><p><strong>Morgen</strong></p><p class="small">Noch keine Daten. Kommt mit dem Morgenlauf.</p></div>`;
-    return seg + `<div class="eyebrow">${esc(MORGEN.label)}</div>` + MORGEN.items.map(it => `
-      <div class="item"><time>${fmt(toMin(it.start))}</time><div><div class="t">${it.type==="lesson" ? esc(it.klasse)+" · " : ""}${esc(it.titel)}</div>${it.ziel ? `<div class="s">${esc(it.ziel)}</div>` : ""}${it.mitnehmen ? `<div class="s">Mitnehmen: ${it.mitnehmen.map(esc).join(", ")}</div>` : ""}</div></div>`).join("")
-      + (MORGEN.drucken && MORGEN.drucken.length ? `<h2>Für morgen drucken</h2><ul class="list">${MORGEN.drucken.map(d => `<li>${esc(d)}</li>`).join("")}</ul>` : "");
-  }
-  const rows = DAY.items.map(it => {
-    const s = toMin(it.start), e = toMin(it.end);
-    const cls = e <= min ? "past" : (s <= min && min < e ? "now" : "");
-    let extra = "";
-    if (it.type === "lesson"){
-      const p = plan(it);
-      const cur = loc && loc.lesson.id === it.id ? loc.idx : -1;
-      extra = `<ul class="phases">${p.phases.map((ph,i) => `<li class="${i===cur?"cur":""}"><span>${fmt(ph.s)}</span><div>${esc(ph.form)}, ${ph.d} Min.</div></li>`).join("")}</ul>`;
-    }
-    return `<div class="item ${cls}"><time>${fmt(s)}</time><div><div class="t">${it.type==="lesson" ? esc(it.klasse)+" · " : ""}${esc(it.titel)}</div>${it.sub ? `<div class="s">${esc(it.sub)}</div>` : ""}${it.type==="lesson" ? `<div class="s">bis ${fmt(e)}</div>` : ""}</div>${extra}</div>`;
-  }).join("");
-  const prot = lessons.map(l => ({l, e: protokoll(state.adj[l.id], state.pause[l.id] || null, min)})).filter(x => x.e.length);
-  const protHtml = prot.length ? `<h2>Störungen und Verspätungen</h2><ul class="list">${prot.map(x => x.e.map(e => `<li><strong>${esc(x.l.klasse)}</strong> ${fmt(Math.floor(e.t0))} ${esc(e.art)}, ${Math.max(1, Math.round(e.min))} Min.${e.laeuft ? " (läuft)" : ""}</li>`).join("")).join("")}</ul><p class="small">Steht auch in der Notiz der Stunde.</p>` : "";
-  return seg + `
-    <h2>Ablauf</h2>${rows}${protHtml}
-    <h2>Noch zu drucken</h2>
-    <ul class="list">${DAY.drucken.map(d => `<li>${esc(d)}</li>`).join("")}</ul>
-    <h2>Bewertung offen</h2>
-    <ul class="list">${DAY.bewertung.map(b => `<li><strong>${esc(b.k)}</strong> ${esc(b.t)}</li>`).join("")}</ul>
-    <p class="small">${esc(DAY.bewertungHinweis)}</p>
-    <h2>Mit dem Schul-PC koppeln</h2>
-    <p class="small">Die App koppelt sich von selbst mit dem Notebook. Nur ändern, wenn dort ein anderer Code steht.</p>
-    <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
-    <div class="status" id="pairState">${esc(pairStatus())}</div>
-    <h2>Sicherung</h2>
-    <p class="small">Klassenlisten, Störungen, Verspätungen, Ämter und Notizen dieses Handys. Mit Atelier-Schlüssel verschlüsselt. Vor dem Neuinstallieren: erstellen, kopieren und irgendwo einfügen (z. B. Notiz-App); danach hier einfügen und einlesen.</p>
-    <div class="ctrl"><button class="btn" data-act="sich">Sicherung erstellen</button><button class="btn" data-act="sichein">Einlesen</button></div>
-    <textarea id="sichText" aria-label="Sicherung" spellcheck="false" placeholder="Hier steht die Sicherung, oder hier einfügen" style="min-height:120px;font-size:13px">${esc(sichText)}</textarea>
-    <div class="ctrl"><button class="btn" data-act="sichcopy">Kopieren</button></div>
-    <div class="small" id="sichState">${esc(sichMsg)}</div>
-`;
+/* Offenes vom letzten Mal (Checkliste der letzten Stunde dieser Klasse) */
+function offenListe(klasse){ return (store.get("pult-offen", {})[String(klasse)] || []); }
+function offenHtml(l){
+  const o = offenListe(l.klasse); if (!o.length) return "";
+  return `<h2>Offen vom letzten Mal</h2><div class="card check">${o.map((x, i) => `<div class="z" data-offen="${esc(l.klasse)}" data-i="${i}"><i></i><span>${esc(x.t)}</span></div>`).join("")}</div>`;
 }
-
+/* Spick zur laufenden Folie und Phase: eine Zeile offen, der Rest zugeklappt */
+function spickHtml(l, loc){
+  const idx = loc ? loc.idx : -1, ph = loc ? loc.plan.phases[idx] : null;
+  const seite = loc && pair.code ? pairPage : 0;
+  const aufSeite = x => x.s == null || !seite || [].concat(x.s).includes(seite);
+  const passt = x => (!x.ph || idx < 0 || x.ph.includes(idx + 1)) && aufSeite(x);
+  const folien = (l.folien || []).filter(x => seite && [].concat(x.s).includes(seite));
+  const zeile = seite ? `<div class="card"><p class="small">Folie ${seite}</p>${folien.length ? folien.map(x => `<p>${esc(x.t)}</p>`).join("") : `<p class="small">Keine Notiz zu dieser Folie.</p>`}</div>` : "";
+  const werke = (l.werke || []).filter(passt), fragen = (l.fragen || []).filter(passt);
+  const pb = Object.assign({technik: "Dokumentenkamera oder Tafel statt Beamer; Arbeitsauftrag mündlich und an die Tafel, Werkbilder als Ausdruck herumgeben.", unruhe: "Stopp mit Grund Unruhe: Ruhe-Folie 30 Sekunden, dann Ämter und Regeln kurz wiederholen, Arbeitsphase mit Wenn-dann-Plan neu starten.", material: "Mit dem arbeiten, was da ist: Skizze auf Schmierpapier, Bleistift statt Farbe; Materialauftrag ins Exit-Ticket für die nächste Stunde.", frueh: "Zusatzaufgabe: Variante des eigenen Werks mit einer veränderten Bedingung (Format, Blickwinkel, Material)."}, l.planB || {});
+  const h = (l.hilfen || {});
+  return zeile
+    + (werke.length ? `<details><summary>Werke (${werke.length})</summary>${werke.map(w => `<div class="card"><p class="work">${rich(w.w)}</p>${(w.f || []).map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}</details>` : "")
+    + (fragen.length ? `<details><summary>Fragen (${fragen.length})</summary>${fragen.map(f => `<div class="card"><p><strong>${esc(f.q)}</strong></p><p class="small">${esc(f.a)}</p></div>`).join("")}</details>` : "")
+    + `<details><summary>Wenn es hakt</summary>${h.schnell ? `<div class="card"><p><strong>Früher fertig</strong></p><p class="small">${esc(h.schnell)}</p></div>` : ""}${h.haengt ? `<div class="card"><p><strong>Hängt jemand</strong></p><p class="small">${esc(h.haengt)}</p></div>` : ""}<div class="card"><p><strong>Technik tot</strong></p><p class="small">${esc(pb.technik)}</p></div><div class="card"><p><strong>Klasse unruhig</strong></p><p class="small">${esc(pb.unruhe)}</p></div><div class="card"><p><strong>Material fehlt</strong></p><p class="small">${esc(pb.material)}</p></div><div class="card"><p><strong>Zu früh fertig</strong></p><p class="small">${esc(pb.frueh)}</p></div></details>`
+    + (loc ? `<details><summary>Ganze Stunde</summary>${loc.plan.phases.map((q, k) => `<div class="card"><p><strong>${fmt(q.s)} ${esc(q.form)}</strong>: ${esc(q.titel)}${k === idx ? " · jetzt" : ""}${q.dropped ? " · gestrichen" : ""}</p><p class="small">${esc(q.regie)}</p></div>`).join("")}</details>` : "")
+    + offenHtml(l);
+}
+/* Folienleiste unten: Zurück, Weiter, Punkte-Menü (nur während einer Stunde) */
+function folieHtml(loc){
+  if (!loc) return "";
+  return `<div class="folie"><button class="btn" data-act="zurueck" aria-label="Zurück">‹ Zurück</button><button class="btn primary" data-act="weiter2" aria-label="Weiter">Weiter ›</button><button class="btn punkte" data-act="punkte" aria-label="Mehr" aria-haspopup="menu">···</button></div>`;
+}
+function punkteMenu(){
+  const loc = locate(nowSec()); if (!loc) return "";
+  const {lesson, plan:p, idx} = loc, bk = backInfo(p.phases, state.adj[lesson.id] || [], idx), adjs = state.adj[lesson.id] || [];
+  let h = `<button data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>`;
+  if (adjs.length || state.pause[lesson.id]) h += `<button data-act="undo" data-id="${lesson.id}">Rückgängig</button>`;
+  if (bk) h += `<button data-act="back" data-id="${lesson.id}" data-i="${idx}">↩ Noch einmal: ${esc(bk.titel)}</button>`;
+  if (pcDa()) h += `<button data-fern="black">Schwarz</button><button data-fern="timer">Timer groß</button><button data-fern="cam">Kamera</button><button data-fern="ruhe">Ruhe-Folie</button>`;
+  return h;
+}
 function lessonChips(){
   return `<div class="chips">${lessons.map(l => `<button class="chip" data-sel="${l.id}" aria-pressed="${l.id===selected}">${esc(l.klasse)}</button>`).join("")}</div>`;
 }
@@ -571,50 +522,150 @@ function defaultSel(){
 }
 const noLessons = () => `<div class="eyebrow">Heute</div><div class="regie">Keine Stunden in den Daten.</div>`;
 
-function renderSpick(){
-  if (!lessons.find(l => l.id === selected)) selected = defaultSel();
-  if (!lessons.length) return noLessons();
-  const l = lessons.find(x => x.id === selected);
-  /* Spickzettel zur laufenden Phase: Regie zuerst, dann nur, was zur Phase passt. Einträge mit "ph" (Phasennummern) erscheinen nur dort. */
-  const sec = nowSec(), loc = fresh() ? locate(sec) : null, live = loc && loc.lesson.id === l.id;
-  const idx = live ? loc.idx : -1, ph = live ? loc.plan.phases[idx] : null;
-  const arbeit = ph ? /arbeit|galerie|gruppen|partner/i.test(ph.form) : false;
-  const seite = live && pair.code ? pairPage : 0;
-  const aufSeite = x => x.s == null || !seite || [].concat(x.s).includes(seite);
-  const passt = x => (!x.ph || idx < 0 || x.ph.includes(idx + 1)) && aufSeite(x);
-  const folien = (l.folien || []).filter(x => seite && [].concat(x.s).includes(seite));
-  const folieHtml = seite ? `<div class="eyebrow">Folie ${seite}</div>${folien.length ? folien.map(x => `<div class="regie">${esc(x.t)}</div>`).join("") : `<div class="small">Keine Notiz zu dieser Folie.</div>`}` : "";
-  const werke = l.werke.filter(passt), fragen = l.fragen.filter(passt);
-  const werkeHtml = werke.length ? `<h2>Werke</h2>${werke.map(w => `<div class="card"><p class="work">${rich(w.w)}</p>${w.f.map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}` : "";
-  const fragenHtml = fragen.length ? `<h2>Impulsfragen</h2>${fragen.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}` : "";
-  const hilfenHtml = `<h2>Hilfen</h2><div class="card"><p><strong>Früher fertig?</strong></p><p class="small">${esc(l.hilfen.schnell)}</p></div><div class="card"><p><strong>Hängt jemand?</strong></p><p class="small">${esc(l.hilfen.haengt)}</p></div>`;
-  const pb = Object.assign({technik: "Dokumentenkamera oder Tafel statt Beamer; Arbeitsauftrag mündlich und an die Tafel, Werkbilder als Ausdruck herumgeben.", unruhe: "Stopp mit Grund Unruhe: Ruhe-Folie 30 Sekunden, dann Ämter und Regeln kurz wiederholen, Arbeitsphase mit Wenn-dann-Plan neu starten.", material: "Mit dem arbeiten, was da ist: Skizze auf Schmierpapier, Bleistift statt Farbe; Materialauftrag ins Exit-Ticket für die nächste Stunde.", frueh: "Zusatzaufgabe: Variante des eigenen Werks mit einer veränderten Bedingung (Format, Blickwinkel, Material)."}, l.planB || {});
-  const planB = `<details><summary>Wenn es hakt: Technik, Unruhe, Material, zu früh fertig</summary><div class="card"><p><strong>Beamer oder Technik tot</strong></p><p class="small">${esc(pb.technik)}</p></div><div class="card"><p><strong>Klasse unruhig</strong></p><p class="small">${esc(pb.unruhe)}</p></div><div class="card"><p><strong>Material fehlt</strong></p><p class="small">${esc(pb.material)}</p></div><div class="card"><p><strong>Zu früh fertig</strong></p><p class="small">${esc(pb.frueh)}</p></div></details>`;
-  const kopf = ph ? `<div class="eyebrow">Jetzt · ${esc(ph.form)}</div><div class="ptitle">${esc(ph.titel)}</div><div class="regie">${esc(ph.regie)}</div>` : `<div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div><div class="regie">${esc(l.ziel)}</div>`;
-  const rest = live ? `<details><summary>Ganze Stunde</summary>${loc.plan.phases.map((q, k) => `<div class="card${k === idx ? "" : ""}"><p><strong>${fmt(q.s)} ${esc(q.form)}</strong>: ${esc(q.titel)}</p><p class="small">${esc(q.regie)}</p></div>`).join("")}</details>` : "";
-  return lessonChips() + folieHtml + kopf + (arbeit ? hilfenHtml + planB + werkeHtml + fragenHtml : werkeHtml + fragenHtml + hilfenHtml + planB) + rest + (l.mb ? `<div class="hint">${esc(l.mb)}</div>` : "");
+/* ===== Büro: Fragen, Änderungen, Vorbereitungen über einen privaten Kanal; Antworten mit anklickbaren Knöpfen ===== */
+const BU = store.get("pult-buero", {code: "", items: [], ungelesen: 0});
+BU.items = BU.items || []; BU.ungelesen = BU.ungelesen || 0;
+function buSave(){ BU.items = BU.items.filter(x => Date.now() - x.t < 7 * 86400000); store.set("pult-buero", BU); }
+const buTopic = () => "atelier-buero-" + BU.code;
+const uidB = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+let buES = null;
+function buConnect(){
+  if (buES){ try { buES.close(); } catch(e){} buES = null; }
+  if (!BU.code) return;
+  fetch(NTFY + "/" + buTopic() + "/json?poll=1&since=7d").then(r => r.text()).then(t => { let n = 0; for (const line of t.split("\n")) if (line.trim()){ try { const d = JSON.parse(line); if (d.event === "message" && buIn(JSON.parse(d.message), true)) n++; } catch(e){} } if (n){ buSave(); if (view === "buero") render(); naviPunkt(); } }).catch(() => {});
+  try {
+    buES = new EventSource(NTFY + "/" + buTopic() + "/sse");
+    buES.onmessage = ev => { try { const d = JSON.parse(ev.data); if (d.event !== "message") return; if (buIn(JSON.parse(d.message))){ buSave(); if (view === "buero") render(); naviPunkt(); } } catch(e){} };
+  } catch(e){}
 }
-
-function renderNotiz(){
-  if (!lessons.find(l => l.id === selected)) selected = defaultSel();
-  if (!lessons.length) return noLessons();
-  const l = lessons.find(x => x.id === selected);
-  const n = state.notes[l.id] || {text:"", zeit:"", ziel:"", aendern:""};
-  const seg = (name, opts) => `<div class="seg">${opts.map(o => `<button class="chip" data-check="${name}" data-val="${o}" aria-pressed="${n[name]===o}">${o}</button>`).join("")}</div>`;
-  return lessonChips() + `
-    <div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div>
-    <label for="nText">Notiz während der Stunde</label>
-    <textarea id="nText" data-field="text" placeholder="z. B. zwei fehlen, Pinsel knapp, Zwischenhalt hat gut funktioniert">${esc(n.text)}</textarea>
-    <h2>Kurzcheck nach der Stunde</h2>
-    <label>Zeit gehalten?</label>${seg("zeit", ["Ja","Knapp","Nein"])}
-    <label>Ziel erreicht?</label>${seg("ziel", ["Ja","Teilweise","Nein"])}
-    <label for="nExit">Aus den Exit-Tickets: was greift die nächste Stunde auf?</label>
-    <textarea id="nExit" data-field="exit" placeholder="z. B. Fluchtpunkt bei vielen unklar, nächste Stunde zuerst wiederholen">${esc(n.exit || "")}</textarea>
-    <label for="nAendern">Was ändern fürs Material?</label>
-    <textarea id="nAendern" data-field="aendern" placeholder="z. B. Input zu lang, Kriterien früher zeigen">${esc(n.aendern)}</textarea>
-    <div class="saved" id="saved"></div>
-    <p class="small" id="notizState">${notizStatus(n)}</p>
-    <p class="small">Bitte keine Noten eintragen.</p>`;
+function buIn(m, still){
+  if (!m || m.from !== "buero" || !m.id) return false;
+  if (BU.items.some(x => x.id === m.id)) return false;
+  const parent = BU.items.find(x => x.id === m.re);
+  if (m.kind === "status"){ if (parent){ parent.status = m.text || "In Arbeit"; return true; } return false; }
+  if (m.kind !== "antwort" && m.kind !== "check") return false;
+  BU.items.push({id: m.id, re: m.re, from: "buero", t: m.t || Date.now(), text: m.text || "", zeilen: m.zeilen, docs: m.docs, fragen: m.fragen, vorschau: m.vorschau, fehlt: m.fehlt, status: m.status || "", k: 0, ant: []});
+  if (parent) parent.status = m.status === "frage" ? "Rückfragen da" : m.status === "vorschau" ? "Vorschlag da" : m.status === "fehler" ? "Nicht möglich" : "Beantwortet";
+  if (!still && view !== "buero") BU.ungelesen++;
+  try { if (!still){ if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(60); else if (navigator.vibrate) navigator.vibrate(60); } } catch(e){}
+  return true;
+}
+function naviPunkt(){ const p = $("#bpunkt"); if (p) p.style.display = BU.ungelesen && view !== "buero" ? "block" : "none"; }
+async function buSend(obj){
+  const item = Object.assign({v: 1, from: "pult", id: uidB(), t: Date.now()}, obj);
+  BU.items.push(Object.assign({}, item, {from: "ich", status: BU.code ? "Wird gesendet" : "Kein Büro-Code (Zahnrad)"}));
+  buSave(); render();
+  if (!BU.code) return;
+  const mine = BU.items.find(x => x.id === item.id);
+  try {
+    const r = await fetch(NTFY + "/" + buTopic(), {method: "POST", body: JSON.stringify(item)});
+    mine.status = r.ok ? "Gesendet " + fmt(Math.floor(nowRealMin())) + " · Antwort etwa " + fmt(naechsterLauf()) : "Nicht gesendet (" + r.status + ")";
+  } catch(e){ mine.status = "Nicht gesendet: kein Netz"; }
+  buSave(); if (view === "buero") render();
+}
+function nowRealMin(){ const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+/* Das Büro läuft alle 10 Minuten zwischen 6 und 22 Uhr; ein Lauf braucht ein paar Minuten */
+function naechsterLauf(){ const m = nowRealMin(); if (m < 6 * 60) return 6 * 60 + 5; if (m >= 22 * 60) return 24 * 60 + 6 * 60 + 5; return Math.floor(m / 10) * 10 + 15; }
+/* Lokale Antworten ohne Büro: Tagesablauf, Druckliste, Bewertung, Notiz, Proben */
+function buLokal(text, zeilen, extra){ BU.items.push(Object.assign({id: uidB(), from: "buero", t: Date.now(), text, zeilen, status: "lokal"}, extra || {})); buSave(); render(); }
+function tagZeilen(day, nurAb){
+  if (!day || !day.items) return [];
+  return day.items.filter(it => !nurAb || toMin(it.end || it.start) >= nurAb).map(it => ({z: fmt(toMin(it.start)), t: (it.type === "lesson" ? it.klasse + " · " : "") + it.titel + (it.type === "lesson" ? " (bis " + fmt(toMin(it.end)) + ")" : ""), k: it.sub || ""}));
+}
+function buChip(art){
+  const ta = $("#bText");
+  if (art === "anstehen"){
+    BU.items.push({id: uidB(), from: "ich", t: Date.now(), text: "Was steht an?", status: "lokal"});
+    const heute = fresh() ? tagZeilen(DAY, nowSec() / 60) : [];
+    buLokal(heute.length ? "Heute noch:" : (fresh() ? "Heute nichts mehr." : "Für heute liegen keine Daten vor."), heute);
+    if (MORGEN && MORGEN.items && MORGEN.items.length) buLokal("Morgen (" + (MORGEN.label || "") + "):", tagZeilen(MORGEN), MORGEN.drucken && MORGEN.drucken.length ? {fehlt: "Drucken: " + MORGEN.drucken.join(", ")} : null);
+    buLokal("Für Termine außerhalb der Schule frag das Büro: tippe zum Beispiel „Was steht nächste Woche an?“", null);
+    return;
+  }
+  if (art === "druck"){ BU.items.push({id: uidB(), from: "ich", t: Date.now(), text: "Druckliste", status: "lokal"}); buLokal(DAY.drucken.length ? "Noch zu drucken:" : "Nichts zu drucken.", DAY.drucken.map(d => ({z: "", t: d}))); return; }
+  if (art === "bewertung"){ BU.items.push({id: uidB(), from: "ich", t: Date.now(), text: "Bewertung offen", status: "lokal"}); buLokal(DAY.bewertung.length ? "Bewertung offen:" : "Nichts offen.", DAY.bewertung.map(b => ({z: b.k, t: b.t}))); if (DAY.bewertungHinweis) buLokal(DAY.bewertungHinweis, null); return; }
+  if (art === "proben"){ testBlatt(); return; }
+  if (art === "notiz"){ ta.value = "Notiz: "; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); return; }
+  if (art === "vorbereiten"){
+    const kand = lessons.concat((MORGEN && MORGEN.items || []).filter(i => i.type === "lesson"));
+    ta.value = "Stunde vorbereiten: " + (kand.length ? "" : "Klasse, Einheit, Datum");
+    if (kand.length) buLokal("Welche Stunde? Tippe eine an oder schreib Klasse, Einheit und Datum.", null, {wahl: kand.map(l => ({t: l.klasse + " · " + l.titel, text: "Stunde vorbereiten: " + l.klasse + " " + l.titel}))});
+    ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); return;
+  }
+  if (art === "termin"){ ta.value = "Termin verschieben: "; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); return; }
+  if (art === "frist"){ ta.value = "Frist eintragen: "; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); return; }
+}
+function buAbschicken(){
+  const ta = $("#bText"), text = (ta.value || "").trim(); if (!text) return;
+  ta.value = ""; ta.style.height = "";
+  if (/^notiz\s*:/i.test(text)){
+    const inhalt = text.replace(/^notiz\s*:\s*/i, ""), loc = locate(nowSec()), l = loc ? loc.lesson : (lessons.find(x => x.id === selected) || nextLesson(nowSec()) || lessons[lessons.length - 1]);
+    if (l){ const n = state.notes[l.id] = state.notes[l.id] || {text: "", zeit: "", ziel: "", aendern: ""}; n.text = (n.text ? n.text.replace(/\s+$/, "") + "\n" : "") + fmt(Math.floor(nowSec() / 60)) + " " + inhalt; n.u = Date.now(); n.klasse = l.klasse; n.titel = l.titel; n.start = l.start; save(); }
+    BU.items.push({id: uidB(), from: "ich", t: Date.now(), text, status: l ? "Notiz gespeichert: " + l.klasse : "Keine Stunde, nichts gespeichert"}); buSave(); render(); return;
+  }
+  let art = "frei";
+  if (/^stunde vorbereiten/i.test(text)) art = "vorbereiten"; else if (/^termin/i.test(text)) art = "termin"; else if (/^frist/i.test(text)) art = "frist";
+  buSend({kind: "frage", art, text});
+}
+function renderBuero(){
+  const items = BU.items.slice().sort((a, b) => a.t - b.t);
+  const nl = !locate(nowSec()) && fresh() ? nextLesson(nowSec()) : null;
+  const kopf = nl ? `<div class="card"><p class="small">Nächste Stunde ${fmt(toMin(nl.start))}</p><p><strong>${esc(nl.klasse)} · ${esc(nl.titel)}</strong></p><p class="small">${esc(nl.ziel)}</p></div>` : "";
+  if (!items.length) return kopf + `<div class="chat"><div class="msg buero">Hier fragst du nach Terminen, gibst Änderungen an oder stößt eine Stundenvorbereitung an. Das Büro antwortet alle 10 Minuten zwischen 6 und 22 Uhr.${BU.code ? "" : " Zuerst den Büro-Code hinterm Zahnrad eintragen."}</div></div>`;
+  return kopf + `<div class="chat">${items.map(msgHtml).join("")}</div>`;
+}
+function msgHtml(m){
+  const zeit = new Date(m.t), hhmm = zeit.getHours() + "." + String(zeit.getMinutes()).padStart(2, "0");
+  if (m.from === "ich") return `<div class="msg ich">${esc(m.text).replace(/\n/g, "<br>")}<span class="meta">${hhmm}${m.status && m.status !== "lokal" ? " · " + esc(m.status) : ""}</span></div>`;
+  if (m.fragen && m.fragen.length && !m.done) return frageHtml(m);
+  let h = `<div class="msg buero">${esc(m.text || "").replace(/\n/g, "<br>")}`;
+  if (m.zeilen && m.zeilen.length) h += m.zeilen.map(z => `<div class="zeile"><time>${esc(z.z || "")}</time><div>${esc(z.t)}${z.k ? `<div class="k">${esc(z.k)}</div>` : ""}</div></div>`).join("");
+  if (m.wahl) h += `<div class="ctrl">${m.wahl.map(w => `<button class="btn" data-act="bwahl" data-text="${esc(w.text)}">${esc(w.t)}</button>`).join("")}</div>`;
+  if (m.vorschau){ const v = m.vorschau; h += `<div class="card"><p class="small">Vorher</p><p>${esc(v.vorher || "")}</p><p class="small">Nachher</p><p>${esc(v.nachher || "")}</p>${v.aufgaben ? `<p class="small">Aufgaben: ${esc(v.aufgaben)}</p>` : ""}</div>` + (m.entschieden ? `<p class="small">${esc(m.entschieden)}</p>` : `<div class="ctrl"><button class="btn primary" data-act="bso" data-id="${m.id}">So machen</button><button class="btn" data-act="baendern" data-id="${m.id}">Ändern</button></div>`); }
+  if (m.docs && m.docs.length) h += `<div class="ctrl">${m.docs.map(d => `<a class="btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.t)}</a>`).join("")}</div>`;
+  if (m.fehlt) h += `<p class="small" style="margin-top:8px">${esc(m.fehlt)}</p>`;
+  if (m.check) h += checkHtml(m);
+  if (m.fragen && m.done) h += `<p class="small" style="margin-top:8px">${m.fragen.length} Fragen beantwortet und gesendet.</p>`;
+  return h + `<span class="meta">${hhmm}${m.status && m.status !== "lokal" && m.status !== "frage" && m.status !== "vorschau" ? " · " + esc(m.status) : ""}</span></div>`;
+}
+function frageHtml(m){
+  const n = m.fragen.length, k = Math.min(m.k || 0, n - 1), f = m.fragen[k];
+  if (m.pausiert && m.k > 0) return `<div class="frage"><div class="prog">${esc(m.text || "Rückfragen")}</div><div class="q">${m.k} von ${n} beantwortet. Weiter?</div><div class="ctrl"><button class="btn primary" data-act="bweiter" data-id="${m.id}">Weiter</button></div></div>`;
+  return `<div class="frage" data-fid="${m.id}"><div class="prog">${esc(m.text || "Rückfragen")} · ${k + 1} von ${n}${f.bereich ? " · " + esc(f.bereich) : ""}</div><div class="q">${esc(f.q)}</div>
+    <div class="opt">${(f.opts || []).map((o, i) => `<button class="btn${i === (f.empf || 0) ? " primary" : ""}" data-act="bant" data-id="${m.id}" data-i="${i}">${esc(o.l)}${i === (f.empf || 0) ? " (empfohlen)" : ""}${o.d ? `<small>${esc(o.d)}</small>` : ""}</button>`).join("")}</div>
+    <div class="anders" id="anders-${m.id}" style="display:none"><input type="text" id="andersIn-${m.id}" placeholder="Eigene Antwort" aria-label="Eigene Antwort"><button class="btn klein" data-act="bantfrei" data-id="${m.id}">OK</button></div>
+    <div class="ctrl"><button class="btn klein" data-act="banders" data-id="${m.id}">Anders</button>${k > 0 ? `<button class="btn klein" data-act="bzurueck" data-id="${m.id}">Zurück</button>` : ""}</div></div>`;
+}
+function frageAntwort(id, text){
+  const m = BU.items.find(x => x.id === id); if (!m || !m.fragen) return;
+  const k = m.k || 0, f = m.fragen[k];
+  m.ant = m.ant || []; m.ant[k] = {q: f.q, a: text}; m.k = k + 1; m.pausiert = false;
+  if (m.k >= m.fragen.length){ m.done = true; buSend({kind: "antworten", re: m.re || m.id, text: m.fragen.length + " Antworten zu: " + (m.text || "Rückfragen"), antworten: m.ant}); }
+  buSave(); render();
+  try { if (navigator.vibrate) navigator.vibrate(25); } catch(e){}
+}
+/* Checkliste am Stundenende: feste Punkte, Phasen (erreichte vorab angehakt), Punkte aus dem Verlaufsplan */
+function checkAnlegen(l){
+  state.check = state.check || {};
+  if (state.check[l.id]) return;
+  const p = plan(l), erreicht = idx => true;
+  const items = [];
+  for (const t of ["Exit-Ticket gemacht", "Arbeiten eingesammelt oder fotografiert", "Hausaufgabe und Abgabetermin genannt", "Material zurück, Raum aufgeräumt"]) items.push({t, ok: false});
+  p.phases.forEach((q, i) => items.push({t: fmt(q.s) + " " + q.form + ": " + q.titel, ok: !q.dropped && (q.s + q.d) * 60 <= nowSec() + 60, phase: true}));
+  for (const t of (l.check || [])) items.push({t, ok: false});
+  state.check[l.id] = {items, fertig: false}; save();
+  BU.items.push({id: uidB(), from: "buero", t: Date.now(), text: "Checkliste " + l.klasse + " · " + l.titel, check: l.id, status: "lokal"}); BU.ungelesen++; buSave(); naviPunkt();
+}
+function checkHtml(m){
+  const c = (state.check || {})[m.check]; if (!c) return "";
+  const offen = c.items.filter(x => !x.ok).length;
+  return `<div class="check">${c.items.map((x, i) => `<div class="z${x.ok ? " ok" : ""}" data-check-id="${esc(m.check)}" data-i="${i}"><i></i><span>${esc(x.t)}</span></div>`).join("")}</div>` + (c.fertig ? `<p class="small">Fertig. ${offen ? offen + " Punkte gehen in die nächste Stunde dieser Klasse." : "Alles erledigt."}</p>` : `<div class="ctrl"><button class="btn primary" data-act="checkfertig" data-id="${esc(m.check)}">Fertig</button></div>`);
+}
+function checkFertig(id){
+  const c = (state.check || {})[id], l = lessons.find(x => x.id === id); if (!c || !l) return;
+  c.fertig = true;
+  const o = store.get("pult-offen", {}); o[String(l.klasse)] = c.items.filter(x => !x.ok && !x.phase).map(x => ({t: x.t, date: DAY.date})).concat(c.items.filter(x => !x.ok && x.phase).map(x => ({t: "Nicht erreicht: " + x.t, date: DAY.date})));
+  store.set("pult-offen", o); save(); render();
 }
 
 /* ===== Sicherung: alles, was nur auf diesem Handy liegt, als Text (mit Schlüssel verschlüsselt) ===== */
@@ -754,8 +805,8 @@ function toolHtml(l){
   const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show, k = lkey(l);
   const kann = !!(pair.code && typeof Geheim !== "undefined" && Geheim.get());
   const pcBtn = art => kann ? `<button class="btn" data-act="zeige" data-art="${art}">Am Bildschirm zeigen</button>` : ``;
-  const tabs = `<div class="chips">${[["zufall","Zufall"],["gruppen","Gruppen"],["aemter","Ämter"],["da","Wer fehlt?"],["spaet","Zu spät"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
-  if (!klTool) return tabs;
+  const tabs = `<div class="chips">${[["zufall","Zufall"],["gruppen","Gruppen"],["spaet","Zu spät"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
+  if (!klTool || klTool.art === "aemter" || klTool.art === "da") return tabs;
   let body = "";
   if (klTool.art === "zufall"){
     const rest = (KL.topf[kl] || []).filter(r => anwesend(l).includes(r)).length;
@@ -780,6 +831,24 @@ function toolHtml(l){
     body = `<p class="small">Antippen, wer heute fehlt. Gilt für Zufall und Gruppen in dieser Stunde.</p><div class="chips">${N.map(n => `<button class="chip" data-act="fehlt" data-name="${esc(n.raw)}" aria-pressed="${ab.includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div>`;
   }
   return tabs + `<div class="toolbox">${body}</div>`;
+}
+function toolMehrHtml(l){
+  const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show, k = lkey(l);
+  const kann = !!(pair.code && typeof Geheim !== "undefined" && Geheim.get());
+  const pcBtn = art => kann ? `<button class="btn" data-act="zeige" data-art="${art}">Am Bildschirm zeigen</button>` : ``;
+  let body = `<div class="chips">${[["aemter","Ämter"],["da","Wer fehlt?"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
+  if (klTool && klTool.art === "aemter"){
+    const cfg = KL.aemter[kl] || {}, plan = aemterPlan(N.map(n => n.raw), cfg, DAY.date);
+    body += `<div class="toolbox"><ul class="list">${plan.map(p => `<li><b>${esc(p.amt)}</b>: ${p.wer.map(r => esc(show(r))).join(", ") || "niemand"}</li>`).join("")}</ul>
+      <div class="ctrl">${pcBtn("aemter")}</div><p class="small">Wechselt jeden Montag. Am Notebook: Taste A, und beim Aufräumen von selbst.</p>
+      <details><summary>Ämter bearbeiten</summary><label for="amtList">Ein Amt pro Zeile</label><textarea id="amtList" style="min-height:150px">${esc((cfg.liste && cfg.liste.length ? cfg.liste : AMT_STD).join("\n"))}</textarea>
+      <div class="chips seg">${[1,2,3].map(n => `<button class="chip" data-act="amtje" data-n="${n}" aria-pressed="${(cfg.je || 2) === n}">${n} je Amt</button>`).join("")}</div>
+      <div class="ctrl"><button class="btn primary" data-act="amtsave">Speichern</button></div></details></div>`;
+  } else if (klTool && klTool.art === "da"){
+    const ab = KL.da[k] || [];
+    body += `<div class="toolbox"><p class="small">Antippen, wer heute fehlt. Gilt für Zufall und Gruppen in dieser Stunde.</p><div class="chips">${N.map(n => `<button class="chip" data-act="fehlt" data-name="${esc(n.raw)}" aria-pressed="${ab.includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div></div>`;
+  }
+  return body;
 }
 function klSave(sync){ store.set("pult-klassen", KL.klassen); store.set("pult-klog", KL.log); store.set("pult-verborgen", KL.verborgen); if (sync !== false) klSync(); }
 /* Stunde der Klasse merken (für das Klassenziel „3 Stunden ohne Verspätung“) */
@@ -831,11 +900,11 @@ function renderKlasse(){
   const m = KL.log.stoer[k] || {};
   const head = lessonChips() + `<div class="eyebrow">Klasse · ${esc(kl)} · ${esc(l.titel)}</div>`;
   const edit = `<details${N.length ? "" : " open"}><summary>Klassenliste ${N.length ? "bearbeiten (" + N.length + ")" : "anlegen"}</summary>
-    <label for="klList">Ein Name pro Zeile, z. B. „Bohn, Leonard“</label>
+    <label for="klList">Ein Vorname pro Zeile (bei gleichen Vornamen mit Initiale, z. B. „Leonie B.“)</label>
     <textarea id="klList" data-kl="${esc(kl)}" style="min-height:220px">${esc((KL.klassen[kl] || []).join("\n"))}</textarea>
     <div class="ctrl"><button class="btn primary" data-act="klsave" data-kl="${esc(kl)}">Speichern</button></div>
-    <p class="small">Namen bleiben auf diesem Handy (und verschlüsselt auf deinem Notebook). Nie im Netz im Klartext.</p></details>`;
-  if (!N.length) return head + `<div class="form">Noch keine Klassenliste</div>` + edit;
+    <p class="small">Nur Vornamen. Sie bleiben auf diesem Handy, nie im Netz im Klartext.</p></details>`;
+  if (!N.length) return head + `<div class="regie">Noch keine Klassenliste.</div>` + edit;
   const tiles = N.map(n => {
     const c = m[n.raw] || 0;
     return `<button class="kt${c >= 3 ? " ha" : ""}" data-st="${esc(n.raw)}" aria-label="${esc(n.show)}, ${c} Störungen"><b>${esc(n.show)}</b><span>${c >= 3 ? "HA" : "●".repeat(c) + "○".repeat(3 - c)}</span></button>`;
@@ -848,15 +917,18 @@ function renderKlasse(){
   return head + toolHtml(l) + `<p class="small">Tippen: Störung zählen. Lange drücken: eine zurücknehmen. Beim dritten Mal: Hausaufgabe.</p>
     <div class="kgrid">${tiles}</div>
     ${has.length ? `<h2>Hausaufgabe heute</h2><ul class="list">${has.map(h => `<li><b>${esc(show(h.name))}</b>: Übung Zentralperspektive bis zur nächsten Stunde <button class="chip" data-act="kltext" data-art="ha" data-name="${esc(h.name)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
+    ${klText ? `<h2>Text für Eltern</h2><textarea id="klTextOut" readonly style="min-height:240px">${esc(klText)}</textarea><div class="ctrl"><button class="btn" data-act="klcopy">Kopieren</button><button class="btn" data-act="kltextx">Schließen</button></div>` : ""}
+    <details${klTool && (klTool.art === "aemter" || klTool.art === "da") ? " open" : ""}><summary>Mehr zur Klasse</summary>
+    ${toolMehrHtml(l)}
     ${collect.length ? `<h2>Einsammeln</h2><ul class="list">${collect.map(h => `<li>${esc(show(h.name))} <span class="small">(${esc(h.date.slice(8,10) + "." + h.date.slice(5,7) + ".")})</span> <button class="chip" data-act="hadone" data-id="${h.id}">abgegeben</button></li>`).join("")}</ul>` : ""}
     <h2>Verspätet heute</h2>
-    ${late.length ? `<ul class="list">${late.map(e => `<li><b>${esc(show(e.name))}</b> ${e.ent ? "entschuldigt" : e.min + " Min."}${e.ok ? "" : ` <button class="chip" data-act="spok" data-id="${e.id}" aria-pressed="false">bestätigen</button>`} <button class="chip" data-act="spent" data-id="${e.id}" aria-pressed="${!!e.ent}">entschuldigt</button> <button class="chip" data-act="spdel" data-id="${e.id}">löschen</button></li>`).join("")}</ul>${late.some(e => !e.ok && !e.ent) ? `<p class="small">Unbestätigte Einträge erscheinen am Bildschirm erst nach deinem OK.</p>` : ""}` : `<p class="small">Niemand. Die Kinder tragen sich am Notebook mit Taste V selbst ein.</p>`}
+    ${late.length ? `<ul class="list">${late.map(e => `<li><b>${esc(show(e.name))}</b> ${e.ent ? "entschuldigt" : e.min + " Min."}${e.ok ? "" : ` <button class="chip" data-act="spok" data-id="${e.id}" aria-pressed="false">bestätigen</button>`} <button class="chip" data-act="spent" data-id="${e.id}" aria-pressed="${!!e.ent}">entschuldigt</button> <button class="chip" data-act="spdel" data-id="${e.id}">löschen</button></li>`).join("")}</ul>` : `<p class="small">Niemand.</p>`}
     ${open.length ? `<h2>Nachholen offen</h2><ul class="list">${open.map(x => `<li><b>${esc(x.n.show)}</b> ${Math.round(x.s.open)} Min. <button class="chip" data-act="nach" data-name="${esc(x.n.raw)}" data-min="${Math.round(x.s.open)}">nachgeholt</button> <button class="chip" data-act="kltext" data-art="spaet" data-name="${esc(x.n.raw)}">Text für Eltern</button></li>`).join("")}</ul>` : ""}
-    ${klText ? `<h2>Text für Eltern</h2><textarea id="klTextOut" readonly style="min-height:240px">${esc(klText)}</textarea><div class="ctrl"><button class="btn" data-act="klcopy">Kopieren</button><button class="btn" data-act="kltextx">Schließen</button></div>` : ""}
-    <details><summary>Nicht öffentlich zeigen</summary><p class="small">Diese Kinder zählen weiter, erscheinen aber in keiner Liste am Bildschirm. Ein Grund wird nicht gespeichert.</p>
-      <div class="chips">${N.map(n => `<button class="chip" data-act="hide" data-kl="${esc(kl)}" data-name="${esc(n.raw)}" aria-pressed="${(KL.verborgen[kl] || []).includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div></details>
-    <details><summary>Verlauf der letzten Wochen</summary>${verlaufHtml(kl)}</details>
-    ${edit}`;
+    <h2>Nicht öffentlich zeigen</h2><p class="small">Diese Kinder zählen weiter, erscheinen aber in keiner Liste am Bildschirm.</p>
+    <div class="chips">${N.map(n => `<button class="chip" data-act="hide" data-kl="${esc(kl)}" data-name="${esc(n.raw)}" aria-pressed="${(KL.verborgen[kl] || []).includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div>
+    <h2>Verlauf der letzten Wochen</h2>${verlaufHtml(kl)}
+    ${edit}
+    </details>`;
 }
 /* Verlauf je Woche: Verspätungsminuten und Störungen (nur für dich) */
 function wk(iso){ const d = new Date(iso + "T12:00:00"); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.toISOString().slice(0, 10); }
@@ -949,8 +1021,8 @@ $("#blatt").addEventListener("click", e => { if (e.target.id === "blatt") $("#bl
 function testBlatt(vorher){
   if (!lessons.length){ toast("Keine Stunden heute."); return; }
   const nl = nextLesson(nowSec());
-  $("#blattH").textContent = vorher ? nl.klasse + " beginnt in " + Math.round(toMin(nl.start) - nowSec() / 60) + " Min. Testen?" : "Wirklich in den Testmodus?";
-  $("#blattP").textContent = vorher ? "Die Uhr springt auf den Stundenbeginn, das Notebook springt mit. Oder nur anschauen (Tag, Druckliste, Spick)." : "Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.";
+  $("#blattH").textContent = vorher ? nl.klasse + " beginnt in " + Math.round(toMin(nl.start) - nowSec() / 60) + " Min. Testen?" : "Stunde proben?";
+  $("#blattP").textContent = vorher ? "Die Uhr springt auf den Stundenbeginn, das Notebook springt mit. Oder nur anschauen (Tag, Druckliste, Spick)." : "Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; „Test beenden“ hinterm Zahnrad stellt die echte Zeit wieder her.";
   $("#blattTop").innerHTML = vorher ? `<button class="btn ja" data-act="testphase" data-id="${nl.id}" data-i="0">Test: ${esc(nl.klasse)}, Phase 1</button><button class="btn" data-act="testnein">Nur anschauen</button>` : "";
   $("#blattNein").textContent = vorher ? "Später" : "Nein";
   $("#tliste").innerHTML = lessons.map(l => `<h2>${esc(l.klasse)} · ${esc(l.titel)}</h2>` + l.phases.map((ph, i) => `<button class="tl" data-act="testphase" data-id="${l.id}" data-i="${i}"><time>${fmt(toMin(ph[0]))}</time><div>${esc(ph[2])}<br><span>${esc(ph[3])}</span></div></button>`).join("")).join("");
@@ -994,35 +1066,46 @@ setInterval(() => {
 }, 30000);
 function render(){
   const v = $("#view");
-  const map = {jetzt:renderJetzt, klasse:renderKlasse, tag:renderTag, spick:renderSpick, notiz:renderNotiz, fern:renderFern};
+  const map = {jetzt:renderJetzt, klasse:renderKlasse, buero:renderBuero, fern:renderFern};
+  if (!map[view]) view = "jetzt";
   const focusId = document.activeElement && document.activeElement.id;
-  v.innerHTML = map[view]() + (view === "jetzt" ? remoteHtml() : "");
-  document.body.classList.toggle("mit-folie", view === "jetzt" && !!pair.code);
+  const loc = fresh() ? locate(nowSec()) : null;
+  v.innerHTML = map[view]() + (view === "jetzt" ? folieHtml(loc) : "");
+  document.body.classList.toggle("mit-folie", view === "jetzt" && !!loc);
+  document.body.classList.toggle("im-buero", view === "buero");
+  if (view === "buero"){ BU.ungelesen = 0; buSave(); chipsHtml(); requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight)); }
+  else BU.items.forEach(m => { if (m.fragen && !m.done && m.k > 0) m.pausiert = true; });
+  naviPunkt();
+  if ($("#punkte").classList.contains("on")){ const h = punkteMenu(); if (h) $("#punkte").innerHTML = h; else $("#punkte").classList.remove("on"); }
   leiste();
-  document.querySelectorAll(".nav button, #mehr button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
-  const mb = $("#mehrBtn"); if (mb) mb.setAttribute("aria-current", ["tag","spick","notiz"].includes(view) ? "page" : "false");
-  $("#mehr").classList.remove("on");
+  document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === view ? "page" : "false"));
   document.querySelectorAll(".appbar a").forEach(a => a.setAttribute("aria-current", a.dataset.app === (view === "fern" ? "fern" : "pult") ? "page" : "false"));
+  if ($("#einst").classList.contains("on")) einstRender();
   try { if (window.AtelierApp && AtelierApp.pultView) AtelierApp.pultView(view); } catch(e){}
   if (focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
 }
+function chipsHtml(){
+  const c = $("#chips"); if (!c) return;
+  c.innerHTML = [["anstehen", "Was steht an?"], ["vorbereiten", "Stunde vorbereiten"], ["termin", "Termin verschieben"], ["frist", "Frist eintragen"], ["notiz", "Notiz"], ["proben", "Proben"], ["druck", "Druckliste"], ["bewertung", "Bewertung"]].map(([a, t]) => `<button class="chip" data-act="bchip" data-art="${a}">${t}</button>`).join("");
+}
 
-/* ===== Leiste: laufende Phase und Restzeit, in jeder Ansicht oben (Hauptschlagader) ===== */
+/* ===== Leiste: Restzeit, Sozialform, Phase, Balken; Stopp rechts; Klasse und Uhr klein darüber ===== */
 function leiste(){
   const sec = nowSec(), loc = fresh() ? locate(sec) : null, B = document.body.classList;
-  const z = $("#lz"), u = $("#lu"), f = $("#lform"), ph2 = $("#lph"), nx2 = $("#lnext"), bar = $("#lbar");
-  B.remove("bald", "ueber", "pause", "frei");
+  const z = $("#lz"), u = $("#lu"), f = $("#lform"), ph2 = $("#lph"), bar = $("#lbar");
+  B.remove("bald", "ueber", "pause", "frei", "in-stunde");
   if (loc){
     const {lesson, plan:p, idx} = loc, ph = p.phases[idx];
-    const left = (ph.s + ph.d) * 60 - sec, paused = !!state.pause[lesson.id];
-    const nx = p.phases.slice(idx + 1).find(q => !q.dropped);
+    const left = (ph.s + ph.d) * 60 - sec, paused = state.pause[lesson.id];
+    B.add("in-stunde");
     if (left > 180){ z.textContent = Math.ceil(left / 60); u.textContent = "Min."; }
     else if (left >= 0){ z.textContent = String(Math.floor(left / 60)) + ":" + String(Math.floor(left % 60)).padStart(2, "0"); u.textContent = ""; }
     else { z.textContent = "+" + Math.ceil(-left / 60); u.textContent = "Min."; }
     if (paused) B.add("pause"); else if (left < 0) B.add("ueber"); else if (left <= 180) B.add("bald");
-    f.textContent = ph.form + (paused ? " · " + (state.pause[lesson.id].grund ? "Stopp: " + state.pause[lesson.id].grund : "Pause") : "") + (ph.again ? " · noch einmal" : "");
+    f.textContent = paused ? (paused.grund ? "Stopp: " + paused.grund : "Pause") : ph.form + (ph.again ? " · noch einmal" : "");
     ph2.textContent = ph.titel;
-    nx2.textContent = nx ? "Danach " + fmt(nx.s) + " " + nx.form + ": " + nx.titel : "Letzte Phase, Ende " + fmt(ph.s + ph.d);
+    $("#stoppBtn").textContent = paused ? "Weiter" : "Stopp";
+    $("#stoppBtn").dataset.id = lesson.id; $("#stoppBtn").dataset.i = idx;
     bar.style.width = (Math.min(1, Math.max(0, 1 - left / (ph.d * 60))) * 100).toFixed(1) + "%";
     $("#date").textContent = lesson.klasse + " · " + lesson.titel;
     spaetHinweis(loc);
@@ -1034,32 +1117,59 @@ function leiste(){
   if (nl){
     const inMin = Math.max(0, Math.round(toMin(nl.start) - sec / 60));
     z.textContent = inMin; u.textContent = "Min. bis " + fmt(toMin(nl.start));
-    f.textContent = nl.klasse; ph2.textContent = nl.titel; nx2.textContent = "Start " + fmt(toMin(nl.start)) + " " + nl.phases[0][2] + ": " + nl.phases[0][3];
+    f.textContent = nl.klasse; ph2.textContent = nl.titel;
   } else {
-    z.textContent = ""; u.textContent = ""; f.textContent = fresh() ? "Unterricht vorbei" : "Noch keine Daten"; ph2.textContent = fresh() ? "" : (DAY.label ? "Letzter Stand: " + DAY.label : ""); nx2.textContent = "";
+    z.textContent = ""; u.textContent = ""; f.textContent = fresh() ? "Unterricht vorbei" : "Noch keine Daten"; ph2.textContent = fresh() ? "" : (DAY.label ? "Letzter Stand: " + DAY.label : "");
   }
   $("#date").textContent = DAY.label || "Atelier";
 }
-$("#leiste").addEventListener("click", e => { if (e.target.closest("button")) return; if (state.sim != null){ testBlatt(); return; } if (view !== "jetzt"){ view = "jetzt"; render(); window.scrollTo(0, 0); } });
+$("#lmain").addEventListener("click", e => { if (e.target.closest("button")) return; if (view !== "jetzt"){ view = "jetzt"; render(); window.scrollTo(0, 0); } });
+
+/* ===== Einstellungen (Zahnrad): Kopplung, Büro-Code, Sicherung, Stand ===== */
+function einstHtml(){
+  return `<h2>Einstellungen</h2>
+    ${state.sim != null ? `<div class="ctrl"><button class="btn primary" data-act="testen">Test beenden</button></div>` : ""}
+    <h2 style="margin-top:18px">Notebook koppeln</h2>
+    <p class="small">Koppelt sich von selbst. Nur ändern, wenn am Notebook ein anderer Code steht.</p>
+    <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:52px;letter-spacing:.06em"><button class="btn" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
+    <div class="status" id="pairState">${esc(pairStatus())}</div>
+    <h2>Büro-Code</h2>
+    <p class="small">Privater Kanal zum Büro. Einmal eintragen, bleibt auf diesem Handy.</p>
+    <div class="ctrl"><input id="bCode" aria-label="Büro-Code" autocomplete="off" spellcheck="false" placeholder="Code aus dem Chat" value="${esc(BU.code || "")}" style="flex:1 1 60%;min-height:52px"><button class="btn" data-act="bcode">${BU.code ? "Ändern" : "Speichern"}</button></div>
+    <div class="status" id="bCodeState">${BU.code ? "Büro verbunden." : ""}</div>
+    <h2>Sicherung</h2>
+    <p class="small">Klassenlisten, Störungen, Verspätungen, Ämter und Notizen dieses Handys. Vor dem Neuinstallieren erstellen und irgendwo einfügen; danach hier einfügen und einlesen.</p>
+    <div class="ctrl"><button class="btn" data-act="sich">Erstellen</button><button class="btn" data-act="sichein">Einlesen</button><button class="btn" data-act="sichcopy">Kopieren</button></div>
+    <textarea id="sichText" aria-label="Sicherung" spellcheck="false" placeholder="Hier steht die Sicherung, oder hier einfügen" style="min-height:90px;font-size:13px;margin-top:8px">${esc(sichText)}</textarea>
+    <div class="small" id="sichState">${esc(sichMsg)}</div>
+    <p class="small" style="margin-top:18px">${DAY.date ? "Stand der Daten: " + esc(DAY.label) : ""}<br>Tastatur am PC: Leertaste Weiter, Pfeil links Zurück, + 5 Min., Z Rückgängig, 1 bis 3 Bereiche.</p>
+    <div class="ctrl"><button class="btn" data-act="einstx">Schließen</button></div>`;
+}
+function einstRender(){ $("#einstBl").innerHTML = einstHtml(); }
+$("#einst").addEventListener("click", e => { if (e.target.id === "einst") $("#einst").classList.remove("on"); });
 
 /* ===== Uhr ===== */
+let lastLoc = null;
 function tick(){
   const sec = nowSec();
   const h = Math.floor(sec/3600)%24, m = Math.floor(sec/60)%60;
   $("#clock").textContent = h + "." + String(m).padStart(2,"0");
-  document.body.classList.toggle("test", state.sim != null); const tb = $("#testBtn"); if (tb) tb.setAttribute("aria-checked", state.sim != null ? "true" : "false");
+  document.body.classList.toggle("test", state.sim != null);
   const loc = locate(sec);
   const key = loc ? loc.lesson.id + ":" + loc.idx : "none";
   if (lastKey !== null && key !== lastKey && loc){
     try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(450); else if (navigator.vibrate) navigator.vibrate([180, 80, 180]); } catch(e){}
   }
   if (loc && fresh()) { const kk = lkey(loc.lesson), kl = klasseOf(loc.lesson); if (!((KL.log.stunden[kl] || []).includes(kk))) klStunde(loc.lesson); }
+  /* Stundenende: Checkliste anlegen und ins Büro legen */
+  if (lastLoc && !loc && fresh() && state.sim == null){ const l = lastLoc.lesson; if (!(state.check || {})[l.id]){ checkAnlegen(l); if (view === "jetzt"){ view = "buero"; render(); window.scrollTo(0, 0); } } }
+  lastLoc = loc;
   const changed = key !== lastKey;
   lastKey = key;
   appPlan(); appFern();
   leiste();
   const typing = document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
-  if (changed && !typing && (view === "jetzt" || view === "fern" || view === "tag" || view === "spick")) render();
+  if (changed && !typing && (view === "jetzt" || view === "fern")) render();
   else if (view === "fern" && loc){ const ph = loc.plan.phases[loc.idx], left = Math.max(0, (ph.s+ph.d)*60 - sec); const cd = $("#cd"), pg = $("#pg"); if (cd) cd.textContent = leftText(left); if (pg) pg.style.width = (Math.min(1, 1 - left/(ph.d*60))*100).toFixed(1) + "%"; }
 }
 
@@ -1136,82 +1246,82 @@ function protNotiz(){
 document.addEventListener("keydown", e => {
   if (e.target.closest && e.target.closest("textarea,input")) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
-  const views = {"1":"jetzt","2":"klasse","3":"spick","4":"tag","5":"notiz"};
+  const views = {"1":"jetzt","2":"klasse","3":"buero"};
   let btn = null;
-  if (views[e.key]) btn = document.querySelector(`.nav button[data-v="${views[e.key]}"], #mehr button[data-v="${views[e.key]}"]`);
-  else if (view === "jetzt" && (e.key === " " || e.key === "ArrowRight")) btn = document.querySelector('[data-act="weiter"]');
-  else if (view === "jetzt" && e.key === "+") btn = document.querySelector('[data-act="plus"]');
-  else if (view === "jetzt" && (e.key === "z" || e.key === "Z")) btn = document.querySelector('[data-act="undo"]');
+  if (views[e.key]) btn = document.querySelector(`.nav button[data-v="${views[e.key]}"]`);
+  else if (view === "jetzt" && (e.key === " " || e.key === "ArrowRight")) btn = document.querySelector('[data-act="weiter2"]');
+  else if (view === "jetzt" && e.key === "ArrowLeft") btn = document.querySelector('[data-act="zurueck"]');
+  else if (view === "jetzt" && e.key === "+"){ const loc = locate(nowSec()); if (loc) timeAct("plus", loc.lesson.id, loc.idx); e.preventDefault(); return; }
+  else if (view === "jetzt" && (e.key === "z" || e.key === "Z")){ const loc = locate(nowSec()); if (loc) timeAct("undo", loc.lesson.id, loc.idx); e.preventDefault(); return; }
+  else if (e.key === "Escape"){ document.querySelectorAll(".sheet.on").forEach(x => x.classList.remove("on")); $("#punkte").classList.remove("on"); return; }
   if (btn){ e.preventDefault(); btn.click(); }
 });
+function haptik(ms){ try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(ms || 30); else if (navigator.vibrate) navigator.vibrate(ms || 30); } catch(e){} }
 document.addEventListener("click", e => {
+  const z = e.target.closest("[data-check-id]"); if (z){ const c = (state.check || {})[z.dataset.checkId]; if (c && !c.fertig){ const it = c.items[Number(z.dataset.i)]; it.ok = !it.ok; save(); render(); } return; }
+  const of = e.target.closest("[data-offen]"); if (of){ const o = store.get("pult-offen", {}), a = o[of.dataset.offen] || []; a.splice(Number(of.dataset.i), 1); o[of.dataset.offen] = a; store.set("pult-offen", o); render(); return; }
   const b = e.target.closest("button");
-  if (!b) return;
+  if (!b){ if (!e.target.closest("#punkte")) $("#punkte").classList.remove("on"); return; }
   if (klClick(b)) return;
-  if (b.dataset.fern){ sendFern(b.dataset.fern); return; }
-  if (b.dataset.v){ view = b.dataset.v; if (view !== "tag" && selected === "__morgen") selected = null; render(); window.scrollTo(0,0); keepAwake(); return; }
+  if (b.dataset.fern){ sendFern(b.dataset.fern); $("#punkte").classList.remove("on"); return; }
+  if (b.dataset.v){ view = b.dataset.v; render(); window.scrollTo(0, view === "buero" ? document.body.scrollHeight : 0); keepAwake(); return; }
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
-  if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
   const act = b.dataset.act;
+  if (!act) return;
+  if (act !== "punkte") $("#punkte").classList.remove("on");
+  /* Folienleiste und Leiste */
+  if (act === "weiter2"){ haptik(30); const loc = locate(nowSec()); if (pcDa()) sendFern("next"); else if (loc) timeAct("weiter", loc.lesson.id, loc.idx); return; }
+  if (act === "zurueck"){ haptik(30); const loc = locate(nowSec()); if (pcDa()) sendFern("prev"); else if (loc){ const bk = backInfo(loc.plan.phases, state.adj[loc.lesson.id] || [], loc.idx); timeAct(bk ? "back" : "undo", loc.lesson.id, loc.idx); } return; }
+  if (act === "punkte"){ const p = $("#punkte"); if (p.classList.contains("on")) p.classList.remove("on"); else { p.innerHTML = punkteMenu(); p.classList.add("on"); } return; }
+  if (act === "stoppL"){ haptik(40); const id = b.dataset.id, i = Number(b.dataset.i); if (!id) return; if (state.pause[id]) timeAct("pause", id, i); else stoppBlatt(id, i); return; }
+  if (act === "zahn"){ einstRender(); $("#einst").classList.add("on"); return; }
+  if (act === "einstx"){ $("#einst").classList.remove("on"); return; }
+  /* Stopp mit Grund, Verspätung */
   if (act === "stopp"){ stoppBlatt(b.dataset.id, Number(b.dataset.i)); return; }
   if (act === "stoppx"){ $("#stopp").classList.remove("on"); return; }
   if (act === "stoppgrund"){ $("#stopp").classList.remove("on"); timeAct("pause", b.dataset.id, Number(b.dataset.i), b.dataset.k || ""); return; }
   if (act === "spaet"){ $("#stopp").classList.remove("on"); timeAct("spaet", b.dataset.id, Number(b.dataset.i)); return; }
   if (act === "spaetx"){ (state.weg = state.weg || {})["spaet:" + b.dataset.id] = 1; save(); leiste(); return; }
-  if (["plus","weiter","undo","pause","back","drop","stauchen"].includes(act)){ timeAct(act, b.dataset.id, Number(b.dataset.i), Number(b.dataset.k)); return; }
-  if (act === "plus" || act === "weiter"){
-    const id = b.dataset.id, i = Number(b.dataset.i);
-    let delta = 5;
-    if (act === "weiter"){
-      const l = lessons.find(x => x.id === id), p = plan(l), ph = p.phases[i];
-      const ran = Math.max(0, nowSec()/60 - ph.s);
-      delta = ran - ph.d;
-    }
-    (state.adj[id] = state.adj[id] || []).push(act === "weiter" ? {at:i, delta, w: true} : {at:i, delta});
-    save(); lastKey = null; render(); return;
-  }
-  if (act === "undo"){ const a = state.adj[b.dataset.id]; if (a) a.pop(); save(); lastKey = null; render(); return; }
+  if (["plus","weiter","undo","pause","back","drop","stauchen"].includes(act)){ haptik(30); timeAct(act, b.dataset.id, Number(b.dataset.i), Number(b.dataset.k)); return; }
+  /* Einstellungen */
   if (act === "pair"){
     const v = ($("#pairCode").value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
     if (v.length < 6){ const s2 = $("#pairState"); if (s2) s2.textContent = "Der Code hat 8 Zeichen."; return; }
-    pair = {code: v}; store.set("pult-kopplung", pair); connectPair(); render(); return;
+    pair = {code: v}; store.set("pult-kopplung", pair); connectPair(); einstRender(); return;
   }
-  if (act === "sich"){ sicherungErstellen().then(t => { sichText = t; sichMsg = Geheim.get() ? "Sicherung erstellt (verschlüsselt). Jetzt kopieren." : "Sicherung erstellt, ohne Schlüssel unverschlüsselt: enthält Namen."; render(); }); return; }
-  if (act === "sichein"){ sicherungEinlesen(($("#sichText") || {}).value).then(t => { sichMsg = t; render(); }).catch(() => { sichMsg = "Sicherung unlesbar."; render(); }); return; }
-  if (act === "sichcopy"){ const t = $("#sichText"); if (!t || !t.value) return; t.select(); let ok = false; try { ok = document.execCommand("copy"); } catch(e){} try { navigator.clipboard.writeText(t.value).then(() => { const s2 = $("#sichState"); if (s2) s2.textContent = "Kopiert."; }); } catch(e){} const s2 = $("#sichState"); if (s2) s2.textContent = ok ? "Kopiert." : "Text ist markiert: lange drücken, Kopieren."; return; }
+  if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); einstRender(); return; }
+  if (act === "bcode"){ const v = ($("#bCode").value || "").trim().toLowerCase().replace(/[^a-z0-9]/g, ""); if (v.length < 8){ $("#bCodeState").textContent = "Der Code hat mindestens 8 Zeichen."; return; } BU.code = v; buSave(); buConnect(); einstRender(); $("#bCodeState").textContent = "Gespeichert, Büro verbunden."; return; }
+  if (act === "sich"){ sicherungErstellen().then(t => { sichText = t; sichMsg = "Sicherung erstellt. Jetzt kopieren."; einstRender(); }); return; }
+  if (act === "sichein"){ sicherungEinlesen(($("#sichText") || {}).value).then(t => { sichMsg = t; einstRender(); render(); }).catch(() => { sichMsg = "Sicherung unlesbar."; einstRender(); }); return; }
+  if (act === "sichcopy"){ const t = $("#sichText"); if (!t || !t.value) return; t.select(); try { document.execCommand("copy"); } catch(e){} try { navigator.clipboard.writeText(t.value).then(() => { $("#sichState").textContent = "Kopiert."; }); } catch(e){} return; }
   if (act === "key"){ const s0 = $("#keyState"); setKey(($("#keyIn") || {}).value || "").then(t => { render(); const s2 = $("#keyState"); if (s2) s2.textContent = t; }); if (s0) s0.textContent = "Prüfe …"; return; }
   if (act === "unkey"){ Geheim.set(""); connectPair(); render(); return; }
-  if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); render(); return; }
-  if (act === "mehr"){ $("#mehr").classList.toggle("on"); return; }
-  if (act === "testen"){ if (state.sim != null) testEnde(); else testBlatt(); return; }
+  /* Proben */
+  if (act === "testen"){ $("#einst").classList.remove("on"); if (state.sim != null) testEnde(); else testBlatt(); return; }
   if (act === "testnein"){ $("#blatt").classList.remove("on"); store.set("pult-test-spaeter", Date.now()); return; }
   if (act === "testphase"){ const l = lessons.find(x => x.id === b.dataset.id); if (l) testStart(l, Number(b.dataset.i)); return; }
-  if (act === "simreset"){ state.sim = null; save(); lastKey = null; render(); tick(); return; }
-  if (b.dataset.check){
-    const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
-    n[b.dataset.check] = n[b.dataset.check] === b.dataset.val ? "" : b.dataset.val;
-    { const l = lessons.find(x => x.id === selected); if (l) notizTouch(l, n); }
-    const ok = save(); render(); const s = $("#saved"); if (s) s.textContent = ok ? "Gespeichert." : "Speichern nicht möglich (Browser blockiert).";
-  }
+  /* Büro */
+  if (act === "bchip"){ buChip(b.dataset.art); return; }
+  if (act === "bsend"){ haptik(30); buAbschicken(); return; }
+  if (act === "bwahl"){ const ta = $("#bText"); ta.value = b.dataset.text; buAbschicken(); return; }
+  if (act === "bant"){ const m = BU.items.find(x => x.id === b.dataset.id); if (!m) return; const f = m.fragen[m.k || 0], o = (f.opts || [])[Number(b.dataset.i)]; frageAntwort(m.id, o ? o.l : ""); return; }
+  if (act === "banders"){ const a = $("#anders-" + b.dataset.id); if (a){ a.style.display = a.style.display === "none" ? "flex" : "none"; const inp = $("#andersIn-" + b.dataset.id); if (inp && a.style.display === "flex") inp.focus(); } return; }
+  if (act === "bantfrei"){ const inp = $("#andersIn-" + b.dataset.id); const t = (inp && inp.value || "").trim(); if (!t) return; frageAntwort(b.dataset.id, t); return; }
+  if (act === "bzurueck"){ const m = BU.items.find(x => x.id === b.dataset.id); if (m && m.k > 0){ m.k--; buSave(); render(); } return; }
+  if (act === "bweiter"){ const m = BU.items.find(x => x.id === b.dataset.id); if (m){ m.pausiert = false; buSave(); render(); } return; }
+  if (act === "bso"){ const m = BU.items.find(x => x.id === b.dataset.id); if (!m) return; m.entschieden = "So gemacht: an das Büro gesendet."; buSave(); buSend({kind: "so-machen", re: m.re || m.id, text: "So machen: " + (m.vorschau && m.vorschau.nachher || "")}); return; }
+  if (act === "baendern"){ const m = BU.items.find(x => x.id === b.dataset.id); const ta = $("#bText"); ta.value = "Änderung zum Vorschlag: "; ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); if (m){ m.entschieden = "Änderung gewünscht."; buSave(); } return; }
+  if (act === "checkfertig"){ checkFertig(b.dataset.id); return; }
 });
-let saveTimer;
+document.addEventListener("keydown", e => {
+  if (e.target.id && e.target.id.startsWith("andersIn-") && e.key === "Enter"){ e.preventDefault(); const t = e.target.value.trim(); if (t) frageAntwort(e.target.id.slice(9), t); }
+});
 document.addEventListener("input", e => {
-  const f = e.target.dataset && e.target.dataset.field;
-  if (f){
-    const n = state.notes[selected] = state.notes[selected] || {text:"", zeit:"", ziel:"", aendern:""};
-    n[f] = e.target.value;
-    { const l = lessons.find(x => x.id === selected); if (l) notizTouch(l, n); }
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => { const ok = save(); const s = $("#saved"); if (s) s.textContent = ok ? "Gespeichert." : "Speichern nicht möglich (Browser blockiert)."; }, 400);
-  }
-  if (e.target.id === "simTime" && e.target.value){
-    const d = new Date(), real = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-    state.sim = toMin(e.target.value)*60 - real;
-    save(); lastKey = null; tick();
-  }
+  if (e.target.id === "bText"){ e.target.style.height = "auto"; e.target.style.height = Math.min(120, e.target.scrollHeight) + "px"; }
 });
 
 function showDay(){
+  if (view === "__auto") view = (fresh() && locate(nowSec())) ? "jetzt" : "buero";
   $("#date").textContent = DAY.label || "Atelier";
   const st = $("#stand"); if (st) st.textContent = DAY.date ? "Stand der Daten: " + DAY.label : "";
   lastKey = null; render(); tick();
@@ -1280,7 +1390,11 @@ function pairStatus(){
 }
 function showPairState(){ const s2 = $("#pairState"); if (s2) s2.textContent = pairStatus(); }
 const led = {};
+let pairSeen = 0;
+/* Das Notebook gilt als da, wenn die Kopplung steht und in den letzten 3 Minuten ein Stand kam; sonst schaltet Pult die Phase selbst */
+const pcDa = () => !!(pair.code && pairLive && Date.now() - pairSeen < 180000);
 function applySync(m){
+  pairSeen = Date.now();
   if (m && m.kind === "klog"){ if (klMerge(m)) render(); return; }
   if (m && m.kind === "notizOk"){ notizOk(m); return; }
   if (m && m.kind === "sim"){ if (m.offset == null){ if (state.sim != null){ state.sim = null; for (const x of lessons){ state.adj[x.id] = []; delete state.pause[x.id]; } save(); lastKey = null; render(); tick(); toast("Test beendet (vom Notebook)."); } }
@@ -1318,30 +1432,7 @@ function applySync(m){
 }
 /* Fernbedienung: Befehle an den Schul-PC (eigener Kanal, keine Inhalte) */
 let fernMsg = "";
-function remoteHtml(){
-  if (!pair.code) return "";
-  return `<div class="folie">
-    <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Zurück</button>
-    <button class="btn primary" data-fern="next" aria-label="Weiter: nächste Folie, Phase folgt">Weiter ›</button>
-    <div class="mini"><span class="small" id="fernState" style="flex:1;align-self:center">${esc(fernMsg)}</span><button class="btn" data-fern="black">Schwarz</button><button class="btn" data-fern="timer">Timer</button><button class="btn" data-fern="cam">Kamera</button></div></div>`;
-}
-function renderFern(){
-  const sec = nowSec(), loc = fresh() ? locate(sec) : null;
-  let head = ``;
-  if (!pair.code) return head + `<div class="form">Noch nicht gekoppelt</div>
-    <div class="regie">Am Notebook auf „QR-Code zum Koppeln zeigen“ klicken und mit der Handy-Kamera scannen. Oder unter „Tag“ den Code eingeben.</div>
-    <div class="ctrl"><button class="btn primary" data-v="tag">Zum Koppeln</button></div>`;
-  return head + `<div class="fern">
-    <button class="btn primary wide" data-fern="next" aria-label="Folie weiter">Folie ›</button>
-    <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
-    <button class="btn" data-fern="black">Schwarz</button>
-    <button class="btn" data-fern="timer">Timer groß</button>
-    <button class="btn" data-fern="cam">Kamera</button>
-    ${loc ? `<button class="btn${state.pause[loc.lesson.id] ? " primary" : ""}" data-act="pause" data-id="${loc.lesson.id}" data-i="${loc.idx}">${state.pause[loc.lesson.id] ? "Fortsetzen" : "Pause"}</button>` : `<button class="btn" disabled>Pause</button>`}
-    ${loc && backInfo(loc.plan.phases, state.adj[loc.lesson.id], loc.idx) ? `<button class="btn" data-act="back" data-id="${loc.lesson.id}" data-i="${loc.idx}" style="grid-column:1 / -1">↩ Zurück zur Arbeitsphase</button>` : ""}</div>
-    <div class="small" id="fernState">${esc(fernMsg)}</div>
-    <div class="small">${esc(pairStatus())}</div>`;
-}
+function renderFern(){ view = "jetzt"; return renderJetzt(); }
 function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textContent = t; }
 function sendFern(cmd, extra){
   try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
@@ -1386,24 +1477,17 @@ function connectPair(){
   try { const u = new URL(location.href); u.searchParams.delete("koppeln"); history.replaceState(null, "", u.toString()); } catch(e){}
 })();
 /* Ansicht von außen setzen: Handy-App-Leiste, Adresse ?ansicht=fern oder #fern */
-const VIEWS = ["jetzt","klasse","tag","spick","notiz","fern"];
+const VIEWS = ["jetzt","klasse","buero"];
 window.AtelierSetView = function(v){ if (VIEWS.indexOf(v) < 0) return; view = v; render(); window.scrollTo(0,0); try { keepAwake(); } catch(e){} };
 (function(){
   const q = new URLSearchParams(location.search).get("ansicht"), h = (location.hash || "").slice(1);
   if (VIEWS.indexOf(q) >= 0) view = q; else if (VIEWS.indexOf(h) >= 0) view = h;
   window.addEventListener("hashchange", () => { const x = (location.hash || "").slice(1); if (VIEWS.indexOf(x) >= 0) window.AtelierSetView(x); });
 })();
-/* Leiste zwischen den Apps, nur im Browser (in der Handy-App gibt es die Leiste unten von der App selbst) */
-(function(){
-  let inApp = false; try { inApp = !!(window.AtelierApp && AtelierApp.isApp()); } catch(e){}
-  if (inApp || /claude\.ai|claudeusercontent/.test(location.hostname)) return;
-  const bar = document.createElement("nav");
-  bar.className = "appbar"; bar.setAttribute("aria-label", "Apps");
-  bar.innerHTML = '<a data-app="atelier" href="https://raw.githack.com/FelixPfahl/theidealcity/atelier/index.html">Atelier</a><a data-app="pult" href="#jetzt">Pult</a><a data-app="fern" href="#fern">Fernbedienung</a>';
-  bar.addEventListener("click", e => { const a = e.target.closest("a[data-app]"); if (!a || a.dataset.app === "atelier") return; e.preventDefault(); window.AtelierSetView(a.dataset.app === "fern" ? "fern" : (view === "fern" ? "jetzt" : view)); });
-  document.body.appendChild(bar); document.body.classList.add("has-appbar");
-})();
+/* Start: in der Stunde Jetzt, sonst Büro */
+(function(){ const q = new URLSearchParams(location.search).get("ansicht"), h = (location.hash || "").slice(1); if (VIEWS.indexOf(q) < 0 && VIEWS.indexOf(h) < 0) view = "__auto"; })();
 init();
 connectPair();
+buConnect();
 </script>
 </body></html>

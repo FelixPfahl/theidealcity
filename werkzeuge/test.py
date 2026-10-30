@@ -43,22 +43,22 @@ with sync_playwright() as p:
         return ctx, pg
     for m in sorted(times):
         ctx, pg = page(D, m)
-        txt = pg.inner_text("#view")
+        txt = pg.inner_text("#leiste") + " | " + pg.inner_text("#view")
         for v in ("tag", "spick", "notiz", "jetzt"):
             pg.click(f'.nav button[data-v="{v}"]'); pg.wait_for_timeout(30)
             if pg.evaluate("document.documentElement.scrollWidth") > 390: fails.append(f"{m//60}.{m%60:02d} Überlauf in {v}")
         if pg.locator('[data-act="weiter"]').count():
-            before = pg.inner_text(".ptitle")
+            before = pg.inner_text("#lph")
             pg.click('[data-act="plus"]'); pg.click('[data-act="weiter"]'); pg.wait_for_timeout(50)
-            if pg.inner_text(".ptitle") == before: fails.append(f"{m//60}.{m%60:02d} Weiter springt nicht")
+            if pg.inner_text("#lph") == before: fails.append(f"{m//60}.{m%60:02d} Weiter springt nicht")
             pg.click('[data-act="undo"]'); pg.click('[data-act="undo"]')
-        print(f"{m//60}.{m%60:02d}", txt.split("\n")[0][:70])
+        print(f"{m//60}.{m%60:02d}", txt.replace("\n"," ")[:90])
         ctx.close()
     ctx, pg = page(D, mins(lessons[0]["start"]) + 1, block_data=True)
-    if "Noch keine Daten" in pg.inner_text("#view"): fails.append("Offline: eingebettete Daten greifen nicht")
+    if "Noch keine Daten" in pg.inner_text("#leiste"): fails.append("Offline: eingebettete Daten greifen nicht")
     ctx.close()
     ctx, pg = page(D + 1, 9*60)
-    if "Noch keine Daten" not in pg.inner_text("#view"): fails.append("Folgetag ohne Daten wird nicht erkannt")
+    if "Noch keine Daten" not in pg.inner_text("#leiste"): fails.append("Folgetag ohne Daten wird nicht erkannt")
     ctx.close()
     ctx, pg = page(D, 7*60)
     pg.click('.nav button[data-v="tag"]'); pg.click('[data-day="morgen"]'); pg.wait_for_timeout(50)

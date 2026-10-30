@@ -19,5 +19,5 @@ Geplante Aufgabe, Mo bis Fr früh (Europe/Berlin). Füllt Pult mit den Stunden v
 ## Format (Auszug, Vorlage: daten/heute.json)
 - Tag: `date`, `label`, `items`, `drucken`, `bewertung` [{k,t}], `bewertungHinweis`
 - Termin: `{type:"other", start:"9:30", end:"9:45", titel, sub?}`
-- Stunde: `{type:"lesson", id, klasse, titel, start, end, ziel, mitnehmen[], mb?, phases[[start, dauer, sozialform, titel, regie, puffer?]], werke[{w (nur <em> erlaubt), f[]}], fragen[{q,a}], hilfen{schnell,haengt}, planB{technik,unruhe,frueh}}`
+- Stunde: `{type:"lesson", id, klasse, titel, start, end, ziel, mitnehmen[], mb?, phases[[start, dauer, sozialform, titel, regie, puffer?]], werke[{w (nur <em> erlaubt), f[]}], fragen[{q,a}], hilfen{schnell,haengt}, planB{technik,unruhe,frueh}, folien[{s (Foliennummer oder Liste), t (Notiz zu dieser Folie: was sagen, was fragen, worauf zeigen)}]}`. Werke und Fragen dürfen zusätzlich `s` (Foliennummer) tragen, dann zeigt Pult sie nur auf dieser Folie; `ph` (Phasennummern) begrenzt auf Phasen.
 - Zeiten in 5-Minuten-Schritten, Dauern als Zahl.

@@ -534,7 +534,11 @@ function renderSpick(){
   const sec = nowSec(), loc = fresh() ? locate(sec) : null, live = loc && loc.lesson.id === l.id;
   const idx = live ? loc.idx : -1, ph = live ? loc.plan.phases[idx] : null;
   const arbeit = ph ? /arbeit|galerie|gruppen|partner/i.test(ph.form) : false;
-  const passt = x => !x.ph || idx < 0 || x.ph.includes(idx + 1);
+  const seite = live && pair.code ? pairPage : 0;
+  const aufSeite = x => x.s == null || !seite || [].concat(x.s).includes(seite);
+  const passt = x => (!x.ph || idx < 0 || x.ph.includes(idx + 1)) && aufSeite(x);
+  const folien = (l.folien || []).filter(x => seite && [].concat(x.s).includes(seite));
+  const folieHtml = seite ? `<div class="eyebrow">Folie ${seite}</div>${folien.length ? folien.map(x => `<div class="regie">${esc(x.t)}</div>`).join("") : `<div class="small">Keine Notiz zu dieser Folie.</div>`}` : "";
   const werke = l.werke.filter(passt), fragen = l.fragen.filter(passt);
   const werkeHtml = werke.length ? `<h2>Werke</h2>${werke.map(w => `<div class="card"><p class="work">${rich(w.w)}</p>${w.f.map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}` : "";
   const fragenHtml = fragen.length ? `<h2>Impulsfragen</h2>${fragen.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}` : "";
@@ -542,7 +546,7 @@ function renderSpick(){
   const planB = `<details><summary>Plan B: Technik, Unruhe, zu früh fertig</summary><div class="card"><p><strong>Technik fällt aus</strong></p><p class="small">${esc(l.planB.technik)}</p></div><div class="card"><p><strong>Klasse unruhig</strong></p><p class="small">${esc(l.planB.unruhe)}</p></div><div class="card"><p><strong>Zu früh fertig</strong></p><p class="small">${esc(l.planB.frueh)}</p></div></details>`;
   const kopf = ph ? `<div class="eyebrow">Jetzt · ${esc(ph.form)}</div><div class="ptitle">${esc(ph.titel)}</div><div class="regie">${esc(ph.regie)}</div>` : `<div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div><div class="regie">${esc(l.ziel)}</div>`;
   const rest = live ? `<details><summary>Ganze Stunde</summary>${loc.plan.phases.map((q, k) => `<div class="card${k === idx ? "" : ""}"><p><strong>${fmt(q.s)} ${esc(q.form)}</strong>: ${esc(q.titel)}</p><p class="small">${esc(q.regie)}</p></div>`).join("")}</details>` : "";
-  return lessonChips() + kopf + (arbeit ? hilfenHtml + planB + werkeHtml + fragenHtml : werkeHtml + fragenHtml + hilfenHtml + planB) + rest + (l.mb ? `<div class="hint">${esc(l.mb)}</div>` : "");
+  return lessonChips() + folieHtml + kopf + (arbeit ? hilfenHtml + planB + werkeHtml + fragenHtml : werkeHtml + fragenHtml + hilfenHtml + planB) + rest + (l.mb ? `<div class="hint">${esc(l.mb)}</div>` : "");
 }
 
 function renderNotiz(){
@@ -1159,7 +1163,7 @@ function keyHtml(full){
 const NTFY = (new URLSearchParams(location.search).get("ntfy")) || "https://ntfy.sh";
 /* Fester Kopplungscode des Notebooks: die App koppelt sich beim Start von selbst; „Lösen“ oder ein anderer Code überschreiben ihn */
 const CODE_STANDARD = "q93qauaj";
-let pair = store.get("pult-kopplung", null), pairES = null, pairLive = false, pairLast = null;
+let pair = store.get("pult-kopplung", null), pairES = null, pairLive = false, pairLast = null, pairPage = 0;
 if (!pair){ pair = {code: CODE_STANDARD}; store.set("pult-kopplung", pair); }
 function pairStatus(){
   if (!pair.code) return "Nicht gekoppelt.";
@@ -1189,7 +1193,7 @@ function applySync(m){
       if (m.pause) state.pause[l.id] = m.pause; else delete state.pause[l.id];
       save();
     }
-    pairLast = l.klasse + ", Folie " + m.page;
+    pairLast = l.klasse + ", Folie " + m.page; pairPage = Number(m.page) || 0; if (view === "spick") render(); pairPage = Number(m.page) || 0; if (view === "spick") render();
     lastKey = null; render(); tick();
     return;
   }
@@ -1201,7 +1205,7 @@ function applySync(m){
     (state.adj[l.id] = state.adj[l.id] || []).push({at: i - 1, delta});
     save();
   }
-  pairLast = l.klasse + ", Folie " + m.page;
+  pairLast = l.klasse + ", Folie " + m.page; pairPage = Number(m.page) || 0; if (view === "spick") render();
   lastKey = null; render(); tick();
 }
 /* Fernbedienung: Befehle an den Schul-PC (eigener Kanal, keine Inhalte) */

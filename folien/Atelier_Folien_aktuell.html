@@ -2916,29 +2916,8 @@ async function show(){
     try { await renderTask.promise; } catch(e){}
   }
   tick();
-  bildAnsHandy();
 }
 /* Kleines Bild der aktuellen Folie ans Handy (JPEG, 320 px breit, als ntfy-Anhang); nur bei Kopplung, gebündelt */
-let bildT = null, bildKey = null;
-/* Folienvorschau fürs Handy: standardmäßig aus (jedes Bild ist eine eigene Anfrage an den Kopplungsdienst, bei schnellem Klicken greift dessen Drossel);
-   Pult schaltet sie mit dem Befehl "vorschau" an. Erst 2 Sekunden Ruhe, dann ein Bild; bei Drossel (429) 60 Sekunden Pause. */
-let vorschauAn = !!store.get("folien-vorschau", false), bildSperre = 0;
-function bildAnsHandy(){
-  clearTimeout(bildT);
-  if (!vorschauAn) return;
-  bildT = setTimeout(async () => {
-    try {
-      if (!current || !fernSeen || Date.now() < bildSperre) return;
-      const key = current.id + ":" + page; if (key === bildKey) return;
-      const src = current.html ? null : $("#cv"); if (!src || !src.width) return;
-      const c = document.createElement("canvas"), w = 320, h = Math.round(src.height / src.width * w); c.width = w; c.height = h;
-      c.getContext("2d").drawImage(src, 0, 0, w, h);
-      const blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.6)); if (!blob) return;
-      const r = await fetch(NTFY + "/" + TOPIC, {method: "PUT", body: blob, headers: {"Filename": "folie-" + (page + 1) + ".jpg", "X-Title": "folie"}});
-      if (r.ok) bildKey = key; else if (r.status === 429) bildSperre = Date.now() + 60000;
-    } catch(e){}
-  }, 2000);
-}
 /* Folie führt: Erreichst du eine Folie einer späteren Phase, beginnt diese Phase jetzt */
 function advanceTo(p){ const {pl} = stPlan(current); startPhase(curIdx(pl, phaseOfPage(current, p))); }
 /* N: nächste Phase beginnt jetzt, auch ohne Folienwechsel (Rettung, falls die Zuordnung nicht passt) */
@@ -3633,7 +3612,6 @@ function fernCmd(cmd, m){
   if (cmd === "zeige"){ zeigeVomHandy(m); return; }
   if (cmd === "sim"){ setSim(m.offset, m.phase); return; }
   if (cmd === "notiz"){ notizenVomHandy(m); return; }
-  if (cmd === "vorschau"){ vorschauAn = !!(m && m.an); store.set("folien-vorschau", vorschauAn); bildKey = null; if (vorschauAn) bildAnsHandy(); toast(vorschauAn ? "Folienvorschau fürs Handy an" : "Folienvorschau aus"); return; }
   if (cmd === "cam"){ if (camOpen) closeCam(); else openCam(); return; }
   if (!current){
     if (cmd === "next"){ const L = liveLesson(); if (L){ openLesson(L.id); toast("Gestartet vom Handy: " + L.label); } else toast("Gerade keine Stunde mit Folien."); }

@@ -123,10 +123,6 @@ input[type=time]{background:var(--surface);color:var(--fg);border:1px solid var(
 .kt span{font-size:18px;letter-spacing:.12em;color:var(--accent-text)}
 .kt.ha{background:var(--accent);border-color:var(--accent);color:#fff}.kt.ha span{color:#fff;font-weight:800;letter-spacing:.04em}
 .ki{margin-top:30px;font-size:13px;color:var(--muted)}
-.fthumb{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;margin-top:12px;color:var(--muted);font:inherit;font-size:15px;text-align:left}
-.fthumb img{width:38%;max-width:200px;aspect-ratio:16/9;object-fit:contain;background:#fff;border-radius:8px;display:block}
-#fgross{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center}#fgross.on{display:flex}
-#fgross button{background:transparent;border:0;padding:0;width:96vw;max-width:900px}#fgross img{width:100%;border-radius:8px;background:#fff;display:block}
 .zeit{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.zeit .btn{min-height:76px;font-size:22px}.zeit .klein{display:flex;gap:10px;grid-column:1 / -1}.zeit .klein .btn{min-height:54px;font-size:17px;color:var(--muted)}
 .verzug{margin-top:14px;color:var(--warn);font-size:17px;min-height:1.2em}
 .folie{background:linear-gradient(to top,var(--bg) 70%,rgba(11,12,16,0));padding-top:16px;position:fixed;right:max(12px,env(safe-area-inset-right,0px));left:max(12px,env(safe-area-inset-left,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:1fr 2fr;gap:10px;z-index:5;max-width:640px;margin:0 auto}
@@ -169,7 +165,6 @@ body.has-appbar .wrap{padding-bottom:170px}
     <div id="lhint"></div>
   </header>
   <main id="view"></main>
-<div id="fgross"><button data-act="fgrossx" aria-label="Schließen"><img alt="Aktuelle Folie groß"></button></div>
 <div id="stopp" role="dialog" aria-label="Stopp"><div class="bl"><h2>Stopp: warum?</h2><p>Die Uhr steht, die laufende Phase behält ihre Restzeit. Der Grund kommt ins Protokoll des Tages.</p><div class="gr" id="stoppGr"></div><div class="ctrl" id="stoppExtra"></div><div class="ctrl"><button class="btn" data-act="stoppx">Abbrechen</button></div></div></div>
 <div id="blatt" role="dialog" aria-label="Testmodus"><div class="bl"><h2 id="blattH">Wirklich in den Testmodus?</h2><p id="blattP">Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
   <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
@@ -487,7 +482,6 @@ function renderJetzt(){
     else if (verzug > 0) vz = "+" + verzug + " Min." + (tgt ? ", „" + tgt + "“ gekürzt" : "");
     else if (adjs.length && tgt) vz = "Ausgleich in „" + tgt + "“";
     return `
-      ${pair.code && folieBild && store.get("pult-vorschau", false) ? `<button class="fthumb" data-act="fgross" aria-label="Aktuelle Folie groß zeigen"><img id="fbild" src="${esc(folieBild)}" alt="Aktuelle Folie"><span>Folie ${pairPage || ""}</span></button>` : ""}
       <div class="zeit">
         <button class="btn${paused ? " primary" : ""}" data-act="${paused ? "pause" : "stopp"}" data-id="${lesson.id}" data-i="${idx}">${paused ? "Weiter" : "Stopp"}</button>
         ${pair.code ? `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>` : (nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`)}
@@ -558,8 +552,6 @@ function renderTag(){
     <p class="small">Die App koppelt sich von selbst mit dem Notebook. Nur ändern, wenn dort ein anderer Code steht.</p>
     <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
     <div class="status" id="pairState">${esc(pairStatus())}</div>
-    <div class="chips"><button class="chip" data-act="vorschau" aria-pressed="${!!store.get("pult-vorschau", false)}">Folienvorschau am Handy${store.get("pult-vorschau", false) ? ": an" : ": aus"}</button></div>
-    <p class="small">Standard aus: jedes Bild ist eine eigene Anfrage an den Kopplungsdienst; bei schnellem Klicken bremst das. Mit „an“ kommt ein Bild erst nach 2 Sekunden Ruhe.</p>
     <h2>Sicherung</h2>
     <p class="small">Klassenlisten, Störungen, Verspätungen, Ämter und Notizen dieses Handys. Mit Atelier-Schlüssel verschlüsselt. Vor dem Neuinstallieren: erstellen, kopieren und irgendwo einfügen (z. B. Notiz-App); danach hier einfügen und einlesen.</p>
     <div class="ctrl"><button class="btn" data-act="sich">Sicherung erstellen</button><button class="btn" data-act="sichein">Einlesen</button></div>
@@ -950,7 +942,7 @@ function klSync(){
 }
 
 /* kurzer Hinweis unten */
-let toastT = null, fgT = null;
+let toastT = null;
 function toast(t){ let el = $("#toast"); if (!el){ el = document.createElement("div"); el.id = "toast"; el.style.cssText = "position:fixed;left:16px;right:16px;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--warn);color:#000;font-weight:700;padding:14px 16px;border-radius:14px;text-align:center"; document.body.appendChild(el); } el.textContent = t; el.style.display = "block"; clearTimeout(toastT); toastT = setTimeout(() => { el.style.display = "none"; }, 4000); }
 $("#blatt").addEventListener("click", e => { if (e.target.id === "blatt") $("#blatt").classList.remove("on"); });
 /* Testmodus: Schalter in der Leiste, Rückfrage als Blättchen mit Phasenliste; das Notebook springt mit (Probe daheim) */
@@ -1161,7 +1153,6 @@ document.addEventListener("click", e => {
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
   if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
   const act = b.dataset.act;
-  if (act === "vorschau"){ const an = !store.get("pult-vorschau", false); store.set("pult-vorschau", an); if (!an) folieBild = null; if (pair.code) sendFern("vorschau", {an}); render(); return; }
   if (act === "stopp"){ stoppBlatt(b.dataset.id, Number(b.dataset.i)); return; }
   if (act === "stoppx"){ $("#stopp").classList.remove("on"); return; }
   if (act === "stoppgrund"){ $("#stopp").classList.remove("on"); timeAct("pause", b.dataset.id, Number(b.dataset.i), b.dataset.k || ""); return; }
@@ -1191,8 +1182,6 @@ document.addEventListener("click", e => {
   if (act === "key"){ const s0 = $("#keyState"); setKey(($("#keyIn") || {}).value || "").then(t => { render(); const s2 = $("#keyState"); if (s2) s2.textContent = t; }); if (s0) s0.textContent = "Prüfe …"; return; }
   if (act === "unkey"){ Geheim.set(""); connectPair(); render(); return; }
   if (act === "unpair"){ pair = {}; store.set("pult-kopplung", pair); connectPair(); render(); return; }
-  if (act === "fgross"){ const o = $("#fgross"); o.querySelector("img").src = folieBild || ""; o.classList.add("on"); clearTimeout(fgT); fgT = setTimeout(() => o.classList.remove("on"), 3500); return; }
-  if (act === "fgrossx"){ $("#fgross").classList.remove("on"); return; }
   if (act === "mehr"){ $("#mehr").classList.toggle("on"); return; }
   if (act === "testen"){ if (state.sim != null) testEnde(); else testBlatt(); return; }
   if (act === "testnein"){ $("#blatt").classList.remove("on"); store.set("pult-test-spaeter", Date.now()); return; }
@@ -1282,7 +1271,7 @@ function keyHtml(full){
 const NTFY = (new URLSearchParams(location.search).get("ntfy")) || "https://ntfy.sh";
 /* Fester Kopplungscode des Notebooks: die App koppelt sich beim Start von selbst; „Lösen“ oder ein anderer Code überschreiben ihn */
 const CODE_STANDARD = "q93qauaj";
-let pair = store.get("pult-kopplung", null), pairES = null, pairLive = false, pairLast = null, pairPage = 0, folieBild = null, folieBildZeit = 0;
+let pair = store.get("pult-kopplung", null), pairES = null, pairLive = false, pairLast = null, pairPage = 0;
 if (!pair){ pair = {code: CODE_STANDARD}; store.set("pult-kopplung", pair); }
 function pairStatus(){
   if (!pair.code) return "Nicht gekoppelt.";
@@ -1381,7 +1370,7 @@ function connectPair(){
       pairES.onerror = () => { pairLive = false; showPairState(); };
       pairES.onmessage = async ev => {
         try { const d = JSON.parse(ev.data); if (d.event !== "message") return;
-          if (d.attachment && d.attachment.url && /folie/.test(d.attachment.name || d.title || "")){ folieBild = d.attachment.url; folieBildZeit = Date.now(); const im = $("#fbild"); if (im) im.src = folieBild; else if (view === "jetzt") render(); return; }
+          if (d.attachment){ return; }
           const m = await unpack(d.message); if (m) applySync(m); } catch(e){}
       };
     });

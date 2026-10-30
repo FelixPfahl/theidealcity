@@ -56,6 +56,9 @@ body.strip #strip{display:block}
 #stage.zoomed{cursor:grab}#stage.zoomed:active{cursor:grabbing}
 #html-slide{position:absolute;inset:0;background:var(--paper);color:var(--ink);display:none}
 #black{position:fixed;inset:0;background:#000;display:none;z-index:20}
+#still{position:fixed;inset:0;background:#fff;color:#000;display:none;z-index:19;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:Jost,sans-serif}
+#still .z{font-size:36vh;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+#still .w{font-size:5vh;font-weight:500;color:#555;margin-top:3vh}
 #corner{position:fixed;right:2.2vw;bottom:2.2vh;z-index:15;background:rgba(255,255,255,.94);color:var(--ink);border:3px solid var(--accent);border-radius:14px;padding:10px 18px;display:none;font-weight:700;text-align:right;line-height:1.1}
 #corner.paused{border-color:#9aa0aa}#corner.paused .f{color:#555}#corner.paused .t{color:#888}
 #corner .f{color:var(--accent);font-size:clamp(14px,1.3vw,22px)}
@@ -112,6 +115,7 @@ body.strip #strip{display:block}
 #klbox .kl-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(150px,13vw,260px),1fr));gap:1.2vw}
 #klbox .kl-tile{border:3px solid #111;background:#fff;color:#111;border-radius:16px;padding:2.2vh 1vw;font:inherit;font-weight:800;font-size:clamp(20px,2vw,36px);cursor:pointer}
 #klbox .kl-tile:active{background:var(--accent);border-color:var(--accent);color:#fff}
+#klbox .kl-neu{display:flex;gap:1vw;align-items:center;flex-wrap:wrap;margin-top:2.4vh;font-size:clamp(18px,1.9vw,32px)}#klbox .kl-neu label{font-weight:600}#klbox .kl-neu input{font:inherit;font-size:clamp(20px,2vw,36px);padding:1vh 1vw;border:3px solid #111;border-radius:16px;width:11em;max-width:60vw}#klbox .kl-fragen{display:inline-flex;gap:.6em;margin-left:.6em;flex-wrap:wrap}
 #klbox .kl-msg{margin-top:2.4vh;font-size:clamp(18px,1.9vw,32px);min-height:1.4em}
 #klbox .kl-list{display:grid;gap:1.1vh}
 #klbox .kl-row{display:grid;grid-template-columns:minmax(160px,22vw) 1fr minmax(140px,16vw);align-items:center;gap:1.6vw;font-size:clamp(18px,1.9vw,32px)}
@@ -179,7 +183,7 @@ body.strip #strip{display:block}
   </div>
   <div class="help" style="font-size:14px">
     So geht es: Die PDFs für 7a und 8 stecken schon in dieser Datei. Eine Stunde anklicken. Andere PDFs kannst du oben auswählen (gelten bis zum Neuladen).<br>
-    Tasten: <kbd>→</kbd> <kbd>Leertaste</kbd> <kbd>Bild ↓</kbd> weiter, <kbd>←</kbd> <kbd>Bild ↑</kbd> zurück, <kbd>B</kbd> Schwarzbild, <kbd>T</kbd> großer Timer (kommt in den letzten 3 Minuten einer Arbeitsphase von selbst, T blendet ihn aus), <kbd>N</kbd> nächste Phase von Hand, <kbd>F</kbd> oder <kbd>F5</kbd> Vollbild, <kbd>Esc</kbd> zurück zur Auswahl.<br>
+    Tasten: <kbd>→</kbd> <kbd>Leertaste</kbd> <kbd>Bild ↓</kbd> weiter, <kbd>←</kbd> <kbd>Bild ↑</kbd> zurück, <kbd>B</kbd> Schwarzbild, <kbd>T</kbd> großer Timer (kommt in den letzten 3 Minuten einer Arbeitsphase von selbst, T blendet ihn aus), <kbd>N</kbd> nächste Phase von Hand, <kbd>P</kbd> Pause, <kbd>R</kbd> Ruhe-Folie (30 Sekunden), <kbd>Z</kbd> zurück zur Arbeitsphase, <kbd>F</kbd> oder <kbd>F5</kbd> Vollbild, <kbd>Esc</kbd> zurück zur Auswahl.<br>
     Koppeln: QR-Code zeigen und mit der Handy-Kamera scannen (öffnet Pult und koppelt), oder im Pult unter „Tag“ den Code eingeben. Den QR-Code am besten vor der Stunde zeigen, er verschwindet nach 30 Sekunden. Danach folgt Pult den Folien, und unter „Jetzt“ steuerst du den PC: Folie zurück, Folie weiter, Schwarzbild, Timer.<br>
     <kbd>P</kbd> Pause (Uhr steht, die Zeit kommt aus Puffer und späteren Arbeitsphasen), <kbd>R</kbd> zurück zur letzten Arbeitsphase mit ihrer Restzeit. <kbd>Esc</kbd> Stundenleiste: andere Stunde wählen (jede behält ihre Folie), Esc noch einmal: Startseite. <kbd>G</kbd> alle Folien als Übersicht, Klick springt hin. <kbd>V</kbd> Verspätung eintragen (öffentliche Liste), <kbd>S</kbd> Störungen dieser Stunde, <kbd>L</kbd> Top 3 der Verspätung (15 Sekunden), <kbd>E</kbd> Schlussfolie (kommt zum Stundenende von selbst), <kbd>M</kbd> Gong an oder aus. <kbd>K</kbd> Dokumentenkamera (IPEVO per USB; den IPEVO Visualizer vorher schließen): Leertaste Standbild, + − Zoom, 0 zurücksetzen, K zurück zur Folie.<br>
     Tipp: Chrome einmal mit <kbd>F11</kbd> ins Vollbild schalten, dann bleibt es auch beim Steuern vom Handy im Vollbild.<br>
@@ -192,6 +196,7 @@ body.strip #strip{display:block}
 <div id="simtag" style="display:none;position:fixed;top:8px;left:8px;z-index:30;background:#e2b04a;color:#000;font:700 14px/1 sans-serif;padding:6px 10px;border-radius:8px">TEST</div>
 <div id="stage"><canvas id="cv"></canvas><div id="html-slide"></div></div>
 <div id="black"></div>
+<div id="still" role="dialog" aria-label="Ruhe"><div class="z" id="stillZ">30</div><div class="w">Ruhe. Es geht gleich weiter.</div></div>
 <div id="klbox" role="dialog" aria-label="Klasse"></div>
 <div id="cam" aria-label="Dokumentenkamera"><div id="camwrap"><video id="camv" autoplay playsinline muted></video><canvas id="camfz"></canvas></div></div>
 <div id="camtag"></div>
@@ -2644,7 +2649,8 @@ function toast(msg){ const t = $("#toast"); t.textContent = msg; t.style.display
    base: Phasen [{d, puffer, form, titel, ...}], adj: Liste der Eingriffe, pause: {at, t0} oder null, nowMin: jetzt in Minuten.
    Eingriffe:
    {at, delta}                   Phase länger (+) oder kürzer (−); mit w:true = Wechsel per Folie oder Weiter (nächste Phase bleibt voll)
-   {at, delta, pause:true}       Pause in Phase at (zählt wie länger)
+   {at, delta, pause:true, grund, t0}  Stopp in Phase at (zählt wie länger; grund: Unruhe, Technik, Besuch, Konflikt, Alarm, Sonstiges oder leer = Pause; t0 Beginn in Minuten)
+   {at:0, delta, w:true, spaet:true, t0}  Verspäteter Start um delta Min.: Phase 1 beginnt jetzt in voller Länge, der Rest wird gestaucht
    {back:true, at, cut, src, d}  Phase at endet nach cut Min., danach noch einmal Phase src für d Min.
    {drop:true, at}               Phase at fällt weg
    {at, delta, shift:true}       (alt) Phase länger, Stunde verschiebt sich
@@ -2751,6 +2757,36 @@ function dropHint(phases, idx){
   for (let i = phases.length - 1; i > idx; i--){ const q = phases[i]; if (!q.dropped && !ARBEIT.test(q.form || "") && !SCHUTZ.test((q.titel || "") + " " + (q.form || "")) && q.d > 0) return i; }
   for (let i = phases.length - 1; i > idx; i--){ const q = phases[i]; if (!q.dropped && !SCHUTZ.test((q.titel || "") + " " + (q.form || "")) && q.d > 0) return i; }
   return -1;
+}
+/* Verlorene Zeit durch Verspätung und Stopps (laufender Stopp mitgerechnet) */
+function verlust(adj, pause, nowMin){
+  let v = 0;
+  for (const a of (adj || [])) if ((a.spaet || a.pause) && a.delta > 0) v += a.delta;
+  if (pause && nowMin != null) v += Math.max(0, nowMin - pause.t0);
+  return v;
+}
+/* Störungsprotokoll aus den Eingriffen: [{t0, art, min, laeuft}] */
+function protokoll(adj, pause, nowMin){
+  const out = [];
+  for (const a of (adj || [])){
+    if (a.spaet) out.push({t0: a.t0, art: "Verspäteter Start", min: a.delta});
+    else if (a.pause && a.grund) out.push({t0: a.t0, art: a.grund, min: a.delta});
+  }
+  if (pause && pause.grund) out.push({t0: pause.t0, art: pause.grund, min: Math.max(0, (nowMin || pause.t0) - pause.t0), laeuft: true});
+  return out;
+}
+/* Ab 10 Min. Verlust: Vorschlag, die kürzeste streichbare spätere Phase zu streichen (nie Abruf, Arbeit, Aufräumen, Exit-Ticket) */
+const ABRUF = /abruf|ankommen|erinnern/i;
+function streichVorschlag(phases, idx, adj, pause, nowMin){
+  if (verlust(adj, pause, nowMin) < 10) return -1;
+  if ((adj || []).some(a => a.drop)) return -1;
+  let best = -1;
+  for (let i = idx + 1; i < phases.length; i++){
+    const q = phases[i], txt = (q.titel || "") + " " + (q.form || "");
+    if (q.dropped || q.d <= 0 || ARBEIT.test(q.form || "") || SCHUTZ.test(txt) || ABRUF.test(txt)) continue;
+    if (best < 0 || q.d < phases[best].d) best = i;
+  }
+  return best;
 }
 /* Kennung der Phasenfolge: nur wenn beide Seiten gleich rechnen, werden Eingriffe übernommen */
 function phaseSig(list){ return list.map(p => p.d + "/" + (p.puffer || 0)).join(","); }
@@ -2966,7 +3002,7 @@ function tick(){
     autoBigKey = key; autoBigOn = true; big = true; $("#big").style.display = "flex";
   }
   const strip = $("#strip"), over = (end - nowMin()) < 0;
-  document.body.classList.toggle("strip", (work || paused) && !black && !camOpen);   /* Streifen nur in Arbeitsphasen (und Pause); im Plenum reicht die Zeit auf dem Handy */
+  document.body.classList.toggle("strip", work && !paused && !black && !camOpen);   /* Streifen nur in laufenden Arbeitsphasen; bei Stopp und im Plenum reicht die Zeit auf dem Handy */
   strip.classList.toggle("paused", paused); strip.classList.toggle("ueber", over && !paused);
   $("#cf").textContent = paused ? "Pause" : ph.form; $("#cti").textContent = ph.titel;
   $("#ct").textContent = over && !paused ? "+" + Math.ceil((nowMin() - end)) : mm; $("#ca").textContent = paused ? "Uhr steht" : (over ? "Min. über" : "bis " + fmt(end));
@@ -2999,16 +3035,39 @@ function actBlack(){ black = !black; $("#black").style.display = black ? "block"
 function actBig(){ big = !big; $("#big").style.display = big ? "flex" : "none"; tick(); }
 function actPhase(){ startPhase(phaseIdx + 1); tick(); const {pl} = stPlan(current); toast("Jetzt: " + pl[phaseIdx].titel); }
 /* Pause und Zurück zur Arbeitsphase: Ausgleich aus Puffer und späteren Arbeitsphasen */
-function resumeSt(st){ if (!st.pause) return; st.adj.push({at: st.pause.at, delta: Math.max(0, nowMin() - st.pause.t0), pause: true}); st.pause = null; }
+function resumeSt(st){ if (!st.pause) return; st.adj.push({at: st.pause.at, delta: Math.max(0, nowMin() - st.pause.t0), pause: true, grund: st.pause.grund || "", t0: st.pause.t0}); st.pause = null; stillAus(); }
 function actDrop(k){ if (!current) return; const L = current, st = lessonState(L); const pl = plan(L, st.adj, st.pause); if (!pl[k] || pl[k].dropped) return; st.adj.push({drop: true, at: k}); relocate(L, st); saveSt(L, st); tick(); send(); }
 function relocate(L, st){ const pl = plan(L, st.adj, st.pause); phaseIdx = Math.max(0, phaseAt(pl, nowMin())); st.phase = phaseIdx; }
-function actPause(){
+function actPause(grund){
   if (!current) return;
   const L = current, st = lessonState(L);
-  if (st.pause){ resumeSt(st); toast("Weiter. Die Zeit wird in späteren Phasen ausgeglichen."); }
-  else { st.pause = {at: phaseIdx, t0: nowMin()}; toast("Pause: die Uhr steht."); }
+  if (st.pause){ resumeSt(st); toast("Weiter. Die Phase läuft voll, der Verlust wird später ausgeglichen."); }
+  else {
+    st.pause = {at: phaseIdx, t0: nowMin(), grund: grund || ""};
+    toast(grund ? "Stopp: " + grund + ". Die Uhr steht." : "Pause: die Uhr steht.");
+    if (grund === "Alarm" && !black) actBlack();
+    if (grund === "Unruhe") ruheFolie(30);
+  }
   saveSt(L, st); tick(); send(); if (navOpen) openNav();
 }
+/* Verspäteter Start: Phase 1 beginnt jetzt in voller Länge, der Rest wird gestaucht */
+function actSpaet(delta){
+  if (!current) return;
+  const L = current, st = lessonState(L); resumeSt(st);
+  const d = Math.max(1, Math.round(Number(delta) || (nowMin() - toMin(L.start))));
+  st.adj.push({at: 0, delta: d, w: true, spaet: true, t0: nowMin()});
+  relocate(L, st); saveSt(L, st); toast("Später gestartet (" + d + " Min.): ab jetzt gerechnet."); tick(); send();
+}
+/* Ruhe-Folie: weißer Bildschirm mit 30 Sekunden, dann zurück zur Folie (Taste R) */
+let stillTimer = null, stillBis = 0;
+function ruheFolie(sek){
+  const el = $("#still");
+  if (el.style.display === "flex" && !sek){ stillAus(); return; }
+  stillBis = Date.now() + (sek || 30) * 1000; el.style.display = "flex";
+  const run = () => { const r = Math.max(0, Math.ceil((stillBis - Date.now()) / 1000)); $("#stillZ").textContent = r; if (r <= 0) stillAus(); };
+  clearInterval(stillTimer); stillTimer = setInterval(run, 200); run();
+}
+function stillAus(){ clearInterval(stillTimer); $("#still").style.display = "none"; }
 function actBack(){
   if (!current) return;
   const L = current, st = lessonState(L);
@@ -3034,6 +3093,7 @@ function liveLesson(){
 }
 document.addEventListener("keydown", e => {
   const k = e.key;
+  if (e.target && e.target.closest && e.target.closest("input,textarea")){ if (k === "Escape") e.target.blur(); return; }
   if (camOpen){ camKey(e); return; }
   if ($("#einst").classList.contains("on")){ if (k === "Escape"){ e.preventDefault(); $("#einst").classList.remove("on"); } return; }
   if (klOpen){ e.preventDefault(); if (k === "Escape" || k.toLowerCase() === klOpen.toLowerCase()) klClose(); else if (k === "v" || k === "V") showLate(); else if (k === "s" || k === "S") showStoer(); else if (k === "e" || k === "E") showEnd(); else if (k === "l" || k === "L") showRank(); else if (k === "a" || k === "A") showAemter(); return; }
@@ -3052,7 +3112,7 @@ document.addEventListener("keydown", e => {
     if (k === "Escape") toStart();
     else if (k === "g" || k === "G"){ closeNav(); openGrid(); }
     else if (k === "p" || k === "P") actPause();
-    else if (k === "r" || k === "R") actBack();
+    else if (k === "z" || k === "Z") actBack();
     else if (/^[1-9]$/.test(k)){ const L = LESSONS[Number(k) - 1]; if (L) switchLesson(L.id); }
     else closeNav();
     return;
@@ -3074,9 +3134,10 @@ document.addEventListener("keydown", e => {
   else if (k === "t" || k === "T"){ e.preventDefault(); actBig(); }
   else if (k === "n" || k === "N"){ e.preventDefault(); actPhase(); }
   else if (k === "p" || k === "P"){ e.preventDefault(); actPause(); }
-  else if (k === "r" || k === "R"){ e.preventDefault(); actBack(); }
+  else if (k === "z" || k === "Z"){ e.preventDefault(); actBack(); }
+  else if (k === "r" || k === "R"){ e.preventDefault(); ruheFolie(); }
   else if (k === "f" || k === "F" || k === "F5"){ e.preventDefault(); goFull(); }
-  else if (k === "Escape"){ if (big){ actBig(); return; } openNav(); }
+  else if (k === "Escape"){ if ($("#still").style.display === "flex"){ stillAus(); return; } if (big){ actBig(); return; } openNav(); }
 });
 
 /* ===== Navigation: Stundenleiste und Folienübersicht ===== */
@@ -3093,7 +3154,7 @@ function openNav(){
     const live = m >= toMin(L.start) - 15 && m < toMin(L.end);
     const n = count(L);
     return `<button class="ls${current && current.id === L.id ? " cur" : ""}" data-sw="${L.id}"${n ? "" : " disabled"}><b>${L.label}${live ? " · jetzt" : ""}</b><span>${fmt(toMin(L.start))} bis ${fmt(toMin(L.end))} · ${n ? n + " Folien" : "PDF fehlt"}</span></button>`;
-  }).join("") + `<div class="tools">${current ? `<button class="btn" data-nav="pause">${lessonState(current).pause ? "Fortsetzen (P)" : "Pause (P)"}</button>${backInfo(stPlan(current).pl, lessonState(current).adj, phaseIdx) ? '<button class="btn" data-nav="back">↩ Arbeitsphase (R)</button>' : ""}` : ""}<button class="btn" data-nav="grid">Alle Folien (G)</button><button class="btn" data-nav="start">Startseite</button><button class="btn primary" data-nav="close">Weiter zeigen</button></div>
+  }).join("") + `<div class="tools">${current ? `<button class="btn" data-nav="pause">${lessonState(current).pause ? "Fortsetzen (P)" : "Pause (P)"}</button>${backInfo(stPlan(current).pl, lessonState(current).adj, phaseIdx) ? '<button class="btn" data-nav="back">↩ Arbeitsphase (Z)</button>' : ""}` : ""}<button class="btn" data-nav="grid">Alle Folien (G)</button><button class="btn" data-nav="start">Startseite</button><button class="btn primary" data-nav="close">Weiter zeigen</button></div>
   <div class="hint">Stunde anklicken oder Taste 1 bis ${LESSONS.length}. Jede Stunde behält ihre Folie und Phase. Esc noch einmal: Startseite. Andere Taste: zurück zur Folie.</div>`;
   $("#nav").style.display = "block"; navOpen = true;
 }
@@ -3300,6 +3361,7 @@ const KLP = { klassen: store.get("folien-klassen", {}), log: store.get("folien-k
 ["stoer","stoerU","stunden"].forEach(k => KLP.log[k] = KLP.log[k] || {});
 KLP.verborgen = store.get("folien-verborgen", {}); ["spaet","ha","nach"].forEach(k => KLP.log[k] = KLP.log[k] || []);
 for (const L of LESSONS) if (L.namen && L.namen.length && !(KLP.klassen[L.label] || []).length) KLP.klassen[L.label] = L.namen.slice();
+KLP.neu = store.get("folien-neu", {});
 function klpSave(sync){ store.set("folien-klassen", KLP.klassen); store.set("folien-klog", KLP.log); store.set("folien-verborgen", KLP.verborgen); if (sync !== false) klpSync(); }
 /* Ämter: gleiche Rechnung wie in Pult; Liste und Anzahl kommen verschlüsselt aus Pult */
 KLP.aemter = store.get("folien-aemter", {});
@@ -3342,7 +3404,8 @@ function showLate(){
   const L = klLesson(), kl = L.label, N = kNames(kl);
   klOpen = "V";
   $("#klbox").innerHTML = `<div class="kl-head"><div><div class="kl-kick">${esc2(kl)} · Verspätung</div><h2>Zu spät? Tippe auf deinen Namen.</h2></div><div class="kl-clock" id="klclock"></div></div>
-    ${N.length ? `<div class="kl-tiles">${N.map(n => `<button class="kl-tile" data-late="${esc2(n.raw)}">${esc2(n.show)}</button>`).join("")}</div>` : `<p class="kl-empty">Für ${esc2(kl)} fehlt noch die Klassenliste. Sie kommt aus Pult (Ansicht „Klasse“).</p>`}
+    ${N.length ? `<div class="kl-tiles">${N.map(n => `<button class="kl-tile" data-late="${esc2(n.raw)}">${esc2(n.show)}</button>`).join("")}</div>` : ``}
+    <form class="kl-neu" id="klneu" autocomplete="off"><label for="klname">${N.length ? "Nicht dabei? Tippe deinen Vornamen ein:" : "Tippe deinen Vornamen ein:"}</label><input id="klname" maxlength="30" placeholder="Vorname" autocomplete="off" spellcheck="false"><button type="submit" class="kl-tile">Eintragen</button></form>
     <div class="kl-msg" id="klmsg">Jede Verspätung zählt mit 3 Minuten extra. Ab 30 Minuten im Halbjahr wird nachgeholt.</div>
     <h3>Verspätung in diesem Halbjahr</h3>${listHtml(kl)}`;
   $("#klbox").style.display = "block";
@@ -3437,7 +3500,42 @@ function zeigeVomHandy(m){
 }
 /* Stunde merken, sobald sie am Notebook läuft */
 function klpStunde(L){ const a = KLP.log.stunden[L.label] = KLP.log.stunden[L.label] || [], k = klKey(L); if (!a.includes(k)){ a.push(k); a.sort(); klpSave(); } }
-$("#klbox").addEventListener("click", e => { const t = e.target.closest("[data-late]"); if (t){ addLate(t.dataset.late); return; } });
+$("#klbox").addEventListener("click", e => { const t = e.target.closest("[data-late]"); if (t){ addLate(t.dataset.late); return; }
+  const f = e.target.closest("[data-frage]"); if (f){ neuAntwort(f.dataset.frage, f.dataset.name); } });
+$("#klbox").addEventListener("input", e => { if (e.target.id === "klname" || e.target.id === "klini") klArm(30000); });
+$("#klbox").addEventListener("submit", e => { if (e.target.id === "klneu"){ e.preventDefault(); neuerName($("#klname").value); } });
+/* Zu spät und noch nicht in der Liste: Vorname eintippen. Groß- und Kleinschreibung wird angeglichen, Ähnliches wird nachgefragt,
+   gleicher Vorname wie ein anderes Kind bekommt die Initiale des Nachnamens. Der Name kommt sofort in die Klassenliste (auch für Störungen, Zufall, Gruppen). */
+function titel(s){ return s.trim().split(/[\s-]+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(" "); }
+function lev(a, b){ a = a.toLowerCase(); b = b.toLowerCase(); const m = [...Array(a.length + 1)].map((_, i) => [i, ...Array(b.length).fill(0)]); for (let j = 1; j <= b.length; j++) m[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) m[i][j] = Math.min(m[i-1][j] + 1, m[i][j-1] + 1, m[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)); return m[a.length][b.length]; }
+let neuWart = null;
+function neuerName(v){
+  const L = klLesson(), kl = L.label, N = kNames(kl), name = titel(v || "");
+  klArm(30000);
+  if (!/^[A-Za-zÄÖÜäöüßÀ-ÿ][A-Za-zÄÖÜäöüßÀ-ÿ .-]{0,29}$/.test(name)){ $("#klmsg").textContent = "Bitte nur deinen Vornamen, mit Buchstaben."; return; }
+  const vor = r => { const p = r.split(","); return (p.length > 1 ? p[1] : p[0]).trim().split(/\s+/)[0] || r.trim(); };
+  const exakt = N.find(n => vor(n.raw).toLowerCase() === name.toLowerCase());
+  if (exakt && neuWart !== name){ neuWart = name; frage(`Heißt du <b>${esc2(exakt.show)}</b>?`, [["ja", exakt.raw, "Ja, das bin ich"], ["initiale", name, "Nein, ich heiße auch so"]]); return; }
+  const aehnlich = N.find(n => lev(vor(n.raw), name) === 1 && name.length >= 3);
+  if (aehnlich && neuWart !== name){ neuWart = name; frage(`Meinst du <b>${esc2(aehnlich.show)}</b>?`, [["ja", aehnlich.raw, "Ja"], ["neu", name, "Nein, neuer Name"]]); return; }
+  neuAnlegen(name);
+}
+function frage(text, opt){ $("#klmsg").innerHTML = text + ` <span class="kl-fragen">${opt.map(([f, n, t]) => `<button class="kl-tile" data-frage="${f}" data-name="${esc2(n)}">${t}</button>`).join("")}</span>`; }
+function neuAntwort(f, name){
+  neuWart = null;
+  if (f === "ja"){ addLate(name); return; }
+  if (f === "neu"){ neuAnlegen(name); return; }
+  if (f === "initiale"){ $("#klmsg").innerHTML = `Dann brauchen wir den ersten Buchstaben deines Nachnamens: <input id="klini" maxlength="1" style="width:2.5em;font:inherit;font-size:inherit;text-align:center"> <button class="kl-tile" data-frage="ini2" data-name="${esc2(name)}">Fertig</button>`; $("#klini").focus(); return; }
+  if (f === "ini2"){ const i = ($("#klini").value || "").trim().toUpperCase(); if (!/^[A-ZÄÖÜ]$/.test(i)){ $("#klini").focus(); return; } neuAnlegen(name, i + "."); }
+}
+function neuAnlegen(vorname, nach){
+  const L = klLesson(), kl = L.label, raw = nach ? nach + ", " + vorname : vorname;
+  if (nowMin() - toMin(L.start) <= 0){ $("#klmsg").textContent = "Du bist pünktlich, nichts einzutragen."; klArm(6000); return; }
+  const liste = KLP.klassen[kl] = (KLP.klassen[kl] || []).filter(Boolean);
+  if (!liste.includes(raw)){ liste.push(raw); (KLP.neu[kl] = KLP.neu[kl] || []).push(raw); store.set("folien-neu", KLP.neu); klpSave(); }
+  addLate(raw);
+}
 /* Schlussfolie einmal von selbst zum Stundenende */
 let endShown = {}, amtShown = {};
 setInterval(() => {
@@ -3452,7 +3550,9 @@ setInterval(() => {
 /* Abgleich mit Pult (nur mit Atelier-Schlüssel) */
 function klpMerge(o){
   let ch = false;
-  if (o.klassen) for (const [k, v] of Object.entries(o.klassen)) if (k !== "_u" && Array.isArray(v) && v.length && JSON.stringify(v) !== JSON.stringify(KLP.klassen[k] || [])){ KLP.klassen[k] = v; ch = true; }
+  if (o.klassen) for (const [k, v] of Object.entries(o.klassen)) if (k !== "_u" && Array.isArray(v) && v.length && JSON.stringify(v) !== JSON.stringify(KLP.klassen[k] || [])){
+    const eigene = (KLP.neu[k] || []).filter(n => !v.includes(n) && !(o.neu && (o.neu[k] || []).includes(n)) && !(o.weg && (o.weg[k] || []).includes(n)));
+    KLP.klassen[k] = v.concat(eigene); KLP.neu[k] = (KLP.neu[k] || []).filter(n => KLP.klassen[k].includes(n)); store.set("folien-neu", KLP.neu); ch = true; }
   for (const key of ["spaet", "ha", "nach"]) for (const e of (o[key] || [])){
     const i = KLP.log[key].findIndex(x => x.id === e.id);
     if (i < 0){ KLP.log[key].push(e); ch = true; } else if ((e.u || 0) > (KLP.log[key][i].u || 0)){ KLP.log[key][i] = e; ch = true; }
@@ -3470,7 +3570,7 @@ function klpSync(){
   clearTimeout(klpT);
   klpT = setTimeout(() => {
     const h = halbjahr(DATE), cut = x => halbjahr(x.date) === h;
-    const msg = {v: 1, kind: "klog", klassen: KLP.klassen, aemter: KLP.aemter, verborgen: KLP.verborgen, stunden: KLP.log.stunden, spaet: KLP.log.spaet.filter(cut), ha: KLP.log.ha.filter(cut), nach: KLP.log.nach.filter(cut)};
+    const msg = {v: 1, kind: "klog", klassen: KLP.klassen, neu: KLP.neu, aemter: KLP.aemter, verborgen: KLP.verborgen, stunden: KLP.log.stunden, spaet: KLP.log.spaet.filter(cut), ha: KLP.log.ha.filter(cut), nach: KLP.log.nach.filter(cut)};
     pack(msg).then(body => fetch(NTFY + "/" + TOPIC, {method: "POST", body})).catch(() => {});
   }, 400);
 }
@@ -3534,13 +3634,15 @@ function fernCmd(cmd, m){
     if (cmd === "next"){ const L = liveLesson(); if (L){ openLesson(L.id); toast("Gestartet vom Handy: " + L.label); } else toast("Gerade keine Stunde mit Folien."); }
     return;
   }
-  if (m && m.lesson && toMin(m.lesson) !== toMin(current.start) && ["pause","back","plus","phase","undo","adj","drop"].includes(cmd)) return;
+  if (m && m.lesson && toMin(m.lesson) !== toMin(current.start) && ["pause","back","plus","phase","undo","adj","drop","spaet"].includes(cmd)) return;
   if (cmd === "next") actNext();
   else if (cmd === "prev") actPrev();
   else if (cmd === "black") actBlack();
   else if (cmd === "timer") actBig();
   else if (cmd === "phase") actPhase();
-  else if (cmd === "pause") actPause();
+  else if (cmd === "pause") actPause(m && m.grund);
+  else if (cmd === "spaet") actSpaet(m && m.delta);
+  else if (cmd === "ruhe") ruheFolie(30);
   else if (cmd === "back") actBack();
   else if (cmd === "plus") actPlus();
   else if (cmd === "undo") actUndo();

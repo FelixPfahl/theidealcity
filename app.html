@@ -45,7 +45,11 @@ body.frei .lmain{min-height:0}body.frei .lzeit b{font-size:clamp(40px,10vh,64px)
 .tog i{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:background .2s}.tog i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
 .tog[aria-checked="true"] i{background:var(--warn)}.tog[aria-checked="true"] i::after{left:21px}.tog[aria-checked="true"]{color:var(--warn)}
 body.test header{box-shadow:inset 0 0 0 3px var(--warn);border-radius:0 0 12px 12px}
-#blatt{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:none;align-items:flex-end}#blatt.on{display:flex}
+#blatt,#stopp{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);display:none;align-items:flex-end}#blatt.on,#stopp.on{display:flex}
+#stopp .bl{background:var(--surface);width:100%;max-width:640px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+#stopp h2{margin:0 0 6px;font-size:22px;text-transform:none;letter-spacing:0;color:var(--fg)}#stopp p{color:var(--muted);margin:0 0 10px}
+#stopp .gr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}#stopp .gr .btn{min-height:60px;font-size:19px}#stopp .gr .btn.alarm{border-color:var(--warn);color:var(--warn)}
+#lhint{display:none;margin-top:8px}#lhint.on{display:flex;gap:8px;align-items:center}#lhint .btn{flex:1;min-height:44px;font-size:16px;background:var(--warn);border-color:var(--warn);color:#000}#lhint .x{min-height:44px;min-width:44px}
 #blatt .bl{background:var(--surface);width:100%;max-width:640px;margin:0 auto;border-radius:22px 22px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:85vh;overflow:auto}
 #blatt h2{margin:0 0 6px;font-size:22px;text-transform:none;letter-spacing:0;color:var(--fg)}#blatt .tliste h2{font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}#blatt p{color:var(--muted);margin:0 0 14px}#blatt .btn.ja{background:var(--warn);border-color:var(--warn);color:#000}
 .tliste{display:grid;gap:8px;margin-top:10px}.tliste h2{margin:16px 0 4px}.tl{display:flex;gap:12px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--fg);font:inherit;font-size:17px;min-height:58px}.tl time{font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent-text);flex:0 0 52px}.tl span{color:var(--muted)}
@@ -162,9 +166,11 @@ body.has-appbar .wrap{padding-bottom:170px}
     <div class="lmeta"><span class="date" id="date"></span><span><span class="clock" id="clock">--.--</span><button class="tog" id="testBtn" data-act="testen" role="switch" aria-checked="false" aria-label="Testmodus"><span>Test</span><i></i></button></span></div>
     <div class="lmain"><div class="lzeit"><b id="lz">--</b><span id="lu"></span></div><div class="ltext"><div class="lform" id="lform"></div><div class="lph" id="lph"></div><div class="lnext" id="lnext"></div></div></div>
     <div class="lbar"><i id="lbar"></i></div>
+    <div id="lhint"></div>
   </header>
   <main id="view"></main>
 <div id="fgross"><button data-act="fgrossx" aria-label="Schließen"><img alt="Aktuelle Folie groß"></button></div>
+<div id="stopp" role="dialog" aria-label="Stopp"><div class="bl"><h2>Stopp: warum?</h2><p>Die Uhr steht, die laufende Phase behält ihre Restzeit. Der Grund kommt ins Protokoll des Tages.</p><div class="gr" id="stoppGr"></div><div class="ctrl" id="stoppExtra"></div><div class="ctrl"><button class="btn" data-act="stoppx">Abbrechen</button></div></div></div>
 <div id="blatt" role="dialog" aria-label="Testmodus"><div class="bl"><h2 id="blattH">Wirklich in den Testmodus?</h2><p id="blattP">Die Uhr springt auf den Beginn der gewählten Phase, das Notebook springt mit. Oben erscheint ein gelber Rahmen; der Schalter stellt die echte Zeit wieder her.</p><div class="ctrl" id="blattTop"></div><div class="tliste" id="tliste"></div><div class="ctrl"><button class="btn" data-act="testnein" id="blattNein">Nein</button></div></div></div>
   <p class="ki">Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic). <span id="stand"></span></p>
   <p class="keys">Tastatur: Leertaste oder Pfeil rechts = Weiter, + = 5 Min. länger, Z = Zurück, 1 bis 5 = Ansichten (3 Spick, 4 Tag, 5 Notiz).</p>
@@ -248,7 +254,7 @@ function setDay(d){
 const fresh = () => DAY && DAY.date === todayIso();
 /* nur <em> aus den Daten zulassen */
 const rich = s => esc(s).replace(/&lt;(\/?)em&gt;/g, "<$1em>");
-const save = () => store.set(KEY, state);
+const save = () => { try { if (typeof protNotiz === "function" && Array.isArray(lessons)) protNotiz(); } catch(e){} store.set(KEY, state); };
 
 function nowSec(){
   const d = new Date();
@@ -264,7 +270,8 @@ function nowSec(){
    base: Phasen [{d, puffer, form, titel, ...}], adj: Liste der Eingriffe, pause: {at, t0} oder null, nowMin: jetzt in Minuten.
    Eingriffe:
    {at, delta}                   Phase länger (+) oder kürzer (−); mit w:true = Wechsel per Folie oder Weiter (nächste Phase bleibt voll)
-   {at, delta, pause:true}       Pause in Phase at (zählt wie länger)
+   {at, delta, pause:true, grund, t0}  Stopp in Phase at (zählt wie länger; grund: Unruhe, Technik, Besuch, Konflikt, Alarm, Sonstiges oder leer = Pause; t0 Beginn in Minuten)
+   {at:0, delta, w:true, spaet:true, t0}  Verspäteter Start um delta Min.: Phase 1 beginnt jetzt in voller Länge, der Rest wird gestaucht
    {back:true, at, cut, src, d}  Phase at endet nach cut Min., danach noch einmal Phase src für d Min.
    {drop:true, at}               Phase at fällt weg
    {at, delta, shift:true}       (alt) Phase länger, Stunde verschiebt sich
@@ -372,6 +379,36 @@ function dropHint(phases, idx){
   for (let i = phases.length - 1; i > idx; i--){ const q = phases[i]; if (!q.dropped && !SCHUTZ.test((q.titel || "") + " " + (q.form || "")) && q.d > 0) return i; }
   return -1;
 }
+/* Verlorene Zeit durch Verspätung und Stopps (laufender Stopp mitgerechnet) */
+function verlust(adj, pause, nowMin){
+  let v = 0;
+  for (const a of (adj || [])) if ((a.spaet || a.pause) && a.delta > 0) v += a.delta;
+  if (pause && nowMin != null) v += Math.max(0, nowMin - pause.t0);
+  return v;
+}
+/* Störungsprotokoll aus den Eingriffen: [{t0, art, min, laeuft}] */
+function protokoll(adj, pause, nowMin){
+  const out = [];
+  for (const a of (adj || [])){
+    if (a.spaet) out.push({t0: a.t0, art: "Verspäteter Start", min: a.delta});
+    else if (a.pause && a.grund) out.push({t0: a.t0, art: a.grund, min: a.delta});
+  }
+  if (pause && pause.grund) out.push({t0: pause.t0, art: pause.grund, min: Math.max(0, (nowMin || pause.t0) - pause.t0), laeuft: true});
+  return out;
+}
+/* Ab 10 Min. Verlust: Vorschlag, die kürzeste streichbare spätere Phase zu streichen (nie Abruf, Arbeit, Aufräumen, Exit-Ticket) */
+const ABRUF = /abruf|ankommen|erinnern/i;
+function streichVorschlag(phases, idx, adj, pause, nowMin){
+  if (verlust(adj, pause, nowMin) < 10) return -1;
+  if ((adj || []).some(a => a.drop)) return -1;
+  let best = -1;
+  for (let i = idx + 1; i < phases.length; i++){
+    const q = phases[i], txt = (q.titel || "") + " " + (q.form || "");
+    if (q.dropped || q.d <= 0 || ARBEIT.test(q.form || "") || SCHUTZ.test(txt) || ABRUF.test(txt)) continue;
+    if (best < 0 || q.d < phases[best].d) best = i;
+  }
+  return best;
+}
 /* Kennung der Phasenfolge: nur wenn beide Seiten gleich rechnen, werden Eingriffe übernommen */
 function phaseSig(list){ return list.map(p => p.d + "/" + (p.puffer || 0)).join(","); }
 
@@ -436,6 +473,8 @@ function renderJetzt(){
     const bk = backInfo(p.phases, adjs, idx);
     let status = "";
     const dh = p.debt > 0.5 ? dropHint(p.phases, idx) : -1;
+    const verl = verlust(adjs, paused || null, sec / 60);
+    const sv = state.weg && state.weg[lesson.id] ? -1 : streichVorschlag(p.phases, idx, adjs, paused || null, sec / 60);
     if (paused) status = "Pause seit " + fmt(Math.floor(paused.t0)) + ". Die Uhr steht, die Zeit kommt aus " + (p.notes.length && p.notes[p.notes.length-1].target >= 0 ? "„" + p.phases[p.notes[p.notes.length-1].target].titel + "“" : "späteren Phasen") + ".";
     else if (adjs.length){
       const last = p.notes[p.notes.length-1];
@@ -444,13 +483,13 @@ function renderJetzt(){
     }
     const tgt = p.notes.length && p.notes[p.notes.length-1].target >= 0 ? p.phases[p.notes[p.notes.length-1].target].titel : null;
     let vz = "";
-    if (paused) vz = "Pause, die Stunde verschiebt sich.";
+    if (paused) vz = (paused.grund ? "Stopp (" + paused.grund + ")" : "Pause") + " seit " + fmt(Math.floor(paused.t0)) + ", die Uhr steht.";
     else if (verzug > 0) vz = "+" + verzug + " Min." + (tgt ? ", „" + tgt + "“ gekürzt" : "");
     else if (adjs.length && tgt) vz = "Ausgleich in „" + tgt + "“";
     return `
       ${pair.code && folieBild ? `<button class="fthumb" data-act="fgross" aria-label="Aktuelle Folie groß zeigen"><img id="fbild" src="${esc(folieBild)}" alt="Aktuelle Folie"><span>Folie ${pairPage || ""}</span></button>` : ""}
       <div class="zeit">
-        <button class="btn${paused ? " primary" : ""}" data-act="pause" data-id="${lesson.id}" data-i="${idx}">${paused ? "Fortsetzen" : "Pause"}</button>
+        <button class="btn${paused ? " primary" : ""}" data-act="${paused ? "pause" : "stopp"}" data-id="${lesson.id}" data-i="${idx}">${paused ? "Weiter" : "Stopp"}</button>
         ${pair.code ? `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>` : (nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`)}
         <div class="klein">
           ${pair.code ? "" : `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>`}
@@ -460,6 +499,7 @@ function renderJetzt(){
       </div>
       <div class="verzug">${esc(vz)}</div>
       <div class="regie">${esc(ph.regie)}</div>
+      ${sv >= 0 ? `<div class="hint">Schon ${Math.round(verl)} Min. verloren. „${esc(p.phases[sv].titel)}“ (${Math.round(p.phases[sv].d)} Min.) streichen statt alles zu stauchen? <div class="ctrl"><button class="btn primary" data-act="drop" data-id="${lesson.id}" data-i="${idx}" data-k="${sv}">Streichen</button><button class="btn" data-act="stauchen" data-id="${lesson.id}">Stauchen</button></div></div>` : ""}
       ${dh >= 0 ? `<div class="hint">Die Stunde wird ${Math.round(p.debt)} Min. zu lang. <button class="btn" data-act="drop" data-id="${lesson.id}" data-i="${idx}" data-k="${dh}">„${esc(p.phases[dh].titel)}“ streichen</button></div>` : ""}
       ${lesson.mb ? `<div class="hint">${esc(lesson.mb)}</div>` : ""}`;
   }
@@ -505,8 +545,10 @@ function renderTag(){
     }
     return `<div class="item ${cls}"><time>${fmt(s)}</time><div><div class="t">${it.type==="lesson" ? esc(it.klasse)+" · " : ""}${esc(it.titel)}</div>${it.sub ? `<div class="s">${esc(it.sub)}</div>` : ""}${it.type==="lesson" ? `<div class="s">bis ${fmt(e)}</div>` : ""}</div>${extra}</div>`;
   }).join("");
+  const prot = lessons.map(l => ({l, e: protokoll(state.adj[l.id], state.pause[l.id] || null, min)})).filter(x => x.e.length);
+  const protHtml = prot.length ? `<h2>Störungen und Verspätungen</h2><ul class="list">${prot.map(x => x.e.map(e => `<li><strong>${esc(x.l.klasse)}</strong> ${fmt(Math.floor(e.t0))} ${esc(e.art)}, ${Math.max(1, Math.round(e.min))} Min.${e.laeuft ? " (läuft)" : ""}</li>`).join("")).join("")}</ul><p class="small">Steht auch in der Notiz der Stunde.</p>` : "";
   return seg + `
-    <h2>Ablauf</h2>${rows}
+    <h2>Ablauf</h2>${rows}${protHtml}
     <h2>Noch zu drucken</h2>
     <ul class="list">${DAY.drucken.map(d => `<li>${esc(d)}</li>`).join("")}</ul>
     <h2>Bewertung offen</h2>
@@ -552,7 +594,8 @@ function renderSpick(){
   const werkeHtml = werke.length ? `<h2>Werke</h2>${werke.map(w => `<div class="card"><p class="work">${rich(w.w)}</p>${w.f.map(f => `<p class="small">${esc(f)}</p>`).join("")}</div>`).join("")}` : "";
   const fragenHtml = fragen.length ? `<h2>Impulsfragen</h2>${fragen.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join("")}` : "";
   const hilfenHtml = `<h2>Hilfen</h2><div class="card"><p><strong>Früher fertig?</strong></p><p class="small">${esc(l.hilfen.schnell)}</p></div><div class="card"><p><strong>Hängt jemand?</strong></p><p class="small">${esc(l.hilfen.haengt)}</p></div>`;
-  const planB = `<details><summary>Plan B: Technik, Unruhe, zu früh fertig</summary><div class="card"><p><strong>Technik fällt aus</strong></p><p class="small">${esc(l.planB.technik)}</p></div><div class="card"><p><strong>Klasse unruhig</strong></p><p class="small">${esc(l.planB.unruhe)}</p></div><div class="card"><p><strong>Zu früh fertig</strong></p><p class="small">${esc(l.planB.frueh)}</p></div></details>`;
+  const pb = Object.assign({technik: "Dokumentenkamera oder Tafel statt Beamer; Arbeitsauftrag mündlich und an die Tafel, Werkbilder als Ausdruck herumgeben.", unruhe: "Stopp mit Grund Unruhe: Ruhe-Folie 30 Sekunden, dann Ämter und Regeln kurz wiederholen, Arbeitsphase mit Wenn-dann-Plan neu starten.", material: "Mit dem arbeiten, was da ist: Skizze auf Schmierpapier, Bleistift statt Farbe; Materialauftrag ins Exit-Ticket für die nächste Stunde.", frueh: "Zusatzaufgabe: Variante des eigenen Werks mit einer veränderten Bedingung (Format, Blickwinkel, Material)."}, l.planB || {});
+  const planB = `<details><summary>Wenn es hakt: Technik, Unruhe, Material, zu früh fertig</summary><div class="card"><p><strong>Beamer oder Technik tot</strong></p><p class="small">${esc(pb.technik)}</p></div><div class="card"><p><strong>Klasse unruhig</strong></p><p class="small">${esc(pb.unruhe)}</p></div><div class="card"><p><strong>Material fehlt</strong></p><p class="small">${esc(pb.material)}</p></div><div class="card"><p><strong>Zu früh fertig</strong></p><p class="small">${esc(pb.frueh)}</p></div></details>`;
   const kopf = ph ? `<div class="eyebrow">Jetzt · ${esc(ph.form)}</div><div class="ptitle">${esc(ph.titel)}</div><div class="regie">${esc(ph.regie)}</div>` : `<div class="eyebrow">${esc(l.klasse)} · ${esc(l.titel)}</div><div class="regie">${esc(l.ziel)}</div>`;
   const rest = live ? `<details><summary>Ganze Stunde</summary>${loc.plan.phases.map((q, k) => `<div class="card${k === idx ? "" : ""}"><p><strong>${fmt(q.s)} ${esc(q.form)}</strong>: ${esc(q.titel)}</p><p class="small">${esc(q.regie)}</p></div>`).join("")}</details>` : "";
   return lessonChips() + folieHtml + kopf + (arbeit ? hilfenHtml + planB + werkeHtml + fragenHtml : werkeHtml + fragenHtml + hilfenHtml + planB) + rest + (l.mb ? `<div class="hint">${esc(l.mb)}</div>` : "");
@@ -671,7 +714,7 @@ setInterval(notizSync, 300000);
 
 /* ===== Klasse: Störungen, Verspätungen, Hausaufgaben, Zufall, Gruppen, Ämter =====
    Namen und Einträge liegen nur auf diesem Gerät. Mit Atelier-Schlüssel gleichen Handy und Notebook sie verschlüsselt ab. */
-const KL = { klassen: store.get("pult-klassen", {}), log: store.get("pult-klog", {stoer:{}, spaet:[], ha:[], nach:[]}) };
+const KL = { weg: store.get("pult-weg", {}), klassen: store.get("pult-klassen", {}), log: store.get("pult-klog", {stoer:{}, spaet:[], ha:[], nach:[]}) };
 KL.log.stoer = KL.log.stoer || {}; KL.log.stoerU = KL.log.stoerU || {}; KL.log.stunden = KL.log.stunden || {};
 KL.verborgen = store.get("pult-verborgen", {});   /* Kinder, die nicht öffentlich erscheinen (ohne Grund) */ KL.log.spaet = KL.log.spaet || []; KL.log.ha = KL.log.ha || []; KL.log.nach = KL.log.nach || [];
 let klDirty = false;
@@ -717,7 +760,7 @@ function toolHtml(l){
   const kl = klasseOf(l), N = klNames(kl), show = raw => (N.find(n => n.raw === raw) || {show: raw}).show, k = lkey(l);
   const kann = !!(pair.code && typeof Geheim !== "undefined" && Geheim.get());
   const pcBtn = art => kann ? `<button class="btn" data-act="zeige" data-art="${art}">Am Bildschirm zeigen</button>` : ``;
-  const tabs = `<div class="chips">${[["zufall","Zufall"],["gruppen","Gruppen"],["aemter","Ämter"],["da","Wer fehlt?"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
+  const tabs = `<div class="chips">${[["zufall","Zufall"],["gruppen","Gruppen"],["aemter","Ämter"],["da","Wer fehlt?"],["spaet","Zu spät"]].map(([a, t]) => `<button class="chip" data-act="tool" data-art="${a}" aria-pressed="${!!klTool && klTool.art === a}">${t}</button>`).join("")}</div>`;
   if (!klTool) return tabs;
   let body = "";
   if (klTool.art === "zufall"){
@@ -735,6 +778,9 @@ function toolHtml(l){
       <details><summary>Ämter bearbeiten</summary><label for="amtList">Ein Amt pro Zeile</label><textarea id="amtList" style="min-height:150px">${esc((cfg.liste && cfg.liste.length ? cfg.liste : AMT_STD).join("\n"))}</textarea>
       <div class="chips seg">${[1,2,3].map(n => `<button class="chip" data-act="amtje" data-n="${n}" aria-pressed="${(cfg.je || 2) === n}">${n} je Amt</button>`).join("")}</div>
       <div class="ctrl"><button class="btn primary" data-act="amtsave">Speichern</button></div></details>`;
+  } else if (klTool.art === "spaet"){
+    const m = Math.max(1, Math.round(nowSec() / 60 - toMin(l.start)));
+    body = `<p class="small">Wer kommt gerade zu spät? Namen oben antippen: „zu spät ${fmt(Math.floor(nowSec() / 60))}, ${m} Min.“ wird eingetragen. Die Uhr der Stunde bleibt unberührt.</p>`;
   } else if (klTool.art === "da"){
     const ab = KL.da[k] || [];
     body = `<p class="small">Antippen, wer heute fehlt. Gilt für Zufall und Gruppen in dieser Stunde.</p><div class="chips">${N.map(n => `<button class="chip" data-act="fehlt" data-name="${esc(n.raw)}" aria-pressed="${ab.includes(n.raw)}">${esc(n.show)}</button>`).join("")}</div>`;
@@ -839,7 +885,10 @@ document.addEventListener("pointerdown", e => {
 ["pointerup", "pointercancel", "pointerleave"].forEach(ev => document.addEventListener(ev, () => clearTimeout(klPress), true));
 document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("[data-st]")) e.preventDefault(); });
 function klClick(b){
-  if (b.dataset.st){ if (klLong){ klLong = false; return true; } const l = lessons.find(x => x.id === selected); if (l){ stoer(l, b.dataset.st, 1); render(); } return true; }
+  if (b.dataset.st){ if (klLong){ klLong = false; return true; } const l = lessons.find(x => x.id === selected); if (l){
+      if (klTool && klTool.art === "spaet"){ const m = Math.max(1, Math.round(nowSec() / 60 - toMin(l.start))); KL.log.spaet.push({id: uid(), klasse: klasseOf(l), name: b.dataset.st, date: DAY.date, min: m, ok: true, u: Date.now()}); klSave(); try { if (navigator.vibrate) navigator.vibrate(40); } catch(e){} toast(b.dataset.st.split(",").reverse().join(" ").trim() + ": zu spät, " + m + " Min."); }
+      else stoer(l, b.dataset.st, 1);
+      render(); } return true; }
   const act = b.dataset.act, l = lessons.find(x => x.id === selected);
   if (act === "tool"){ klTool = klTool && klTool.art === b.dataset.art ? null : {art: b.dataset.art, size: 4}; render(); return true; }
   if (act === "ziehen"){ klTool = {art: "zufall", name: ziehen(l)}; try { if (navigator.vibrate) navigator.vibrate(30); } catch(e){} render(); return true; }
@@ -856,7 +905,7 @@ function klClick(b){
     if (daten && zeigeAmPC(b.dataset.art, kl, daten)) b.textContent = "Gesendet";
     return true;
   }
-  if (act === "klsave"){ const v = ($("#klList").value || "").split(/\n+/).map(s => s.trim()).filter(Boolean); KL.klassen[b.dataset.kl] = v; KL.klassen._u = Date.now(); klSave(); render(); return true; }
+  if (act === "klsave"){ const v = ($("#klList").value || "").split(/\n+/).map(s => s.trim()).filter(Boolean); const alt = KL.klassen[b.dataset.kl] || []; const w = KL.weg[b.dataset.kl] = (KL.weg[b.dataset.kl] || []).filter(n => !v.includes(n)); for (const n of alt) if (!v.includes(n) && !w.includes(n)) w.push(n); store.set("pult-weg", KL.weg); KL.klassen[b.dataset.kl] = v; KL.klassen._u = Date.now(); klSave(); render(); return true; }
   if (act === "hadone"){ const h = KL.log.ha.find(x => x.id === b.dataset.id); if (h){ h.done = true; h.u = Date.now(); klSave(); render(); } return true; }
   if (act === "spok"){ const e = KL.log.spaet.find(x => x.id === b.dataset.id); if (e){ e.ok = true; e.u = Date.now(); klSave(); render(); } return true; }
   if (act === "hide"){ const a = KL.verborgen[b.dataset.kl] = KL.verborgen[b.dataset.kl] || []; const i = a.indexOf(b.dataset.name); if (i < 0) a.push(b.dataset.name); else a.splice(i, 1); KL.verborgen._u = Date.now(); klSave(); render(); return true; }
@@ -873,6 +922,8 @@ function klMerge(o){
   if (!o) return false;
   let ch = false;
   if (o.klassen) for (const [k, v] of Object.entries(o.klassen)) if (k !== "_u" && Array.isArray(v) && v.length && !(KL.klassen[k] || []).length){ KL.klassen[k] = v; ch = true; }
+  /* Namen, die Kinder am Notebook selbst eingetippt haben (Verspätung): sofort in die Klassenliste, außer du hast sie hier gelöscht */
+  if (o.neu) for (const [k, v] of Object.entries(o.neu)) if (Array.isArray(v)){ const l = KL.klassen[k] = KL.klassen[k] || []; for (const n of v) if (!l.includes(n) && !(KL.weg[k] || []).includes(n)){ l.push(n); ch = true; } }
   for (const key of ["spaet", "ha", "nach"]) for (const e of (o[key] || [])){
     const i = KL.log[key].findIndex(x => x.id === e.id);
     if (i < 0){ KL.log[key].push(e); ch = true; } else if ((e.u || 0) > (KL.log[key][i].u || 0)){ KL.log[key][i] = e; ch = true; }
@@ -891,7 +942,7 @@ function klSync(){
   klTimer = setTimeout(() => {
     const today = {}, tu = {}; for (const [k, v] of Object.entries(KL.log.stoer)) if (k.startsWith(DAY.date)){ today[k] = v; tu[k] = KL.log.stoerU[k] || 0; }
     const h = halbjahr(DAY.date), cut = x => halbjahr(x.date) === h;
-    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, aemter: KL.aemter, verborgen: KL.verborgen, stunden: KL.log.stunden, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
+    const msg = {v: 1, cmd: "klog", kind: "klog", at: Date.now(), klassen: KL.klassen, weg: KL.weg, aemter: KL.aemter, verborgen: KL.verborgen, stunden: KL.log.stunden, stoer: today, stoerU: tu, spaet: KL.log.spaet.filter(cut), ha: KL.log.ha.filter(cut), nach: KL.log.nach.filter(cut)};
     pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method: "POST", body: await pack(msg)})).catch(() => {});
   }, 400);
 }
@@ -975,13 +1026,15 @@ function leiste(){
     else if (left >= 0){ z.textContent = String(Math.floor(left / 60)) + ":" + String(Math.floor(left % 60)).padStart(2, "0"); u.textContent = ""; }
     else { z.textContent = "+" + Math.ceil(-left / 60); u.textContent = "Min."; }
     if (paused) B.add("pause"); else if (left < 0) B.add("ueber"); else if (left <= 180) B.add("bald");
-    f.textContent = ph.form + (paused ? " · Pause" : "") + (ph.again ? " · noch einmal" : "");
+    f.textContent = ph.form + (paused ? " · " + (state.pause[lesson.id].grund ? "Stopp: " + state.pause[lesson.id].grund : "Pause") : "") + (ph.again ? " · noch einmal" : "");
     ph2.textContent = ph.titel;
     nx2.textContent = nx ? "Danach " + fmt(nx.s) + " " + nx.form + ": " + nx.titel : "Letzte Phase, Ende " + fmt(ph.s + ph.d);
     bar.style.width = (Math.min(1, Math.max(0, 1 - left / (ph.d * 60))) * 100).toFixed(1) + "%";
     $("#date").textContent = lesson.klasse + " · " + lesson.titel;
+    spaetHinweis(loc);
     return;
   }
+  spaetHinweis(null);
   B.add("frei"); bar.style.width = "0%";
   const nl = fresh() ? nextLesson(sec) : null;
   if (nl){
@@ -1020,17 +1073,23 @@ function tick(){
 /* Zeit-Eingriffe: am Handy sofort, und bei Kopplung auch am Notebook (das Notebook führt, Pult übernimmt dessen Stand) */
 function resumeIfPaused(id){
   const pz = state.pause[id]; if (!pz) return;
-  (state.adj[id] = state.adj[id] || []).push({at: pz.at, delta: Math.max(0, nowSec()/60 - pz.t0), pause: true});
+  (state.adj[id] = state.adj[id] || []).push({at: pz.at, delta: Math.max(0, nowSec()/60 - pz.t0), pause: true, grund: pz.grund || "", t0: pz.t0});
   delete state.pause[id];
 }
 function timeAct(act, id, i, k){
   const l = lessons.find(x => x.id === id); if (!l) return;
+  if (act === "stauchen"){ (state.weg = state.weg || {})[id] = 1; save(); render(); return; }
   const now = nowSec()/60;
   const list = state.adj[id] = state.adj[id] || [];
   if (act === "undo"){
     if (state.pause[id]) delete state.pause[id]; else list.pop();
   } else if (act === "pause"){
-    if (state.pause[id]) resumeIfPaused(id); else state.pause[id] = {at: i, t0: now};
+    if (state.pause[id]) resumeIfPaused(id); else state.pause[id] = {at: i, t0: now, grund: k || ""};
+  } else if (act === "spaet"){
+    resumeIfPaused(id);
+    const d = Math.max(1, Math.round(now - toMin(l.start)));
+    list.push({at: 0, delta: d, w: true, spaet: true, t0: now}); k = d;
+    toast("Später gestartet (" + d + " Min.): ab jetzt gerechnet, Rest gestaucht.");
   } else {
     resumeIfPaused(id);
     const p = plan(l), ph = p.phases[i];
@@ -1043,7 +1102,40 @@ function timeAct(act, id, i, k){
     }
   }
   save(); lastKey = null; render();
-  if (pair.code) sendFern(act === "weiter" ? "phase" : act, {lesson: l.start, k});
+  if (pair.code) sendFern(act === "weiter" ? "phase" : act, act === "pause" ? {lesson: l.start, grund: k || ""} : act === "spaet" ? {lesson: l.start, delta: k} : {lesson: l.start, k});
+}
+/* Stopp mit Grund: Blatt mit Chips; der Grund geht mit ans Notebook (Alarm: Bildschirm schwarz, Unruhe: Ruhe-Folie) */
+const GRUENDE = ["Unruhe", "Technik", "Besuch", "Konflikt", "Alarm", "Sonstiges"];
+function stoppBlatt(id, i){
+  const l = lessons.find(x => x.id === id); if (!l) return;
+  $("#stoppGr").innerHTML = GRUENDE.map(g => `<button class="btn${g === "Alarm" ? " alarm" : ""}" data-act="stoppgrund" data-id="${id}" data-i="${i}" data-k="${g}">${g}</button>`).join("");
+  const spaetOk = !(state.adj[id] || []).some(a => a.spaet) && nowSec() / 60 - toMin(l.start) >= 1;
+  $("#stoppExtra").innerHTML = `<button class="btn" data-act="stoppgrund" data-id="${id}" data-i="${i}" data-k="">Nur Pause, kein Grund</button>${spaetOk ? `<button class="btn" data-act="spaet" data-id="${id}" data-i="${i}">Später gestartet: ab jetzt rechnen</button>` : ""}`;
+  $("#stopp").classList.add("on");
+}
+$("#stopp").addEventListener("click", e => { if (e.target.id === "stopp") $("#stopp").classList.remove("on"); });
+/* Verspätung erkennen: Stunde läuft seit 2 bis 15 Min., noch kein Eingriff: Hinweis in der Leiste */
+function spaetHinweis(loc){
+  const h = $("#lhint"); if (!h) return;
+  const ok = loc && !state.pause[loc.lesson.id] && !(state.adj[loc.lesson.id] || []).length && !(state.weg && state.weg["spaet:" + loc.lesson.id]);
+  const m = ok ? nowSec() / 60 - toMin(loc.lesson.start) : 0;
+  if (ok && m >= 2 && m <= 15){
+    if (!h.classList.contains("on")) h.innerHTML = `<button class="btn" data-act="spaet" data-id="${loc.lesson.id}" data-i="${loc.idx}">Später gestartet? Ab jetzt rechnen</button><button class="btn x" data-act="spaetx" data-id="${loc.lesson.id}" aria-label="Hinweis schließen">×</button>`;
+    h.classList.add("on");
+  } else { h.classList.remove("on"); h.innerHTML = ""; }
+}
+/* Protokoll der Störungen in die Tagesnotiz (einmal je Eintrag, auch wenn der Eingriff vom Notebook kam) */
+function protNotiz(){
+  state.prot = state.prot || {};
+  for (const l of lessons){
+    const fertig = protokoll(state.adj[l.id], null, null);
+    const n = state.prot[l.id] || 0;
+    if (fertig.length <= n) continue;
+    const note = state.notes[l.id] = state.notes[l.id] || {text:"", zeit:"", ziel:"", aendern:""};
+    const zeilen = fertig.slice(n).map(e => fmt(Math.floor(e.t0)) + " " + e.art + ", " + Math.max(1, Math.round(e.min)) + " Min.");
+    note.text = (note.text ? note.text.replace(/\s+$/, "") + "\n" : "") + zeilen.join("\n");
+    state.prot[l.id] = fertig.length;
+  }
 }
 
 /* Tastatur am PC */
@@ -1067,7 +1159,12 @@ document.addEventListener("click", e => {
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
   if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
   const act = b.dataset.act;
-  if (["plus","weiter","undo","pause","back","drop"].includes(act)){ timeAct(act, b.dataset.id, Number(b.dataset.i), Number(b.dataset.k)); return; }
+  if (act === "stopp"){ stoppBlatt(b.dataset.id, Number(b.dataset.i)); return; }
+  if (act === "stoppx"){ $("#stopp").classList.remove("on"); return; }
+  if (act === "stoppgrund"){ $("#stopp").classList.remove("on"); timeAct("pause", b.dataset.id, Number(b.dataset.i), b.dataset.k || ""); return; }
+  if (act === "spaet"){ $("#stopp").classList.remove("on"); timeAct("spaet", b.dataset.id, Number(b.dataset.i)); return; }
+  if (act === "spaetx"){ (state.weg = state.weg || {})["spaet:" + b.dataset.id] = 1; save(); leiste(); return; }
+  if (["plus","weiter","undo","pause","back","drop","stauchen"].includes(act)){ timeAct(act, b.dataset.id, Number(b.dataset.i), Number(b.dataset.k)); return; }
   if (act === "plus" || act === "weiter"){
     const id = b.dataset.id, i = Number(b.dataset.i);
     let delta = 5;
@@ -1257,7 +1354,7 @@ function setFern(t){ fernMsg = t; const s2 = $("#fernState"); if (s2) s2.textCon
 function sendFern(cmd, extra){
   try { if (window.AtelierApp && AtelierApp.vibrate) AtelierApp.vibrate(30); else if (navigator.vibrate) navigator.vibrate(30); } catch(e){}
   pairTopic().then(async t => fetch(NTFY + "/" + t + "-fern", {method:"POST", body: await pack(Object.assign({v:1, cmd, at: Date.now()}, extra || {}))}))
-    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer", cam:"Kamera", pause:"Pause", back:"zurück zur Arbeitsphase", plus:"+5 Min.", phase:"nächste Phase", undo:"rückgängig", adj:"Stand", sim:"Testzeit"}[cmd] || cmd)); })
+    .then(r => { if (!r.ok) throw 0; setFern("Gesendet: " + ({prev:"Folie zurück", next:"Folie weiter", black:"Schwarzbild", timer:"Timer", cam:"Kamera", pause:"Pause", back:"zurück zur Arbeitsphase", plus:"+5 Min.", phase:"nächste Phase", undo:"rückgängig", adj:"Stand", sim:"Testzeit", spaet:"später gestartet", pause:"Stopp"}[cmd] || cmd)); })
     .catch(() => setFern("Nicht gesendet: kein Netz. Am PC mit Tasten weiter."));
 }
 /* Kanal und Inhalt: mit Atelier-Schlüssel ein geheimer Kanal und verschlüsselte Nachrichten, sonst wie bisher */

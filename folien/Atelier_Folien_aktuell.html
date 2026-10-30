@@ -96,6 +96,10 @@ body.strip #strip{display:block}
 #camwrap{position:absolute;inset:0;transform-origin:50% 50%}
 #camwrap video,#camwrap canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 #camwrap canvas{display:none}
+#camwahl{position:fixed;inset:0;z-index:29;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center}
+#camwahl .bl{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:18px;padding:24px 26px;width:min(720px,92vw);font-family:"Archivo",sans-serif}
+#camwahl h2{margin:0 0 6px;font-size:26px}#camwahl p{color:#8b91a0;margin:0 0 16px;font-size:16px}
+#camwahl .kacheln{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}#camwahl .btn{min-height:84px;font-size:18px;text-align:left}#camwahl small{color:#cfd3ff;font-weight:400}
 #camtag{position:fixed;left:1.4vw;top:1.6vh;z-index:16;background:rgba(20,22,28,.82);color:#fff;border-radius:10px;padding:8px 14px;font-size:16px;display:none}
 #camhelp{position:fixed;left:50%;bottom:2vh;transform:translateX(-50%);z-index:16;background:rgba(20,22,28,.82);color:#ddd;border-radius:10px;padding:8px 16px;font-size:15px;display:none;white-space:nowrap;transition:opacity .4s}
 /* Klasse: Verspätung, Störungen, Schluss */
@@ -164,6 +168,7 @@ body.strip #strip{display:block}
     <button class="btn" id="testbtn" type="button" style="display:none;background:#e2b04a;border-color:#e2b04a;color:#000;font-weight:800">Test starten: erste Stunde, Phase 1</button>
     <button class="btn" id="qrbtn" type="button">QR-Code zum Koppeln zeigen</button>
     <button class="btn" id="cambtn" type="button">Dokumentenkamera testen (K)</button>
+    <button class="btn" id="camwahlbtn" type="button">Kamera wählen</button>
     <span id="fernstate" class="warn">Fernbedienung: wartet auf Verbindung …</span>
   </div>
   <div class="row">
@@ -190,6 +195,7 @@ body.strip #strip{display:block}
 <div id="klbox" role="dialog" aria-label="Klasse"></div>
 <div id="cam" aria-label="Dokumentenkamera"><div id="camwrap"><video id="camv" autoplay playsinline muted></video><canvas id="camfz"></canvas></div></div>
 <div id="camtag"></div>
+<div id="camwahl" role="dialog" aria-label="Kamera wählen"></div>
 <div id="camhelp">Leertaste: Standbild · + − oder Mausrad: Zoom · Pfeile oder Ziehen: verschieben · 0: zurücksetzen · C: andere Kamera · K oder Esc: zurück zur Folie</div>
 <div id="strip"><div class="pb"><i id="spb"></i></div><div class="in"><div><div class="sf" id="cf"></div><div class="ti" id="cti"></div></div><div class="rz"><b id="ct"></b><span id="ca"></span></div></div></div>
 <div id="big"><div class="f" id="bf"></div><div class="n" id="bn"></div><div class="t" id="bt"></div><div class="a" id="ba"></div></div>
@@ -2817,6 +2823,7 @@ function ruheTick(){
   f.textContent = count(next) ? "" : "Für diese Stunde fehlt noch das PDF (Einstellungen unten rechts).";
   if (inMin <= 10 && count(next) && autoOpened !== next.id){ autoOpened = next.id; const st = lessonState(next); st.page = 0; st.phase = 0; saveSt(next, st); openLesson(next.id); }
 }
+$("#camwahlbtn").addEventListener("click", async () => { try { if (!camStream) await navigator.mediaDevices.getUserMedia({video: true}).then(st => st.getTracks().forEach(t => t.stop())); } catch(e){} const devs = await camDevices(); if (!devs.length){ toast("Keine Kamera gefunden."); return; } $("#einst").classList.remove("on"); camWahl(devs, store.get("folien-kamera", null)); });
 $("#zahn").addEventListener("click", () => { $("#einst").classList.add("on"); renderStart(); });
 $("#einst").addEventListener("click", e => { if (e.target.id === "einst") $("#einst").classList.remove("on"); });
 function renderStart(){
@@ -2940,7 +2947,7 @@ function tick(){
     autoBigKey = key; autoBigOn = true; big = true; $("#big").style.display = "flex";
   }
   const strip = $("#strip"), over = (end - nowMin()) < 0;
-  document.body.classList.toggle("strip", !black && !camOpen);
+  document.body.classList.toggle("strip", (work || paused) && !black && !camOpen);   /* Streifen nur in Arbeitsphasen (und Pause); im Plenum reicht die Zeit auf dem Handy */
   strip.classList.toggle("paused", paused); strip.classList.toggle("ueber", over && !paused);
   $("#cf").textContent = paused ? "Pause" : ph.form; $("#cti").textContent = ph.titel;
   $("#ct").textContent = over && !paused ? "+" + Math.ceil((nowMin() - end)) : mm; $("#ca").textContent = paused ? "Uhr steht" : (over ? "Min. über" : "bis " + fmt(end));
@@ -3176,10 +3183,11 @@ async function openCam(){
     if (!store.get("folien-kamera", null)){
       const devs = await camDevices();
       const pick = devs.find(d => CAMPREF.test(d.label)) || (devs.length > 1 ? devs.find(d => !CAMBUILTIN.test(d.label)) : null);
-      if (pick && pick.label !== label){ label = await camStart(pick.deviceId); }
+      if (pick && pick.label !== label){ try { label = await camStart(pick.deviceId); } catch(e){ label = await camStart(null); } }
       const cur = camStream && camStream.getVideoTracks()[0];
       const now = devs.find(d => cur && d.label === cur.label);
-      if (now) store.set("folien-kamera", now.deviceId);
+      if (devs.length > 1) camWahl(devs, now ? now.deviceId : null);   /* beim ersten Mal wählen lassen, Vorschlag markiert */
+      else if (now) store.set("folien-kamera", now.deviceId);
     }
     if (!camOpen){ camStop(); return; }
     camTag("Kamera: " + (label || "verbunden"));
@@ -3223,6 +3231,18 @@ function camFreeze(){
     cv.style.display = "none"; vid.style.display = "block"; camFrozen = false; camTag("Live");
   }
 }
+/* Kamera wählen (erstes Mal oder über Einstellungen): eine Kachel je Gerät, Vorschlag markiert */
+function camWahl(devs, vorschlag){
+  const box = $("#camwahl");
+  box.innerHTML = `<div class="bl"><h2>Welche Kamera?</h2><p>Für die Dokumentenkamera (IPEVO) die passende wählen. Die Wahl bleibt gespeichert; ändern jederzeit mit Taste C oder in den Einstellungen.</p>
+    <div class="kacheln">${devs.map((d, i) => `<button class="btn${d.deviceId === vorschlag ? " primary" : ""}" data-cam="${esc2(d.deviceId)}">${esc2(d.label || "Kamera " + (i + 1))}${d.deviceId === vorschlag ? "<br><small>Vorschlag</small>" : ""}</button>`).join("")}</div></div>`;
+  box.style.display = "flex";
+}
+$("#camwahl").addEventListener("click", async e => {
+  const b = e.target.closest("[data-cam]"); if (!b) return;
+  $("#camwahl").style.display = "none";
+  try { if (!camOpen) await openCam(); const label = await camStart(b.dataset.cam); store.set("folien-kamera", b.dataset.cam); camTag("Kamera: " + label); } catch(err){ toast("Diese Kamera ließ sich nicht öffnen."); }
+});
 async function camNext(){
   const devs = await camDevices(); if (devs.length < 2){ toast("Nur eine Kamera gefunden."); return; }
   const cur = camStream && camStream.getVideoTracks()[0];

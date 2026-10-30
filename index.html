@@ -442,9 +442,9 @@ function renderJetzt(){
     return `
       <div class="zeit">
         <button class="btn${paused ? " primary" : ""}" data-act="pause" data-id="${lesson.id}" data-i="${idx}">${paused ? "Fortsetzen" : "Pause"}</button>
-        ${nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`}
+        ${pair.code ? `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>` : (nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`)}
         <div class="klein">
-          <button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>
+          ${pair.code ? "" : `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>`}
           ${bk ? `<button class="btn" data-act="back" data-id="${lesson.id}" data-i="${idx}">↩ ${esc(bk.titel)}</button>` : ""}
           ${adjs.length || paused ? `<button class="btn" data-act="undo" data-id="${lesson.id}">Rückgängig</button>` : ""}
         </div>
@@ -1213,8 +1213,8 @@ let fernMsg = "";
 function remoteHtml(){
   if (!pair.code) return "";
   return `<div class="folie">
-    <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Folie</button>
-    <button class="btn primary" data-fern="next" aria-label="Folie weiter">Folie ›</button>
+    <button class="btn" data-fern="prev" aria-label="Folie zurück">‹ Zurück</button>
+    <button class="btn primary" data-fern="next" aria-label="Weiter: nächste Folie, Phase folgt">Weiter ›</button>
     <div class="mini"><span class="small" id="fernState" style="flex:1;align-self:center">${esc(fernMsg)}</span><button class="btn" data-fern="black">Schwarz</button><button class="btn" data-fern="timer">Timer</button><button class="btn" data-fern="cam">Kamera</button></div></div>`;
 }
 function renderFern(){

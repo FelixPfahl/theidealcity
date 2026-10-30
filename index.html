@@ -564,8 +564,8 @@ async function buSend(obj){
   buSave(); if (view === "buero") render();
 }
 function nowRealMin(){ const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
-/* Das Büro läuft alle 10 Minuten zwischen 6 und 22 Uhr; ein Lauf braucht ein paar Minuten */
-function naechsterLauf(){ const m = nowRealMin(); if (m < 6 * 60) return 6 * 60 + 5; if (m >= 22 * 60) return 24 * 60 + 6 * 60 + 5; return Math.floor(m / 10) * 10 + 15; }
+/* Das Büro läuft stündlich um :13 zwischen 6 und 22 Uhr; ein Lauf braucht ein paar Minuten */
+function naechsterLauf(){ const m = nowRealMin(); let h = Math.floor(m / 60); if (m % 60 >= 13) h++; if (h < 6) h = 6; if (h > 22) h = 24 + 6; return h * 60 + 20; }
 /* Lokale Antworten ohne Büro: Tagesablauf, Druckliste, Bewertung, Notiz, Proben */
 function buLokal(text, zeilen, extra){ BU.items.push(Object.assign({id: uidB(), from: "buero", t: Date.now(), text, zeilen, status: "lokal"}, extra || {})); buSave(); render(); }
 function tagZeilen(day, nurAb){
@@ -611,7 +611,7 @@ function renderBuero(){
   const items = BU.items.slice().sort((a, b) => a.t - b.t);
   const nl = !locate(nowSec()) && fresh() ? nextLesson(nowSec()) : null;
   const kopf = nl ? `<div class="card"><p class="small">Nächste Stunde ${fmt(toMin(nl.start))}</p><p><strong>${esc(nl.klasse)} · ${esc(nl.titel)}</strong></p><p class="small">${esc(nl.ziel)}</p></div>` : "";
-  if (!items.length) return kopf + `<div class="chat"><div class="msg buero">Hier fragst du nach Terminen, gibst Änderungen an oder stößt eine Stundenvorbereitung an. Das Büro antwortet alle 10 Minuten zwischen 6 und 22 Uhr.${BU.code ? "" : " Zuerst den Büro-Code hinterm Zahnrad eintragen."}</div></div>`;
+  if (!items.length) return kopf + `<div class="chat"><div class="msg buero">Hier fragst du nach Terminen, gibst Änderungen an oder stößt eine Stundenvorbereitung an. Das Büro antwortet stündlich zwischen 6 und 22 Uhr (etwa um :20). Was steht an, Druckliste, Bewertung, Notiz und Proben antworten sofort.${BU.code ? "" : " Zuerst den Büro-Code hinterm Zahnrad eintragen."}</div></div>`;
   return kopf + `<div class="chat">${items.map(msgHtml).join("")}</div>`;
 }
 function msgHtml(m){

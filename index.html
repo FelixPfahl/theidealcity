@@ -487,7 +487,7 @@ function renderJetzt(){
     else if (verzug > 0) vz = "+" + verzug + " Min." + (tgt ? ", „" + tgt + "“ gekürzt" : "");
     else if (adjs.length && tgt) vz = "Ausgleich in „" + tgt + "“";
     return `
-      ${pair.code && folieBild ? `<button class="fthumb" data-act="fgross" aria-label="Aktuelle Folie groß zeigen"><img id="fbild" src="${esc(folieBild)}" alt="Aktuelle Folie"><span>Folie ${pairPage || ""}</span></button>` : ""}
+      ${pair.code && folieBild && store.get("pult-vorschau", false) ? `<button class="fthumb" data-act="fgross" aria-label="Aktuelle Folie groß zeigen"><img id="fbild" src="${esc(folieBild)}" alt="Aktuelle Folie"><span>Folie ${pairPage || ""}</span></button>` : ""}
       <div class="zeit">
         <button class="btn${paused ? " primary" : ""}" data-act="${paused ? "pause" : "stopp"}" data-id="${lesson.id}" data-i="${idx}">${paused ? "Weiter" : "Stopp"}</button>
         ${pair.code ? `<button class="btn" data-act="plus" data-id="${lesson.id}" data-i="${idx}">+5 Min.</button>` : (nx ? `<button class="btn primary" data-act="weiter" data-id="${lesson.id}" data-i="${idx}">Weiter</button>` : `<button class="btn" disabled>Letzte Phase</button>`)}
@@ -558,6 +558,8 @@ function renderTag(){
     <p class="small">Die App koppelt sich von selbst mit dem Notebook. Nur ändern, wenn dort ein anderer Code steht.</p>
     <div class="ctrl"><input id="pairCode" aria-label="Kopplungscode" placeholder="z. B. AB12-CD34" value="${esc(pair.code ? pair.code.toUpperCase().replace(/^(.{4})/, "$1-") : "")}" style="flex:1 1 60%;min-height:58px;font:inherit;font-size:20px;letter-spacing:.06em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:0 14px"><button class="btn primary" data-act="pair">${pair.code ? "Ändern" : "Koppeln"}</button>${pair.code ? '<button class="btn" data-act="unpair">Lösen</button>' : ""}</div>
     <div class="status" id="pairState">${esc(pairStatus())}</div>
+    <div class="chips"><button class="chip" data-act="vorschau" aria-pressed="${!!store.get("pult-vorschau", false)}">Folienvorschau am Handy${store.get("pult-vorschau", false) ? ": an" : ": aus"}</button></div>
+    <p class="small">Standard aus: jedes Bild ist eine eigene Anfrage an den Kopplungsdienst; bei schnellem Klicken bremst das. Mit „an“ kommt ein Bild erst nach 2 Sekunden Ruhe.</p>
     <h2>Sicherung</h2>
     <p class="small">Klassenlisten, Störungen, Verspätungen, Ämter und Notizen dieses Handys. Mit Atelier-Schlüssel verschlüsselt. Vor dem Neuinstallieren: erstellen, kopieren und irgendwo einfügen (z. B. Notiz-App); danach hier einfügen und einlesen.</p>
     <div class="ctrl"><button class="btn" data-act="sich">Sicherung erstellen</button><button class="btn" data-act="sichein">Einlesen</button></div>
@@ -1159,6 +1161,7 @@ document.addEventListener("click", e => {
   if (b.dataset.sel){ selected = b.dataset.sel; render(); return; }
   if (b.dataset.day){ selected = b.dataset.day === "morgen" ? "__morgen" : null; render(); return; }
   const act = b.dataset.act;
+  if (act === "vorschau"){ const an = !store.get("pult-vorschau", false); store.set("pult-vorschau", an); if (!an) folieBild = null; if (pair.code) sendFern("vorschau", {an}); render(); return; }
   if (act === "stopp"){ stoppBlatt(b.dataset.id, Number(b.dataset.i)); return; }
   if (act === "stoppx"){ $("#stopp").classList.remove("on"); return; }
   if (act === "stoppgrund"){ $("#stopp").classList.remove("on"); timeAct("pause", b.dataset.id, Number(b.dataset.i), b.dataset.k || ""); return; }

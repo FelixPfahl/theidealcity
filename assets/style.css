@@ -1218,3 +1218,31 @@ html.lh-bigobj .sbobj{filter:drop-shadow(0 0 0 #000) drop-shadow(2px 0 0 #000) d
 .sbsnd{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--pbh) + 10px);z-index:470;background:var(--ink);color:var(--paper);font:14px/1.3 var(--body);padding:6px 12px;border-radius:3px;pointer-events:none;opacity:0;transition:opacity .2s}
 .sbsnd.on{opacity:1}
 .lhpanel .lhall,.lhpanel .lhnone{font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:4px 12px;cursor:pointer;margin:2px 6px 8px 0}.lhpanel .lhall:hover,.lhpanel .lhnone:hover{background:var(--ink);color:var(--paper)}
+/* Musterbuch (Josef, 29.10.) */
+.mbfilter{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.mbfilter button{font:14px/1 var(--body);letter-spacing:.04em;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 12px;cursor:pointer;min-height:36px}
+.mbfilter button.on,.mbfilter button:hover{background:var(--ink);color:var(--paper)}
+.mbgrid{display:grid;gap:clamp(22px,3vw,40px) clamp(16px,2vw,28px);margin-top:clamp(24px,3vw,40px);grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));align-items:start}
+.mbcard{display:flex;flex-direction:column;gap:10px}.mbcard[hidden]{display:none}
+.mbprev{display:block;border:1px solid var(--hair);background:#fff}.mbprev img{display:block;width:100%;height:auto}
+.mbcard h3{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(17px,1.25vw,21px);line-height:1.15;margin:0}
+.mbcard h3 a{color:var(--ink);text-decoration:none}.mbcard h3 a:hover{color:var(--accent);background:none}
+.mbsatz{margin:0;font-size:15px;line-height:1.45}
+.mbmeta{margin:0;font-size:12.5px;color:var(--grey);letter-spacing:.02em}
+.mbdls{display:flex;flex-wrap:wrap;gap:6px}
+.mbdl{display:inline-flex;flex-direction:column;gap:2px;border:2px solid var(--line);padding:7px 10px;text-decoration:none;color:var(--ink);background:var(--paper);min-height:24px}
+.mbdl span{font-size:13.5px;letter-spacing:.03em}.mbdl small{font-size:11px;color:var(--grey)}
+.mbdl:hover{background:var(--ink);color:var(--paper)}.mbdl:hover small{color:var(--paper)}
+.mbthanks{font-size:13px;margin:4px 0 0;color:var(--ink)}
+.mbcard.locked .mbprev img{filter:grayscale(1) blur(6px) contrast(.6);opacity:.5}.mbcard.locked h3{color:var(--grey)}
+.mbunote{grid-column:1/-1;margin:0;font-size:15px}
+.mbonegrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(24px,4vw,64px);margin-top:28px;align-items:start}
+@media (max-width:760px){.mbonegrid{grid-template-columns:minmax(0,1fr)}}
+.mbbig{display:block;border:1px solid var(--hair)}.mbbig img{display:block;width:100%;height:auto}
+.mbone .mbdls{margin:16px 0}.mblic,.mbshare,.mbback{font-size:14px;margin:10px 0}
+.mbsharebtn{font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 12px;cursor:pointer;min-height:24px}
+.mbsharebtn:hover{background:var(--ink);color:var(--paper)}
+.mbprint{color:var(--grey);font-size:13px}
+@media (min-width:761px){.mbprint{display:none}}
+.mbrel{margin-top:clamp(40px,5vw,80px)}
+.mbhint{font-size:14px;margin:22px 0 0;color:var(--grey)}.mbhint a{color:var(--ink)}

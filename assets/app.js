@@ -480,6 +480,28 @@
         if (max > avail){ var fs = parseFloat(getComputedStyle(h).fontSize); h.style.fontSize = Math.floor(fs * avail / max * 0.97) + 'px'; } }); }
     fit(true); if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fit(true); });
     window.addEventListener('load', function(){ fit(true); }); var t = null; window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(function(){ fit(false); }, 120); }); });
+  /* ---------- Musterbuch (Josef, 29.10.): Filter, ruhiger Satz nach dem Download, Teilen, Freigespieltes ---------- */
+  safe(function(){
+    var fb = document.querySelectorAll('.mbfilter button');
+    fb.forEach(function(b){ b.addEventListener('click', function(){ var f = b.getAttribute('data-f'); fb.forEach(function(x){ x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      document.querySelectorAll('.mbcard').forEach(function(c){ c.hidden = !!f && (' ' + c.getAttribute('data-fuer') + ' ').indexOf(' ' + f + ' ') < 0; });
+      document.querySelectorAll('.mbsec').forEach(function(sec){ var g = sec.querySelector('.mbgrid'); if (!g || g.classList.contains('mbunlock')) return; sec.hidden = ![].some.call(g.children, function(c){ return !c.hidden; }); });
+      window.dispatchEvent(new Event('resize')); }); });
+    var SAY = [['inka', 'Gute Wahl. Druck es aus, bevor es jemand anders tut.'], ['wagner', 'Ein Raster. Ordnung kann man kopieren, das ist der Witz an Vorlagen.'], ['xae', 'Download bemerkt. Gezählt wird nichts, ich habe nachgesehen.'], ['sigma', '... das wird schön.'], ['inka', 'Wenn du damit etwas zeichnest: Josef freut sich über eine Nachricht.']];
+    var lastSay = 0;
+    document.addEventListener('click', function(e){ var a = e.target.closest && e.target.closest('a.mbdl'); if (!a) return;
+      var box = a.closest('.mbdls'); if (box && !box.parentNode.querySelector('.mbthanks')){ var p = document.createElement('p'); p.className = 'mbthanks'; p.setAttribute('role', 'status'); p.textContent = 'Danke. Bei Verwendung bitte nennen: Josef Knoll, CC BY 4.0. Neues gibt es im Newsletter.'; box.parentNode.insertBefore(p, box.nextSibling); }
+      if (window.JK_DIALOG && Date.now() - lastSay > 60000){ lastSay = Date.now(); var l = SAY[Math.floor(Math.random() * SAY.length)]; setTimeout(function(){ window.JK_DIALOG([l]); }, 700); } });
+    document.querySelectorAll('.mbsharebtn').forEach(function(b){ b.addEventListener('click', function(){ var d = {title:b.getAttribute('data-title') + ' (Musterbuch, Josef Knoll)', url:location.href};
+      if (navigator.share) navigator.share(d).catch(function(){}); else if (navigator.clipboard) navigator.clipboard.writeText(location.href).then(function(){ b.textContent = 'Link kopiert'; setTimeout(function(){ b.textContent = 'Teilen'; }, 2000); }); }); });
+    var un = document.querySelector('.mbunlock'); if (un){ var n = 0; try { var st = JSON.parse(localStorage.getItem('jk_sb') || 'null'); n = st && st.found ? Object.keys(st.found).length : 0; } catch(x){}
+      var X = [[5, 'Ausschnitt aus Suchbild 1', 'detail1.jpg', 'detail1-k.jpg', 'JPG, volle Auflösung'], [10, 'Hintergrundbild 1, Desktop', 'wall1-desktop.jpg', 'detail1-k.jpg', 'JPG, 1920 x 1080'], [10, 'Hintergrundbild 1, Handy', 'wall1-handy.jpg', 'detail1-k.jpg', 'JPG, 1080 x 1920'],
+        [15, 'Ausschnitt aus Suchbild 2', 'detail2.jpg', 'detail2-k.jpg', 'JPG, volle Auflösung'], [15, 'Hintergrundbild 2, Desktop', 'wall2-desktop.jpg', 'detail2-k.jpg', 'JPG, 1920 x 1080'], [15, 'Hintergrundbild 2, Handy', 'wall2-handy.jpg', 'detail2-k.jpg', 'JPG, 1080 x 1920'],
+        [20, 'Ausschnitt aus Suchbild 3', 'detail3.jpg', 'detail3-k.jpg', 'JPG, volle Auflösung'], [20, 'Hintergrundbild 3, Desktop', 'wall3-desktop.jpg', 'detail3-k.jpg', 'JPG, 1920 x 1080'], [20, 'Hintergrundbild 3, Handy', 'wall3-handy.jpg', 'detail3-k.jpg', 'JPG, 1080 x 1920']];
+      un.innerHTML = '<p class="mbunote">' + (n ? n + ' von 20 Dingen gefunden.' : 'Noch nichts gefunden. Die Dinge sind auf allen Seiten versteckt; Inka hilft.') + '</p>' + X.map(function(x){ var open = n >= x[0];
+        return '<article class="mbcard' + (open ? '' : ' locked') + '"><div class="mbprev"><img src="../assets/game/wall/' + x[3] + '" alt="" loading="lazy"></div><div class="mbbody"><h3>' + x[1] + '</h3>' +
+          (open ? '<p class="mbmeta">' + x[4] + ' · CC BY 4.0</p><div class="mbdls"><a class="mbdl" href="../assets/game/wall/' + x[2] + '" download data-mb="frei"><span>Herunterladen</span><small>' + x[4] + '</small></a></div>' : '<p class="mbmeta">Ab ' + x[0] + ' gefundenen Dingen.</p>') + '</div></article>'; }).join(''); } });
+
   /* ---------- Lesehilfe: Menü in der Fußzeile ---------- */
   safe(function(){ var btn = document.querySelector('.lhbtn'); if (!btn) return;
     var OPTS = [['now', 'Text sofort zeigen', 'Der Plotter schreibt nicht, der Text steht gleich da.', true], ['size', 'Schrift größer', '', false], ['lines', 'Zeilen weiter', 'Mehr Abstand zwischen Zeilen, Wörtern und Buchstaben.', false],
@@ -1108,7 +1130,7 @@
      Betonungen mit fetterem Farbstift (Wechsel nur hörbar), Stift kratzt selten, alles leicht zufällig. Startseite: JO SEF beim Laden.
      ============================================================ */
   safe(function(){
-    if (FF || LH.now || LH.font) return; var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p, .grptitle'));
+    if (FF || LH.now || LH.font) return; var targets = Array.prototype.slice.call(document.querySelectorAll('.sertext > p, .sertext > pre, .hero, .herohand, .bio, .info .contact, .cvl li span, .legal p, .credits p, p.credits, .nf p, .nf > div > p, .grptitle, .mbsatz'));
     if (!targets.length || !window.fetch || !window.Path2D) return;
     var F = null, built = [], raf = false, humT = null, hum = null, lastScrollT = performance.now(), lastScrollY = window.scrollY, speed = 0;
     var rnd = Math.random, R = function(a, b){ return a + rnd() * (b - a); };

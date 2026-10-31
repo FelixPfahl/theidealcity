@@ -3,6 +3,6 @@ Warning: Activity not started, its current task has been brought to the front
 Status: ok
 LaunchState: HOT
 Activity: de.theidealcity.atelier/.MainActivity
-TotalTime: 334
-WaitTime: 356
+TotalTime: 96
+WaitTime: 129
 Complete

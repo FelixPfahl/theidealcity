@@ -1,2 +1,2 @@
-Lauf 14: success (2026-10-29T20:12Z)
-Fehler insgesamt: 24
+Lauf 15: success (2026-10-31T11:12Z)
+Fehler insgesamt: 18

@@ -1,54 +1,46 @@
-Testtag laut Daten: 2026-10-29
+Testtag laut Daten: 2026-10-30
 OK      Update über die vorige Fassung ohne Neuinstallation
-Erwartet: Auflösung, Kriterien, Abstimmung / Skizze wählen / Karte beginnen
+Erwartet: Warum ist das kein Impressionismus? / Was ist anders? / Rätsel Titel und Bild
 OK      Atelier-Schlüssel über den Link übernommen
-FEHLER  Start während der Stunde öffnet Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+FEHLER  Start während der Stunde öffnet Pult (erwartet: Warum ist das kein Impressionismus?)
   (nicht gefunden: Heute)
 FEHLER  Leiste: Heute (erwartet: Auf dem Schulweg)
   (nicht gefunden: Morgenrunde)
 FEHLER  Kachel Morgenrunde (erwartet: archiv)
-  (nicht gefunden: Pult)
-FEHLER  Leiste: Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+FEHLER  Leiste: Pult (erwartet: Warum ist das kein Impressionismus?)
   (nicht gefunden: Fernbedienung)
 FEHLER  Leiste: Fernbedienung (erwartet: Noch nicht gekoppelt)
-  (nicht gefunden: Pult)
-FEHLER  Leiste: zurück von Fernbedienung zu Pult (erwartet: Auflösung, Kriterien, Abstimmung)
+FEHLER  Leiste: zurück von Fernbedienung zu Pult (erwartet: Warum ist das kein Impressionismus?)
   (nicht gefunden: Heute)
   (nicht gefunden: Folien)
 FEHLER  Kachel Folien öffnet die Fernbedienung (erwartet: Noch nicht gekoppelt)
   (nicht gefunden: Heute)
-  (nicht gefunden: Pult)
-FEHLER  Kachel Pult wechselt jederzeit (erwartet: Auflösung, Kriterien, Abstimmung|Noch nicht gekoppelt)
-  (nicht gefunden: Jetzt)
+FEHLER  Kachel Pult wechselt jederzeit (erwartet: Warum ist das kein Impressionismus?|Noch nicht gekoppelt)
   (nicht gefunden: +5 Min.)
 FEHLER  +5 Min. verlängert und gleicht aus (erwartet: Ausgleich in)
-  (nicht gefunden: Weiter)
-FEHLER  Weiter springt zur nächsten Phase (erwartet: Skizze wählen)
-  (nicht gefunden: Zurück)
-  (nicht gefunden: Zurück)
-FEHLER  Zurück nimmt beides zurück (erwartet: Auflösung, Kriterien, Abstimmung)
-  (nicht gefunden: Tag)
+FEHLER  Weiter springt zur nächsten Phase (erwartet: Was ist anders?)
+FEHLER  Zurück nimmt beides zurück (erwartet: Warum ist das kein Impressionismus?)
 FEHLER  Pult-Ansicht Tag (erwartet: drucken|Ablauf)
   (nicht gefunden: Spick)
 FEHLER  Pult-Ansicht Spick (erwartet: Impulsfragen)
   (nicht gefunden: Notiz)
+  (nicht gefunden: Pult)
   (nicht gefunden: Notiz)
 FEHLER  Notiz bleibt nach Neustart (erwartet: Testnotiz_Emulator)
-  (nicht gefunden: Jetzt)
-FEHLER  Querformat: Restzeit sichtbar (erwartet: bis 8.)
-FEHLER  Nach dem Drehen weiter in Pult (erwartet: Auflösung, Kriterien, Abstimmung|Skizze wählen)
-FEHLER  Phase wechselt nach Uhrzeit (erwartet: Skizze wählen)
-FEHLER  Vibration beim Phasenwechsel nicht nachweisbar
+FEHLER  Querformat: Restzeit sichtbar (erwartet: bis 11.)
+FEHLER  Nach dem Drehen weiter in Pult (erwartet: Warum ist das kein Impressionismus?|Was ist anders?)
+FEHLER  Phase wechselt nach Uhrzeit (erwartet: Was ist anders?)
+OK      Vibration beim Phasenwechsel ausgelöst
 OK      Benachrichtigung mit laufender Phase im Hintergrund
-FEHLER  Kein Wecker für den Phasenwechsel
+OK      Wecker für den nächsten Phasenwechsel gestellt
 OK      Lautstärketaste ohne Kopplung: App läuft weiter
   (nicht gefunden: Heute)
   (nicht gefunden: Morgenrunde)
-FEHLER  Zurück-Taste führt zu Heute (erwartet: Auf dem Schulweg)
+OK      Zurück-Taste führt zu Heute
 OK      Zweites Zurück schließt die App
-FEHLER  Ohne Netz: Pult mit gespeichertem Stand (erwartet: Skizze wählen|Karte beginnen)
-FEHLER  Ohne Netz: Morgenrunde (erwartet: archiv)
-FEHLER  Ohne Netz: Heute (erwartet: Auf dem Schulweg)
-FEHLER  Heute bleibt Heute, auch während der Stunde (erwartet: Auf dem Schulweg)
+FEHLER  Ohne Netz: Pult mit gespeichertem Stand (erwartet: Was ist anders?|Rätsel Titel und Bild)
+OK      Ohne Netz: Morgenrunde
+OK      Ohne Netz: Heute
+OK      Heute bleibt Heute, auch während der Stunde
 ---
-Fehler insgesamt: 24
+Fehler insgesamt: 18

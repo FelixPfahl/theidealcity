@@ -1,13 +1,23 @@
-android.widget.TextView | Thu, Oct 29
-android.widget.TextView | Gmail
-android.widget.TextView | Photos
-android.widget.TextView | YouTube
-android.view.View | Home
-android.widget.TextView | Phone
-android.widget.TextView | Messages
-android.widget.TextView | Chrome
-android.widget.TextView | Atelier
-android.widget.FrameLayout | Search
-android.widget.ImageView | Google app
-android.widget.ImageView | Voice search
-android.widget.ImageButton | Google Lens
+android.webkit.WebView | Pult
+android.widget.TextView | 11 · KLASSISCHE MODERNE 1 VON 4
+android.widget.TextView | 11.36
+android.widget.Button | Einstellungen
+android.widget.Button | Zur Ansicht Jetzt
+android.widget.Button | Später gestartet? Ab jetzt rechnen
+android.widget.Button | Hinweis schließen
+android.widget.TextView | Danach 11.50 Plenum: Was ist anders?
+android.widget.TextView | Monet kurz still wirken lassen, vorab etwa 1 Min. die Bewertungsfolie zeigen. Gruppe A Beckmann (mit
+android.widget.TextView | MB-Prüfraster: Ziel zu Beginn nennen und am Ende von der Klasse formulieren lassen (A1); Bewertungsk
+android.view.View | Werke (2)
+android.view.View | Fragen (3)
+android.view.View | Wenn es hakt
+android.view.View | Ganze Stunde
+android.widget.Button | Zurück
+android.widget.Button | Weiter
+android.view.View | Mehr
+android.widget.TextView | Erstellt mit Unterstützung von Claude (KI-Assistent von Anthropic).
+android.widget.TextView | Stand der Daten: Freitag, 30.10.
+android.view.View | Bereiche
+android.widget.Button | Jetzt
+android.widget.Button | Klasse
+android.widget.Button | Büro

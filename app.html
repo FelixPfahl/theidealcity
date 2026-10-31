@@ -1119,7 +1119,7 @@ function leiste(){
     z.textContent = inMin; u.textContent = "Min. bis " + fmt(toMin(nl.start));
     f.textContent = nl.klasse; ph2.textContent = nl.titel;
   } else {
-    z.textContent = ""; u.textContent = ""; f.textContent = fresh() ? "Unterricht vorbei" : "Noch keine Daten"; ph2.textContent = fresh() ? "" : (DAY.label ? "Letzter Stand: " + DAY.label : "");
+    z.textContent = ""; u.textContent = ""; f.textContent = fresh() ? "Unterricht vorbei" : "Noch keine Daten"; ph2.textContent = fresh() ? "" : (DAY.label ? (DAY.date > todayIso() ? "Vorschau: " : "Letzter Stand: ") + DAY.label : "");
   }
   $("#date").textContent = DAY.label || "Atelier";
 }
@@ -1323,7 +1323,7 @@ document.addEventListener("input", e => {
 function showDay(){
   if (view === "__auto") view = (fresh() && locate(nowSec())) ? "jetzt" : "buero";
   $("#date").textContent = DAY.label || "Atelier";
-  const st = $("#stand"); if (st) st.textContent = DAY.date ? "Stand der Daten: " + DAY.label : "";
+  const st = $("#stand"); if (st) st.textContent = DAY.date ? (DAY.date > todayIso() ? "Vorschau: " : "Stand der Daten: ") + DAY.label : "";
   lastKey = null; render(); tick();
 }
 async function getJson(path){
@@ -1358,8 +1358,22 @@ async function init(){
       showDay();
     }
   } catch(e){ /* offline, in Claude oder ohne Schlüssel: eingebettete bzw. letzte Daten bleiben */ }
+  try { vorschauAnwenden(await unbox(await getJson("daten/vorschau.json"))); } catch(e){ /* keine Vorschau */ }
   if (keyProblem) render();
   setTimeout(vorherPruefen, 800);
+}
+/* Vorschau: vorab geplante Tage (daten/vorschau.json, {tage:{"JJJJ-MM-TT":{...}}}). Sie gilt, solange der Morgenlauf den Tag noch nicht geschrieben hat; heute.json gewinnt immer, sobald sie denselben oder einen späteren Tag trägt. */
+function vorschauAnwenden(v){
+  if (!v || !v.tage) return;
+  const heute = todayIso();
+  const keys = Object.keys(v.tage).filter(k => v.tage[k] && v.tage[k].items && k >= heute).sort();
+  if (!keys.length) return;
+  if (DAY && DAY.date && DAY.date >= keys[0]){
+    if (!MORGEN || !MORGEN.date || MORGEN.date <= DAY.date){ const n = keys.find(k => k > DAY.date); if (n){ MORGEN = v.tage[n]; store.set("pult-last", {heute: DAY, morgen: MORGEN}); } }
+    return;
+  }
+  setDay(v.tage[keys[0]]); MORGEN = keys[1] ? v.tage[keys[1]] : MORGEN;
+  store.set("pult-last", {heute: DAY, morgen: MORGEN}); showDay();
 }
 async function setKey(raw){
   if (!Geheim.valid(raw)) return "Der Schlüssel hat 16 Zeichen.";

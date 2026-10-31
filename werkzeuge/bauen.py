@@ -22,6 +22,14 @@ def lade(name):
     return json.load(open(k, encoding="utf-8")) if os.path.exists(k) else None
 heute = lade("heute.json")
 morgen = lade("morgen.json")
+# Vorschau: vorab geplante Tage ({"tage": {"JJJJ-MM-TT": Tag}}); Klartext in daten/klar/, nach außen wie die Tagesdaten gesiegelt
+def lade_vorschau():
+    k, o = p("daten", "klar", "vorschau.json"), p("daten", "vorschau.json")
+    if os.path.exists(o):
+        d = json.load(open(o, encoding="utf-8"))
+        if "tage" in d: json.dump(d, open(k, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return json.load(open(k, encoding="utf-8")) if os.path.exists(k) else None
+vorschau = lade_vorschau()
 assert heute, "keine Tagesdaten (daten/klar/heute.json)"
 # Pflichtfelder prüfen
 for k in ("date", "label", "items"):
@@ -34,7 +42,21 @@ for it in heute["items"]:
         t = None
         for ph in it["phases"]:
             assert len(ph) >= 5 and isinstance(ph[1], int), ph
-bad = [c for c in ("–", "—") if c in json.dumps([heute, morgen], ensure_ascii=False)]
+def pruefe_tag(tag, name):
+    for k in ("date", "label", "items"):
+        assert k in tag, name + ": Feld fehlt: " + k
+    for it in tag["items"]:
+        assert re.fullmatch(r"\d{1,2}:\d{2}", it["start"]) and re.fullmatch(r"\d{1,2}:\d{2}", it["end"]), it
+        if it["type"] == "lesson":
+            for k in ("id", "klasse", "titel", "ziel", "phases", "werke", "fragen", "hilfen", "planB", "mitnehmen"):
+                assert k in it, it.get("id", "?") + ": Feld fehlt: " + k
+            for ph in it["phases"]:
+                assert len(ph) >= 5 and isinstance(ph[1], int), ph
+if vorschau:
+    for d_, tag in vorschau["tage"].items():
+        assert tag.get("date") == d_, "vorschau: Datum passt nicht: " + d_
+        pruefe_tag(tag, "vorschau " + d_)
+bad = [c for c in ("–", "—") if c in json.dumps([heute, morgen, vorschau], ensure_ascii=False)]
 assert not bad, "Lange Gedankenstriche in den Daten"
 klar = json.dumps({"heute": heute, "morgen": morgen}, ensure_ascii=False).replace("</", "<\\/")
 box = json.dumps(siegel({"heute": heute, "morgen": morgen}), ensure_ascii=False).replace("</", "<\\/")
@@ -46,6 +68,7 @@ frag = put(box)
 json.dump(siegel(heute), open(p("daten", "heute.json"), "w"), ensure_ascii=False)
 if morgen: json.dump(siegel(morgen), open(p("daten", "morgen.json"), "w"), ensure_ascii=False)
 elif os.path.exists(p("daten", "morgen.json")): os.remove(p("daten", "morgen.json"))
+if vorschau: json.dump(siegel(vorschau), open(p("daten", "vorschau.json"), "w"), ensure_ascii=False)
 head_end = frag.index("</style>") + len("</style>")
 doc = ('<!doctype html><html lang="de"><head><meta charset="utf-8">'
        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
@@ -54,4 +77,4 @@ doc = ('<!doctype html><html lang="de"><head><meta charset="utf-8">'
        '<style>[hidden]{display:none!important}body{margin:0}</style>'
        + frag[:head_end] + "</head><body>" + frag[head_end:] + "</body></html>")
 open(p("index.html"), "w", encoding="utf-8").write(doc)
-print("gebaut:", heute["date"], len(heute["items"]), "Einträge, morgen:", morgen["date"] if morgen else "keine")
+print("gebaut:", heute["date"], len(heute["items"]), "Einträge, morgen:", morgen["date"] if morgen else "keine", "| Vorschau:", ", ".join(sorted(vorschau["tage"])) if vorschau else "keine")

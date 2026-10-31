@@ -6,6 +6,7 @@ Geplante Aufgabe, Mo bis Fr früh (Europe/Berlin). Füllt Pult mit den Stunden v
 1. Heute und den nächsten Schultag bestimmen (Ferien- und Feiertagskalender beachten).
 2. Je Tag: Unterrichtskalender (Stunden, Aufsichten, Präsenzstunden, Vorbereitungsblöcke) und das Tagesmemo im Drive-Ordner Schule_Material/Tagesmemos_2026-27/<JJJJ-MM-TT> lesen (Verlaufspläne, Drucksachen, Material, Ratschläge).
 3. Daten nach dem Format unten im Klartext schreiben: `daten/heute.json`, `daten/morgen.json` (an freien Tagen `items: []`). Die Dateien im Repo sind verschlüsselt; die bisherige Fassung als Vorlage zeigt `ATELIER_SCHLUESSEL=… python3 -I werkzeuge/zeige.py daten/heute.json`.
+   - Liegt der Tag schon in `daten/vorschau.json` (vorab geplante Tage, `{"tage": {"JJJJ-MM-TT": Tag}}`, Klartext in `daten/klar/vorschau.json`), diesen Eintrag als Vorlage nehmen und nur gegen das Tagesmemo abgleichen; vergangene Tage aus der Vorschau entfernen.
    - Ohne Verlaufsplan: Grobplan aus der Kalenderbeschreibung, im Titel „(Grobplan)“.
    - Kernfakten zu Werken kurz an Museum oder Werkverzeichnis prüfen, Unsicheres weglassen.
    - Plan B und Hilfen dürfen Vorschläge sein; Impulsfragen mit erwarteter Antwort.

@@ -59,6 +59,10 @@ body.strip #strip{display:block}
 #still{position:fixed;inset:0;background:#fff;color:#000;display:none;z-index:19;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:Jost,sans-serif}
 #still .z{font-size:36vh;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 #still .w{font-size:5vh;font-weight:500;color:#555;margin-top:3vh}
+#hilfe{position:fixed;inset:0;background:rgba(0,0,0,.97);color:#fff;display:none;z-index:19;align-items:center;justify-content:center;font-family:Jost,sans-serif}
+#hilfe .box{display:grid;grid-template-columns:repeat(2,minmax(280px,38vw));gap:1.2vh 4vw;font-size:clamp(16px,2.2vh,28px)}
+#hilfe .box div{display:flex;gap:1em;align-items:baseline}#hilfe kbd{display:inline-block;min-width:2.2em;text-align:center;background:#fff;color:#000;border-radius:8px;padding:.1em .5em;font:inherit;font-weight:700}
+#hilfe h2{grid-column:1/-1;margin:0 0 1vh;font-weight:500;font-size:clamp(18px,2.6vh,32px);color:#aaa}
 #corner{position:fixed;right:2.2vw;bottom:2.2vh;z-index:15;background:rgba(255,255,255,.94);color:var(--ink);border:3px solid var(--accent);border-radius:14px;padding:10px 18px;display:none;font-weight:700;text-align:right;line-height:1.1}
 #corner.paused{border-color:#9aa0aa}#corner.paused .f{color:#555}#corner.paused .t{color:#888}
 #corner .f{color:var(--accent);font-size:clamp(14px,1.3vw,22px)}
@@ -196,6 +200,15 @@ body.strip #strip{display:block}
 <div id="simtag" style="display:none;position:fixed;top:8px;left:8px;z-index:30;background:#e2b04a;color:#000;font:700 14px/1 sans-serif;padding:6px 10px;border-radius:8px">TEST</div>
 <div id="stage"><canvas id="cv"></canvas><div id="html-slide"></div></div>
 <div id="black"></div>
+<div id="hilfe" role="dialog" aria-label="Tasten"><div class="box"><h2>Tasten (H oder Esc schließt)</h2>
+<div><kbd>→</kbd> Weiter (Folie, Phase folgt)</div><div><kbd>←</kbd> Zurück</div>
+<div><kbd>N</kbd> Nächste Phase von Hand</div><div><kbd>P</kbd> Pause oder Stopp</div>
+<div><kbd>B</kbd> Schwarzbild</div><div><kbd>T</kbd> Großer Timer</div>
+<div><kbd>R</kbd> Ruhe-Folie 30 Sekunden</div><div><kbd>Z</kbd> Zurück zur Arbeitsphase</div>
+<div><kbd>V</kbd> Verspätung eintragen</div><div><kbd>A</kbd> Ämter</div>
+<div><kbd>K</kbd> Dokumentenkamera</div><div><kbd>G</kbd> Alle Folien</div>
+<div><kbd>+</kbd> <kbd>−</kbd> <kbd>0</kbd> Zoom</div><div><kbd>M</kbd> Gong an oder aus</div>
+<div><kbd>F</kbd> Vollbild</div><div><kbd>Esc</kbd> Stundenwahl, Startseite</div></div></div>
 <div id="still" role="dialog" aria-label="Ruhe"><div class="z" id="stillZ">30</div><div class="w">Ruhe. Es geht gleich weiter.</div></div>
 <div id="klbox" role="dialog" aria-label="Klasse"></div>
 <div id="cam" aria-label="Dokumentenkamera"><div id="camwrap"><video id="camv" autoplay playsinline muted></video><canvas id="camfz"></canvas></div></div>
@@ -3078,6 +3091,8 @@ document.addEventListener("keydown", e => {
   const k = e.key;
   if (e.target && e.target.closest && e.target.closest("input,textarea")){ if (k === "Escape") e.target.blur(); return; }
   if (camOpen){ camKey(e); return; }
+  if (k === "h" || k === "H"){ e.preventDefault(); const h = $("#hilfe"); h.style.display = h.style.display === "flex" ? "none" : "flex"; return; }
+  if ($("#hilfe").style.display === "flex"){ e.preventDefault(); $("#hilfe").style.display = "none"; return; }
   if ($("#einst").classList.contains("on")){ if (k === "Escape"){ e.preventDefault(); $("#einst").classList.remove("on"); } return; }
   if (klOpen){ e.preventDefault(); if (k === "Escape" || k.toLowerCase() === klOpen.toLowerCase()) klClose(); else if (k === "v" || k === "V") showLate(); else if (k === "s" || k === "S") showStoer(); else if (k === "e" || k === "E") showEnd(); else if (k === "l" || k === "L") showRank(); else if (k === "a" || k === "A") showAemter(); return; }
   if (k === "v" || k === "V"){ e.preventDefault(); showLate(); return; }

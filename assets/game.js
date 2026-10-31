@@ -102,7 +102,11 @@
     ['inka', 'Die Verbindung ist abgerissen, du hast es gehört. Dabei sind zwanzig Dinge aus Josefs Suchbildern aus der Leitung gefallen und über die Seiten verstreut. Sigma war auch dran, der Homunkulus, Wagners Testobjekt. Er wollte sie mit eigenen Augen sehen.'],
     ['inka', 'Du findest sie zwischen den Bildern und Texten. Klick drauf, wenn du eins siehst. Die Lupe oben zählt mit. Jeder Fund gibt 100 Punkte. Die Zeit zählt nicht, lass dir Zeit.'],
     ['inka', 'Kommst du nicht weiter, klick auf die Lupe. Dann sag ich dir, wo ich eins gesehen habe. Aber Wagner liest mit und nimmt dafür 50 Punkte. Koordinaten kosten, sagt er.'],
-    ['inka', 'Die leichten sind groß und liegen offen. Die schweren sind klein und blass, am Rand, in den Fußzeilen, tief in den langen Rastern. In jeder Partie liegen sie woanders. Bei zwanzig kommt Gojira.']
+    {who:'inka', text:'Die leichten sind groß und liegen offen. Die schweren sind klein und blass, am Rand, in den Fußzeilen, tief in den langen Rastern. In jeder Partie liegen sie woanders. Bei zwanzig kommt *Gojira*. Hilfst du mir, sie einzusammeln?',
+     ask:[{s:'d', t:'Gern. Zeig mir, wo ich anfangen soll.', re:[['inka', '[m:froh]Höflich. Fang hier auf der Seite an, zwischen den Bildern. Ich sag dir, wenn es wärmer wird.']]},
+          {s:'p', t:'Du hast sie verloren. Warum ich?', re:[['inka', '[m:ueberrascht]Weil du da bist und ich hier drin. [m:froh]Außerdem bist du gut darin, das sehe ich am Scrollen.']]},
+          {s:'a', t:'Klar. Wo ist das erste?', re:[['inka', '[m:froh]So mag ich das. Nicht weit. Schau in die Bilder, nicht nur in den Text.']]},
+          {s:'v', t:'Mal sehen. Ich schau mich erst mal um.', re:[['inka', '[m:nachdenklich]Schau dich um. Die Dinge laufen nicht weg. Meistens.']]}]}
   ];
   var SKIPPED = [['inka', 'Schon gut, ich fasse mich kurz: zwanzig Dinge liegen auf den Seiten verstreut. Klick drauf, die Lupe zählt mit.'], ['inka', 'Ungeduldig. Gut. Zwanzig Dinge, überall versteckt. Die Lupe oben hilft, kostet aber.'], ['inka', 'Kein Modem für dich, verstanden. Die Dinge sind trotzdem da, zwanzig Stück. Klick, wenn du eins siehst.']];
   function visitLines(v){ var n = count(), left = N - n; var b = v.bonus ? ' Plus ' + v.bonus + ' Punkte fürs Wiederkommen.' : '';
@@ -117,12 +121,26 @@
     if (S.done) L.push(['inka', 'Du hast alle zwanzig. Neustart über die Lupe, wenn du willst, dann liegen sie woanders.']);
     return L; }
   var FIRST = [['inka', 'Der erste. Er ist zurück in seinem Suchbild, schau später nach. Sigma hat noch neunzehn verstreut.']];
-  var FIVE = [['wagner', 'Rohrschach. Ich sehe, Sie sammeln meine Versuchsanordnung ein. Fünf von zwanzig.'], ['wagner', 'Jedes Ding, das Sie finden, ist ein Punkt im Raster, den ich wieder einsetzen kann. Machen Sie ruhig weiter. Ich notiere die Koordinaten.']];
+  var FIVE = [['wagner', 'Rohrschach. Ich sehe, Sie sammeln meine Versuchsanordnung ein. *Fünf* von zwanzig.'],
+    {who:'wagner', text:'Jedes Ding, das Sie finden, ist ein Punkt im Raster, den ich wieder einsetzen kann. Machen Sie ruhig weiter. Ich notiere die Koordinaten. Sie arbeiten doch für das Raster, nehme ich an?',
+     ask:[{s:'d', t:'Ich sammle nur ein, was verloren ging.', re:[['wagner', 'Verloren. [m:nachdenklich]Nichts geht verloren, es wird nur falsch verbucht. Weiter.']]},
+          {s:'p', t:'Ich arbeite für niemanden. Schon gar nicht für ein Raster.', re:[['wagner', '[m:wuetend]Jeder arbeitet für ein Raster. [m:neutral]Die meisten merken es nur nicht. Immerhin: Sie widersprechen. Das ist selten.']]},
+          {s:'a', t:'Sagen Sie mir lieber, wo die nächsten liegen.', re:[['wagner', 'Koordinaten kosten. Fünfzig. [m:froh]Aber Sie fragen wenigstens richtig.']]},
+          {s:'v', t:'Keine Ahnung. Ich klicke, was ich sehe.', re:[['wagner', '[m:wuetend]Sie klicken, was Sie sehen. [m:neutral]Das ist keine Methode, das ist Wetter.']]}]}];
   function TEN(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }).map(function(p){ return NAMES[p.id]; });
     return [['xae', 'X Æ A-13. Zehn Objekte in dieser Zeit. Ich hätte alle zwanzig in vier Sekunden gehabt. Fotografisches Gedächtnis, Nil-Augmentation, dritte Generation.'],
-            ['xae', 'Damit Sie nicht völlig verloren sind, die Liste der restlichen: ' + left.join(', ') + '. Wo, sage ich nicht. Das wäre ja langweilig.']]; }
-  var FIFTEEN = [['sigma', '… hallo? Hier. Hinter dem Glas. Ich bin Sigma. 137b, final, final.'], ['sigma', 'Ich wollte die Dinge nur einmal selbst sehen. Ohne Raster, ohne Koordinaten. Einen Burger. Einen Hai. Fünf fehlen noch. Dann lässt er mich vielleicht in Ruhe.']];
-  var DONE = [['gojira', '…'], ['gojira', '… … …'], ['sigma', 'Das war Gojira. Er hat das Quadrat eingegraben, für dich. Als Relikt vergangener Existenz, würde Wagner sagen. Danke.']];
+            {who:'xae', text:'Damit Sie nicht völlig verloren sind, die Liste der restlichen: ' + left.join(', ') + '. Wo, sage ich nicht. Das wäre ja langweilig. Beeindruckt?',
+             ask:[{s:'d', t:'Vier Sekunden. Das ist wirklich beeindruckend.', re:[['xae', '[m:froh]Ich weiß. Danke, dass Sie es aussprechen. Die wenigsten tun das.']]},
+                  {s:'p', t:'Vier Sekunden mit Augmentation. Das zählt nicht.', re:[['xae', '[m:wuetend]Es zählt. Alles zählt, das ist der Punkt. [m:neutral]Ihre Zeit zählt übrigens nicht, hat Inka gesagt. Glück für Sie.']]},
+                  {s:'a', t:'Dann hilf mir, schneller zu werden.', re:[['xae', 'Schneller werden Sie nicht. [m:nachdenklich]Gründlicher vielleicht. Die kleinen Dinge liegen am Rand.']]},
+                  {s:'v', t:'Ich habe es nicht eilig.', re:[['xae', '[m:nachdenklich]Nein. Das sehe ich an allem.']]}]}]; }
+  var FIFTEEN = [['sigma', '... hallo? Hier. Hinter dem Glas. Ich bin Sigma. 137b, final, final.', 'nachdenklich'],
+    {who:'sigma', mood:'traurig', text:'Ich wollte die Dinge nur einmal selbst sehen. Ohne Raster, ohne Koordinaten. Einen *Burger*. Einen *Hai*. Fünf fehlen noch. Dann lässt er mich vielleicht in Ruhe. Bist du böse auf mich?',
+     ask:[{s:'d', t:'Nein. Ich hätte sie auch sehen wollen.', re:[['sigma', '[m:froh]... danke. Dann sind wir zwei, die schauen.']]},
+          {s:'p', t:'Du hast sie gestohlen. Natürlich bin ich böse.', re:[['sigma', '[m:traurig]... [p:.6] gestohlen. [m:nachdenklich]Vielleicht. Ich bringe sie zurück, wenn du sie findest. Versprochen.']]},
+          {s:'a', t:'Nein. Sag mir, wo die letzten fünf sind.', re:[['sigma', '[m:ueberrascht]Ich weiß es nicht mehr. [m:nachdenklich]Klein sind sie. Am Rand, wo niemand hinsieht. Da war ich auch.']]},
+          {s:'v', t:'...', re:[['sigma', '[m:froh]... du schweigst auch. Gut. Das Glas ist dünn, wenn man leise ist.']]}]}];
+  var DONE = [['gojira', '...'], ['gojira', '... ... ...'], ['inka', 'Das war Gojira. Er sagt: Er hat das [w:index:green|Quadrat] eingegraben, für dich. Als Relikt vergangener Existenz, würde Wagner sagen.', 'froh'], ['sigma', '[m:froh]Danke. Alle zwanzig. Das Glas ist still.']];
   var dlg = null;
   function blip(){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = 'square'; o.frequency.value = 520 + Math.random() * 90; var g = ac.createGain(); g.gain.setValueAtTime(.07, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
   var GV = {'g-fund':'gsnd.find', 'g-stempel':'gsnd.stamp'};
@@ -140,19 +158,128 @@
     var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = c.blip[1]; o.frequency.value = c.blip[0] * Math.pow(2, st / 12) * (.94 + Math.random() * .12); var g = ac.createGain(); g.gain.setValueAtTime(c.blip[1] === 'sine' ? .12 : .05, t); g.gain.exponentialRampToValueAtTime(.001, t + .045); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .05); }
   function rumble(){ document.documentElement.classList.add('beben'); setTimeout(function(){ document.documentElement.classList.remove('beben'); }, 2400); if (sp('g-gojira', {vol:1, max:3})) return; var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime; var o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(38, t); o.frequency.linearRampToValueAtTime(26, t + 2.2); var f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 120; var g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.7, t + .4); g.gain.linearRampToValueAtTime(0, t + 2.4); o.connect(f); f.connect(g); g.connect(A.bus); o.start(t); o.stop(t + 2.5);
     document.documentElement.classList.add('beben'); setTimeout(function(){ document.documentElement.classList.remove('beben'); }, 2400); }
-  function dialog(lines, done){ if (dlg){ dq = (dq || []).concat(lines); return; } var k = 0, typing = null; dq = [];
-    lines = lines.map(function(l){ return typeof l === 'string' ? ['inka', l] : l; });
+  /* ---------- Dialogsystem (Suchbild 2.0, Etappe 2; Josef, 29.10., 13:29 bis 14:30, 36 Rückfragen) ----------
+     SNES-Fenster: höchstens 3 Zeilen je Seite, etwa 34 Zeichen je Zeile; ▼ wippt, Klick oder Taste blättert, Klick beim Tippen füllt die Seite.
+     Stimmungen (neutral, froh, wütend, überrascht, traurig, nachdenklich) ändern Tempo, Pausen, Stocken, Texteffekte, Fenster und Stimme.
+     Grundtempo etwa 20 Zeichen je Sekunde, je Figur anders; Pausen an Satzzeichen; betonte Wörter (*so*) halb so schnell, größer, in Figurenfarbe.
+     Stimme nach Celeste: je Figur ein Silbensatz, Blip auf jedem zweiten Buchstaben, Endsilbe je Stimmung. Antworten in vier Haltungen (diplomatisch, provokativ, aktiv, passiv),
+     höchstens zwei je Gespräch; Verhältnis je Figur auf Nähe und Respekt, träge. Markierungen im Text: *betont*, [m:stimmung] Wechsel, [p:0.4] Pause in Sekunden, [cut] abgebrochen,
+     [w:id|Titel] Werktitel als Link. Zeile: ['wer', 'Text'] oder {who, text, mood, ask:[{s:'d|p|a|v', t:'Antwort', re:[Zeilen]}]}. */
+  var MOODS = ['neutral', 'froh', 'wuetend', 'ueberrascht', 'traurig', 'nachdenklich'];
+  var MOOD = {neutral:{k:1, pause:1}, froh:{k:.88, pause:.8}, wuetend:{k:.72, pause:.55, fx:'shk', win:'shake'}, ueberrascht:{k:.8, pause:1.3}, traurig:{k:1.35, pause:1.7, stock:.18, win:'thin'}, nachdenklich:{k:1.2, pause:1.5, stock:.12}};
+  var STANCE = {d:{icon:'◇', name:'diplomatisch'}, p:{icon:'!', name:'provokativ'}, a:{icon:'→', name:'aktiv'}, v:{icon:'…', name:'passiv'}};
+  /* Vorlieben (13:29): Inka mag aktiv und provokativ; Wagner respektiert provokativ widerwillig, verachtet passiv; X Æ A-13 mag Bewunderung (diplomatisch), hasst Widerspruch (provokativ); Sigma mag sanft (diplomatisch) und passiv, erschrickt bei provokativ */
+  var LIKES = {inka:{a:[1, 0], p:[1, 1], d:[0, 0], v:[-1, 0]}, wagner:{p:[0, 1], v:[-1, -1], d:[0, 0], a:[0, 1]}, xae:{d:[1, 1], p:[-1, -1], a:[0, 0], v:[0, -1]}, sigma:{d:[1, 0], v:[1, 0], p:[-1, -1], a:[0, 0]}, gojira:{d:[1, 0], p:[0, 0], a:[0, 1], v:[0, 0]}};
+  function rel(who){ S.rel = S.rel || {}; return S.rel[who] || (S.rel[who] = {n:0, r:0, dn:0, dr:0}); }
+  function relAdd(who, st){ var L = (LIKES[who] || LIKES.inka)[st] || [0, 0], R = rel(who);
+    R.dn += L[0]; R.dr += L[1];   /* träge: drei Antworten in dieselbe Richtung ändern eine Stufe */
+    if (R.dn >= 3){ R.n = Math.min(5, R.n + 1); R.dn = 0; } if (R.dn <= -3){ R.n = Math.max(-5, R.n - 1); R.dn = 0; }
+    if (R.dr >= 3){ R.r = Math.min(5, R.r + 1); R.dr = 0; } if (R.dr <= -3){ R.r = Math.max(-5, R.r - 1); R.dr = 0; }
+    S.answers = (S.answers || 0) + 1; save(); }
+  function baseMood(who){ var R = rel(who); if (R.r <= -2) return 'wuetend'; if (R.n >= 2) return 'froh'; if (who === 'sigma') return 'nachdenklich'; return 'neutral'; }
+  function tspeed(){ var v = S.tspeed || 'normal'; return v === 'langsam' ? 1.6 : v === 'sofort' ? 0 : 1; }
+  /* Stimme: Silben synthetisch, je Figur Grundton, Wellenform und Formant; Stimmung verschiebt Tonhöhe und Verlauf; drei Sätze: schnell, betont, Ende */
+  var VOICE = {inka:{f:760, w:'square', q:4, up:1}, wagner:{f:300, w:'square', q:2, up:-1}, xae:{f:1200, w:'triangle', q:8, up:0}, sigma:{f:520, w:'sine', q:3, up:1}, gojira:{f:60, w:'sawtooth', q:1, up:-1}};
+  var MOODV = {neutral:[0, 0], froh:[2, 1], wuetend:[-2, -1], ueberrascht:[4, 1], traurig:[-3, -1], nachdenklich:[-1, 0]};
+  var lastSyl = -1;
+  function syl(who, mood, kind){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var bv = CF('dlg.blipvol', 1); if (bv <= 0) return; var V = VOICE[who] || VOICE.inka, mv = MOODV[mood] || [0, 0];
+    var st = CF('dlg.pitch.' + who, 0) + mv[0]; var n = 20; var i; do { i = Math.floor(Math.random() * n); } while (i === lastSyl); lastSyl = i;   /* keine Silbe zweimal hintereinander */
+    var ac = A.ac, t = ac.currentTime, f0 = V.f * Math.pow(2, (st + (i % 5) * .4 - .8) / 12), dur = kind === 'end' ? .16 : (kind === 'emph' ? .09 : .045 + (i % 3) * .008);
+    var o = ac.createOscillator(); o.type = V.w; o.frequency.setValueAtTime(f0, t);
+    var glide = kind === 'end' ? (mood === 'ueberrascht' || /\?$/.test(kind) ? 1.4 : (mood === 'wuetend' ? .8 : (mood === 'traurig' ? .7 : .85))) : (1 + mv[1] * .06 * V.up);
+    o.frequency.exponentialRampToValueAtTime(Math.max(30, f0 * glide), t + dur);
+    var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f0 * 2.2; bp.Q.value = V.q; var g = ac.createGain(); var vol = (V.w === 'sine' ? .14 : .06) * bv * (kind === 'emph' ? 1.4 : 1) * (kind === 'end' ? 1.2 : 1);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.001, t + dur); o.connect(bp); bp.connect(g); g.connect(A.bus); o.start(t); o.stop(t + dur + .02); }
+  function endSyl(who, mood, text){ var k = /\?\s*$/.test(text) ? 'end?' : 'end'; syl(who, mood === 'neutral' && k === 'end?' ? 'ueberrascht' : mood, k); }
+  function cursorSnd(kind){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime, o = ac.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(kind === 'ok' ? 880 : 660, t); if (kind === 'ok') o.frequency.setValueAtTime(1320, t + .05);
+    var g = ac.createGain(); g.gain.setValueAtTime(.05, t); g.gain.exponentialRampToValueAtTime(.001, t + (kind === 'ok' ? .12 : .06)); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .14); }
+  /* Text in Zeichen mit Eigenschaften zerlegen; Steuerzeichen bleiben als Ereignisse an der Stelle */
+  function parseLine(text){ var out = [], i = 0, emph = false, link = null;
+    while (i < text.length){ var ch = text[i];
+      if (ch === '[' ){ var j = text.indexOf(']', i); if (j > 0){ var tag = text.slice(i + 1, j), m;
+          if ((m = /^m:(\w+)$/.exec(tag)) && MOOD[m[1]]){ out.push({ev:'mood', v:m[1]}); i = j + 1; continue; }
+          if ((m = /^p:([\d.]+)$/.exec(tag))){ out.push({ev:'pause', v:parseFloat(m[1])}); i = j + 1; continue; }
+          if (tag === 'cut'){ out.push({ev:'cut'}); i = j + 1; continue; }
+          if ((m = /^w:(?:(\w+):)?([\w-]+)\|([^\]]+)$/.exec(tag))){ var lk = {id:m[2], page:m[1] || ''}; Array.prototype.forEach.call(m[3], function(c){ out.push({ch:c, emph:true, link:lk}); }); i = j + 1; continue; } } }
+      if (ch === '*'){ emph = !emph; i++; continue; }
+      out.push({ch:ch, emph:emph}); i++; }
+    return out; }
+  /* in Seiten zu höchstens 3 Zeilen umbrechen (Wortgrenzen), Steuerzeichen hängen am folgenden Zeichen */
+  function paginate(items, cols, rows){ var pages = [], page = [], line = 0, col = 0, k = 0;
+    function wordLen(from){ var n = 0; for (var q = from; q < items.length && items[q].ch !== undefined && items[q].ch !== ' '; q++) n++; return n; }
+    while (k < items.length){ var it = items[k];
+      if (it.ev){ page.push(it); k++; continue; }
+      if (it.ch === ' '){ if (col === 0){ k++; continue; } var wl = wordLen(k + 1); if (col + 1 + wl > cols){ line++; col = 0; k++; if (line >= rows){ pages.push(page); page = []; line = 0; } continue; } }
+      if (col === 0 && line === 0 && page.length === 0 && it.ch === ' '){ k++; continue; }
+      page.push(it); col++; k++;
+      if (col >= cols){ line++; col = 0; if (line >= rows){ pages.push(page); page = []; line = 0; } } }
+    if (page.length) pages.push(page); return pages; }
+  function norm(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
+  function dialog(lines, done, opt){ opt = opt || {}; if (dlg){ dq = (dq || []).concat(lines); return; } dq = [];
+    lines = lines.map(norm); var k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
     dlg = document.createElement('div'); dlg.className = 'sbdlg'; dlg.setAttribute('role', 'dialog');
-    dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><img alt=""><div class="txt"><b class="who"></b><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
-    document.body.appendChild(dlg); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), cur;
-    function show(i){ var who_ = lines[i][0], text = lines[i][1]; var lv = dlg.querySelector('.dlglive'); if (lv) lv.textContent = ((CH[who_] || CH.inka).name) + ': ' + text; cur = CH[who_] || CH.inka; dlg.className = 'sbdlg c-' + who_; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; img.src = '../assets/game/char-' + who_ + '.png'; dlg.style.setProperty('--c', cur.col);
-      p.textContent = ''; more.style.visibility = 'hidden'; var n = 0; clearInterval(typing); if (who_ === 'gojira' && k === 0) rumble(); if (who_ === 'inka' && i === 0 && lines.length > 1) sp('g-kraehe', {vol:.5, max:.3});
-      typing = setInterval(function(){ n++; p.textContent = text.slice(0, n); if (who_ !== 'gojira' && n % Math.max(1, Math.round(CF('dlg.blipevery', 2))) === 1 % Math.max(1, Math.round(CF('dlg.blipevery', 2))) && text[n - 1] !== ' ') blipFor(cur, who_); if (n >= text.length){ clearInterval(typing); typing = null; more.style.visibility = 'visible'; } }, CF('dlg.ms.' + who_, cur.speed)); }
-    function next(e){ if (e) { e.preventDefault(); e.stopPropagation(); } if (typing){ clearInterval(typing); typing = null; p.textContent = lines[k][1]; more.style.visibility = 'visible'; return; }
-      k++; if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(function(l){ return typeof l === 'string' ? ['inka', l] : l; })); dq = []; show(k); return; } close(); return; } show(k); }
-    function close(){ if (!dlg) return; document.removeEventListener('keydown', onkey); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(); }
-    function onkey(e){ if (e.key === 'Escape') close(); else if (e.key === ' ' || e.key === 'Enter') next(e); }
-    dlg.addEventListener('click', next); document.addEventListener('keydown', onkey); show(0); }
+    dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><b class="who"></b><img alt=""><div class="txt"><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
+    document.body.appendChild(dlg); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), win = dlg.querySelector('.win'), live = dlg.querySelector('.dlglive');
+    function portrait(w, mood){ img.src = '../assets/game/char-' + w + '-' + (mood || 'neutral') + '.png'; img.onerror = function(){ img.onerror = null; img.src = '../assets/game/char-' + w + '.png'; }; }
+    function setMood(m){ curMood = m; MOODS.forEach(function(x){ dlg.classList.remove('m-' + x); }); dlg.classList.add('m-' + m); portrait(lines[k].who, m); }
+    function startLine(){ var L = lines[k]; cur = CH[L.who] || CH.inka; dlg.className = 'sbdlg c-' + L.who; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; dlg.style.setProperty('--c', cur.col);
+      var m0 = L.mood || baseMood(L.who); if (L.who === 'gojira') m0 = 'neutral'; setMood(m0);
+      var cols = Math.round(CF('dlg.chars', 34)), rows = Math.round(CF('dlg.lines', 3)); if (L.who === 'gojira'){ cols = 12; rows = 1; }
+      pages = paginate(parseLine(L.text), cols, rows); if (!pages.length) pages = [[]]; pageIdx = 0;
+      live.textContent = cur.name + ': ' + L.text.replace(/\[[^\]]*\]|\*/g, '');
+      if (L.who === 'gojira' && k === 0) rumble(); if (L.who === 'inka' && k === 0 && lines.length > 1) sp('g-kraehe', {vol:.5, max:.3});
+      showPage(); }
+    function delayFor(it, next, L){ var ms = CF('dlg.ms.' + L.who, cur.speed) * (MOOD[curMood] || MOOD.neutral).k * tspeed(); if (it.emph) ms *= 2;
+      var ch = it.ch, pz = (MOOD[curMood] || MOOD.neutral).pause * tspeed(), add = 0;
+      if (ch === ',' || ch === ';' || ch === ':') add = CF('dlg.p.comma', .15); else if (ch === '.' && !(next && next.ch === '.')) add = CF('dlg.p.stop', .35); else if (ch === '!' || ch === '?') add = CF('dlg.p.excl', .3);
+      if (ch === '.' && next && next.ch === '.') add = 0; if (ch === '.' && items3dots(it)) add = CF('dlg.p.dots', .6);
+      if (ch === ' ' && (MOOD[curMood] || {}).stock && Math.random() < MOOD[curMood].stock) add += .12 + Math.random() * .2;   /* Stocken */
+      return ms + add * 1000 * pz; }
+    function items3dots(it){ return it._dots; }
+    function showPage(){ var items = pages[pageIdx]; p.innerHTML = ''; more.style.visibility = 'hidden'; typing = true; if (raf) cancelAnimationFrame(raf); dlg.classList.remove('cut');
+      /* drei Punkte markieren */ for (var q = 0; q < items.length; q++){ if (items[q].ch === '.' && items[q + 1] && items[q + 1].ch === '.' && items[q + 2] && items[q + 2].ch === '.'){ items[q + 2]._dots = true; } }
+      var spans = [], curLink = null, linkEl = null; items.forEach(function(it){ if (it.ev) return; var el;
+        if (it.link){ if (!linkEl || curLink !== it.link){ linkEl = document.createElement('a'); linkEl.className = 'wl'; linkEl.href = (document.getElementById('w-' + it.link.id) ? '' : (it.link.page || 'kunst') + '.html') + '#w-' + it.link.id; linkEl.addEventListener('click', function(e){ e.stopPropagation(); }); p.appendChild(linkEl); curLink = it.link; } el = document.createElement('span'); linkEl.appendChild(el); }
+        else { curLink = null; el = document.createElement('span'); p.appendChild(el); }
+        el.textContent = it.ch; el.className = 'ch' + (it.emph ? ' emph' : '') + ((MOOD[curMood] || {}).fx ? ' ' + MOOD[curMood].fx : '') + (lines[k].who === 'sigma' ? ' wav' : ''); el.style.visibility = 'hidden'; el.style.animationDelay = (spans.length * 37 % 400) + 'ms'; spans.push(el); });
+      var L = lines[k], i = 0, si = 0, due = performance.now(), fin = false, nvis = 0;
+      var hidden = document.hidden;
+      function finish(){ if (fin) return; fin = true; typing = false; spans.forEach(function(s){ s.style.visibility = ''; }); if (!dlg) return;
+        var txt = items.map(function(x){ return x.ch || ''; }).join(''); if (pageIdx === pages.length - 1) endSyl(L.who, curMood, txt);
+        if (pageIdx === pages.length - 1 && L.ask && answered < 2 && !pending) askAnswers(L); else more.style.visibility = 'visible'; }
+      function step(now){ if (fin || !dlg) return; if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
+        if (now < due){ raf = requestAnimationFrame(step); return; }
+        while (i < items.length && items[i].ev){ var ev = items[i++]; if (ev.ev === 'mood') setMood(ev.v); else if (ev.ev === 'pause') due = now + ev.v * 1000 * tspeed(); else if (ev.ev === 'cut'){ dlg.classList.add('cut'); i = items.length; } }
+        if (due > now){ raf = requestAnimationFrame(step); return; }
+        if (i >= items.length){ finish(); return; }
+        var it = items[i], el = spans[si]; el.style.visibility = ''; if ((MOOD[curMood] || {}).fx === 'shk' || L.who === 'gojira') el.classList.add('live'); nvis++;
+        if (L.who === 'gojira'){ dlg.classList.add('quake'); setTimeout(function(){ if (dlg) dlg.classList.remove('quake'); }, 180); syl('gojira', curMood, 'emph'); }
+        else if (it.ch !== ' ' && !/[.,;:!?]/.test(it.ch) && nvis % Math.max(1, Math.round(CF('dlg.blipevery', 2))) === 0) syl(L.who, curMood, it.emph ? 'emph' : 'quick');
+        due = now + delayFor(it, items[i + 1], L); i++; si++; raf = requestAnimationFrame(step); }
+      raf = requestAnimationFrame(step); }
+    function askAnswers(L){ pending = L; more.style.visibility = 'hidden'; var box = document.createElement('div'); box.className = 'answers'; box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Antwort wählen');
+      L.ask.forEach(function(a, idx){ var b = document.createElement('button'); b.type = 'button'; b.className = 'ans s-' + a.s; b.innerHTML = '<i aria-hidden="true">' + STANCE[a.s].icon + '</i><span>' + esc(a.t) + '</span><small class="vh">' + STANCE[a.s].name + '</small>'; b.setAttribute('data-i', idx);
+        b.addEventListener('click', function(e){ e.stopPropagation(); choose(a); }); b.addEventListener('mouseenter', function(){ cursorSnd('mv'); }); box.appendChild(b); });
+      dlg.insertBefore(box, win); var first = box.querySelector('button'); if (first) first.focus(); }
+    function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); var box = dlg.querySelector('.answers'); if (box) box.remove();
+      var re = (a.re || []).map(norm); if (!re.length) re = [{who:L.who, text:'...'}];
+      lines.splice(k + 1, 0, ...re); next(); }
+    function next(e){ if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
+      if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });
+        var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ askAnswers(L); return; } more.style.visibility = 'visible'; cursorSnd('mv'); return; }
+      if (pageIdx < pages.length - 1){ pageIdx++; cursorSnd('mv'); showPage(); return; }
+      k++; cursorSnd('mv'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(); return; } startLine(); }
+    function close(){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(); }
+    function onkey(e){ if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (pending){ var bs = [].slice.call(dlg.querySelectorAll('.ans')); var cur_ = bs.indexOf(document.activeElement);
+        if (/^[1-4]$/.test(e.key) && bs[+e.key - 1]){ e.preventDefault(); bs[+e.key - 1].click(); return; }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); bs[(cur_ + 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); bs[(cur_ - 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
+        if (e.key === 'Escape'){ close(); } return; }
+      if (e.key === 'Escape') close(); else if (e.key === ' ' || e.key === 'Enter') next(e); }
+    dlg.addEventListener('click', function(e){ if (e.target.closest('.answers')) return; next(e); }); document.addEventListener('keydown', onkey);
+    document.addEventListener('visibilitychange', function vis(){ if (!dlg){ document.removeEventListener('visibilitychange', vis); return; } });
+    startLine(); }
   var dq = [];
   /* Josef, 28.10., 01:54: Inka kommt einmal pro Besuch von selbst, mit verschiedenen Ansprachen je Spielstand (mehrere je Stand, zufällig) */
   function pickOne(a){ return a[Math.floor(Math.random() * a.length)]; }
@@ -212,7 +339,11 @@
   function refresh(){ if (num) num.textContent = count(); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return;
     var p = left[Math.floor(Math.random() * left.length)]; S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
-    dialog([['inka', NAMES[p.id] + ': ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '')], ['wagner', 'Fünfzig Punkte. Koordinaten kosten.']]); }
+    var R = rel('inka'), exact = R.n >= 2;   /* Nähe zu Inka: genauere Hinweise */
+    var wag = rel('wagner').r >= 2 ? 'Fünfzig Punkte. Für Sie hätte ich es billiger gemacht, aber das Raster kennt keine Freunde.' : (rel('wagner').r <= -2 ? '[m:wuetend]Fünfzig Punkte. Für Sie eigentlich hundert.' : 'Fünfzig Punkte. Koordinaten kosten.');
+    var lines = [['inka', '*' + NAMES[p.id] + '*: ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '') + (exact ? ' Ich zeig dir noch mehr: ' + (p.x < 50 ? 'eher links' : 'eher rechts') + ', ' + (p.y < 50 ? 'oben' : 'unten') + '.' : ''), exact ? 'froh' : undefined]];
+    if ((S.hints || 0) % 3 === 1) lines.push({who:'wagner', text:wag + ' Einverstanden?', ask:[{s:'d', t:'In Ordnung. Danke für die Koordinaten.', re:[['wagner', '[m:froh]Bitte. Ein Geschäft ist ein Geschäft.']]}, {s:'p', t:'Wucher. Inka hätte es umsonst gesagt.', re:[['wagner', '[m:wuetend]Inka sagt vieles umsonst. [m:neutral]Deshalb ist sie auch nicht verantwortlich.']]}, {s:'a', t:'Abgemacht. Nächster Hinweis bitte gleich.', re:[['wagner', 'Nacheinander. Erst suchen, dann zahlen.']]}, {s:'v', t:'Von mir aus.', re:[['wagner', '[m:nachdenklich]Von Ihnen aus. Sehr wohl.']]}]}); else lines.push(['wagner', wag]);
+    dialog(lines); }
 
   /* Regler-Leiste: Dialogprobe und Spielstand (nur für Josefs Feintuning) */
   window.JK_DIALOG = function(lines){ dialog(lines); };

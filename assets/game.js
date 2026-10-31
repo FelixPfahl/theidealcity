@@ -44,11 +44,20 @@
   var LHG = window.JK_LH || {}, BIGF = LHG.bigobj ? 2 : 1;   /* Lesehilfe: größere Dinge */
   SIZE = {1:CF('game.size1', SIZE[1]) * BIGF, 2:CF('game.size2', SIZE[2]) * BIGF, 3:CF('game.size3', SIZE[3]) * BIGF};
   var S = load(); if (!S.seed) S.seed = (Math.random() * 4294967295) >>> 0; PLACES = deal();
+  /* Besuche (Josef, 29.10., 13:14): neuer Besuch nach 6 Stunden Pause; Bonus 50 je neuer Besuch, +25 je Besuch in Folge (innerhalb 48 Stunden), höchstens 200; Stempel je Besuch auf der Urkunde */
+  var NEWV = null;
+  (function(){ var now = Date.now(), last = S.lastVisit || 0, gap = now - last;
+    if (!last){ S.visits = 1; S.streak = 1; S.visitBonus = 0; S.stamps = [now]; S.lastVisit = now; S.introVisit = 0; NEWV = {n:1, bonus:0, first:true}; save(); return; }
+    if (gap > 6 * 3600e3){ S.visits = (S.visits || 1) + 1; S.streak = gap < 48 * 3600e3 ? (S.streak || 1) + 1 : 1; var b = Math.min(CF('game.bonusmax', 200), CF('game.bonus', 50) + CF('game.bonusstep', 25) * (S.streak - 1));
+      S.visitBonus = (S.visitBonus || 0) + b; S.stamps = (S.stamps || []).concat([now]).slice(-40); S.lastVisit = now; NEWV = {n:S.visits, bonus:b, streak:S.streak, gap:gap}; save(); }
+    else { S.lastVisit = now; save(); } })();
+  function optedOut(){ return !!S.optout && S.optout === (S.visits || 1); }   /* "Nicht jetzt": keine Dialoge, keine Dinge bis zum nächsten Besuch; Inka rufen bleibt */
+  function notNow(){ S.optout = S.visits || 1; save(); document.querySelectorAll('.sbobj, .sbli').forEach(function(o){ o.remove(); }); }
   function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
-  function points(){ return Math.max(0, count() * CF('game.pts', 100) - S.hints * CF('game.hint', HINT_COST)); }   /* kein Zeitabzug (Josef, 29.10., 13:14) */
+  function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
   function fmt(t){ var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   function accent(el){ return getComputedStyle(el.closest('.comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A'; }
 
@@ -89,12 +98,24 @@
     gojira: {name:'GOJIRA', col:'#00A651', speed:150, blip:[60, 'sine']}                 /* nur Punkte und ein Beben */
   };
   var RULES = [
-    ['inka', 'Psst. Ich bin Inka. Ich beobachte diese Seiten schon eine Weile. Ich beobachte eigentlich alles.'],
-    ['inka', 'Sigma ist weg. Der Homunkulus, Wagners Testobjekt. Er hat Risse im Raster gefunden und ist durch. Und er hat zwanzig Dinge aus Josefs Suchbildern mitgenommen, die er mit eigenen Augen sehen wollte.'],
+    ['inka', 'Psst. Ich bin Inka. Das war ich eben, in der Leitung. Ich beobachte diese Seiten schon eine Weile. Ich beobachte eigentlich alles.'],
+    ['inka', 'Die Verbindung ist abgerissen, du hast es gehört. Dabei sind zwanzig Dinge aus Josefs Suchbildern aus der Leitung gefallen und über die Seiten verstreut. Sigma war auch dran, der Homunkulus, Wagners Testobjekt. Er wollte sie mit eigenen Augen sehen.'],
     ['inka', 'Du findest sie zwischen den Bildern und Texten. Klick drauf, wenn du eins siehst. Die Lupe oben zählt mit. Jeder Fund gibt 100 Punkte. Die Zeit zählt nicht, lass dir Zeit.'],
     ['inka', 'Kommst du nicht weiter, klick auf die Lupe. Dann sag ich dir, wo ich eins gesehen habe. Aber Wagner liest mit und nimmt dafür 50 Punkte. Koordinaten kosten, sagt er.'],
     ['inka', 'Die leichten sind groß und liegen offen. Die schweren sind klein und blass, am Rand, in den Fußzeilen, tief in den langen Rastern. In jeder Partie liegen sie woanders. Bei zwanzig kommt Gojira.']
   ];
+  var SKIPPED = [['inka', 'Schon gut, ich fasse mich kurz: zwanzig Dinge liegen auf den Seiten verstreut. Klick drauf, die Lupe zählt mit.'], ['inka', 'Ungeduldig. Gut. Zwanzig Dinge, überall versteckt. Die Lupe oben hilft, kostet aber.'], ['inka', 'Kein Modem für dich, verstanden. Die Dinge sind trotzdem da, zwanzig Stück. Klick, wenn du eins siehst.']];
+  function visitLines(v){ var n = count(), left = N - n; var b = v.bonus ? ' Plus ' + v.bonus + ' Punkte fürs Wiederkommen.' : '';
+    var tod = new Date().getHours(), late = tod >= 23 || tod < 5, wknd = [0, 6].indexOf(new Date().getDay()) >= 0, longGone = v.gap > 7 * 86400e3;
+    var L = [];
+    if (longGone) L.push(['inka', 'Du warst lange weg. ' + (n ? n + ' von zwanzig hattest du.' : 'Noch nichts gefunden.') + ' Die Leitung ist noch dieselbe, sie bricht immer noch ab.' + b]);
+    else if (v.streak >= 3) L.push(['inka', 'Dritter Tag in Folge, oder mehr. Wagner hat gefragt, ob du bezahlt wirst.' + b]);
+    else L.push(['inka', pickOne(['Wieder da. Die Einwahl, du hast es gehört, dieselbe Nummer, derselbe Abbruch.', 'Da bist du wieder. Ich hatte die Leitung kurz, dann war sie weg.', 'Zurück. Ich sage nur: NO CARRIER. Wie immer.']) + b]);
+    if (late) L.push(['sigma', '... es ist spät. Ich bin auch wach. Hinter dem Glas ist es immer hell.']);
+    else if (wknd) L.push(['xae', 'Wochenende. Statistisch die Zeit, in der Leute Dinge suchen, die sie nicht brauchen. Weiter.']);
+    if (n && !S.done) L.push(['inka', left + ' fehlen noch. ' + (left <= 5 ? 'Die letzten sind klein.' : 'Lass dir Zeit.')]);
+    if (S.done) L.push(['inka', 'Du hast alle zwanzig. Neustart über die Lupe, wenn du willst, dann liegen sie woanders.']);
+    return L; }
   var FIRST = [['inka', 'Der erste. Er ist zurück in seinem Suchbild, schau später nach. Sigma hat noch neunzehn verstreut.']];
   var FIVE = [['wagner', 'Rohrschach. Ich sehe, Sie sammeln meine Versuchsanordnung ein. Fünf von zwanzig.'], ['wagner', 'Jedes Ding, das Sie finden, ist ein Punkt im Raster, den ich wieder einsetzen kann. Machen Sie ruhig weiter. Ich notiere die Koordinaten.']];
   function TEN(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }).map(function(p){ return NAMES[p.id]; });
@@ -143,9 +164,41 @@
     if (n < 15) return [['inka', pickOne([n + ' von zwanzig, ' + points() + ' Punkte. Die Hälfte ist geschafft, der Rest ist kleiner.' + hereTxt, 'X Æ A-13 hat dir die Liste gegeben, ich weiß. Er hätte es in vier Sekunden gehabt, sagt er. ' + n + ' hast du.' + hereTxt])], ['wagner', 'Rohrschach. Ich lese mit. ' + (N - n) + ' Punkte fehlen im Raster.']];
     if (n < N) return [['sigma', pickOne(['… du bist zurück. ' + (N - n) + ' fehlen noch. Ich warte hinter dem Glas.', 'Noch ' + (N - n) + '. Wagner hat heute nicht nach mir gesehen. Gut so.'])], ['inka', 'Die letzten liegen am Rand, in den Fußzeilen, tief in den langen Rastern.' + hereTxt]];
     return RULES; }
-  function intro(){ var seen = false; try { seen = !!sessionStorage.getItem('jk_sb_seen'); } catch(e){} if (seen) return;
-    var start = function(){ try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet()); };
-    (function wait(n){ if (document.querySelector('.modem.on') && n < 200) return setTimeout(function(){ wait(n + 1); }, 300); setTimeout(start, 1500); })(0); }
+  /* ---------- Modem-Szene (Josef, 29.10., 13:14): Inka wählt sich ein, die Verbindung bricht ab (NO CARRIER); bei jedem neuen Besuch, überspringbar, "Nicht jetzt" ---------- */
+  var MODEM = [
+    ['ATZ', 'OK', 'ATDT 0049 89 56000', '', 'CONNECTING ...', 'CARRIER 56000', 'PROTOCOL: LAP-M', '> inka: bin dran. ich hab was dabei, zwanzig stück, moment', 'TRANSFER 7 %', 'TRANSFER 23 %', 'TRANSFER 41 %', '', 'NO CARRIER'],
+    ['ATZ', 'OK', 'ATDT 0049 89 56000', '', 'CONNECTING ...', 'CARRIER 56000', '> inka: wieder ich. wagner sagt, die leitung hält diesmal', 'TRANSFER 12 %', 'TRANSFER 38 %', '> inka: sie hält nicht', '', 'NO CARRIER'],
+    ['ATZ', 'OK', 'ATDT 0049 89 56000', '', 'CONNECTING ...', 'CARRIER 56000', 'PROTOCOL: LAP-M', '> inka: sigma ist mit in der leitung. er soll die dinge festhalten', '> sigma: ... ich halte sie', 'TRANSFER 55 %', '', 'NO CARRIER']
+  ];
+  var mo = null;
+  function modemScene(done){ if (mo) return; var lines = MODEM[(S.visits || 1) % MODEM.length];
+    mo = document.createElement('div'); mo.className = 'modem on sbmodem'; mo.setAttribute('role', 'dialog'); mo.setAttribute('aria-label', 'Einwahl');
+    mo.innerHTML = '<div class="box"><pre aria-live="polite"></pre><div class="bar"><i></i></div><button type="button" class="mskip">Überspringen</button><button type="button" class="notnow">Nicht jetzt</button><small>Scroll. Der Plotter schreibt. Finde 20 Dinge.</small></div>';
+    document.body.appendChild(mo); var pre = mo.querySelector('pre'), bar = mo.querySelector('.bar i'); var fin = false, li = 0, timer = null;
+    var dur = (window.JK_DIALUP && !LHG.now) ? (window.JK_DIALUP(function(){}, {fail:true}) || 7000) : 7000; dur = dur * CF('fx.modemlen', 1);
+    var start = Date.now(); var tick = setInterval(function(){ var p = Math.min(100, (Date.now() - start) / dur * 100); bar.style.width = p + '%'; if (p >= 100) clearInterval(tick); }, 100);
+    function step(){ if (fin) return; if (li < lines.length){ var l = lines[li++]; pre.textContent += l + '\n'; if (l === 'NO CARRIER'){ mo.classList.add('nc'); if (window.JK_SPRITE) window.JK_SPRITE('g-kraehe', {vol:.4, max:.3, force:true, bus:'game'}); } timer = setTimeout(step, dur / (lines.length + 1)); } }
+    step();
+    function end(how){ if (fin) return; fin = true; clearTimeout(timer); clearInterval(tick); document.removeEventListener('keydown', onkey); mo.classList.add('off'); var m = mo; mo = null; setTimeout(function(){ m.remove(); }, 300); if (done) done(how); }
+    function onkey(e){ if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); end('skip'); } }
+    mo.querySelector(".mskip").addEventListener('click', function(e){ e.stopPropagation(); end('skip'); });
+    mo.querySelector('.notnow').addEventListener('click', function(e){ e.stopPropagation(); end('notnow'); });
+    var t0 = Date.now(); mo.addEventListener('click', function(e){ if (Date.now() - t0 < 700) return; if (!e.target.closest('button')) end('skip'); });   /* der auslösende Tipp selbst gilt nicht als Überspringen */
+    document.addEventListener('keydown', onkey);
+    setTimeout(function(){ end('done'); }, dur + 900); }
+  function startIntro(how){ try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} S.introVisit = S.visits || 1; save();
+    if (how === 'notnow'){ notNow(); return; }
+    var lines = how === 'skip' ? [pickOne(SKIPPED)] : (NEWV && !NEWV.first ? visitLines(NEWV) : (count() ? greet() : RULES));
+    if (how !== 'skip' && NEWV && !NEWV.first && !count()) lines = lines.concat([RULES[2], RULES[3]]);
+    dialog(lines); }
+  function intro(){ var seen = false; try { seen = !!sessionStorage.getItem('jk_sb_seen'); } catch(e){} if (seen || optedOut()) return;
+    if (S.introVisit === (S.visits || 1) && S.introVisit) return;   /* in diesem Besuch schon gelaufen (anderer Tab) */
+    var fired = false;
+    function go(){ if (fired) return; fired = true; document.removeEventListener('pointerdown', go, true); document.removeEventListener('keydown', go, true); if (dlg || document.querySelector('.lb2.on, .menu.vis')) { setTimeout(go2, 1200); return; } go2(); }
+    function go2(){ if (LHG.now || CF('fx.modem', 1) < .5){ startIntro('done'); return; } modemScene(startIntro); }
+    /* Ton braucht eine Geste: die Szene startet mit dem ersten Klick oder Tastendruck, spätestens nach 25 s ohne Ton */
+    setTimeout(function(){ document.addEventListener('pointerdown', go, true); document.addEventListener('keydown', go, true); }, 400);
+    setTimeout(function(){ if (!fired){ fired = true; document.removeEventListener('pointerdown', go, true); document.removeEventListener('keydown', go, true); go2(); } }, CF('fx.modemwait', 25) * 1000); }
 
   /* ---------- Zähler im Kopf ---------- */
   var btn, num, note;
@@ -155,7 +208,7 @@
     btn.addEventListener('click', hint);
     /* Josef, 28.10., 01:10: ein Schalter, mit dem man das Spiel aktiv startet: "Inka rufen". Man weiß nicht, was das soll, und klickt drauf. Mit Spielstand: weiterspielen. */
     var call = document.createElement('button'); call.type = 'button'; call.className = 'sbcall'; call.textContent = 'Inka rufen'; call.title = 'Suchbild starten oder weiterspielen'; head.insertBefore(call, btn);
-    call.addEventListener('click', function(){ if (dlg) return; sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); }); }
+    call.addEventListener('click', function(){ if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); }); }
   function refresh(){ if (num) num.textContent = count(); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return;
     var p = left[Math.floor(Math.random() * left.length)]; S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
@@ -163,13 +216,13 @@
 
   /* Regler-Leiste: Dialogprobe und Spielstand (nur für Josefs Feintuning) */
   window.JK_DIALOG = function(lines){ dialog(lines); };
-  window.JK_SB = {state:function(){ return {found:count(), hints:S.hints || 0, points:points(), done:!!S.done, seed:S.seed, n:N}; },
+  window.JK_SB = {state:function(){ return {found:count(), hints:S.hints || 0, points:points(), done:!!S.done, seed:S.seed, n:N, visits:S.visits || 1, bonus:S.visitBonus || 0, streak:S.streak || 1, optout:optedOut()}; },
     ids:function(){ return PLACES.map(function(p){ return p.id; }); },
     set:function(found, hints){ var ids = PLACES.map(function(p){ return p.id; }); S.found = {}; for (var i = 0; i < Math.min(found, ids.length); i++) S.found[ids[i]] = Date.now(); S.hints = hints || 0; if (found >= N){ S.done = S.done || Date.now(); } else S.done = 0; save(); },
     reset:function(){ try { localStorage.removeItem('jk_sb'); } catch(e){} }};
   /* ---------- Gegenstände verstecken ---------- */
   var ZI = 0;
-  function place(){ PLACES.filter(function(p){ return p.p === PAGE; }).forEach(function(p){ var all = document.querySelectorAll(p.sel); if (!all.length) all = document.querySelectorAll('footer .footgrid'); if (!all.length) return; var a = all[(p.i - 1) % all.length];
+  function place(){ if (optedOut()) return; if (document.querySelector('.sbobj')) return; PLACES.filter(function(p){ return p.p === PAGE; }).forEach(function(p){ var all = document.querySelectorAll(p.sel); if (!all.length) all = document.querySelectorAll('footer .footgrid'); if (!all.length) return; var a = all[(p.i - 1) % all.length];
       if (getComputedStyle(a).position === 'static') a.style.position = 'relative';
       /* Anker mit Objekt liegt über seinen Nachbarn (gedrehte Figuren im wilden Raster bilden eigene Stapelkontexte, Test 28.10., 08:15: Betonmischer unter dem Nachbarbild) */
       if (!a.style.zIndex) a.style.zIndex = String(29 - ZI++);   /* jeder Anker liegt über seinen Nachbarn (Test 29.10., 09:20: Sonne im Startseitenfuß unter der folgenden Zeile); bleibt unter Unternavigation (45) und Kopf (50) */
@@ -206,13 +259,14 @@
   function cert(){ if (ov) return; ov = document.createElement('div'); ov.className = 'sbcert'; var date = new Date(S.done || Date.now()); var ds = date.toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'});
     var mono = document.querySelector('header .mark svg'); var mh = mono ? mono.outerHTML.replace('class="mono"', 'class="mono cm"') : '';
     ov.innerHTML = '<div class="sq" role="dialog" aria-label="Urkunde"><button type="button" class="x" aria-label="Schließen">×</button><h2 class="ct">SUCHBILD</h2>' +
-      '<p class="cp">Alle ' + N + ' Dinge auf theidealcity.gg gefunden. Eingegraben von Gojira.</p><p class="cp">' + points() + ' Punkte, ' + S.hints + (S.hints === 1 ? ' Hinweis' : ' Hinweise') + '. ' + ds + '.</p>' +
+      '<p class="cp">Alle ' + N + ' Dinge auf theidealcity.gg gefunden. Eingegraben von Gojira.</p><p class="cp">' + points() + ' Punkte, ' + S.hints + (S.hints === 1 ? ' Hinweis' : ' Hinweise') + (S.visitBonus ? ', ' + S.visitBonus + ' fürs Wiederkommen' : '') + '. ' + ds + '.</p>' +
+      '<p class="cp">' + (S.visits || 1) + (S.visits > 1 ? ' Besuche' : ' Besuch') + '.</p><p class="cstamps" aria-label="Stempel je Besuch">' + (S.stamps || [Date.now()]).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('') + '</p>' +
       '<div class="cname"><label>Name <input type="text" maxlength="16" pattern="[A-Za-zÄÖÜäöüß0-9 ]{1,16}" placeholder="bis 16 Zeichen"></label></div>' +
       '<div class="cbtn"><button type="button" class="png">Als Bild speichern</button>' + (BOARD ? '<button type="button" class="send">In die Bestenliste</button>' : '') + '<button type="button" class="again">Neustart</button></div>' +
       '<p class="cnote">' + (BOARD ? 'Die Bestenliste speichert Name, Punkte, Zeit und Datum in einer Google-Tabelle von Josef Knoll (siehe Datenschutz). ' : '') + 'Dein Stand liegt nur in diesem Browser.</p>' + mh + '</div>';
     document.body.appendChild(ov); var sq = ov.querySelector('.sq'); setTimeout(function(){ sp('g-stempel', {vol:.9, max:.5}); }, 400);
     ov.querySelector('.x').addEventListener('click', function(){ ov.remove(); ov = null; });
-    ov.querySelector('.again').addEventListener('click', function(){ S = {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; save(); ov.remove(); ov = null; location.reload(); });
+    ov.querySelector('.again').addEventListener('click', function(){ S = {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0, visits:S.visits, streak:S.streak, lastVisit:S.lastVisit, stamps:S.stamps, visitBonus:0, introVisit:S.introVisit}; save(); ov.remove(); ov = null; location.reload(); });
     ov.querySelector('.png').addEventListener('click', function(){ png(ov.querySelector('input').value.trim()); });
     var sb = ov.querySelector('.send'); if (sb) sb.addEventListener('click', function(){ send(ov.querySelector('input').value.trim(), sb); });
     if (window.JK_PLOT_ONCE) ov.querySelectorAll('.cp').forEach(function(q, i){ setTimeout(function(){ window.JK_PLOT_ONCE(q, 1800); }, 200 + i * 900); }); }
@@ -230,7 +284,7 @@
 
   /* ---------- Bestenliste im Abschnitt Suchbilder ---------- */
   function board(){ var sec = document.getElementById('suchbilder'); if (!sec) return; var box = document.createElement('div'); box.className = 'sbboard'; var grid = sec.querySelector('.grid, .textwrap'); 
-    box.innerHTML = '<h3>Bestenliste</h3><p>Diese Website ist selbst ein Suchbild: ' + N + ' Dinge aus den drei Blättern sind auf den Seiten versteckt. Jeder Fund zählt 100 Punkte, jeder Hinweis (Klick auf die Lupe) kostet ' + HINT_COST + '. Die Zeit zählt nicht.</p><ol></ol><p class="sbme"></p><p><a href="#" class="sbrules">Regeln noch einmal</a></p>';
+    box.innerHTML = '<h3>Bestenliste</h3><p>Diese Website ist selbst ein Suchbild: ' + N + ' Dinge aus den drei Blättern sind auf den Seiten versteckt. Jeder Fund zählt 100 Punkte, jeder Hinweis (Klick auf die Lupe) kostet ' + HINT_COST + '. Die Zeit zählt nicht, Wiederkommen gibt Bonuspunkte.</p><ol></ol><p class="sbme"></p><p><a href="#" class="sbrules">Regeln noch einmal</a></p>';
     (grid ? grid.parentNode.insertBefore(box, grid.nextSibling) : sec.appendChild(box));
     var ol = box.querySelector('ol'), me = box.querySelector('.sbme'); box.querySelector('.sbrules').addEventListener('click', function(e){ e.preventDefault(); dialog(RULES); });
     var mine = count() ? ('Dein Stand: ' + count() + ' von ' + N + ', ' + points() + ' Punkte' + (S.done ? ', alles gefunden.' : '.')) : ''; me.textContent = mine;

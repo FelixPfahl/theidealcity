@@ -67,6 +67,9 @@
     ['game.size3', 'Spiel', 'Objekte', 'Größe schwer', 'Breite der Dinge an Rändern und in der Fußzeile.', [30, 40], 10, 120, 1, 'px'],
     ['game.flash', 'Spiel', 'Objekte', 'Blitz beim Wiederfinden', '1 = gefundene Dinge blitzen in den Suchbildern grün auf.', 1, 0, 1, 1],
     ['game.pts', 'Spiel', 'Punkte', 'Punkte je Fund', 'Punkte für jedes gefundene Ding.', 100, 0, 1000, 10],
+    ['game.bonus', 'Spiel', 'Punkte', 'Besuchsbonus', 'Punkte je neuem Besuch (nach 6 Stunden Pause).', 50, 0, 500, 5],
+    ['game.bonusstep', 'Spiel', 'Punkte', 'Bonus je Folgebesuch', 'Zuschlag je Besuch in Folge (innerhalb 48 Stunden).', 25, 0, 200, 5],
+    ['game.bonusmax', 'Spiel', 'Punkte', 'Bonus höchstens', 'Obergrenze je Besuch.', 200, 0, 1000, 10],
     ['game.hint', 'Spiel', 'Punkte', 'Kosten Hinweis', 'Abzug je Hinweis.', 50, 0, 500, 5],
     /* ---------- Grafik ---------- */
     ['ui.barh', 'Grafik', 'Balken', 'Höhe Balken', 'Höhe des grünen Fortschrittsbalkens.', [56, 44], 8, 120, 1, 'px', '--pbh'],
@@ -91,6 +94,9 @@
     ['fx.wood', 'Effekte', 'Holzschnitt', 'Verzerrung', 'Stärke der Holzschnitt-Struktur in den Überschriften (0 = glatt).', 1, 0, 4, .05],
     ['fx.woodgrain', 'Effekte', 'Holzschnitt', 'Körnung', 'Faktor für die ausgesparten Körner.', 1, 0, 2, .05],
     ['fx.parallax', 'Effekte', 'Trenner', 'Parallax', 'Wie stark sich Ausstellungsansichten beim Scrollen verschieben.', 10, 0, 30, .5, '%'],
+    ['fx.modem', 'Effekte', 'Modem-Intro', 'Modem', '1 = Modem-Intro einmal je Besuch, 0 = aus.', 1, 0, 1, 1],
+    ['fx.modemwait', 'Effekte', 'Modem-Intro', 'Start ohne Geste', 'Sekunden, nach denen die Einwahl ohne Klick von selbst startet (dann ohne Ton).', 25, 3, 120, 1, 's'],
+    ['fx.modemlen', 'Effekte', 'Modem-Intro', 'Dauer', 'Faktor für die Länge der Einwahl.', 1, .3, 3, .05],
     ['fx.net', 'Effekte', 'Konstruktionsnetz', 'Strichstärke', 'Stärke der Linien von Dürers Fierung beim Hover über große Titel.', 1, 0, 3, .05, '', '--knet']
   ];
   var DEF = {}, META = {}; P.forEach(function(p){ DEF[p[0]] = p[5]; META[p[0]] = p; });

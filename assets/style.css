@@ -1246,3 +1246,6 @@ html.lh-bigobj .sbobj{filter:drop-shadow(0 0 0 #000) drop-shadow(2px 0 0 #000) d
 @media (min-width:761px){.mbprint{display:none}}
 .mbrel{margin-top:clamp(40px,5vw,80px)}
 .mbhint{font-size:14px;margin:22px 0 0;color:var(--grey)}.mbhint a{color:var(--ink)}
+/* Modem-Szene des Spiels (Suchbild 2.0, Etappe 1): Inka wählt sich ein, NO CARRIER */
+.modem.off{opacity:0;transition:opacity .3s}
+.sbmodem .box button{margin-right:6px}

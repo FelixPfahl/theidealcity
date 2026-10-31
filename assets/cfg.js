@@ -77,6 +77,9 @@
     ['game.bonusstep', 'Spiel', 'Punkte', 'Bonus je Folgebesuch', 'Zuschlag je Besuch in Folge (innerhalb 48 Stunden).', 25, 0, 200, 5],
     ['game.bonusmax', 'Spiel', 'Punkte', 'Bonus höchstens', 'Obergrenze je Besuch.', 200, 0, 1000, 10],
     ['game.wander', 'Spiel', 'Plus', 'Wandern alle', 'Plus-Stufe 2 und 3: nach so vielen Sekunden ohne Fund wechseln die ungefundenen Dinge der Seite ihren Platz.', 120, 20, 600, 10, 's'],
+    ['game.gap', 'Spiel', 'Reaktionen', 'Abstand ungefragter Fenster', 'Sekunden zwischen zwei ungefragten Dialogfenstern.', 60, 10, 600, 5, 's'],
+    ['game.longsearch', 'Spiel', 'Reaktionen', 'Lange Suche nach', 'Sekunden ohne Fund auf einer Seite mit Dingen, dann meldet sich Sigma.', 150, 30, 900, 10, 's'],
+    ['game.idle', 'Spiel', 'Reaktionen', 'Untätig nach', 'Sekunden ohne Eingabe, dann meldet sich Sigma.', 90, 20, 600, 10, 's'],
     ['game.hint', 'Spiel', 'Punkte', 'Kosten Hinweis', 'Abzug je Hinweis.', 50, 0, 500, 5],
     /* ---------- Grafik ---------- */
     ['ui.barh', 'Grafik', 'Balken', 'Höhe Balken', 'Höhe des grünen Fortschrittsbalkens.', [56, 44], 8, 120, 1, 'px', '--pbh'],

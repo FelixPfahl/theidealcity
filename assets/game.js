@@ -32,7 +32,9 @@
   };
   function rng(seed){ var x = seed >>> 0 || 1; return function(){ x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
   function deal(){ var r = rng(S.seed); var out = []; var used = {};
-    var ng = Math.min(3, S.ng || 0); OBJ.forEach(function(o){ var dd = ng >= 3 ? 3 : Math.min(3, o.d + (ng ? 1 : 0)); var pool = SPOTS[o.p].filter(function(sp){ return sp[2] === dd; }); if (!pool.length) pool = SPOTS[o.p].filter(function(sp){ return sp[2] === o.d; }); if (!pool.length) pool = SPOTS[o.p]; var k; var tries = 0; do { k = Math.floor(r() * pool.length); tries++; } while (used[o.p + pool[k][0]] && tries < 20); used[o.p + pool[k][0]] = 1;
+    var ng = Math.min(3, S.ng || 0), usedG = {}; function grpOf(sel){ var m = /^#([a-z0-9]+)/.exec(sel); return m ? m[1] : sel.split(' ')[0]; }
+    OBJ.forEach(function(o){ var dd = ng >= 3 ? 3 : Math.min(3, o.d + (ng ? 1 : 0)); var pool = SPOTS[o.p].filter(function(sp){ return sp[2] === dd; }); if (!pool.length) pool = SPOTS[o.p].filter(function(sp){ return sp[2] === o.d; }); if (!pool.length) pool = SPOTS[o.p];
+      /* Route: lieber eine Werkgruppe, die auf dieser Seite noch kein Ding hat */ var fresh = pool.filter(function(sp){ return !usedG[o.p + grpOf(sp[0])]; }); if (fresh.length) pool = fresh; var k; var tries = 0; do { k = Math.floor(r() * pool.length); tries++; } while (used[o.p + pool[k][0]] && tries < 20); used[o.p + pool[k][0]] = 1; usedG[o.p + grpOf(pool[k][0])] = 1;
       var sp = pool[k]; var cnt = 1 + Math.floor(r() * 12); out.push({id:o.id, p:o.p, d:o.d, sel:sp[0], i:cnt, k:sp[1], x:(o.d === 3 ? (r() < .5 ? 4 + Math.round(r() * 14) : 82 + Math.round(r() * 14)) : 10 + Math.round(r() * 80)), y:6 + Math.round(r() * 86)}); });
     return out; }
   var PLACES;
@@ -57,11 +59,13 @@
     else { S.lastVisit = now; save(); } })();
   function optedOut(){ return !!S.optout && S.optout === (S.visits || 1); }   /* "Nicht jetzt": keine Dialoge, keine Dinge bis zum nächsten Besuch; Inka rufen bleibt */
   function notNow(){ S.optout = S.visits || 1; save(); document.querySelectorAll('.sbobj, .sbli').forEach(function(o){ o.remove(); }); }
+  function V(){ return S.visits || 1; }
+  function quiet(){ return optedOut() || (!!S.psst && S.psst === V()); }   /* Psst: keine ungefragten Fenster bis zum nächsten Besuch */
   function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
-  function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
+  function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) + (S.questBonus || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
   function fmt(t){ var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   function accent(el){ return getComputedStyle(el.closest('.comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A'; }
 
@@ -122,6 +126,7 @@
     if (late) L.push(['sigma', '... es ist spät. Ich bin auch wach. Hinter dem Glas ist es immer hell.']);
     else if (wknd) L.push(['xae', 'Wochenende. Statistisch die Zeit, in der Leute Dinge suchen, die sie nicht brauchen. Weiter.']);
     if (n && !S.done) L.push(['inka', left + ' fehlen noch. ' + (left <= 5 ? 'Die letzten sind klein.' : 'Lass dir Zeit.')]);
+    if (n && Math.random() < .15) L.push(['inka', pickOne(['Nebenbei: das ganze Portfolio gibt es als PDF, unten in der Fußzeile. Ohne mich drin.', 'Josef schreibt manchmal einen Newsletter. Selten. Der Knopf ist unten. Ich sag das nur einmal.', 'Die Ausstellungen stehen bei Info. Falls du mal rausgehen willst.'])]);
     if (S.done) L.push(['inka', 'Du hast alle zwanzig. Neustart über die Lupe, wenn du willst, dann liegen sie woanders.']);
     return L; }
   var FIRST = [['inka', 'Der erste. Er ist zurück in seinem Suchbild, schau später nach. Sigma hat noch neunzehn verstreut.']];
@@ -219,11 +224,15 @@
       if (col >= cols){ line++; col = 0; if (line >= rows){ pages.push(page); page = []; line = 0; } } }
     if (page.length) pages.push(page); return pages; }
   function norm(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
-  function dialog(lines, done, opt){ opt = opt || {}; if (dlg){ dq = (dq || []).concat(lines); return; } dq = [];
+  var lastDlg = 0;
+  function dialog(lines, done, opt){ opt = opt || {}; if (dlg){ dq = (dq || []).concat(lines); return; } dq = []; lastDlg = Date.now();
     lines = lines.map(norm); var k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
     dlg = document.createElement('div'); dlg.className = 'sbdlg'; dlg.setAttribute('role', 'dialog');
     dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><b class="who"></b><img alt=""><div class="txt"><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
     document.body.appendChild(dlg); document.body.classList.add('sbdlgon'); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), win = dlg.querySelector('.win'), live = dlg.querySelector('.dlglive');
+    /* Josef, 29.10., 13:34: "Psst" in ungefragten Fenstern (keine ungefragten Fenster mehr bis zum nächsten Besuch), "Nicht jetzt" im ersten Fenster (wie im Modem) */
+    if (opt.psst){ var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'psst'; pb.textContent = 'Psst'; pb.title = 'Keine ungefragten Fenster mehr bis zum nächsten Besuch'; pb.addEventListener('click', function(e){ e.stopPropagation(); S.psst = S.visits || 1; save(); cursorSnd('ok'); close(false); }); win.appendChild(pb); }
+    if (opt.notnow){ var nb = document.createElement('button'); nb.type = 'button'; nb.className = 'psst notnow'; nb.textContent = 'Nicht jetzt'; nb.addEventListener('click', function(e){ e.stopPropagation(); close(false); notNow(); }); win.appendChild(nb); }
     function portrait(w, mood){ img.src = '../assets/game/char-' + w + '-' + (mood || 'neutral') + '.png'; img.onerror = function(){ img.onerror = null; img.src = '../assets/game/char-' + w + '.png'; }; }
     function setMood(m){ curMood = m; MOODS.forEach(function(x){ dlg.classList.remove('m-' + x); }); dlg.classList.add('m-' + m); portrait(lines[k].who, m); }
     function startLine(){ var L = lines[k]; cur = CH[L.who] || CH.inka; dlg.className = 'sbdlg c-' + L.who; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; dlg.style.setProperty('--c', cur.col);
@@ -321,7 +330,7 @@
     if (how === 'notnow'){ notNow(); return; }
     var lines = how === 'skip' ? [pickOne(SKIPPED)] : (NEWV && !NEWV.first ? visitLines(NEWV) : (count() ? greet() : RULES));
     if (how !== 'skip' && NEWV && !NEWV.first && !count()) lines = lines.concat([RULES[2], RULES[3]]);
-    dialog(lines, newChapter); }
+    dialog(lines, function(nat){ if (newChapter(nat)) return; if (nat) offerQuest(); }, {notnow:lines === RULES}); }
   function intro(){ var seen = false; try { seen = !!sessionStorage.getItem('jk_sb_seen'); } catch(e){} if (seen || optedOut()) return;
     if (S.introVisit === (S.visits || 1) && S.introVisit) return;   /* in diesem Besuch schon gelaufen (anderer Tab) */
     var fired = false;
@@ -346,7 +355,7 @@
     document.addEventListener('click', function(e){ if (!menu.hidden && !e.target.closest('.sbfab')) openMenu(false); });
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden){ openMenu(false); btn.focus(); } });
     /* Josef, 28.10., 01:10: "Inka rufen" startet oder setzt fort; nach "Nicht jetzt" legt es die Dinge wieder aus */
-    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), function(nat){ if (S.done) cert(); else newChapter(nat); }); });
+    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), function(nat){ if (S.done) cert(); else if (!newChapter(nat) && nat) offerQuest(); }); });
     fab.querySelector('.sbcount').addEventListener('click', function(){ openMenu(false); inventory(); });
     fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); }); }
   function refresh(){ if (num) num.textContent = count(); var c = fab && fab.querySelector('.sbcount span'); if (c) c.textContent = count() + '/' + N; if (panel && panel.classList.contains('sbinv')) inventory(true); }
@@ -442,7 +451,8 @@
   /* nach einem Dialog, der zu Ende gelesen wurde (neuer Besuch, Meilenstein): das nächste ungelesene offene Kapitel; sonst bleibt es im Logbuch mit "neu" */
   function newChapter(nat){ if (nat === false || dlg || optedOut()) return false; S.chap = S.chap || {}; for (var i = 0; i < CHAPTERS.length; i++){ if (chapOpen(CHAPTERS[i]) && !S.chap[i]){ showChapter(i); return true; } } return false; }
   function unreadChaps(){ S.chap = S.chap || {}; var n = 0; CHAPTERS.forEach(function(c, i){ if (chapOpen(c) && !S.chap[i]) n++; }); if (S.ending === 'destroy' && !S.chap.s) n++; return n; }
-  function markNew(){ if (!fab) return; var u = unreadChaps(); fab.classList.toggle('sbnew', u > 0); var lb = fab.querySelector('.sblogbtn'); if (lb) lb.innerHTML = 'Logbuch' + (u ? ' <span>' + u + ' neu</span>' : ''); }
+  var seenBadges = 0;
+  function markNew(){ if (!fab) return; var u = unreadChaps() + ((S.quest && !S.quest.done && !S.quest.declined && S.quest.v === V()) ? 1 : 0); fab.classList.toggle('sbnew', u > 0); var lb = fab.querySelector('.sblogbtn'); if (lb) lb.innerHTML = 'Logbuch' + (u ? ' <span>' + u + ' neu</span>' : ''); }
   function relLine(who){ var R = rel(who), n = R.n, r = R.r;
     var T = {inka:[n >= 2 ? 'Inka erzählt dir inzwischen mehr, als sie sollte.' : (n <= -2 ? 'Inka beobachtet dich. Mehr nicht.' : 'Inka beobachtet. Sie wartet ab, was du bist.')],
       wagner:[r >= 2 ? 'Wagner hat deinen Namen ins Raster eingetragen. Das ist bei ihm ein Lob.' : (r <= -2 ? 'Wagner rechnet dir alles doppelt an.' : 'Wagner notiert Koordinaten. Deine auch.')],
@@ -458,8 +468,11 @@
     var stamps = (S.stamps || []).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('');
     var rels = ['inka', 'wagner', 'xae', 'sigma', 'gojira'].map(function(w){ return '<li><b style="color:' + CH[w].col + '">' + CH[w].name + '</b> ' + relLine(w) + '</li>'; }).join('');
     var sp0 = S.tspeed || 'normal';
-    var html = '<div class="sblogcols"><section><h3>Stand</h3><p>' + n + ' von ' + N + ' Dingen, ' + points() + ' Punkte' + (S.visitBonus ? ' (davon ' + S.visitBonus + ' fürs Wiederkommen)' : '') + ', ' + (S.hints || 0) + ' Hinweise. ' + v + (v > 1 ? ' Besuche' : ' Besuch') + '.' + ngTxt + '</p><p class="cstamps" aria-label="Stempel je Besuch">' + stamps + '</p>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + '</section>' +
+    var html = '<div class="sblogcols"><section><h3>Stand</h3><p>' + n + ' von ' + N + ' Dingen, ' + points() + ' Punkte' + (S.visitBonus ? ' (davon ' + S.visitBonus + ' fürs Wiederkommen)' : '') + ', ' + (S.hints || 0) + ' Hinweise. ' + v + (v > 1 ? ' Besuche' : ' Besuch') + '.' + (S.questBonus ? ' ' + S.questBonus + ' Punkte aus Aufträgen.' : '') + ngTxt + '</p><p class="cstamps" aria-label="Stempel je Besuch">' + stamps + '</p>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + '</section>' +
       '<section><h3>Kapitel</h3><ol class="sbchaps">' + chaps + '</ol>' + wv + '</section>' +
+      '<section class="sbwide"><h3>Sammelalbum</h3>' + albumHtml() + '</section>' +
+      '<section><h3>Auftrag</h3>' + questHtml() + '</section>' +
+      '<section class="sbwide"><h3>Abzeichen</h3>' + badgeHtml() + '</section>' +
       '<section><h3>Freigespielt</h3><p>Hintergrundbilder und Ausschnitte aus den Suchbildern ab 5, 10, 15 und 20 Funden: <a href="musterbuch.html#freigespielt">im Musterbuch</a>.</p></section>' +
       '<section><h3>Figuren</h3><ul class="sbrels">' + rels + '</ul></section>' +
       '<section><h3>Textgeschwindigkeit</h3><p class="sbspeed" role="group" aria-label="Textgeschwindigkeit">' + ['langsam', 'normal', 'sofort'].map(function(k){ return '<label><input type="radio" name="sbspeed" value="' + k + '"' + (sp0 === k ? ' checked' : '') + '> ' + k + '</label>'; }).join(' ') + '</p></section>' +
@@ -489,10 +502,145 @@
     if ((S.hints || 0) % 3 === 1) lines.push({who:'wagner', text:wag + ' Einverstanden?', ask:[{s:'d', t:'In Ordnung. Danke für die Koordinaten.', re:[['wagner', '[m:froh]Bitte. Ein Geschäft ist ein Geschäft.']]}, {s:'p', t:'Wucher. Inka hätte es umsonst gesagt.', re:[['wagner', '[m:wuetend]Inka sagt vieles umsonst. [m:neutral]Deshalb ist sie auch nicht verantwortlich.']]}, {s:'a', t:'Abgemacht. Nächster Hinweis bitte gleich.', re:[['wagner', 'Nacheinander. Erst suchen, dann zahlen.']]}, {s:'v', t:'Von mir aus.', re:[['wagner', '[m:nachdenklich]Von Ihnen aus. Sehr wohl.']]}]}); else lines.push(['wagner', wag]);
     dialog(lines); }
 
+
+  /* ---------- Reaktionen auf Verhalten (Suchbild 2.0, Etappe 5; Josef, 29.10., 13:14 bis 13:50) ----------
+     Ungefragte Fenster höchstens alle 60 s (Regler game.gap), je Auslöser einmal je Besuch, nie während jemand liest (sichtbarer Absatz wird noch geschrieben), nie bei Psst oder Nicht jetzt. */
+  var lastInput = Date.now(), misses = 0, hiddenAt = 0;
+  function readingNow(){ var vh = window.innerHeight; return [].slice.call(document.querySelectorAll('.plotted:not(.plotdone)')).some(function(el){ var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < vh && r.height > 0; }); }
+  function react(key, mk, tries){ if (quiet() || dlg || panel || ov || mo || document.hidden) return false; S.rx = S.rx || {}; if (S.rx[key] === V()) return false;
+    if (Date.now() - lastDlg < CF('game.gap', 60) * 1000) return false;
+    if (readingNow()){ if ((tries || 0) < 10) setTimeout(function(){ react(key, mk, (tries || 0) + 1); }, 4000); return false; }
+    var lines = typeof mk === 'function' ? mk() : mk; if (!lines || !lines.length) return false;
+    S.rx[key] = V(); save(); dialog(lines, null, {psst:true}); return true; }
+  function workTitle(f){ var i = f && f.querySelector('figcaption i'); if (i) return i.textContent.trim(); var im = f && f.querySelector('img'); var alt = im && im.alt || ''; return alt.replace(/^Josef Knoll,\s*/, '').replace(/,\s*\d{4}.*$/, '') || ''; }
+  function reactions(){
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function(ev){ window.addEventListener(ev, function(){ lastInput = Date.now(); }, {passive:true, capture:true}); });
+    /* Fehlklicks: Klicks ins Leere (kein Link, Knopf, Bild, Ding) */
+    document.addEventListener('click', function(e){ if (e.target.closest('a, button, input, label, select, textarea, summary, img, .sbobj, .sbdlg, .sbpanel, .sbfab, .sbcert, .lb2, .modem, header, nav')) return; misses++;
+      if (misses === 5) react('miss', function(){ return [['inka', 'Du klickst ins Leere. Fünfmal. Die Dinge sind klein, aber sie sind Bilder, keine Lücken.'], ['wagner', 'Fünf Klicks ohne Koordinaten. Ich habe sie notiert. Alle fünf.', 'nachdenklich']]; });
+      if (misses === 12) react('miss2', function(){ return [['xae', 'Zwölf Fehlklicks. Ich sage es ohne Wertung: Das ist Wetter, keine Methode.'], {who:'inka', text:'Soll ich dir was verraten? Es kostet nichts, diesmal.', ask:[{s:'d', t:'Gern, danke.', re:[['inka', '[m:froh]Die leichten liegen offen bei den Titeln und Türen. Fang da an.']]}, {s:'p', t:'Ich brauche keine Hilfe.', re:[['inka', '[m:ueberrascht]Gut. Dann klick weiter. Ich schau zu.']]}, {s:'a', t:'Ja, schnell.', re:[['inka', 'Schau in die Bilder, nicht daneben. Und ganz unten in die Fußzeilen.']]}, {s:'v', t:'Egal.', re:[['inka', '[m:nachdenklich]Egal. Das sagt Sigma auch oft.']]}]}]; }); });
+    /* lange Suche ohne Fund auf einer Seite mit Dingen */
+    setInterval(function(){ if (S.done || document.hidden) return; var left = document.querySelectorAll('img.sbobj:not(.found)').length; if (!left) return;
+      if (Date.now() - lastAct > CF('game.longsearch', 150) * 1000) react('long', function(){ return [['sigma', '... du suchst lange. Ich habe die Dinge nicht gut versteckt, sie sind nur klein. [p:.5] Schau dort, wo nichts geschrieben steht.', 'nachdenklich']]; }); }, 10000);
+    /* 90 s untätig */
+    setInterval(function(){ if (document.hidden) return; if (Date.now() - lastInput > CF('game.idle', 90) * 1000) react('idle', function(){ return [['sigma', '... bist du noch da? [p:.6] Ich bin es. Hinter dem Glas vergeht die Zeit anders.', 'nachdenklich'], ['inka', 'Er wartet gern. Ich nicht. Scroll weiter, wenn du magst.']]; }); }, 15000);
+    /* rasantes Scrollen */
+    var sdist = 0, st0 = 0, sy0 = window.pageYOffset; window.addEventListener('scroll', function(){ var now = Date.now(), y = window.pageYOffset; if (now - st0 > 1500){ sdist = 0; st0 = now; sy0 = y; } sdist = Math.abs(y - sy0); if (sdist > window.innerHeight * 4) { sdist = 0; st0 = now; sy0 = y; react('fast', function(){ return [['xae', 'Sie scrollen mit ' + Math.round(window.innerHeight * 4 / 1.5) + ' Pixeln pro Sekunde. Ich lese so. Die meisten nicht.'], ['inka', 'Langsamer. Der Plotter schreibt nur, was du ansiehst.']]; }); } }, {passive:true});
+    /* Tab verlassen und zurück */
+    document.addEventListener('visibilitychange', function(){ if (document.hidden){ hiddenAt = Date.now(); return; } if (hiddenAt && Date.now() - hiddenAt > 30000) setTimeout(function(){ react('back', function(){ return [['inka', pickOne(['Wieder da. Ich habe nichts angefasst.', 'Du warst weg. Sigma hat gefragt, ob du wiederkommst. Ich habe ja gesagt.', 'Zurück. Die Dinge liegen noch da, wo sie lagen. Meistens.'])]]; }); }, 1200); hiddenAt = 0; });
+    /* lange vor einem Bild (Großansicht 8 s): Figuren beziehen sich auf Titel und Material */
+    var lbT = null; window.addEventListener('jk:lb', function(e){ var a = e.detail && e.detail.a; var f = a && a.closest('figure.work'); clearTimeout(lbT); if (!f) return; albumAdd(f, 'lb');
+      lbT = setTimeout(function(){ if (!document.querySelector('.lb2.on')) return; var t = workTitle(f), mat = (f.querySelector('figcaption') || {}).textContent || ''; mat = (mat.split('\n')[1] || '').trim();
+        react('look:' + f.id, function(){ return [[pickOne(['inka', 'wagner', 'xae']), lookLine(f, t)]]; }); }, 8000); });
+    /* Hover 5 s auf einem Werk zählt fürs Album */
+    var hovT = null; document.addEventListener('pointerover', function(e){ var f = e.target.closest && e.target.closest('figure.work'); clearTimeout(hovT); if (!f || TOUCH) return; hovT = setTimeout(function(){ if (f.matches(':hover')) albumAdd(f, 'hover'); }, 5000); }, {passive:true});
+    /* Text zu Ende gelesen: der letzte Absatz einer Textspalte ist fertig geschrieben und sichtbar; dann fragt eine Figur nach der Meinung (einmal je Text und Besuch) */
+    if ('IntersectionObserver' in window){ var lasts = []; document.querySelectorAll('.textwrap').forEach(function(tw){ var ps = tw.querySelectorAll('p'); if (ps.length >= 2) lasts.push(ps[ps.length - 1]); });
+      var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if (!en.isIntersecting) return; var pp = en.target; setTimeout(function(){ if (!pp.classList.contains('plotdone') && pp.classList.contains('plotted')) return; var sec = pp.closest('section'); if (!sec) return; var h = sec.querySelector('h2'); opinion(sec.id, h ? h.textContent.trim() : 'den Text'); }, 2500); }); }, {threshold:.6}); lasts.forEach(function(pp){ io.observe(pp); }); } }
+  function lookLine(f, t){ var g = f.getAttribute('data-group') || ''; var cap = (f.querySelector('figcaption') || {}).textContent || ''; var mat = /Tusche/.test(cap) ? 'Tusche' : /Linolstift/.test(cap) ? 'Linolstift' : /Stereolithografie/.test(cap) ? 'Stereolithografie' : /Kohle/.test(cap) ? 'Kohle' : /Ölkreide/.test(cap) ? 'Ölkreide' : /Feder/.test(cap) ? 'Feder' : /Kaltnadel/.test(cap) ? 'Kaltnadel' : '';
+    var L = ['Du siehst dir *' + t + '* lange an. ' + (mat ? mat + ' auf Papier, kein Pixel. ' : '') + 'Mir gefällt, was du ansiehst.', 'Du bleibst bei *' + t + '*. ' + (g === 'cowboykaugummi' ? 'Comicsprache, aber kein Comic, sagt Josef. Ich sage: Kaugummi.' : g === 'egoshooter' ? 'Die Perspektive der Waffe. Wagner mag die Serie, aus den falschen Gründen.' : g === 'lickitcutit' ? 'Vier Blätter, eine Figur. Schau auf die Nähte.' : g === 'suchbilder' ? 'Daher kommen die Dinge, die du suchst. Zähl die Löcher.' : 'Lass dir Zeit.')];
+    return pickOne(L); }
+  /* Meinungsfragen nach einem gelesenen Text (Josef, 29.10., 13:36): vier Haltungen, wirkt aufs Verhältnis */
+  function opinion(id, title){ var who = ['inka', 'wagner', 'xae', 'sigma'][(S.ops || 0) % 4];
+    var Q = {inka:{who:'inka', text:'Du hast den Text zu *' + title + '* bis zum Ende gelesen. Und? Ich frage für mich.', ask:[{s:'d', t:'Sachlich und klar. Gefällt mir.', re:[['inka', '[m:froh]Felix schreibt so. Kein Wort zu viel, sagt er. Ich finde, eins zu wenig.']]}, {s:'p', t:'Zu viel Text für Bilder.', re:[['inka', '[m:ueberrascht]Sag das Felix. [m:froh]Nein, sag es ihm wirklich, er mag Widerspruch.']]}, {s:'a', t:'Jetzt will ich die Bilder sehen.', re:[['inka', '[m:froh]Dann los. Klick drauf, sie werden groß.']]}, {s:'v', t:'Weiß nicht. Lang.', re:[['inka', '[m:nachdenklich]Lang. Sigma liest ihn jeden Tag. Er sagt, er wird kürzer.']]}]},
+      wagner:{who:'wagner', text:'Sie haben *' + title + '* gelesen. Ein Urteil, bitte. Kurz.', ask:[{s:'d', t:'Gut gebaut. Jeder Satz an seinem Platz.', re:[['wagner', '[m:froh]Gebaut. Das richtige Wort. Sie sehen Konstruktion.']]}, {s:'p', t:'Wertungsfrei bis zur Langeweile.', re:[['wagner', '[m:wuetend]Sachlichkeit ist keine Langeweile. [m:neutral]Sie ist Disziplin. Aber Sie widersprechen, das zählt.']]}, {s:'a', t:'Weiter. Nächster Text.', re:[['wagner', 'Eile. [m:nachdenklich]Gut, der nächste wartet unten.']]}, {s:'v', t:'Kein Urteil.', re:[['wagner', '[m:wuetend]Kein Urteil ist auch eines. [m:neutral]Das schlechteste.']]}]},
+      xae:{who:'xae', text:'Text zu *' + title + '*: gelesen in Ihrer Zeit. Ich brauche 1,8 Sekunden. Bewertung?', ask:[{s:'d', t:'Informativ. Ich habe etwas gelernt.', re:[['xae', '[m:froh]Lernen. Das sagen die wenigsten zu. Notiert.']]}, {s:'p', t:'Ich lese schneller als du denkst.', re:[['xae', '[m:wuetend]Nein. [m:neutral]Aber die Behauptung war unterhaltsam.']]}, {s:'a', t:'Gib mir die Kurzfassung des nächsten.', re:[['xae', 'Kurzfassung: Bilder. Darunter Text. [m:nachdenklich]So geht es weiter.']]}, {s:'v', t:'...', re:[['xae', '[m:nachdenklich]Schweigen. Statistisch die häufigste Antwort auf Kunst.']]}]},
+      sigma:{who:'sigma', mood:'nachdenklich', text:'... du hast *' + title + '* gelesen. Ich lese mit, von hinten. Magst du es?', ask:[{s:'d', t:'Ja. Ruhig geschrieben.', re:[['sigma', '[m:froh]... ruhig. Ja. Hinter dem Glas liest man so.']]}, {s:'p', t:'Nein. Zu kühl.', re:[['sigma', '[m:traurig]... kühl. [p:.5] Vielleicht. Ich kenne es nicht anders.']]}, {s:'a', t:'Zeig mir, was dazu gehört.', re:[['sigma', '[m:froh]Die Bilder darüber. Und am Rand die Abbildungen, klein. Da war ich auch.']]}, {s:'v', t:'Ich habe nur überflogen.', re:[['sigma', '... überflogen. [m:nachdenklich]Das kann ich nicht. Ich habe keine Flügel.']]}]}};
+    if (react('op:' + id, [Q[who]])){ S.ops = (S.ops || 0) + 1; save(); setTimeout(badges, 500); } }
+  /* ---------- Sammelalbum (Josef, 29.10., 13:36): jedes groß angesehene Werk (Großansicht oder 5 s Hover) wird eine Karte mit Bild, Titel, Jahr und einer Zeile der nächsten Figur ---------- */
+  var ALBUM_LINES = {
+    lickitcutit:{inka:'Vier Blätter, eine Figur, lauter Nähte. Ich mag die Nähte.', wagner:'Die Blätter stoßen aneinander. Das Raster hält sie, nicht der Leim.', xae:'123 mal 91. Vier Blätter. Ich habe die Fläche im Kopf. 4,48 Quadratmeter.', sigma:'... so groß. Ich passe in eines der Blätter. Zweimal.', gojira:'... (Inka: Gojira sagt, das ist noch kein Relikt. Aber bald.)'},
+    clickclickboom:{inka:'Stereolithografie. Das Wort allein. Josef hat es als Text gezeichnet, dann gedruckt.', wagner:'Eine Pistole aus Schichten. Perspektive in Scheiben. Endlich jemand, der rechnet.', xae:'Click Click Boom. Drei Silben, zwei Klicks, ein Treffer. Effizient.', sigma:'... Game Over steht darauf. Ich lese es jeden Tag anders.', gojira:'... (Inka: Gojira kennt Waffen. Er blinzelt nicht.)'},
+    suchbilder:{inka:'Daher kommen die zwanzig Dinge. Aus diesem Blatt. Schau genau, es fehlen welche.', wagner:'Hundert mal fünfundneunzig. Jedes Ding hat Koordinaten. Ich habe sie alle.', xae:'Ich sehe das Blatt einmal und weiß, wo alles liegt. Deshalb spiele ich nicht mit.', sigma:'... hier war ich zuerst. Zwischen den Dingen, bevor sie fielen.', gojira:'... (Inka: Gojira hat lange hingesehen. Länger als du.)'},
+    cowboykaugummi:{inka:'Kein Comic, sagt Josef. Comicsprache. Ich sage: ein Kaugummi, der nicht aufhört.', wagner:'42 mal 29,5. Immer dasselbe Format. Das ist Disziplin, der Rest ist Unfug.', xae:'Popfiguren, Schrift, Tusche. Ich erkenne alle Zitate. Das sage ich ohne Stolz.', sigma:'... die Figur raucht. Ich habe das nie verstanden. Luft, die man sieht.', gojira:'... (Inka: eines der Blätter zeigt Gojira. Er hat es gesehen. Er sagt nichts.)'},
+    egoshooter:{inka:'Die Perspektive der Waffe. Du siehst, was der Lauf sieht.', wagner:'Ego Shooter. Zentralperspektive in Reinkultur. Der Fluchtpunkt ist das Ziel. Ich sage das ohne Freude.', xae:'Sechzig mal fünfzig, zehn Blätter. Ich habe alle in vier Sekunden. Das Zielen dauert bei Ihnen länger.', sigma:'... ich mag die Hände. Jemand hält etwas. Ich halte nie etwas.', gojira:'... (Inka: Gojira versteht Zielen nicht. Er ist das Ziel.)'},
+    weitere:{inka:'Ein Einzelblatt. Josef nennt sie Weitere Arbeiten. Ich nenne sie die Rückseite.', wagner:'Kein Serienzwang. Ein Blatt, eine Behauptung. Prüfen Sie die Linie.', xae:'Einzelblätter von 2010 bis 2024. Ich sehe die Entwicklung. Sie müssen scrollen.', sigma:'... klein und allein. Das kenne ich.', gojira:'... (Inka: eines zeigt Godzilla bei Eingrabungen. Gojira hat genickt. Das Haus hat gewackelt.)'},
+    draugr:{inka:'DRAUGR. Freya, Björn, die Katze. Ich kenne sie, nicht persönlich.', wagner:'Comicseiten. Panels sind Fenster, Fenster sind Perspektive. Immerhin.', xae:'Layout, Skizze, Seite. Drei Stufen. Ich hätte die zweite übersprungen.', sigma:'... die Katze. Sieh dir die Katze an. Sie sieht zurück.', gojira:'... (Inka: Gojira mag die Katze. Das ist alles, was ich weiß.)'},
+    prozess:{inka:'Vom Skript zur Seite. Da liegt auch ein Skript, in dem ein Song vorkommt. Connie Converse.', wagner:'Skript, Skizze, Seite. Ein Verfahren. Ich schätze Verfahren.', xae:'Prozess heißt: man sieht die Fehler. Ich mache keine. Deshalb bin ich langweilig, sagt Inka.', sigma:'... Bleistift unter der Tusche. Wie ein Gedanke unter dem Satz.', gojira:'... (Inka: Gojira versteht Skripte. Er kommt in einem vor.)'},
+    beckmann2022:{inka:'Magnete für Beckmann. Kinder haben damit Bilder gebaut. Richtige Kinder.', wagner:'Vermittlung. Man zerlegt Beckmann in Teile und setzt ihn neu zusammen. Montage. Ich billige das.', xae:'Magnete. Haftkraft etwa 0,3 Newton. Ich habe nachgesehen.', sigma:'... Dinge, die man anfassen darf. Ich kenne das nur vom Hören.', gojira:'... (Inka: Gojira war nie in der Pinakothek. Er passt nicht durch die Tür.)'}
+  };
+  function albumOk(f){ return f && f.id && /^w-/.test(f.id) && !/^w-(hh_|beck_[pe])/.test(f.id); }
+  function albumAdd(f, how){ if (!albumOk(f)) return; var id = f.id.slice(2); S.album = S.album || {}; if (S.album[id]) return;
+    var im = f.querySelector('img'), fc = f.querySelector('figcaption'); var t = workTitle(f) || 'Ohne Titel'; var cap = fc ? fc.textContent : ''; var ym = /(\d{4}(?:\/\d{4})?)/.exec(cap); var year = ym ? ym[1] : '';
+    var lines = (cap.split('\n').map(function(x){ return x.trim(); }).filter(Boolean)); var mat = lines[1] || '';
+    var g = f.getAttribute('data-group') || ''; var n = Object.keys(S.album).length; var who = ['inka', 'wagner', 'xae', 'sigma', 'gojira'][n % 5];
+    var line = (ALBUM_LINES[g] && ALBUM_LINES[g][who]) || (who === 'gojira' ? '... (Inka: Gojira hat es gesehen.)' : (t + (year ? ', ' + year : '') + (mat ? '. ' + mat + '.' : '.') + (who === 'wagner' ? ' Notiert.' : who === 'xae' ? ' Gespeichert.' : who === 'sigma' ? ' ... schön.' : ' Gesehen.')));
+    S.album[id] = {t:Date.now(), ti:t, y:year, m:mat, g:g, who:who, l:line, src:im ? (im.currentSrc || im.src) : '', p:PAGE};
+    /* Gruppengröße merken, um volle Serien zu erkennen */ S.gsize = S.gsize || {}; if (g) S.gsize[g] = [].filter.call(document.querySelectorAll('figure.work[data-group="' + g + '"]'), albumOk).length;
+    save(); markNew(); questCheck(id); setTimeout(badges, 400); }
+  function albumCount(){ return Object.keys(S.album || {}).length; }
+  function fullSeries(){ var out = []; var gs = S.gsize || {}; Object.keys(gs).forEach(function(g){ var n = Object.keys(S.album || {}).filter(function(id){ return S.album[id].g === g; }).length; if (gs[g] && n >= gs[g]) out.push(g); }); return out; }
+  var GNAME = {lickitcutit:'LICK IT CUT IT', clickclickboom:'Click Click Boom', suchbilder:'Suchbilder', cowboykaugummi:'Cowboy Kaugummi', egoshooter:'Ego Shooter', weitere:'Weitere Arbeiten', draugr:'DRAUGR', prozess:'Vom Skript zur Seite', beckmann2022:'Beckmann'};
+  function albumHtml(){ var A = S.album || {}; var ids = Object.keys(A).sort(function(a, b){ return A[b].t - A[a].t; }); if (!ids.length) return '<p class="sbpnote">Noch leer. Jedes Werk, das du groß ansiehst (Klick oder fünf Sekunden darüber), wird eine Karte.</p>';
+    var full = fullSeries(); var fs = full.length ? '<p class="sbpnote">Vollständig gesehen: ' + full.map(function(g){ return GNAME[g] || g; }).join(', ') + '.</p>' : '';
+    return '<p class="sbpnote">' + ids.length + (ids.length === 1 ? ' Karte.' : ' Karten.') + '</p>' + fs + '<ul class="sbalbum">' + ids.map(function(id){ var a = A[id]; return '<li><a href="' + (a.p === PAGE ? '' : a.p + '.html') + '#w-' + id + '">' + (a.src ? '<img src="' + a.src + '" alt="" loading="lazy">' : '') + '<b>' + esc(a.ti) + '</b>' + (a.y ? ' <span>' + esc(a.y) + '</span>' : '') + '</a><small style="color:' + CH[a.who].col + '">' + esc(CH[a.who].name) + '</small><p>' + esc(a.l) + '</p></li>'; }).join('') + '</ul>'; }
+  /* ---------- Aufträge (Josef, 29.10., 13:36): etwa einer je Besuch, ein Werk groß ansehen; 50 Punkte und Nähe ---------- */
+  var QUESTS = [
+    {id:'infreefall2017', p:'kunst', who:'wagner', t:'Sehen Sie sich [w:kunst:infreefall2017|In free fall] an, in der Großansicht. Vier Blätter, ein Fall. Ich will wissen, ob das Raster hält.'},
+    {id:'ck17', p:'kunst', who:'inka', t:'Such mir [w:kunst:ck17|UUUH! Godzilla] in Cowboy Kaugummi und schau es dir groß an. Ich will wissen, ob er aussieht wie der echte.'},
+    {id:'suchbild2', p:'kunst', who:'sigma', t:'... sieh dir das [w:kunst:suchbild2|Suchbild] an, groß. Da komme ich her, irgendwie. Zähl die Löcher.'},
+    {id:'ccb_model', p:'kunst', who:'xae', t:'Sehen Sie sich [w:kunst:ccb_model|Click Click Boom] an, die Stereolithografie. Ich will Ihre Meinung zur Auflösung.'},
+    {id:'freya', p:'comic', who:'inka', t:'Schau dir die [w:comic:freya|Figurenstudie für DRAUGR, Freya] groß an. Ich kenne sie. Nicht persönlich.'},
+    {id:'es2013_1', p:'kunst', who:'wagner', t:'[w:kunst:es2013_1|Ego Shooter], das erste Blatt. Sehen Sie es sich an und sagen Sie mir, wo der Fluchtpunkt liegt. Ich behaupte: außerhalb.'},
+    {id:'axolotl2016', p:'kunst', who:'sigma', t:'... das [w:kunst:axolotl2016|AX0LOTL]. Klein. Sieh es dir groß an, für mich. Ich mag Dinge, die im Wasser atmen.'},
+    {id:'ck14', p:'kunst', who:'xae', t:'Sehen Sie sich [w:kunst:ck14|404 Page not found] an. Es gibt hier auch eine echte Seite 404. Vergleichen Sie.'},
+    {id:'lickit2015', p:'kunst', who:'inka', t:'[w:kunst:lickit2015|Lick it], neun Blätter, Installationsansicht. Schau es dir groß an und sag mir, ob die Wand hält.'},
+    {id:'ot2013_treppe', p:'kunst', who:'wagner', t:'Das [w:kunst:ot2013_treppe|Treppenhaus] von 2013. Eine Treppe ist Perspektive in Reinform. Großansicht, bitte.'},
+    {id:'godzilla_eingrabungen', p:'kunst', who:'gojira', t:'Gojira will, dass du dir [w:kunst:godzilla_eingrabungen|Godzilla bei Eingrabungen] ansiehst. Groß. Er sagt nicht, warum. Ich glaube, er findet sich ähnlich.'},
+    {id:'beck_m02', p:'vermittlung', who:'sigma', t:'... die [w:vermittlung:beck_m02|Magnete] für Beckmann. Sieh dir eines groß an. Dinge, die man anfassen darf, kenne ich nur vom Hören.'}
+  ];
+  function offerQuest(){ if (quiet() || dlg) return false; var q = S.quest; if (q && q.v === V()) return false; if (q && !q.done && V() - q.v < 2) return false;   /* ein offener Auftrag bleibt einen Besuch lang stehen */
+    var pool = QUESTS.filter(function(x){ return !(S.album && S.album[x.id]) && !(S.qdone && S.qdone[x.id]); }); if (!pool.length) return false; var Q = pickOne(pool); var spk = Q.who === 'gojira' ? 'inka' : Q.who;
+    var intro = Q.who === 'gojira' ? [['gojira', '...']] : [];
+    var ask = {who:spk, text:Q.t + ' Fünfzig Punkte, wenn du es dir ansiehst. Machst du das?', ask:[{s:'d', t:'Gern. Ich sehe es mir an.', re:[[spk, '[m:froh]Gut. Ich warte.']]}, {s:'a', t:'Klar, wo ist es?', re:[[spk, 'Auf der Seite ' + {kunst:'Bildende Kunst', comic:'Comic', vermittlung:'Vermittlung'}[Q.p] + '. Der Name ist ein Link.']]}, {s:'p', t:'Ich lasse mir keine Aufträge geben.', re:[[spk, '[m:wuetend]Dann nicht. [m:neutral]Es liegt trotzdem da.']]}, {s:'v', t:'Vielleicht später.', re:[[spk, '[m:nachdenklich]Später. Ich merke es mir.']]}]};
+    ask.ask[0].fn = ask.ask[1].fn = function(){ S.quest = {id:Q.id, who:Q.who, v:V(), done:0, t:Q.t}; save(); markNew(); }; ask.ask[2].fn = ask.ask[3].fn = function(){ S.quest = {id:Q.id, who:Q.who, v:V(), done:0, declined:1, t:Q.t}; save(); };
+    if (Q.who === 'wagner' || Q.who === 'xae') ask.text = ask.text.replace('Machst du das?', 'Machen Sie das?');
+    dialog(intro.concat([ask])); return true; }
+  function questCheck(id){ var q = S.quest; if (!q || q.done || q.declined || q.id !== id) return; q.done = Date.now(); S.questBonus = (S.questBonus || 0) + 50; S.quests = (S.quests || 0) + 1; S.qdone = S.qdone || {}; S.qdone[id] = 1; var R = rel(q.who); R.n = Math.min(3, R.n + 1); save(); refresh(); tick();
+    var spk = q.who === 'gojira' ? 'inka' : q.who; setTimeout(function(){ dialog((q.who === 'gojira' ? [['gojira', '... ...']] : []).concat([[spk, (q.who === 'gojira' ? 'Gojira hat es gesehen, dass du es gesehen hast. ' : '') + '*Auftrag erledigt.* Fünfzig Punkte. ' + {inka:'Und? Sag nichts, ich sehe es dir an.', wagner:'Ihre Koordinaten stimmen. Ich trage Sie ein.', xae:'Zeit: akzeptabel. Für Sie.', sigma:'... danke. Jetzt haben wir beide hingesehen.', gojira:'Ich glaube, das war ein Danke.'}[q.who], 'froh']])); setTimeout(badges, 600); }, 900); }
+  function questHtml(){ var q = S.quest; if (!q) return '<p>Noch keiner. Die Figuren fragen beim nächsten Besuch.</p>'; var Q = QUESTS.filter(function(x){ return x.id === q.id; })[0]; var t = Q ? Q.t.replace(/\[w:([a-z]+):([^|\]]+)\|([^\]]+)\]/g, function(_, pg, id, ti){ return '<a href="' + (pg === PAGE ? '' : pg + '.html') + '#w-' + id + '">' + ti + '</a>'; }) : '';
+    return '<p><b style="color:' + CH[q.who].col + '">' + CH[q.who].name + '</b> ' + t + '</p><p>' + (q.done ? 'Erledigt, 50 Punkte.' : q.declined ? 'Abgelehnt. Das Werk liegt trotzdem da.' : 'Offen: das Werk groß ansehen.') + (S.quests ? ' Insgesamt ' + S.quests + (S.quests === 1 ? ' Auftrag erledigt.' : ' Aufträge erledigt.') : '') + '</p>'; }
+  /* ---------- Abzeichen (Josef, 29.10., 13:34: etwa 12, mit Figurenzeile) ---------- */
+  var BADGES = [
+    ['erster', 'Erster Fund', function(){ return count() >= 1; }, 'inka', 'Eins. Der Anfang zählt doppelt, sagt niemand.'],
+    ['fuenf', 'Fünf', function(){ return count() >= 5; }, 'wagner', 'Fünf Punkte im Raster. Eine Linie, wenn man großzügig ist.'],
+    ['zehn', 'Halbzeit', function(){ return count() >= 10; }, 'xae', 'Zehn. Die Hälfte. Ich sage nichts zur Zeit.'],
+    ['alle', 'Alle zwanzig', function(){ return !!S.done; }, 'gojira', 'Gojira gratuliert. Das Haus wackelt.'],
+    ['rein', 'Ohne Hinweis', function(){ return !!S.done && !(S.hints); }, 'wagner', 'Keine Koordinaten gekauft. Respekt. Das Wort steht jetzt da.'],
+    ['wieder', 'Wiederkehrer*in', function(){ return V() >= 3; }, 'inka', 'Dreimal da. Du gehörst jetzt zum Inventar.'],
+    ['nacht', 'Nachtaktiv', function(){ return !!S.night; }, 'sigma', '... du suchst nachts. Ich auch. Hinter dem Glas ist es immer hell.'],
+    ['leser', 'Leser*in', function(){ return (S.ops || 0) >= 3; }, 'xae', 'Drei Texte zu Ende und drei Urteile. Statistisch selten.'],
+    ['sammler', 'Sammler*in', function(){ return albumCount() >= 10; }, 'inka', 'Zehn Karten im Album. Josef würde sich freuen. Ich sag es ihm nicht.'],
+    ['serie', 'Serienkenner*in', function(){ return fullSeries().length > 0; }, 'wagner', 'Eine Serie vollständig gesehen. Das nenne ich Methode.'],
+    ['freund', 'Vertraut', function(){ return ['inka', 'wagner', 'xae', 'sigma', 'gojira'].some(function(w){ return rel(w).n >= 2; }); }, 'sigma', '... jemand hier mag dich. Ich verrate nicht, wer.'],
+    ['auftrag', 'Auftrag erledigt', function(){ return (S.quests || 0) >= 1; }, 'wagner', 'Auftrag erfüllt. Fünfzig Punkte, wie vereinbart.'],
+    ['plus', 'Plus', function(){ return NG >= 1 || (S.ranks || []).some(function(r){ return r >= 1; }); }, 'inka', 'Zweite Runde. Die Dinge sind kleiner, du nicht.'],
+    ['konami', 'Code', function(){ return !!S.konami; }, 'gojira', 'Gojira hat den Code gehört. Er kannte ihn.']
+  ];
+  function badgeLines(){ S.badges = S.badges || {}; var fresh = []; BADGES.forEach(function(b){ if (!S.badges[b[0]] && b[2]()){ S.badges[b[0]] = Date.now(); fresh.push(b); } }); if (!fresh.length) return []; save(); markNew();
+    var lines = []; fresh.forEach(function(b){ if (b[3] === 'gojira') lines.push(['gojira', '...'], ['inka', '*Abzeichen: ' + b[1] + '.* ' + b[4], 'froh']); else lines.push([b[3], '*Abzeichen: ' + b[1] + '.* ' + b[4], 'froh']); }); return lines; }
+  var pendBadges = [];
+  function badges(silent){ var lines = pendBadges.concat(badgeLines()); pendBadges = []; if (!lines.length || silent) return; if (quiet() && !dlg) return;   /* bei Psst: still ins Logbuch */
+    if (document.querySelector('.lb2.on') || mo || ov){ pendBadges = lines; setTimeout(badges, 1500); return; }   /* nicht über der Großansicht, dem Modem oder der Urkunde */
+    dialog(lines); }
+  function badgeHtml(){ S.badges = S.badges || {}; var n = Object.keys(S.badges).length; return '<p class="sbpnote">' + n + ' von ' + BADGES.length + '.</p><ul class="sbbadges">' + BADGES.map(function(b){ var got = S.badges[b[0]]; return '<li class="' + (got ? 'got' : 'open') + '"><b>' + (got ? esc(b[1]) : '?') + '</b>' + (got ? '<small style="color:' + CH[b[3]].col + '">' + CH[b[3]].name + '</small><p>' + esc(b[4]) + '</p>' : '<p>' + esc({erster:'Ein Fund.', fuenf:'Fünf Funde.', zehn:'Zehn Funde.', alle:'Alle zwanzig.', rein:'Alle zwanzig ohne Hinweis.', wieder:'Drei Besuche.', nacht:'Ein Fund nachts.', leser:'Drei Texte gelesen und beurteilt.', sammler:'Zehn Karten im Album.', serie:'Eine Serie vollständig gesehen.', freund:'Nähe zu einer Figur.', auftrag:'Ein Auftrag erledigt.', plus:'Neues Spiel Plus.', konami:'Ein alter Code.'}[b[0]]) + '</p>') + '</li>'; }).join('') + '</ul>'; }
+  /* Konami-Code ruft Gojira (Josef, 29.10., 13:34) */
+  (function(){ var seq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'], at = 0;
+    document.addEventListener('keydown', function(e){ if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return; var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; at = (k === seq[at]) ? at + 1 : (k === seq[0] ? 1 : 0); if (at < seq.length) return; at = 0;
+      S.konami = Date.now(); save(); if (dlg) return; dialog([['gojira', '...'], ['gojira', '... ... ...'], ['inka', 'Du hast Gojira gerufen. Mit dem alten Code. Er sagt: Er hat ihn auch mal benutzt, 1986, auf einem Schiff.', 'ueberrascht'], ['gojira', '...']], function(){ setTimeout(badges, 300); }); }); })();
+  /* ---------- Stimmung der Seite (Josef, 29.10., 13:34): die nächste Figur färbt die Seite, subtil; Randnotizen bei gutem Verhältnis ---------- */
+  function closest(){ var best = null, bn = 1; ['inka', 'wagner', 'xae', 'sigma', 'gojira'].forEach(function(w){ var n = rel(w).n; if (n >= 2 && n > bn){ bn = n; best = w; } }); return best; }
+  function mood(){ var w = closest(); if (!w || !S.rel) return; document.documentElement.classList.add('sbmood', 'sbmood-' + w);
+    if (w === 'xae' && window.JK_CF){ var orig = window.JK_CF; window.JK_CF = function(k){ var v = orig(k); if (k === 'plot.speed') return ((v === undefined || v === null || v === '') ? 1.25 : v) * 1.3; return v; }; }   /* X Æ A-13: schneller schreiben */
+    /* Randnotizen: eine je Serie, handschriftlich in Figurenfarbe, vom Plotter geschrieben */
+    document.querySelectorAll('section.series[id]').forEach(function(sec){ var g = sec.id, t = ALBUM_LINES[g] && ALBUM_LINES[g][w]; if (!t || sec.querySelector('.sbmarg')) return; var tw = sec.querySelector('.textwrap') || sec.querySelector('.grid'); if (!tw) return;
+      var a = document.createElement('aside'); a.className = 'sbmarg hand'; a.style.color = CH[w].col; a.setAttribute('aria-label', 'Randnotiz von ' + CH[w].name); a.textContent = t.replace(/^\.\.\. \(Inka: |\)$/g, ''); tw.parentNode.insertBefore(a, tw);
+      if ('IntersectionObserver' in window && window.JK_PLOT_ONCE){ var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if (!en.isIntersecting) return; io.disconnect(); try { window.JK_PLOT_ONCE(a, 2600); } catch(e){} }); }, {threshold:.5}); io.observe(a); } }); }
+
   /* Regler-Leiste: Dialogprobe und Spielstand (nur für Josefs Feintuning) */
   window.JK_DIALOG = function(lines){ dialog(lines); };
   window.JK_SB = {state:function(){ return {found:count(), hints:S.hints || 0, points:points(), done:!!S.done, seed:S.seed, n:N, visits:S.visits || 1, bonus:S.visitBonus || 0, streak:S.streak || 1, optout:optedOut(), ng:NG, ending:S.ending || '', chap:Object.keys(S.chap || {}), unread:unreadChaps(), size:SIZE}; },
-    wander:wanderNow, chapter:showChapter,
+    wander:wanderNow, chapter:showChapter, album:albumCount, badges:function(){ return Object.keys(S.badges || {}); }, quest:function(){ return S.quest || null; }, offer:offerQuest, react:react, opinion:opinion, mood:closest,
     ids:function(){ return PLACES.map(function(p){ return p.id; }); },
     set:function(found, hints){ var ids = PLACES.map(function(p){ return p.id; }); S.found = {}; for (var i = 0; i < Math.min(found, ids.length); i++) S.found[ids[i]] = Date.now(); S.hints = hints || 0; if (found >= N){ S.done = S.done || Date.now(); } else S.done = 0; save(); },
     reset:function(){ try { localStorage.removeItem('jk_sb'); } catch(e){} }};
@@ -527,9 +675,13 @@
     img.classList.add('found', 'pop'); refresh(); sp('g-fund', {vol:.7, max:.35}); setTimeout(function(){ cheer(n - 1); }, 120); splash(e.clientX, e.clientY, accent(img));
     if (btn){ btn.classList.add('bump'); setTimeout(function(){ btn.classList.remove('bump'); }, 400); }
     if (window.JK_PFAHL && e.pointerType === 'mouse'){ try { window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 700); } catch(x){} }
-    lastAct = Date.now(); markNew();
-    if (n === 1) setTimeout(function(){ dialog(FIRST, newChapter); }, 800); else if (n === 5) setTimeout(function(){ dialog(FIVE, newChapter); }, 800); else if (n === 10) setTimeout(function(){ dialog(TEN(), newChapter); }, 800); else if (n === 15) setTimeout(function(){ dialog(FIFTEEN, newChapter); }, 800);
-    if (n >= N){ S.ranks = (S.ranks || []); if (S.ranks.indexOf(NG) < 0) S.ranks.push(NG); save(); setTimeout(function(){ dialog(doneLines(), function(){ cert(); }); }, 800); } }
+    lastAct = Date.now(); markNew(); var hh = new Date().getHours(); if (hh >= 23 || hh < 5) S.night = 1; save();
+    /* Abzeichen hängen sich an den Meilenstein-Dialog; ohne Meilenstein kommen sie als eigenes kurzes Fenster (Etappe 5) */
+    if (n >= N){ S.ranks = (S.ranks || []); if (S.ranks.indexOf(NG) < 0) S.ranks.push(NG); save(); }
+    var bl = badgeLines(); var ms = n === 1 ? FIRST : n === 5 ? FIVE : n === 10 ? TEN() : n === 15 ? FIFTEEN : null;
+    if (n >= N) setTimeout(function(){ dialog(doneLines().concat(bl), function(){ cert(); }); }, 800);
+    else if (ms) setTimeout(function(){ dialog(ms.concat(bl), newChapter); }, 800);
+    else if (bl.length) setTimeout(function(){ dialog(bl); }, 800); }
   /* Finale: drei Fassungen je Verhältnis (Sigma nah, Wagner respektvoll, sonst Inka); auf Plus-Stufe 3 entscheidet man, was mit dem Quadrat geschieht (Josef, 29.10., 13:14) */
   function doneLines(){ if (NG >= 3) return DONE3();
     if (rel('sigma').n >= 2) return [['gojira', '...'], ['sigma', '[m:froh]... das war Gojira. Ich übersetze heute: Das Quadrat ist für dich. Und für mich, ein bisschen. Alle zwanzig.'], ['inka', 'Sigma hat sich das letzte Wort genommen. Das kommt selten vor. Lass es ihm.', 'froh']];
@@ -551,7 +703,7 @@
       '<p class="cp">Alle ' + N + ' Dinge auf theidealcity.gg gefunden. Eingegraben von Gojira.</p><p class="cp">' + points() + ' Punkte, ' + S.hints + (S.hints === 1 ? ' Hinweis' : ' Hinweise') + (S.visitBonus ? ', ' + S.visitBonus + ' fürs Wiederkommen' : '') + '. ' + ds + '.</p>' +
       '<p class="cp">' + (S.visits || 1) + (S.visits > 1 ? ' Besuche' : ' Besuch') + '.' + (NG ? ' Plus-Stufe ' + NG + ', Rang ' + RANKS[NG] + '.' : '') + (NG >= 3 && S.ending ? (S.ending === 'destroy' ? ' Das Quadrat ist zerstört. Eingegraben bleibt es trotzdem.' : S.ending === 'sigma' ? ' Das Quadrat steht vor Sigmas Glas.' : ' Das Quadrat bleibt eingegraben.') : '') + '</p><p class="cstamps" aria-label="Stempel je Besuch">' + (S.stamps || [Date.now()]).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('') + '</p>' +
       '<div class="cname"><label>Name <input type="text" maxlength="16" pattern="[A-Za-zÄÖÜäöüß0-9 ]{1,16}" placeholder="bis 16 Zeichen"></label></div>' +
-      '<div class="cbtn"><button type="button" class="png">Als Bild speichern</button>' + (BOARD ? '<button type="button" class="send">In die Bestenliste</button>' : '') + '<button type="button" class="again">Neustart</button>' + (NG < 3 ? '<button type="button" class="ngplus">Neues Spiel Plus' + (NG ? ' ' + (NG + 1) : '') + '</button>' : '') + '</div>' +
+      '<div class="cbtn"><button type="button" class="png">Als Bild speichern</button>' + (navigator.share ? '<button type="button" class="share">Teilen</button>' : '') + (BOARD ? '<button type="button" class="send">In die Bestenliste</button>' : '') + '<button type="button" class="again">Neustart</button>' + (NG < 3 ? '<button type="button" class="ngplus">Neues Spiel Plus' + (NG ? ' ' + (NG + 1) : '') + '</button>' : '') + '</div>' +
       (NG < 3 ? '<p class="cnote">Neues Spiel Plus: die Dinge werden kleiner und blasser und liegen in schwereren Verstecken' + (NG === 0 ? '. Ab Stufe 2 wandern sie und Sigma spricht in Rätseln.' : (NG === 1 ? ', wandern alle zwei Minuten und Sigma spricht in Rätseln.' : ', nur noch an Rändern und in Fußzeilen. Am Ende entscheidest du.')) + '</p>' : '') +
       '<p class="cnote">' + (BOARD ? 'Die Bestenliste speichert Name, Punkte, Zeit und Datum in einer Google-Tabelle von Josef Knoll (siehe Datenschutz). ' : '') + 'Dein Stand liegt nur in diesem Browser.</p>' + mh + '</div>';
     document.body.appendChild(ov); var sq = ov.querySelector('.sq'); if (NG >= 3 && S.ending === 'destroy') sq.classList.add('broken'); if (NG) sq.classList.add('ng' + NG); setTimeout(function(){ sp('g-stempel', {vol:.9, max:.5}); }, 400);
@@ -560,14 +712,15 @@
     ov.querySelector('.again').addEventListener('click', function(){ restart(NG); });
     var np = ov.querySelector('.ngplus'); if (np) np.addEventListener('click', function(){ restart(Math.min(3, NG + 1)); });
     ov.querySelector('.png').addEventListener('click', function(){ png(ov.querySelector('input').value.trim()); });
+    var shb = ov.querySelector('.share'); if (shb) shb.addEventListener('click', function(){ var nm = ov.querySelector('input').value.trim(); var txt = 'Alle ' + N + ' Dinge auf theidealcity.gg gefunden, ' + points() + ' Punkte.'; png(nm, function(blob){ var f = blob ? new File([blob], 'suchbild-urkunde.png', {type:'image/png'}) : null; var data = {title:'Suchbild, theidealcity.gg', text:txt, url:'https://theidealcity.gg/'}; if (f && navigator.canShare && navigator.canShare({files:[f]})) data.files = [f]; navigator.share(data).catch(function(){}); }); });
     var sb = ov.querySelector('.send'); if (sb) sb.addEventListener('click', function(){ send(ov.querySelector('input').value.trim(), sb); });
     if (window.JK_PLOT_ONCE) ov.querySelectorAll('.cp').forEach(function(q, i){ setTimeout(function(){ window.JK_PLOT_ONCE(q, 1800); }, 200 + i * 900); }); }
-  function png(name){ var W = 1200, cv = document.createElement('canvas'); cv.width = W; cv.height = W; var c = cv.getContext('2d'); c.fillStyle = '#00A651'; c.fillRect(0, 0, W, W);
+  function png(name, cb){ var W = 1200, cv = document.createElement('canvas'); cv.width = W; cv.height = W; var c = cv.getContext('2d'); c.fillStyle = '#00A651'; c.fillRect(0, 0, W, W);
     var draw = function(){ c.fillStyle = '#000'; c.textAlign = 'center'; c.font = '400 150px Duerer1525, serif'; c.fillText('SUCHBILD', W / 2, 300);
       c.font = '30px Relief, "Relief SingleLine", sans-serif'; var lines = ['Alle ' + N + ' Dinge auf theidealcity.gg gefunden.', points() + ' Punkte, ' + S.hints + ' Hinweise.', new Date(S.done || Date.now()).toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'})];
       if (name) lines.unshift(name); lines.forEach(function(l, i){ c.fillText(l, W / 2, 430 + i * 56); });
       c.font = '48px DuererHand, cursive'; c.fillText('eingegraben von Gojira', W / 2, 760);
-      var mono = document.querySelector('header .mark svg'); var fin = function(){ var a = document.createElement('a'); a.download = 'suchbild-urkunde.png'; a.href = cv.toDataURL('image/png'); a.click(); };
+      var mono = document.querySelector('header .mark svg'); var fin = function(){ if (cb){ cv.toBlob(function(b){ cb(b); }, 'image/png'); return; } var a = document.createElement('a'); a.download = 'suchbild-urkunde.png'; a.href = cv.toDataURL('image/png'); a.click(); };
       if (mono){ var im = new Image(); var sv = mono.outerHTML.replace(/currentColor/g, '#000'); if (sv.indexOf('xmlns=') < 0) sv = sv.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '); im.onload = function(){ c.drawImage(im, W / 2 - 90, 860, 180, 228); fin(); }; im.onerror = fin; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(sv); } else fin(); };
     if (document.fonts && document.fonts.load){ Promise.all([document.fonts.load('150px Duerer1525'), document.fonts.load('48px DuererHand')]).then(draw, draw); } else draw(); }
   function send(name, b){ if (!/^[A-Za-zÄÖÜäöüß0-9 ]{1,16}$/.test(name)){ alert('Name: 1 bis 16 Zeichen, nur Buchstaben, Ziffern und Leerzeichen.'); return; } b.disabled = true; b.textContent = 'Sende …';
@@ -608,6 +761,6 @@
         save(); setTimeout(function(){ sp('g-stempel', {vol:.7, max:.4}); }, 200); }); }); }, {threshold:.25});
     io.observe(el); }
 
-  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
+  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); reactions(); mood(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

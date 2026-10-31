@@ -219,7 +219,7 @@
     lines = lines.map(norm); var k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
     dlg = document.createElement('div'); dlg.className = 'sbdlg'; dlg.setAttribute('role', 'dialog');
     dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><b class="who"></b><img alt=""><div class="txt"><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
-    document.body.appendChild(dlg); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), win = dlg.querySelector('.win'), live = dlg.querySelector('.dlglive');
+    document.body.appendChild(dlg); document.body.classList.add('sbdlgon'); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), win = dlg.querySelector('.win'), live = dlg.querySelector('.dlglive');
     function portrait(w, mood){ img.src = '../assets/game/char-' + w + '-' + (mood || 'neutral') + '.png'; img.onerror = function(){ img.onerror = null; img.src = '../assets/game/char-' + w + '.png'; }; }
     function setMood(m){ curMood = m; MOODS.forEach(function(x){ dlg.classList.remove('m-' + x); }); dlg.classList.add('m-' + m); portrait(lines[k].who, m); }
     function startLine(){ var L = lines[k]; cur = CH[L.who] || CH.inka; dlg.className = 'sbdlg c-' + L.who; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; dlg.style.setProperty('--c', cur.col);
@@ -269,7 +269,7 @@
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ askAnswers(L); return; } more.style.visibility = 'visible'; cursorSnd('mv'); return; }
       if (pageIdx < pages.length - 1){ pageIdx++; cursorSnd('mv'); showPage(); return; }
       k++; cursorSnd('mv'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(); return; } startLine(); }
-    function close(){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(); }
+    function close(){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(); }
     function onkey(e){ if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
       if (pending){ var bs = [].slice.call(dlg.querySelectorAll('.ans')); var cur_ = bs.indexOf(document.activeElement);
         if (/^[1-4]$/.test(e.key) && bs[+e.key - 1]){ e.preventDefault(); bs[+e.key - 1].click(); return; }
@@ -327,18 +327,67 @@
     setTimeout(function(){ document.addEventListener('pointerdown', go, true); document.addEventListener('keydown', go, true); }, 400);
     setTimeout(function(){ if (!fired){ fired = true; document.removeEventListener('pointerdown', go, true); document.removeEventListener('keydown', go, true); go2(); } }, CF('fx.modemwait', 25) * 1000); }
 
-  /* ---------- Zähler im Kopf ---------- */
-  var btn, num, note;
-  function counter(){ var head = document.querySelector('header.top'); if (!head) return; btn = document.createElement('button'); btn.type = 'button'; btn.className = 'sbcount'; btn.setAttribute('aria-label', 'Suchbild: Hinweis (kostet 50 Punkte)'); btn.title = 'Suchbild: Hinweis, kostet 50 Punkte';
-    btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l6 6"/></svg><b>' + count() + '</b><span>/' + N + '</span>';
-    num = btn.querySelector('b'); var mb = head.querySelector('.menubtn'); head.insertBefore(btn, mb || null);
-    btn.addEventListener('click', hint);
-    /* Josef, 28.10., 01:10: ein Schalter, mit dem man das Spiel aktiv startet: "Inka rufen". Man weiß nicht, was das soll, und klickt drauf. Mit Spielstand: weiterspielen. */
-    var call = document.createElement('button'); call.type = 'button'; call.className = 'sbcall'; call.textContent = 'Inka rufen'; call.title = 'Suchbild starten oder weiterspielen'; head.insertBefore(call, btn);
-    call.addEventListener('click', function(){ if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); }); }
-  function refresh(){ if (num) num.textContent = count(); }
-  function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return;
-    var p = left[Math.floor(Math.random() * left.length)]; S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
+  /* ---------- Inka-Knopf, Inventar, Logbuch (Suchbild 2.0, Etappe 3; Josef, 29.10., 13:14 bis 13:45) ----------
+     Ein schwebender Knopf unten rechts (Handy und Desktop) mit kleinem Menü: Inka rufen, Inventar, Logbuch; die Kopfzeile wird ruhiger (Zähler und "Inka rufen" dort entfallen).
+     Inventar: die 20 Dinge als Silhouetten, gefundene in Farbe; Klick auf eine Silhouette gibt den Hinweis zu genau diesem Ding (kostet 50).
+     Logbuch: Stand, Stempel, Kapitel, Freigespieltes, Figuren (ein Andeutungssatz je Figur), Textgeschwindigkeit, "Alles vergessen" mit Rückfrage. */
+  var btn = null, num = null, fab = null, menu = null, panel = null;
+  function counter(){ if (document.querySelector('.sbfab')) return;
+    fab = document.createElement('div'); fab.className = 'sbfab';
+    fab.innerHTML = '<button type="button" class="sbfabbtn" aria-haspopup="true" aria-expanded="false" aria-controls="sbmenu" aria-label="Suchbild: Inka, Inventar, Logbuch" title="Suchbild"><img src="../assets/game/char-inka.png" alt=""><b class="sbnum">' + count() + '</b></button>' +
+      '<div class="sbmenu" id="sbmenu" hidden><button type="button" class="sbcall">Inka rufen</button><button type="button" class="sbcount">Inventar <span>' + count() + '/' + N + '</span></button><button type="button" class="sblogbtn">Logbuch</button></div>';
+    document.body.appendChild(fab); btn = fab.querySelector('.sbfabbtn'); num = fab.querySelector('.sbnum'); menu = fab.querySelector('.sbmenu');
+    function openMenu(o){ menu.hidden = !o; btn.setAttribute('aria-expanded', o ? 'true' : 'false'); if (o){ cursorSnd('mv'); menu.querySelector('button').focus(); } }
+    btn.addEventListener('click', function(e){ e.stopPropagation(); openMenu(menu.hidden); });
+    document.addEventListener('click', function(e){ if (!menu.hidden && !e.target.closest('.sbfab')) openMenu(false); });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden){ openMenu(false); btn.focus(); } });
+    /* Josef, 28.10., 01:10: "Inka rufen" startet oder setzt fort; nach "Nicht jetzt" legt es die Dinge wieder aus */
+    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); });
+    fab.querySelector('.sbcount').addEventListener('click', function(){ openMenu(false); inventory(); });
+    fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); }); }
+  function refresh(){ if (num) num.textContent = count(); var c = fab && fab.querySelector('.sbcount span'); if (c) c.textContent = count() + '/' + N; if (panel && panel.classList.contains('sbinv')) inventory(true); }
+  function closePanel(){ if (!panel) return; document.removeEventListener('keydown', panelKey); var pn = panel; panel = null; pn.classList.add('off'); setTimeout(function(){ pn.remove(); }, 250); if (btn) btn.focus(); }
+  function panelKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); closePanel(); } }
+  function openPanel(cls, label, html){ if (panel) { var old = panel; panel = null; old.remove(); }
+    panel = document.createElement('div'); panel.className = 'sbpanel ' + cls; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', label);
+    panel.innerHTML = '<div class="sbpin"><button type="button" class="x" aria-label="Schließen">×</button><h2>' + label + '</h2>' + html + '</div>';
+    document.body.appendChild(panel); panel.querySelector('.x').addEventListener('click', closePanel); panel.addEventListener('click', function(e){ if (e.target === panel) closePanel(); });
+    document.addEventListener('keydown', panelKey); cursorSnd('ok'); var f = panel.querySelector('.sbpin button:not(.x), .sbpin input, .sbpin a'); (f || panel.querySelector('.x')).focus(); return panel; }
+  /* Inventar */
+  function inventory(refreshOnly){ var items = PLACES.map(function(p){ var f = !!S.found[p.id]; return '<li class="' + (f ? 'got' : 'open') + '"><button type="button" data-id="' + p.id + '"' + (f ? ' disabled' : '') + ' aria-label="' + (f ? NAMES[p.id] + ', gefunden' : NAMES[p.id] + ' noch gesucht. Hinweis kostet ' + CF('game.hint', HINT_COST) + ' Punkte') + '"><img src="../assets/game/' + p.id + '.png" alt=""><span>' + (f ? NAMES[p.id] : '?') + '</span></button></li>'; }).join('');
+    var html = '<p class="sbpnote">' + count() + ' von ' + N + ' gefunden, ' + points() + ' Punkte. ' + (S.done ? 'Alles da.' : 'Klick auf eine Silhouette: Inka sagt, wo sie eins gesehen hat (kostet ' + CF('game.hint', HINT_COST) + ' Punkte).') + '</p><ul class="sbinvgrid">' + items + '</ul>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '');
+    if (refreshOnly && panel){ panel.querySelector('.sbpin').innerHTML = '<button type="button" class="x" aria-label="Schließen">×</button><h2>Inventar</h2>' + html; panel.querySelector('.x').addEventListener('click', closePanel); }
+    else openPanel('sbinv', 'Inventar', html);
+    panel.querySelectorAll('.sbinvgrid button:not([disabled])').forEach(function(b){ b.addEventListener('click', function(){ var p = PLACES.filter(function(q){ return q.id === b.getAttribute('data-id'); })[0]; closePanel(); if (p) hintFor(p); }); });
+    var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); }); }
+  /* Logbuch */
+  var CHAPTERS = [['Das Raster', 1, 0], ['Augenhöhe', 1, 5], ['Eine Woche im Dunkeln', 2, 0], ['Risse', 2, 10], ['Die Kellerwohnung', 3, 0], ['Der Astronaut', 3, 15], ['Nil', 4, 0], ['Gojira', 4, 20], ['Taj Mahal', 5, 0], ['Der Einbruch', 6, 0], ['Wagner fällt', 7, 0], ['Relikt', 8, 0]];   /* Titel, Besuch ab, Funde ab; Texte kommen mit Etappe 4 */
+  function relLine(who){ var R = rel(who), n = R.n, r = R.r;
+    var T = {inka:[n >= 2 ? 'Inka erzählt dir inzwischen mehr, als sie sollte.' : (n <= -2 ? 'Inka beobachtet dich. Mehr nicht.' : 'Inka beobachtet. Sie wartet ab, was du bist.')],
+      wagner:[r >= 2 ? 'Wagner hat deinen Namen ins Raster eingetragen. Das ist bei ihm ein Lob.' : (r <= -2 ? 'Wagner rechnet dir alles doppelt an.' : 'Wagner notiert Koordinaten. Deine auch.')],
+      xae:[n >= 2 ? 'X Æ A-13 hält dich für lernfähig. Vier Sekunden bleiben trotzdem vier Sekunden.' : (r <= -2 ? 'X Æ A-13 antwortet dir in Zahlen. Nur noch in Zahlen.' : 'X Æ A-13 zählt mit, was du brauchst.')],
+      sigma:[n >= 2 ? 'Sigma klopft manchmal ans Glas, wenn du da bist.' : (n <= -2 ? 'Sigma zieht sich zurück, wenn du laut wirst.' : 'Sigma sieht zu, hinter dem Glas.')],
+      gojira:[n >= 2 ? 'Gojira hat ein zweites Quadrat angefangen. Inka meint, es ist für dich.' : 'Gojira gräbt. Inka übersetzt, wenn es sein muss.']};
+    return T[who][0]; }
+  function logbook(){ var v = S.visits || 1, n = count();
+    var chaps = CHAPTERS.map(function(c, i){ var open = v >= c[1] && n >= c[2]; return '<li class="' + (open ? 'open' : 'locked') + '">' + (i + 1) + '. ' + (open ? esc(c[0]) + ' <small>(Text folgt)</small>' : '<span class="sbq">' + esc(c[0]).replace(/\S/g, '·') + '</span> <small>' + (v < c[1] ? 'ab Besuch ' + c[1] : 'ab ' + c[2] + ' Funden') + '</small>') + '</li>'; }).join('');
+    var stamps = (S.stamps || []).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('');
+    var rels = ['inka', 'wagner', 'xae', 'sigma', 'gojira'].map(function(w){ return '<li><b style="color:' + CH[w].col + '">' + CH[w].name + '</b> ' + relLine(w) + '</li>'; }).join('');
+    var sp0 = S.tspeed || 'normal';
+    var html = '<div class="sblogcols"><section><h3>Stand</h3><p>' + n + ' von ' + N + ' Dingen, ' + points() + ' Punkte' + (S.visitBonus ? ' (davon ' + S.visitBonus + ' fürs Wiederkommen)' : '') + ', ' + (S.hints || 0) + ' Hinweise. ' + v + (v > 1 ? ' Besuche' : ' Besuch') + '.</p><p class="cstamps" aria-label="Stempel je Besuch">' + stamps + '</p>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + '</section>' +
+      '<section><h3>Kapitel</h3><ol class="sbchaps">' + chaps + '</ol></section>' +
+      '<section><h3>Freigespielt</h3><p>Hintergrundbilder und Ausschnitte aus den Suchbildern ab 5, 10, 15 und 20 Funden: <a href="musterbuch.html#freigespielt">im Musterbuch</a>.</p></section>' +
+      '<section><h3>Figuren</h3><ul class="sbrels">' + rels + '</ul></section>' +
+      '<section><h3>Textgeschwindigkeit</h3><p class="sbspeed" role="group" aria-label="Textgeschwindigkeit">' + ['langsam', 'normal', 'sofort'].map(function(k){ return '<label><input type="radio" name="sbspeed" value="' + k + '"' + (sp0 === k ? ' checked' : '') + '> ' + k + '</label>'; }).join(' ') + '</p></section>' +
+      '<section><h3>Vergessen</h3><p>Löscht Funde, Punkte, Besuche, Verhältnisse und Kapitel in diesem Browser.</p><p><button type="button" class="sbforget">Alles vergessen</button></p></section></div>';
+    openPanel('sblog', 'Logbuch', html);
+    panel.querySelectorAll('input[name=sbspeed]').forEach(function(r){ r.addEventListener('change', function(){ S.tspeed = r.value; save(); cursorSnd('ok'); }); });
+    var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); });
+    panel.querySelector('.sbforget').addEventListener('click', function(){ var b = this; if (!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = 'Wirklich alles vergessen?'; setTimeout(function(){ b.classList.remove('sure'); b.textContent = 'Alles vergessen'; }, 5000); return; }
+      try { localStorage.removeItem('jk_sb'); sessionStorage.removeItem('jk_sb_seen'); } catch(e){} location.reload(); }); }
+  function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return; hintFor(left[Math.floor(Math.random() * left.length)]); }
+  function hintFor(p){ if (S.found[p.id]) return;
+    S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
     var R = rel('inka'), exact = R.n >= 2;   /* Nähe zu Inka: genauere Hinweise */
     var wag = rel('wagner').r >= 2 ? 'Fünfzig Punkte. Für Sie hätte ich es billiger gemacht, aber das Raster kennt keine Freunde.' : (rel('wagner').r <= -2 ? '[m:wuetend]Fünfzig Punkte. Für Sie eigentlich hundert.' : 'Fünfzig Punkte. Koordinaten kosten.');
     var lines = [['inka', '*' + NAMES[p.id] + '*: ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '') + (exact ? ' Ich zeig dir noch mehr: ' + (p.x < 50 ? 'eher links' : 'eher rechts') + ', ' + (p.y < 50 ? 'oben' : 'unten') + '.' : ''), exact ? 'froh' : undefined]];

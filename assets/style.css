@@ -1272,7 +1272,8 @@ html.lh-bigobj .sbobj{filter:drop-shadow(0 0 0 #000) drop-shadow(2px 0 0 #000) d
 .sbdlg.cut p::after{content:'\258C';color:var(--c,var(--accent));animation:sbmore .6s steps(2) infinite}
 .sbdlg .more{animation:sbmore 1s ease-in-out infinite}
 @keyframes sbmore{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
-.sbdlg{flex-direction:column;align-items:center}
+.sbdlg{flex-direction:column;align-items:center;pointer-events:none}
+.sbdlg .win,.sbdlg .answers{pointer-events:auto}
 .sbdlg .answers{width:min(560px,100%);margin:0 0 8px;display:grid;gap:4px;background:var(--paper);color:var(--ink);border:3px double var(--c,var(--line));box-shadow:4px 4px 0 var(--c,var(--accent));padding:8px;cursor:auto;position:relative}
 .sbdlg .ans{position:relative}
 .sbdlg .ans{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;font-size:15px;line-height:1.35;background:none;border:0;padding:6px 8px;color:var(--ink);cursor:pointer;border-radius:0}
@@ -1284,3 +1285,42 @@ html.lh-bigobj .sbobj{filter:drop-shadow(0 0 0 #000) drop-shadow(2px 0 0 #000) d
 .sbdlg p a.wl .ch{color:inherit;font-weight:700;font-size:1em}
 @media (max-width:600px){.sbdlg .who{font-size:11px}.sbdlg .ans{font-size:14px}.sbdlg p{min-height:4.2em}}
 html.calm .sbdlg .ch,html.calm .sbdlg .win,html.calm .sbdlg .more{animation:none!important}
+
+/* Inka-Knopf, Inventar, Logbuch (Suchbild 2.0, Etappe 3) */
+.sbfab{position:fixed;right:14px;bottom:14px;z-index:95}
+.sbfabbtn{position:relative;width:56px;height:56px;border-radius:50%;border:2px solid var(--line);background:var(--paper);padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:visible;box-shadow:3px 3px 0 var(--accent)}
+.sbfabbtn img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top}
+.sbfabbtn .sbnum{position:absolute;right:-6px;top:-6px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--ink);color:var(--paper);font:700 12px/22px var(--body);border:1.5px solid var(--paper)}
+.sbfabbtn:hover,.sbfabbtn:focus-visible{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--accent);outline:none}
+.sbfabbtn:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+body.start .sbfabbtn{border-color:#000;box-shadow:3px 3px 0 #000}
+.sbmenu{position:absolute;right:0;bottom:64px;display:flex;flex-direction:column;gap:4px;background:var(--paper);border:2px solid var(--line);padding:6px;min-width:170px;box-shadow:4px 4px 0 var(--accent)}
+.sbmenu[hidden]{display:none}
+.sbmenu button{font:15px/1.2 var(--body);text-align:left;border:0;background:none;color:var(--ink);padding:8px 10px;cursor:pointer;border-radius:0;display:flex;justify-content:space-between;gap:12px;min-height:36px}
+.sbmenu button span{color:var(--grey);font-size:13px}
+.sbmenu button:hover,.sbmenu button:focus-visible{background:var(--ink);color:var(--paper);outline:none}.sbmenu button:hover span,.sbmenu button:focus-visible span{color:var(--paper)}
+@media (max-width:600px){.nlknob{left:10px;right:auto}.nlpanel{left:10px;right:10px;width:auto}.sbfab{right:10px;bottom:10px}.sbfabbtn{width:50px;height:50px}.sbfabbtn img{width:40px;height:40px}}
+.sbpanel{position:fixed;inset:0;z-index:490;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;padding:0;animation:sbdlgin .25s ease-out}
+.sbpanel.off{opacity:0;transition:opacity .25s}
+.sbpin{position:relative;width:min(720px,100%);max-height:min(82vh,760px);overflow:auto;background:var(--paper);color:var(--ink);border:3px double var(--line);border-bottom:0;padding:18px 20px 24px;font-family:var(--body);font-size:16px;line-height:1.45}
+@media (min-width:701px){.sbpanel{align-items:center;padding:24px}.sbpin{border-bottom:3px double var(--line);box-shadow:8px 8px 0 var(--accent)}}
+.sbpin h2{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:.06em;font-size:28px;margin:0 36px 10px 0;line-height:1}
+.sbpin h3{font-family:var(--head);font-weight:400;text-transform:uppercase;letter-spacing:.06em;font-size:17px;margin:14px 0 6px;border-bottom:1px solid var(--line)}
+.sbpin .x{position:absolute;right:10px;top:8px;width:32px;height:32px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);font:22px/1 var(--body);cursor:pointer}
+.sbpin .x:hover{background:var(--ink);color:var(--paper)}
+.sbpnote{margin:0 0 10px;font-size:15px;color:var(--grey)}
+.sbinvgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.sbinvgrid button{width:100%;font:12px/1.2 var(--body);border:1.5px solid var(--hair);background:var(--paper);color:var(--ink);padding:8px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:44px}
+.sbinvgrid button img{width:56px;height:56px;object-fit:contain}
+.sbinvgrid .open button img{filter:grayscale(1) brightness(0) opacity(.28)}
+.sbinvgrid .got button{border-color:var(--accent);cursor:default}
+.sbinvgrid .open button:hover,.sbinvgrid .open button:focus-visible{border-color:var(--ink);background:var(--hair)}
+.sblogcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 28px}
+.sblogcols p{margin:4px 0}.sblogcols ol,.sblogcols ul{margin:0;padding-left:0;list-style:none}
+.sbchaps li{padding:3px 0;border-bottom:1px dotted var(--hair);font-size:15px}.sbchaps li.locked{color:var(--grey)}.sbchaps .sbq{letter-spacing:.15em}.sbchaps small{color:var(--grey);font-size:12px;margin-left:6px}
+.sbrels li{padding:4px 0;border-bottom:1px dotted var(--hair);font-size:15px}.sbrels b{font-family:var(--head);font-weight:400;letter-spacing:.06em;margin-right:6px}
+.sbspeed label{display:inline-flex;gap:6px;align-items:center;margin-right:14px;min-height:24px;cursor:pointer}.sbspeed input{width:20px;height:20px;accent-color:var(--accent)}
+.sbforget,.sbcertbtn{font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 12px;cursor:pointer}.sbforget:hover,.sbcertbtn:hover{background:var(--ink);color:var(--paper)}
+.sbforget.sure{background:#E2231A;border-color:#E2231A;color:#fff}
+html.calm .sbpanel{animation:none}
+body.sbdlgon .sbfab{opacity:0;pointer-events:none;transition:opacity .2s}   /* der Inka-Knopf weicht dem offenen Dialogfenster */

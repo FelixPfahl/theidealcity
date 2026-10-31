@@ -1180,7 +1180,7 @@
       return {ink: cs.color, acc: acc, warm: dark ? '#e3d4c2' : '#2a1c12', cool: dark ? '#c3d3e4' : '#101c2a'}; }
     function build(el){
       var hero = el.classList.contains('hero');
-      var HAND = CF('hand.size', 1.6), JIT = CF('plot.jitter', 1), INK = CF('plot.ink', 1), WAVE = CF('hand.wave', 35), WR = CF('hand.rand', 22), TILT = CF('hand.tilt', 2), JOIN = CF('hand.join', 1) >= .5, BLEED = CF('plot.bleed', 1), SACC = CF('plot.stroke.acc', 1);
+      var HAND = CF('hand.size', 1.6), JIT = CF('plot.jitter', 1) * (el.closest && el.closest('.sbruined') ? 2.2 : 1),   /* über zerstörten Serien schreibt der Plotter zittriger (Suchbild 2.0, Etappe 6) */ INK = CF('plot.ink', 1), WAVE = CF('hand.wave', 35), WR = CF('hand.rand', 22), TILT = CF('hand.tilt', 2), JOIN = CF('hand.join', 1) >= .5, BLEED = CF('plot.bleed', 1), SACC = CF('plot.stroke.acc', 1);
       var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize), lh = hero ? fs * .9 : (parseFloat(cs.lineHeight) || fs * 1.42);
       var W = el.clientWidth; if (!W || W < 40) return;
       var sc = fs / F.upm, b_sc = sc, sw = hero ? Math.max(3, fs * .022) : CF('plot.stroke', 1.2);

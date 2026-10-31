@@ -1346,3 +1346,39 @@ html.sbmood-wagner .net{display:block;opacity:.18!important;animation:none}
 html.sbmood-sigma figure.work img{box-shadow:0 0 0 1px rgba(0,166,81,.25),0 0 22px rgba(0,166,81,.16)}
 html.sbmood-gojira .divider{filter:saturate(.6)}
 html.lh-hc.sbmood main,html.lh-hc.sbmood figure.work img{background-image:none!important;box-shadow:none!important}
+/* Werke zerstören (Suchbild 2.0, Etappe 6): 20 Wirkungen, Werkzeugleiste, Notiz dahinter, Eingrabung */
+.sbtoollab{position:fixed;left:50%;bottom:84px;transform:translate(-50%,20px);z-index:96;display:flex;align-items:center;gap:10px;max-width:min(92vw,560px);background:var(--paper);color:var(--ink);border:3px double var(--line);box-shadow:5px 5px 0 var(--accent);padding:8px 12px;font-size:14px;line-height:1.3;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}.sbtoollab.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}.sbtoollab img{width:40px;height:40px;object-fit:contain;flex:none}.sbtoollab kbd{font:inherit;border:1px solid var(--hair);padding:0 4px}.sbtoollab .x{font:inherit;font-size:18px;line-height:1;border:0;background:none;color:var(--ink);cursor:pointer;min-width:24px;min-height:24px}
+html.sbtoolon figure.work a[data-full]{cursor:crosshair}html.sbtoolon figure.work:hover img{outline:3px dashed var(--accent);outline-offset:3px}
+.sbinvgrid li.tool button{cursor:pointer}.sbinvgrid li.tool button:hover,.sbinvgrid li.tool button:focus-visible{background:var(--hair)}.sbinvgrid li.used button{opacity:.45}.sbinvgrid button small{font-size:10px;color:var(--grey);letter-spacing:.03em}
+figure.work.ruin{position:relative;isolation:isolate}figure.work.ruin > a{position:relative;display:block;overflow:visible}figure.work.ruin > a::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2}
+figure.work.ruin::before{content:'';position:absolute;inset:-14px;pointer-events:none;z-index:0;background:radial-gradient(ellipse at var(--rx,50%) var(--ry,50%),rgba(0,0,0,.14),transparent 62%)}
+figure.work.ruin.fresh > a::after{animation:sbruinin 1.1s ease-out}@keyframes sbruinin{from{opacity:0}to{opacity:1}}
+.sbbehind{font-family:var(--hand,'DuererHand',cursive);font-size:15px;line-height:1.5;margin:6px 0 0;color:var(--ink);max-width:40ch}
+.sbruincap{font-size:11px;color:#E2231A;letter-spacing:.03em}
+/* Wirkungen */
+figure.work.ruin.fx-burn img{filter:sepia(.45) contrast(1.1)}figure.work.ruin.fx-burn > a::after{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--paper) 0 10%,#2a1a0a 11% 13%,rgba(120,60,10,.75) 14% 17%,rgba(60,30,5,.35) 18% 22%,transparent 26%)}
+figure.work.ruin.fx-crater img{filter:contrast(1.15) brightness(.85)}figure.work.ruin.fx-crater > a::after{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),#111 0 14%,#444 15% 18%,rgba(40,40,40,.6) 19% 24%,rgba(0,0,0,.25) 25% 34%,transparent 40%)}
+figure.work.ruin.fx-cuts > a::after{background:repeating-linear-gradient(28deg,transparent 0 46px,var(--paper) 46px 49px),repeating-linear-gradient(-61deg,transparent 0 83px,var(--paper) 83px 85px)}
+figure.work.ruin.fx-concrete > a::after{background:linear-gradient(#8f8f8f,#6b6b6b);clip-path:polygon(0 48%,12% 44%,25% 50%,40% 43%,55% 49%,70% 42%,85% 47%,100% 44%,100% 100%,0 100%)}
+figure.work.ruin.fx-bites img{clip-path:polygon(0 0,70% 0,74% 8%,80% 2%,86% 10%,100% 6%,100% 100%,30% 100%,26% 92%,18% 98%,12% 90%,0 94%)}
+figure.work.ruin.fx-water img{filter:saturate(.4) blur(.8px) brightness(.9)}figure.work.ruin.fx-water > a::after{background:linear-gradient(rgba(60,120,170,.1),rgba(30,80,140,.5)),repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.12) 18px 20px)}
+figure.work.ruin.fx-wrap > a::after{background:repeating-linear-gradient(-12deg,rgba(255,255,255,.92) 0 22px,rgba(235,235,235,.85) 22px 26px,transparent 26px 34px)}
+figure.work.ruin.fx-smear img{filter:contrast(.8) sepia(.3)}figure.work.ruin.fx-smear > a::after{background:radial-gradient(ellipse at var(--rx,50%) var(--ry,50%),rgba(230,170,40,.55),rgba(230,170,40,.2) 40%,transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(230,170,40,.4),transparent 30%)}
+figure.work.ruin.fx-spots > a::after{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),#3a2410 0 4%,rgba(120,70,20,.6) 5% 7%,transparent 9%),radial-gradient(circle at 30% 30%,#3a2410 0 3%,rgba(120,70,20,.6) 4% 6%,transparent 8%),radial-gradient(circle at 75% 70%,#3a2410 0 3.5%,rgba(120,70,20,.6) 4.5% 6.5%,transparent 8.5%)}
+figure.work.ruin.fx-bleach img{filter:brightness(1.7) contrast(.45) saturate(.2)}
+figure.work.ruin.fx-mirror img{transform:scaleX(-1)}figure.work.ruin.fx-mirror > a::after{background:linear-gradient(100deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.35) 50%,rgba(255,255,255,0) 60%)}
+figure.work.ruin.fx-wall > a::after{background:repeating-linear-gradient(0deg,transparent 0 22px,#e4e0d8 22px 25px),repeating-linear-gradient(90deg,transparent 0 48px,#e4e0d8 48px 51px),linear-gradient(#b85a3a,#a34e32);opacity:.96}
+figure.work.ruin.fx-sunk img{filter:brightness(.55) saturate(.5) hue-rotate(190deg)}figure.work.ruin.fx-sunk > a::after{background:linear-gradient(rgba(20,50,90,.15),rgba(10,30,70,.7))}
+figure.work.ruin.fx-grease > a::after{background:radial-gradient(ellipse at var(--rx,50%) var(--ry,50%),rgba(255,210,80,.5),transparent 35%),radial-gradient(ellipse at 70% 30%,rgba(255,210,80,.45),transparent 25%),radial-gradient(ellipse at 25% 75%,rgba(255,210,80,.4),transparent 22%)}
+figure.work.ruin.fx-paper > a::after{background:var(--paper);box-shadow:inset 0 0 0 1px var(--line),inset 0 0 0 4px var(--paper),inset 0 0 0 5px var(--hair);clip-path:inset(18% 10% 22% 14%)}
+figure.work.ruin.fx-nibble img{clip-path:polygon(0 0,100% 0,100% 100%,40% 100%,37% 93%,30% 97%,24% 88%,17% 95%,10% 86%,5% 92%,0 84%)}
+figure.work.ruin.fx-sticker > a::after{background:radial-gradient(circle at 12% 14%,#E2231A 0 7%,transparent 8%),radial-gradient(circle at 88% 20%,#00A651 0 6%,transparent 7%),radial-gradient(circle at 80% 86%,#3F97B8 0 8%,transparent 9%),radial-gradient(circle at 18% 80%,#E2231A 0 5%,transparent 6%)}
+figure.work.ruin.fx-holes > a::after{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--paper) 0 9%,transparent 10%),radial-gradient(circle at 25% 30%,var(--paper) 0 6%,transparent 7%),radial-gradient(circle at 78% 65%,var(--paper) 0 7%,transparent 8%),radial-gradient(circle at 60% 15%,var(--paper) 0 4%,transparent 5%)}
+figure.work.ruin.fx-spill > a::after{background:radial-gradient(ellipse at 50% 100%,rgba(220,40,80,.6),rgba(220,40,80,.25) 45%,transparent 70%)}
+figure.work.ruin.fx-scratch > a::after{background:repeating-linear-gradient(35deg,transparent 0 9px,rgba(255,255,255,.7) 9px 10px,transparent 10px 23px),repeating-linear-gradient(-50deg,transparent 0 14px,rgba(255,255,255,.6) 14px 15px,transparent 15px 31px)}
+.sbalbum li.ruin img{filter:grayscale(1) contrast(1.3) brightness(.7)!important}.sbalbum li.ruin b{text-decoration:line-through}
+/* Eingrabung (viertes Ende) */
+.sbearth{position:fixed;left:0;right:0;bottom:0;height:0;z-index:97;pointer-events:none;background:linear-gradient(to top,#2b1d10 0,#4a3320 60%,rgba(74,51,32,.85) 85%,transparent);transition:height 6s cubic-bezier(.3,.7,.3,1)}.sbearth.up{height:100vh}.sbearth.down{transition:height 2.4s ease-in;height:0}
+html.sbburied body{filter:sepia(.35) brightness(.92)}
+.sbcert .sq.buried{background:#4a3320;color:#fff}.sbcert .sq.buried .cbtn button,.sbcert .sq.buried input{background:#fff;color:#000}
+html.calm figure.work.ruin.fresh > a::after,html.calm .sbearth{animation:none;transition:none}

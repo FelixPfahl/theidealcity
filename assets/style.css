@@ -1382,3 +1382,5 @@ figure.work.ruin.fx-scratch > a::after{background:repeating-linear-gradient(35de
 html.sbburied body{filter:sepia(.35) brightness(.92)}
 .sbcert .sq.buried{background:#4a3320;color:#fff}.sbcert .sq.buried .cbtn button,.sbcert .sq.buried input{background:#fff;color:#000}
 html.calm figure.work.ruin.fresh > a::after,html.calm .sbearth{animation:none;transition:none}
+/* Lesehilfe Kontrast (Etappe 8): Figurenfarben in Namen und Marken weichen der Tintenfarbe */
+html.lh-hc .sbdlg .who,html.lh-hc .sbrels b,html.lh-hc .sbalbum small,html.lh-hc .sbbadges small,html.lh-hc .sbmarg,html.lh-hc .sbruincap,html.lh-hc .sbnewtag,html.lh-hc .sblogbtn span,html.lh-hc .sbchaps li.secret .sbchap,html.lh-hc .sblog p b{color:var(--ink)!important}

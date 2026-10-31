@@ -104,9 +104,12 @@ public class MainActivity extends Activity {
             bar.addView(t, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         }
         root.addView(bar, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        /* Seit 30.10.2026: keine eigene Leiste mehr, Pult hat seine drei Bereiche selbst (Jetzt, Klasse, Büro); die App startet direkt in Pult */
+        bar.setVisibility(View.GONE);
+        line.setVisibility(View.GONE);
         setContentView(root);
 
-        int startTab = 0;
+        int startTab = Math.max(0, indexOf("pult"));
         String wanted = getIntent() != null ? getIntent().getStringExtra("tab") : null;
         if (state != null) startTab = state.getInt("tab", 0);
         else if (wanted != null) startTab = Math.max(0, indexOf(wanted));

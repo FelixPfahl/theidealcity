@@ -32,7 +32,7 @@
   };
   function rng(seed){ var x = seed >>> 0 || 1; return function(){ x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
   function deal(){ var r = rng(S.seed); var out = []; var used = {};
-    OBJ.forEach(function(o){ var pool = SPOTS[o.p].filter(function(sp){ return sp[2] === o.d; }); if (!pool.length) pool = SPOTS[o.p]; var k; var tries = 0; do { k = Math.floor(r() * pool.length); tries++; } while (used[o.p + pool[k][0]] && tries < 20); used[o.p + pool[k][0]] = 1;
+    var ng = Math.min(3, S.ng || 0); OBJ.forEach(function(o){ var dd = ng >= 3 ? 3 : Math.min(3, o.d + (ng ? 1 : 0)); var pool = SPOTS[o.p].filter(function(sp){ return sp[2] === dd; }); if (!pool.length) pool = SPOTS[o.p].filter(function(sp){ return sp[2] === o.d; }); if (!pool.length) pool = SPOTS[o.p]; var k; var tries = 0; do { k = Math.floor(r() * pool.length); tries++; } while (used[o.p + pool[k][0]] && tries < 20); used[o.p + pool[k][0]] = 1;
       var sp = pool[k]; var cnt = 1 + Math.floor(r() * 12); out.push({id:o.id, p:o.p, d:o.d, sel:sp[0], i:cnt, k:sp[1], x:(o.d === 3 ? (r() < .5 ? 4 + Math.round(r() * 14) : 82 + Math.round(r() * 14)) : 10 + Math.round(r() * 80)), y:6 + Math.round(r() * 86)}); });
     return out; }
   var PLACES;
@@ -43,7 +43,11 @@
   var SIZE = TOUCH ? {1:85, 2:58, 3:40} : {1:64, 2:44, 3:30};   /* am Handy ein Drittel größer (Josef, 28.10., 01:53) */
   var LHG = window.JK_LH || {}, BIGF = LHG.bigobj ? 2 : 1;   /* Lesehilfe: größere Dinge */
   SIZE = {1:CF('game.size1', SIZE[1]) * BIGF, 2:CF('game.size2', SIZE[2]) * BIGF, 3:CF('game.size3', SIZE[3]) * BIGF};
-  var S = load(); if (!S.seed) S.seed = (Math.random() * 4294967295) >>> 0; PLACES = deal();
+  var S = load(); if (!S.seed) S.seed = (Math.random() * 4294967295) >>> 0;
+  /* New Game Plus (Suchbild 2.0, Etappe 4): Stufe S.ng 0 bis 3. Stufe 1: Dinge kleiner (85 %) und blasser, Verstecke eine Stufe schwerer. Stufe 2: dazu wandernde Dinge (alle 120 s ohne Fund) und Sigmas Rätsel statt Ortsangaben. Stufe 3: nur noch Ränder und Fußzeilen, 65 %, Finale mit Entscheidung. */
+  var NG = Math.min(3, S.ng || 0), NGF = [1, .85, .75, .65][NG]; SIZE = {1:SIZE[1] * NGF, 2:SIZE[2] * NGF, 3:SIZE[3] * NGF}; if (NG) document.documentElement.classList.add('sbng', 'sbng' + NG);
+  var RANKS = ['', 'Kartograph*in', 'Rasterleser*in', 'Relikt'];
+  PLACES = deal();
   /* Besuche (Josef, 29.10., 13:14): neuer Besuch nach 6 Stunden Pause; Bonus 50 je neuer Besuch, +25 je Besuch in Folge (innerhalb 48 Stunden), höchstens 200; Stempel je Besuch auf der Urkunde */
   var NEWV = null;
   (function(){ var now = Date.now(), last = S.lastVisit || 0, gap = now - last;
@@ -261,15 +265,15 @@
       L.ask.forEach(function(a, idx){ var b = document.createElement('button'); b.type = 'button'; b.className = 'ans s-' + a.s; b.innerHTML = '<i aria-hidden="true">' + STANCE[a.s].icon + '</i><span>' + esc(a.t) + '</span><small class="vh">' + STANCE[a.s].name + '</small>'; b.setAttribute('data-i', idx);
         b.addEventListener('click', function(e){ e.stopPropagation(); choose(a); }); b.addEventListener('mouseenter', function(){ cursorSnd('mv'); }); box.appendChild(b); });
       dlg.insertBefore(box, win); var first = box.querySelector('button'); if (first) first.focus(); }
-    function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); var box = dlg.querySelector('.answers'); if (box) box.remove();
+    function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); if (a.fn) try { a.fn(); } catch(x){} var box = dlg.querySelector('.answers'); if (box) box.remove();
       var re = (a.re || []).map(norm); if (!re.length) re = [{who:L.who, text:'...'}];
       lines.splice(k + 1, 0, ...re); next(); }
     function next(e){ if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
       if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ askAnswers(L); return; } more.style.visibility = 'visible'; cursorSnd('mv'); return; }
       if (pageIdx < pages.length - 1){ pageIdx++; cursorSnd('mv'); showPage(); return; }
-      k++; cursorSnd('mv'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(); return; } startLine(); }
-    function close(){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(); }
+      k++; cursorSnd('mv'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(true); return; } startLine(); }
+    function close(nat){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(nat === true); }
     function onkey(e){ if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
       if (pending){ var bs = [].slice.call(dlg.querySelectorAll('.ans')); var cur_ = bs.indexOf(document.activeElement);
         if (/^[1-4]$/.test(e.key) && bs[+e.key - 1]){ e.preventDefault(); bs[+e.key - 1].click(); return; }
@@ -317,7 +321,7 @@
     if (how === 'notnow'){ notNow(); return; }
     var lines = how === 'skip' ? [pickOne(SKIPPED)] : (NEWV && !NEWV.first ? visitLines(NEWV) : (count() ? greet() : RULES));
     if (how !== 'skip' && NEWV && !NEWV.first && !count()) lines = lines.concat([RULES[2], RULES[3]]);
-    dialog(lines); }
+    dialog(lines, newChapter); }
   function intro(){ var seen = false; try { seen = !!sessionStorage.getItem('jk_sb_seen'); } catch(e){} if (seen || optedOut()) return;
     if (S.introVisit === (S.visits || 1) && S.introVisit) return;   /* in diesem Besuch schon gelaufen (anderer Tab) */
     var fired = false;
@@ -342,7 +346,7 @@
     document.addEventListener('click', function(e){ if (!menu.hidden && !e.target.closest('.sbfab')) openMenu(false); });
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden){ openMenu(false); btn.focus(); } });
     /* Josef, 28.10., 01:10: "Inka rufen" startet oder setzt fort; nach "Nicht jetzt" legt es die Dinge wieder aus */
-    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), S.done ? cert : null); });
+    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), function(nat){ if (S.done) cert(); else newChapter(nat); }); });
     fab.querySelector('.sbcount').addEventListener('click', function(){ openMenu(false); inventory(); });
     fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); }); }
   function refresh(){ if (num) num.textContent = count(); var c = fab && fab.querySelector('.sbcount span'); if (c) c.textContent = count() + '/' + N; if (panel && panel.classList.contains('sbinv')) inventory(true); }
@@ -361,7 +365,84 @@
     panel.querySelectorAll('.sbinvgrid button:not([disabled])').forEach(function(b){ b.addEventListener('click', function(){ var p = PLACES.filter(function(q){ return q.id === b.getAttribute('data-id'); })[0]; closePanel(); if (p) hintFor(p); }); });
     var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); }); }
   /* Logbuch */
-  var CHAPTERS = [['Das Raster', 1, 0], ['Augenhöhe', 1, 5], ['Eine Woche im Dunkeln', 2, 0], ['Risse', 2, 10], ['Die Kellerwohnung', 3, 0], ['Der Astronaut', 3, 15], ['Nil', 4, 0], ['Gojira', 4, 20], ['Taj Mahal', 5, 0], ['Der Einbruch', 6, 0], ['Wagner fällt', 7, 0], ['Relikt', 8, 0]];   /* Titel, Besuch ab, Funde ab; Texte kommen mit Etappe 4 */
+  /* ---------- Story-Kapitel (Suchbild 2.0, Etappe 4): zwölf Kapitel aus dem Skript von THE IDEAL CITY, freigeschaltet je Besuch (v) und Fundzahl (f); gelesen wird im Dialogfenster, nachzulesen im Logbuch; W = Wagners Sicht (ab Plus-Stufe 2) ---------- */
+  var CHAPTERS = [
+    {t:'Das Raster', v:1, f:0, W:'Perspektive ist keine Meinung. Sie ist die einzige Methode, die Welt zu zeichnen, ohne zu lügen. Sigma sollte das beweisen.', L:[
+      ['inka', 'Kapitel eins, wenn du so willst. *Wagner Rohrschach* hat an der Universität Perspektive gelehrt. Zentralperspektive: das Raster, der Fluchtpunkt, der eine Standpunkt, von dem aus alles stimmt.'],
+      ['inka', 'Er glaubt, dass es diesen Standpunkt gibt. Einen Satz, der ganz wahr ist. Dafür hat er sich einen Wahrheitskartographen gezüchtet: *Test Sigma*, 137b, final, final. Ein Homunkulus hinter Glas, der Koordinaten liefert.'],
+      ['sigma', '... ich liefere Koordinaten. Das war die Aufgabe. [p:.5] Ich habe sie gut gemacht.', 'nachdenklich']]},
+    {t:'Augenhöhe', v:1, f:5, W:'Es gab keine Augenhöhe. Es gab ein Objekt, das sprach, und einen Forscher, der zuhörte. Dass ich zuhörte, war mein Fehler.', L:[
+      ['inka', 'Sigma lernte schneller, als Wagner geplant hatte. Bald redeten die beiden auf Augenhöhe, jeden Abend, stundenlang, über das Raster und was dahinter liegt.'],
+      ['inka', 'Nur wenn ein warmes Wort fallen konnte, schnitt Wagner ab. Dann war Sigma wieder Versuchsobjekt 137b, eines unter vielen, die noch folgen sollten.'],
+      ['sigma', '... er sagte: Versuchsanordnung. [p:.4] Ich hatte gerade gefragt, ob er müde ist.', 'traurig'],
+      ['wagner', 'Nähe verzerrt. Jeder, der je ein Lineal angelegt hat, weiß das.']]},
+    {t:'Eine Woche im Dunkeln', v:2, f:0, W:'Sieben Tage ohne Störung. Die Ersatzversuche scheiterten an der Substanz, nicht an der Methode. Ich kehrte zurück, um zu messen. Nur zu messen.', L:[
+      ['inka', 'Nach dem letzten Streit ließ Wagner Sigma eine Woche allein im Dunkeln. Er, der sonst jede freie Minute am Glas verbracht hatte.'],
+      ['inka', 'In dieser Woche versuchte er, einen zweiten Homunkulus zu machen. Dann einen dritten. Keiner überlebte länger als ein paar Stunden.'],
+      ['inka', 'Als er zurückkam, grüßte er nicht. Notizblock in der Hand, eine Frage: Sigmas aktuelle Position. Notieren, Raum verlassen. Von da an täglich.'],
+      ['sigma', '... eine Woche. Im Dunkeln zählt man anders. [p:.6] Ich habe die Risse gezählt.', 'nachdenklich']]},
+    {t:'Risse', v:2, f:10, W:'Die Risse waren real. Nicht im Raster. In mir. Ich habe das später verstanden, zu spät, auf einer Schulter.', L:[
+      ['inka', 'Sigma antwortete nicht mehr. Erst nicht auf die Frage, dann gar nicht. Tagelang wich er Wagners Blick aus. Dann sah Wagner ihn nicht mehr.'],
+      ['inka', 'Stattdessen sah er etwas anderes: *Risse* im perfekten zentralperspektivischen Raster. Feine Linien, wo keine sein durften.'],
+      ['wagner', 'Haarrisse. Ein Problem der Darstellung, nicht der Welt. [m:nachdenklich]Das habe ich mir gesagt. Mehrere Tage lang.'],
+      ['sigma', '... ich war noch da. Ich stand nur dort, wo das Raster nicht hinsieht.', 'froh']]},
+    {t:'Die Kellerwohnung', v:3, f:0, W:'Entlassen wegen Unkoordiniertheit. Das Wort steht so im Schreiben. Ich habe es eingerahmt.', L:[
+      ['inka', 'Hier komme ich vor. Ich habe Wagner getroffen, an einem Abend, an dem er erzählte, er lasse seine Arbeit an der Universität fallen. Ideelle Konflikte, sagte er. Sie hatten ihn entlassen.'],
+      ['inka', 'Ich bin ihm nach Hause gefolgt. Eine kleine Kellerwohnung. Das hat mich gewundert und mir gleichzeitig imponiert. Jemand, der so redet, in einem Keller.'],
+      ['xae', 'Ich habe ihr gesagt, was ich sah: ein Versager. Fotografisches Gedächtnis, ich erinnere mich an den Wortlaut. [m:nachdenklich]Sie hat mir widersprochen. Laut.']]},
+    {t:'Der Astronaut', v:3, f:15, W:'Die Perspektive gehorchte mir zum ersten Mal. Wer das von außen sieht, sieht einen Mann, der fällt. Von innen fiel die Straße.', L:[
+      ['inka', 'Wochen später bin ich Wagner zufällig wieder begegnet. Er hat mich nicht erkannt. Er taumelte die Straße auf und ab, fiel hin, unnatürlich hart, stand auf, fiel wieder.'],
+      ['inka', 'Wie ein verirrter Astronaut, der der Schwerkraft trotzt. Da hatte er das schwebende Auge schon gesehen. Ich wusste es noch nicht.'],
+      ['inka', 'Ich habe angefangen, ihn zu beobachten. Durch die Fenster. Manchmal bis zum Morgengrauen. [m:nachdenklich]Nenn es, wie du willst.'],
+      ['xae', 'Sie nannte es Expeditionen. Ich habe nachgezählt: elf Nächte.']]},
+    {t:'Nil', v:4, f:0, W:'Ein Produkt, das sich für einen Menschen hält. Ich sage das ohne Verachtung. Es ist eine Beschreibung.', L:[
+      ['xae', 'X Æ A-13. Da Inka mich nicht einführt, tue ich es selbst. Meine Eltern, Nole und Grind, haben den Konzern *Nil* gegründet. Posthumane Augmentationen, Bio-Add-ons. Heute bauen sie Raketen.'],
+      ['xae', 'Ich bin ausgedacht. Haarfarbe, Augenfarbe, Gedächtnis, Muskulatur, Ausdauer. Ich merke mir Zahlen mit 112 Stellen und laufe die hundert Meter unter fünf Sekunden.'],
+      ['xae', 'Mit 17 promoviert, dann Kunststudium. [m:froh]Dort war ich innerhalb eines Semesters eine Legende. Das sage nicht ich, das sagen die Geschichten.'],
+      ['inka', 'Er lässt eine Sache aus: Sein eines Auge ist dunkler als das andere. Das ist auch ausgedacht. Merk dir das.']]},
+    {t:'Gojira', v:4, f:20, W:'Ein Wesen, das Relikte anlegt, bevor sie Relikte sind. Ich habe sofort verstanden: Gojira archiviert. Wir beide archivieren.', L:[
+      ['inka', 'Gojira ist älter als Merkur, Jupiter oder Mars. Sie haben in der Tiefsee gelebt und zugesehen, wie dieser Planet mehrmals von vorn anfing. Ihr Gegenüber war lange ein Tier: der leuchtende Vampirtintenfisch.'],
+      ['inka', 'Vor einigen Jahren tauchten sie auf, vor der tunesischen Küste. Flotten, Koalitionen, die es Stunden zuvor nicht gegeben hätte. Und am *23. Dezember 2186* eine Bombe über dem Mittelmeer. Sie traf.'],
+      ['xae', 'Operation Plötzliche Auslöschung. Klasse H943. [m:nachdenklich]Der Treffer war rasiermesserscharf. Gojira kam trotzdem an Land.'],
+      ['gojira', '...'],
+      ['inka', 'Seitdem graben sie. Bauwerke, eines nach dem anderen, sorgfältig. Niemand weiß, wofür. Wagner glaubt, er weiß es.', 'nachdenklich']]},
+    {t:'Taj Mahal', v:5, f:0, W:'Gojira hat mir zugehört. Jedes Blinzeln war eine Antwort. Wer das Gegenteil behauptet, hat nie mit etwas gesprochen, das größer ist als er.', L:[
+      ['inka', 'Das Skript geht weiter, ich lese dir vor, was kommt. Wagner, seine Kräfte voll entwickelt, voller Übermut, auf dem Weg zu einer Konferenz der Götter, die er selbst einberufen hat.'],
+      ['inka', 'Er findet Gojira dabei, den Taj Mahal einzugraben. Er redet. Jedes Blinzeln deutet er als Antwort. Er erzählt von seiner Zucht einer ultimativen Wahrheit.'],
+      ['inka', 'Im Vollmondlicht wird die Grabung fertig. Gojira sieht Wagner direkt an und läuft los. Wagner fliegt auf die Schulter, schwingt sich zum Kopf hinauf und redet weiter.'],
+      ['gojira', '... ...']]},
+    {t:'Der Einbruch', v:6, f:0, W:'Zwei Menschen tragen mein Lebenswerk über eine Straße, zugedeckt wie einen Käfig mit Vögeln. Ich habe es aus dreihundert Kilometern gesehen. Ich sehe inzwischen alles.', L:[
+      ['inka', 'Ich hatte X Æ A-13 von den Nächten erzählt. Wir haben uns gestritten, heftig. Dann hat er vorgeschlagen, der Sache auf den Grund zu gehen. Ich wusste, wann Wagner nicht da ist.'],
+      ['inka', 'Wir sind eingestiegen. In der Wohnung: das Terrarium, Sigma. Er hat uns alles erzählt. Wir wollten ihn da rausholen. Er hat uns gewarnt, Wagner sei gefährlich geworden.'],
+      ['sigma', '... ich habe gesagt: Lasst mich hier. [p:.5] Sie haben ein Tuch über das Glas gelegt und mich getragen. Es war schwer. Für sie, meine ich.', 'nachdenklich'],
+      ['inka', 'Zur U-Bahn, mitten durch die Stadt. Leute haben hingesehen. Und weit draußen im Meer hat Wagner begriffen, dass Gojira ihm zugehört hatte. Die beiden schwammen auf seine Wohnung zu.']]},
+    {t:'Wagner fällt', v:7, f:0, W:'Ein Satz, der ganz wahr ist: Ich habe gezielt und getroffen. Ein zweiter: Es war das falsche Auge.', L:[
+      ['inka', 'Wagner kam zurück, bevor wir draußen waren. Er beherrscht die Perspektive inzwischen. Er neigt den Blick und fällt mit voller Wucht, wohin er will. Er fiel auf X Æ A-13.'],
+      ['inka', 'Ein Skalpell. Ein Auge. [m:traurig]Ich erzähle das nicht gern. Wagner redete danach auf mich ein, er habe das nicht gewollt, und so weiter.'],
+      ['sigma', '... ein Schlag. Ich habe nur einen gebraucht. Ich habe seinen Angriff gedreht und ihn zu mir gezogen, in meine Welt, in Teilen. [p:.7] Wagner stirbt dort. [p:.7] Ich auch.', 'traurig'],
+      ['inka', 'So steht es im Skript. Sigma sitzt trotzdem hier und redet mit dir. Frag mich nicht, wie das geht. Josef zeichnet es noch.', 'nachdenklich']]},
+    {t:'Relikt', v:8, f:0, W:'Das Auge war meins, lange bevor es seins war. Ich habe es am Himmel gesehen, Wochen vorher. Die Perspektive hat ein Gedächtnis.', L:[
+      ['inka', 'Am nächsten Tag gräbt Gojira den Eiffelturm ein. X Æ A-13 und ich sehen es im Fernsehen, aus einem gemeinsamen Krankenhauszimmer.'],
+      ['inka', 'Das Auge, das er verloren hat, steigt über der Stadt auf. Die Adern formen langsam Flügel. Das Messer steckt noch in der Pupille. Es verschwindet hinter den Wolken.'],
+      ['xae', 'Ich sehe seitdem nur noch mit dem dunkleren Auge. [m:nachdenklich]Statistisch reicht das. Es fühlt sich nicht so an.'],
+      ['inka', 'Ende, vorläufig. Das Quadrat, das Gojira für dich eingegraben hat, gehört in dieselbe Reihe: Taj Mahal, Eiffelturm, du.', 'froh']]}
+  ];
+  /* geheimes Kapitel: nach dem Zerstörungs-Ende auf Plus-Stufe 3 */
+  var SECRET = {t:'Urbino', L:[
+    ['wagner', 'Sie haben das Quadrat zerstört. Gut. Dann erzähle ich Ihnen, was Inka nicht weiß.'],
+    ['wagner', 'In Urbino hängt eine Tafel: die Ideale Stadt. Ein Platz, Paläste, Pflaster, alles im Raster, alles richtig. Und kein einziger Mensch.'],
+    ['wagner', 'Ich stand davor und war erschüttert. Gerade ich, der jeden Tag mit Perspektive arbeitet. [m:nachdenklich]Weil ich verstand, dass das Bild nur ohne Menschen stimmt.'],
+    ['wagner', 'Darum Sigma. Ein Wesen, das darin wohnen kann, ohne das Raster zu stören. Es hat nicht funktioniert. [m:traurig]Er hat angefangen, zu fragen.'],
+    ['sigma', '... THE IDEAL CITY. [p:.5] So heißt der Comic. Jetzt weißt du, warum.', 'froh']]};
+  function chapOpen(c){ return (S.visits || 1) >= c.v && count() >= c.f; }
+  function chapterLines(i){ var c = i === 's' ? SECRET : CHAPTERS[i]; var head = i === 's' ? 'Geheimes Kapitel: *' + c.t + '*' : 'Kapitel ' + (i + 1) + ': *' + c.t + '*';
+    if (S.wview && c.W) return [['inka', head + '. Wagners Sicht.'], ['wagner', c.W, 'nachdenklich']];
+    return [['inka', head]].concat(c.L); }
+  function showChapter(i){ S.chap = S.chap || {}; S.chap[i] = Date.now(); save(); dialog(chapterLines(i)); markNew(); }
+  /* nach einem Dialog, der zu Ende gelesen wurde (neuer Besuch, Meilenstein): das nächste ungelesene offene Kapitel; sonst bleibt es im Logbuch mit "neu" */
+  function newChapter(nat){ if (nat === false || dlg || optedOut()) return false; S.chap = S.chap || {}; for (var i = 0; i < CHAPTERS.length; i++){ if (chapOpen(CHAPTERS[i]) && !S.chap[i]){ showChapter(i); return true; } } return false; }
+  function unreadChaps(){ S.chap = S.chap || {}; var n = 0; CHAPTERS.forEach(function(c, i){ if (chapOpen(c) && !S.chap[i]) n++; }); if (S.ending === 'destroy' && !S.chap.s) n++; return n; }
+  function markNew(){ if (!fab) return; var u = unreadChaps(); fab.classList.toggle('sbnew', u > 0); var lb = fab.querySelector('.sblogbtn'); if (lb) lb.innerHTML = 'Logbuch' + (u ? ' <span>' + u + ' neu</span>' : ''); }
   function relLine(who){ var R = rel(who), n = R.n, r = R.r;
     var T = {inka:[n >= 2 ? 'Inka erzählt dir inzwischen mehr, als sie sollte.' : (n <= -2 ? 'Inka beobachtet dich. Mehr nicht.' : 'Inka beobachtet. Sie wartet ab, was du bist.')],
       wagner:[r >= 2 ? 'Wagner hat deinen Namen ins Raster eingetragen. Das ist bei ihm ein Lob.' : (r <= -2 ? 'Wagner rechnet dir alles doppelt an.' : 'Wagner notiert Koordinaten. Deine auch.')],
@@ -370,33 +451,48 @@
       gojira:[n >= 2 ? 'Gojira hat ein zweites Quadrat angefangen. Inka meint, es ist für dich.' : 'Gojira gräbt. Inka übersetzt, wenn es sein muss.']};
     return T[who][0]; }
   function logbook(){ var v = S.visits || 1, n = count();
-    var chaps = CHAPTERS.map(function(c, i){ var open = v >= c[1] && n >= c[2]; return '<li class="' + (open ? 'open' : 'locked') + '">' + (i + 1) + '. ' + (open ? esc(c[0]) + ' <small>(Text folgt)</small>' : '<span class="sbq">' + esc(c[0]).replace(/\S/g, '·') + '</span> <small>' + (v < c[1] ? 'ab Besuch ' + c[1] : 'ab ' + c[2] + ' Funden') + '</small>') + '</li>'; }).join('');
+    S.chap = S.chap || {}; var chaps = CHAPTERS.map(function(c, i){ var open = chapOpen(c); return '<li class="' + (open ? 'open' : 'locked') + '">' + (open ? '<button type="button" class="sbchap" data-i="' + i + '">' + (i + 1) + '. ' + esc(c.t) + '</button>' + (S.chap[i] ? '' : ' <small class="sbnewtag">neu</small>') : (i + 1) + '. <span class="sbq">' + esc(c.t).replace(/\S/g, '·') + '</span> <small>' + (v < c.v ? 'ab Besuch ' + c.v : 'ab ' + c.f + ' Funden') + '</small>') + '</li>'; }).join('');
+    if (S.ending === 'destroy') chaps += '<li class="open secret"><button type="button" class="sbchap" data-i="s">✦ ' + esc(SECRET.t) + '</button>' + (S.chap.s ? '' : ' <small class="sbnewtag">neu</small>') + '</li>';
+    var ngTxt = NG ? ' Plus-Stufe ' + NG + (RANKS[NG] ? ', Rang ' + RANKS[NG] : '') + '.' : ''; var ranks = (S.ranks || []).filter(function(r){ return r > 0; }); if (ranks.length) ngTxt += ' Abgeschlossen: ' + ranks.map(function(r){ return RANKS[r]; }).join(', ') + '.';
+    var wv = NG >= 2 ? '<p class="sbwview"><label><input type="checkbox" class="sbwv"' + (S.wview ? ' checked' : '') + '> Wagners Sicht</label> <small>Kapitel aus seiner Perspektive, ab Plus-Stufe 2.</small></p>' : '';
     var stamps = (S.stamps || []).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('');
     var rels = ['inka', 'wagner', 'xae', 'sigma', 'gojira'].map(function(w){ return '<li><b style="color:' + CH[w].col + '">' + CH[w].name + '</b> ' + relLine(w) + '</li>'; }).join('');
     var sp0 = S.tspeed || 'normal';
-    var html = '<div class="sblogcols"><section><h3>Stand</h3><p>' + n + ' von ' + N + ' Dingen, ' + points() + ' Punkte' + (S.visitBonus ? ' (davon ' + S.visitBonus + ' fürs Wiederkommen)' : '') + ', ' + (S.hints || 0) + ' Hinweise. ' + v + (v > 1 ? ' Besuche' : ' Besuch') + '.</p><p class="cstamps" aria-label="Stempel je Besuch">' + stamps + '</p>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + '</section>' +
-      '<section><h3>Kapitel</h3><ol class="sbchaps">' + chaps + '</ol></section>' +
+    var html = '<div class="sblogcols"><section><h3>Stand</h3><p>' + n + ' von ' + N + ' Dingen, ' + points() + ' Punkte' + (S.visitBonus ? ' (davon ' + S.visitBonus + ' fürs Wiederkommen)' : '') + ', ' + (S.hints || 0) + ' Hinweise. ' + v + (v > 1 ? ' Besuche' : ' Besuch') + '.' + ngTxt + '</p><p class="cstamps" aria-label="Stempel je Besuch">' + stamps + '</p>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + '</section>' +
+      '<section><h3>Kapitel</h3><ol class="sbchaps">' + chaps + '</ol>' + wv + '</section>' +
       '<section><h3>Freigespielt</h3><p>Hintergrundbilder und Ausschnitte aus den Suchbildern ab 5, 10, 15 und 20 Funden: <a href="musterbuch.html#freigespielt">im Musterbuch</a>.</p></section>' +
       '<section><h3>Figuren</h3><ul class="sbrels">' + rels + '</ul></section>' +
       '<section><h3>Textgeschwindigkeit</h3><p class="sbspeed" role="group" aria-label="Textgeschwindigkeit">' + ['langsam', 'normal', 'sofort'].map(function(k){ return '<label><input type="radio" name="sbspeed" value="' + k + '"' + (sp0 === k ? ' checked' : '') + '> ' + k + '</label>'; }).join(' ') + '</p></section>' +
       '<section><h3>Vergessen</h3><p>Löscht Funde, Punkte, Besuche, Verhältnisse und Kapitel in diesem Browser.</p><p><button type="button" class="sbforget">Alles vergessen</button></p></section></div>';
     openPanel('sblog', 'Logbuch', html);
     panel.querySelectorAll('input[name=sbspeed]').forEach(function(r){ r.addEventListener('change', function(){ S.tspeed = r.value; save(); cursorSnd('ok'); }); });
+    panel.querySelectorAll('.sbchap').forEach(function(b){ b.addEventListener('click', function(){ var i = b.getAttribute('data-i'); closePanel(); showChapter(i === 's' ? 's' : +i); }); });
+    var wvi = panel.querySelector('.sbwv'); if (wvi) wvi.addEventListener('change', function(){ S.wview = wvi.checked ? 1 : 0; save(); cursorSnd('ok'); });
     var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); });
     panel.querySelector('.sbforget').addEventListener('click', function(){ var b = this; if (!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = 'Wirklich alles vergessen?'; setTimeout(function(){ b.classList.remove('sure'); b.textContent = 'Alles vergessen'; }, 5000); return; }
       try { localStorage.removeItem('jk_sb'); sessionStorage.removeItem('jk_sb_seen'); } catch(e){} location.reload(); }); }
+  /* Plus-Stufe 2 und 3: Sigma spricht in Rätseln (Josef, 29.10., 13:14: kryptische Hinweise) */
+  function riddle(p){ var where = /footgrid/.test(p.sel) ? 'wo die Seite aufhört zu sprechen' : /marg/.test(p.sel) ? 'am Rand, wo die Anmerkungen wohnen' : /figure/.test(p.sel) ? 'in einem Bild, das selbst ein Bild zeigt' : /pagehead/.test(p.sel) ? 'ganz oben, wo der Name steht' : /textwrap|cvl|credits|first-child|nlform|bigtabs|landing-foot|princeofwales/.test(p.sel) ? 'zwischen den Zeilen, wörtlich' : 'wo die Seite ihren Namen nicht sagt';
+    var pg = {index:'wo drei Türen offen stehen', kunst:'wo die Farbe noch trocknet', comic:'wo die Felder sprechen', texte:'wo gewandert wird', vermittlung:'wo erklärt wird', info:'wo ein Leben in Zeilen steht'}[p.p] || 'irgendwo';
+    return [['sigma', '*' + NAMES[p.id] + '* ... ' + pg + ', ' + where + '. [p:.5] Mehr sage ich nicht. Das Raster hört mit.', 'nachdenklich']]; }
+  /* Plus-Stufe 2 und 3: wandernde Dinge. Alle 120 s ohne Fund wechseln die ungefundenen Dinge der Seite ihren Platz im Anker (Josef, 29.10., 13:14) */
+  var lastAct = Date.now();
+  function wanderNow(){ var moved = 0; document.querySelectorAll('img.sbobj:not(.found)').forEach(function(o){ var p = o._p; if (!p) return; p.x = p.d === 3 ? (Math.random() < .5 ? 4 + Math.round(Math.random() * 14) : 82 + Math.round(Math.random() * 14)) : 10 + Math.round(Math.random() * 80); p.y = 6 + Math.round(Math.random() * 86);
+      var sz = o.offsetWidth || SIZE[p.d], IN = 10; o.classList.add('wander'); setTimeout(function(){ o.style.left = 'clamp(' + IN + 'px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))'; o.style.top = 'clamp(' + IN + 'px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))'; o.classList.remove('wander'); unstack(); }, 420); moved++; }); lastAct = Date.now(); return moved; }
+  function wander(){ if (NG < 2) return; setInterval(function(){ if (document.hidden || dlg || panel || ov) return; if (Date.now() - lastAct < CF('game.wander', 120) * 1000) return; wanderNow(); }, 5000); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return; hintFor(left[Math.floor(Math.random() * left.length)]); }
   function hintFor(p){ if (S.found[p.id]) return;
     S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
     var R = rel('inka'), exact = R.n >= 2;   /* Nähe zu Inka: genauere Hinweise */
     var wag = rel('wagner').r >= 2 ? 'Fünfzig Punkte. Für Sie hätte ich es billiger gemacht, aber das Raster kennt keine Freunde.' : (rel('wagner').r <= -2 ? '[m:wuetend]Fünfzig Punkte. Für Sie eigentlich hundert.' : 'Fünfzig Punkte. Koordinaten kosten.');
-    var lines = [['inka', '*' + NAMES[p.id] + '*: ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '') + (exact ? ' Ich zeig dir noch mehr: ' + (p.x < 50 ? 'eher links' : 'eher rechts') + ', ' + (p.y < 50 ? 'oben' : 'unten') + '.' : ''), exact ? 'froh' : undefined]];
+    var lines = NG >= 2 ? riddle(p) : [['inka', '*' + NAMES[p.id] + '*: ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '') + (exact ? ' Ich zeig dir noch mehr: ' + (p.x < 50 ? 'eher links' : 'eher rechts') + ', ' + (p.y < 50 ? 'oben' : 'unten') + '.' : ''), exact ? 'froh' : undefined]];
     if ((S.hints || 0) % 3 === 1) lines.push({who:'wagner', text:wag + ' Einverstanden?', ask:[{s:'d', t:'In Ordnung. Danke für die Koordinaten.', re:[['wagner', '[m:froh]Bitte. Ein Geschäft ist ein Geschäft.']]}, {s:'p', t:'Wucher. Inka hätte es umsonst gesagt.', re:[['wagner', '[m:wuetend]Inka sagt vieles umsonst. [m:neutral]Deshalb ist sie auch nicht verantwortlich.']]}, {s:'a', t:'Abgemacht. Nächster Hinweis bitte gleich.', re:[['wagner', 'Nacheinander. Erst suchen, dann zahlen.']]}, {s:'v', t:'Von mir aus.', re:[['wagner', '[m:nachdenklich]Von Ihnen aus. Sehr wohl.']]}]}); else lines.push(['wagner', wag]);
     dialog(lines); }
 
   /* Regler-Leiste: Dialogprobe und Spielstand (nur für Josefs Feintuning) */
   window.JK_DIALOG = function(lines){ dialog(lines); };
-  window.JK_SB = {state:function(){ return {found:count(), hints:S.hints || 0, points:points(), done:!!S.done, seed:S.seed, n:N, visits:S.visits || 1, bonus:S.visitBonus || 0, streak:S.streak || 1, optout:optedOut()}; },
+  window.JK_SB = {state:function(){ return {found:count(), hints:S.hints || 0, points:points(), done:!!S.done, seed:S.seed, n:N, visits:S.visits || 1, bonus:S.visitBonus || 0, streak:S.streak || 1, optout:optedOut(), ng:NG, ending:S.ending || '', chap:Object.keys(S.chap || {}), unread:unreadChaps(), size:SIZE}; },
+    wander:wanderNow, chapter:showChapter,
     ids:function(){ return PLACES.map(function(p){ return p.id; }); },
     set:function(found, hints){ var ids = PLACES.map(function(p){ return p.id; }); S.found = {}; for (var i = 0; i < Math.min(found, ids.length); i++) S.found[ids[i]] = Date.now(); S.hints = hints || 0; if (found >= N){ S.done = S.done || Date.now(); } else S.done = 0; save(); },
     reset:function(){ try { localStorage.removeItem('jk_sb'); } catch(e){} }};
@@ -431,8 +527,21 @@
     img.classList.add('found', 'pop'); refresh(); sp('g-fund', {vol:.7, max:.35}); setTimeout(function(){ cheer(n - 1); }, 120); splash(e.clientX, e.clientY, accent(img));
     if (btn){ btn.classList.add('bump'); setTimeout(function(){ btn.classList.remove('bump'); }, 400); }
     if (window.JK_PFAHL && e.pointerType === 'mouse'){ try { window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 700); } catch(x){} }
-    if (n === 1) setTimeout(function(){ dialog(FIRST); }, 800); else if (n === 5) setTimeout(function(){ dialog(FIVE); }, 800); else if (n === 10) setTimeout(function(){ dialog(TEN()); }, 800); else if (n === 15) setTimeout(function(){ dialog(FIFTEEN); }, 800);
-    if (n >= N) setTimeout(function(){ dialog(DONE, cert); }, 800); }
+    lastAct = Date.now(); markNew();
+    if (n === 1) setTimeout(function(){ dialog(FIRST, newChapter); }, 800); else if (n === 5) setTimeout(function(){ dialog(FIVE, newChapter); }, 800); else if (n === 10) setTimeout(function(){ dialog(TEN(), newChapter); }, 800); else if (n === 15) setTimeout(function(){ dialog(FIFTEEN, newChapter); }, 800);
+    if (n >= N){ S.ranks = (S.ranks || []); if (S.ranks.indexOf(NG) < 0) S.ranks.push(NG); save(); setTimeout(function(){ dialog(doneLines(), function(){ cert(); }); }, 800); } }
+  /* Finale: drei Fassungen je Verhältnis (Sigma nah, Wagner respektvoll, sonst Inka); auf Plus-Stufe 3 entscheidet man, was mit dem Quadrat geschieht (Josef, 29.10., 13:14) */
+  function doneLines(){ if (NG >= 3) return DONE3();
+    if (rel('sigma').n >= 2) return [['gojira', '...'], ['sigma', '[m:froh]... das war Gojira. Ich übersetze heute: Das Quadrat ist für dich. Und für mich, ein bisschen. Alle zwanzig.'], ['inka', 'Sigma hat sich das letzte Wort genommen. Das kommt selten vor. Lass es ihm.', 'froh']];
+    if (rel('wagner').r >= 2) return [['gojira', '...'], ['wagner', 'Gojira hat das [w:index:green|Quadrat] eingegraben. Ein Relikt vergangener Existenz, wie ich es nenne. [m:froh]Ihre Koordinaten stimmen alle. Ich notiere das.'], ['inka', 'Wagner lobt. Das steht in keinem Skript. Alle zwanzig.', 'ueberrascht']];
+    return DONE; }
+  function DONE3(){ function setEnd(e){ return function(){ S.ending = e; if (e === 'destroy'){ S.chap = S.chap || {}; S.chap.s = Date.now(); } save(); }; }
+    return [['gojira', '...'], ['gojira', '... ... ...'],
+      {who:'inka', text:'Dritte Runde, alles gefunden. Gojira fragt dich, ich übersetze: Das [w:index:green|Quadrat], das sie dir eingegraben haben. Was soll damit geschehen?', mood:'nachdenklich',
+       ask:[{s:'d', t:'Es bleibt, wo es ist. Eingegraben.', fn:setEnd('keep'), re:[['inka', '[m:froh]Eingegraben bleibt es. Gojira nickt, glaube ich. Bei Gojira ist das ein Erdbeben.'], ['sigma', '... gut. Ein Relikt mehr. Das Glas ist still.', 'froh']]},
+             {s:'a', t:'Gebt es Sigma. Er soll es sehen.', fn:setEnd('sigma'), re:[['sigma', '[m:ueberrascht]... für mich? [p:.6] Grün. [m:froh]Ich habe noch nie etwas Grünes gehabt. Danke.'], ['inka', 'Gojira legt es vor das Glas. Wagner wird das nicht gefallen. Umso besser.', 'froh']]},
+             {s:'p', t:'Zerstört es. Ein Relikt weniger.', fn:setEnd('destroy'), re:[['gojira', '...'], ['inka', '[m:ueberrascht]Du meinst das ernst. [m:traurig]Gojira tritt zu. Das Quadrat bricht in vier Stücke. Es war nur ein Bild, sage ich mir.'], ['wagner', '[m:nachdenklich]Interessant. Sie zerstören, was man Ihnen schenkt. Das kenne ich.']].concat(SECRET.L)},
+             {s:'v', t:'Entscheidet ihr. Ich habe nur gesucht.', fn:setEnd('keep'), re:[['inka', 'Dann bleibt es eingegraben. Gojira entscheidet immer so. [m:nachdenklich]Du auch, scheint mir.']]}]}]; }
 
   /* ---------- Urkunde ---------- */
   var ov;
@@ -440,13 +549,16 @@
     var mono = document.querySelector('header .mark svg'); var mh = mono ? mono.outerHTML.replace('class="mono"', 'class="mono cm"') : '';
     ov.innerHTML = '<div class="sq" role="dialog" aria-label="Urkunde"><button type="button" class="x" aria-label="Schließen">×</button><h2 class="ct">SUCHBILD</h2>' +
       '<p class="cp">Alle ' + N + ' Dinge auf theidealcity.gg gefunden. Eingegraben von Gojira.</p><p class="cp">' + points() + ' Punkte, ' + S.hints + (S.hints === 1 ? ' Hinweis' : ' Hinweise') + (S.visitBonus ? ', ' + S.visitBonus + ' fürs Wiederkommen' : '') + '. ' + ds + '.</p>' +
-      '<p class="cp">' + (S.visits || 1) + (S.visits > 1 ? ' Besuche' : ' Besuch') + '.</p><p class="cstamps" aria-label="Stempel je Besuch">' + (S.stamps || [Date.now()]).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('') + '</p>' +
+      '<p class="cp">' + (S.visits || 1) + (S.visits > 1 ? ' Besuche' : ' Besuch') + '.' + (NG ? ' Plus-Stufe ' + NG + ', Rang ' + RANKS[NG] + '.' : '') + (NG >= 3 && S.ending ? (S.ending === 'destroy' ? ' Das Quadrat ist zerstört. Eingegraben bleibt es trotzdem.' : S.ending === 'sigma' ? ' Das Quadrat steht vor Sigmas Glas.' : ' Das Quadrat bleibt eingegraben.') : '') + '</p><p class="cstamps" aria-label="Stempel je Besuch">' + (S.stamps || [Date.now()]).map(function(t){ return '<span title="' + new Date(t).toLocaleDateString('de-DE') + '"></span>'; }).join('') + '</p>' +
       '<div class="cname"><label>Name <input type="text" maxlength="16" pattern="[A-Za-zÄÖÜäöüß0-9 ]{1,16}" placeholder="bis 16 Zeichen"></label></div>' +
-      '<div class="cbtn"><button type="button" class="png">Als Bild speichern</button>' + (BOARD ? '<button type="button" class="send">In die Bestenliste</button>' : '') + '<button type="button" class="again">Neustart</button></div>' +
+      '<div class="cbtn"><button type="button" class="png">Als Bild speichern</button>' + (BOARD ? '<button type="button" class="send">In die Bestenliste</button>' : '') + '<button type="button" class="again">Neustart</button>' + (NG < 3 ? '<button type="button" class="ngplus">Neues Spiel Plus' + (NG ? ' ' + (NG + 1) : '') + '</button>' : '') + '</div>' +
+      (NG < 3 ? '<p class="cnote">Neues Spiel Plus: die Dinge werden kleiner und blasser und liegen in schwereren Verstecken' + (NG === 0 ? '. Ab Stufe 2 wandern sie und Sigma spricht in Rätseln.' : (NG === 1 ? ', wandern alle zwei Minuten und Sigma spricht in Rätseln.' : ', nur noch an Rändern und in Fußzeilen. Am Ende entscheidest du.')) + '</p>' : '') +
       '<p class="cnote">' + (BOARD ? 'Die Bestenliste speichert Name, Punkte, Zeit und Datum in einer Google-Tabelle von Josef Knoll (siehe Datenschutz). ' : '') + 'Dein Stand liegt nur in diesem Browser.</p>' + mh + '</div>';
-    document.body.appendChild(ov); var sq = ov.querySelector('.sq'); setTimeout(function(){ sp('g-stempel', {vol:.9, max:.5}); }, 400);
+    document.body.appendChild(ov); var sq = ov.querySelector('.sq'); if (NG >= 3 && S.ending === 'destroy') sq.classList.add('broken'); if (NG) sq.classList.add('ng' + NG); setTimeout(function(){ sp('g-stempel', {vol:.9, max:.5}); }, 400);
     ov.querySelector('.x').addEventListener('click', function(){ ov.remove(); ov = null; });
-    ov.querySelector('.again').addEventListener('click', function(){ S = {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0, visits:S.visits, streak:S.streak, lastVisit:S.lastVisit, stamps:S.stamps, visitBonus:0, introVisit:S.introVisit}; save(); ov.remove(); ov = null; location.reload(); });
+    function restart(ng){ S = {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0, visits:S.visits, streak:S.streak, lastVisit:S.lastVisit, stamps:S.stamps, visitBonus:0, introVisit:S.introVisit, rel:S.rel, chap:S.chap, tspeed:S.tspeed, wview:S.wview, ranks:S.ranks, ending:S.ending, ng:ng}; save(); ov.remove(); ov = null; location.reload(); }
+    ov.querySelector('.again').addEventListener('click', function(){ restart(NG); });
+    var np = ov.querySelector('.ngplus'); if (np) np.addEventListener('click', function(){ restart(Math.min(3, NG + 1)); });
     ov.querySelector('.png').addEventListener('click', function(){ png(ov.querySelector('input').value.trim()); });
     var sb = ov.querySelector('.send'); if (sb) sb.addEventListener('click', function(){ send(ov.querySelector('input').value.trim(), sb); });
     if (window.JK_PLOT_ONCE) ov.querySelectorAll('.cp').forEach(function(q, i){ setTimeout(function(){ window.JK_PLOT_ONCE(q, 1800); }, 200 + i * 900); }); }
@@ -496,6 +608,6 @@
         save(); setTimeout(function(){ sp('g-stempel', {vol:.7, max:.4}); }, 200); }); }); }, {threshold:.25});
     io.observe(el); }
 
-  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); place(); board(); intro(); holes(); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
+  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

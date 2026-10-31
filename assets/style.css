@@ -1324,3 +1324,14 @@ body.start .sbfabbtn{border-color:#000;box-shadow:3px 3px 0 #000}
 .sbforget.sure{background:#E2231A;border-color:#E2231A;color:#fff}
 html.calm .sbpanel{animation:none}
 body.sbdlgon .sbfab{opacity:0;pointer-events:none;transition:opacity .2s}   /* der Inka-Knopf weicht dem offenen Dialogfenster */
+/* Story-Kapitel und New Game Plus (Suchbild 2.0, Etappe 4) */
+.sbfab.sbnew .sbfabbtn::after{content:'';position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#00A651;border:2px solid var(--paper)}
+.sblogbtn span,.sbnewtag{color:#00A651;font-size:12px;letter-spacing:.04em}
+.sbchap{font:inherit;background:none;border:0;padding:0;color:var(--ink);cursor:pointer;text-align:left;min-height:24px}.sbchap:hover,.sbchap:focus-visible{text-decoration:underline}
+.sbchaps li.secret .sbchap{color:#00A651}
+.sbwview{margin-top:10px;font-size:14px}.sbwview label{display:inline-flex;gap:6px;align-items:center;min-height:24px;cursor:pointer}.sbwview input{width:20px;height:20px;accent-color:var(--accent)}.sbwview small{color:var(--grey);font-size:12px;margin-left:6px}
+html.sbng1 .sbobj:not(.found){opacity:.8}html.sbng2 .sbobj:not(.found){opacity:.7}html.sbng3 .sbobj:not(.found){opacity:.6}html.sbng .sbobj.d3:not(.found){opacity:.5}
+.sbobj.wander{opacity:0!important}
+.sbcert .sq.broken::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;background:linear-gradient(to bottom right,transparent 49.5%,#000 49.5%,#000 50.5%,transparent 50.5%),linear-gradient(to top right,transparent 49.5%,#000 49.5%,#000 50.5%,transparent 50.5%)}
+.sbcert .sq.broken > *{position:relative;z-index:3}
+html.calm .sbobj.wander{transition:none}

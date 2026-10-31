@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /*?regler
+Disallow: /img/refs/
+Disallow: /assets/josef_knoll_portfolio_2026.pdf
+Disallow: /assets/josef_knoll_portfolio_2026_handy.pdf
 Sitemap: https://theidealcity.gg/sitemap.xml
+Sitemap: https://theidealcity.gg/sitemap-images.xml

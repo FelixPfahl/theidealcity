@@ -82,7 +82,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun load() {
         val k = Prefs.key(this)
-        web.loadUrl(Hub.PAGE + if (k.isNotBlank()) "#k=$k" else "")
+        web.clearCache(false)
+        web.loadUrl(Hub.PAGE + "?v=" + System.currentTimeMillis() + if (k.isNotBlank()) "#k=$k" else "")
     }
 
     /** inka://open?k=<Schlüssel>&c=<Spotify-Client-ID> aus der Chrome-Version; inka://spotify-callback von Spotify. */

@@ -126,7 +126,8 @@ public class MainForm : Form
     void Go()
     {
         var k = Program.Key;
-        web.CoreWebView2?.Navigate(Program.Page + (k.Length > 0 ? "#k=" + k : ""));
+        // immer die neueste Fassung der Seite laden (Josef 1.11.2026: alte Fassung aus dem Zwischenspeicher)
+        web.CoreWebView2?.Navigate(Program.Page + "?v=" + DateTime.UtcNow.Ticks + (k.Length > 0 ? "#k=" + k : ""));
     }
 
     /// <summary>inka://open?k=&lt;Schlüssel&gt;</summary>

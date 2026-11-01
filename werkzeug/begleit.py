@@ -25,7 +25,7 @@ doc = doc.get("data", doc)
 day = doc["day"]
 fid = day + ("_" + slot if slot else "")
 keep = ["day", "title", "kind", "duration", "chapters", "voice", "made", "checked", "weather", "trips", "hints",
-        "questions", "songs", "agentId", "nochat", "text"]  # text: Archiv und Drive-Export
+        "questions", "songs", "agentId", "nochat", "text", "lines"]  # text: Archiv und Drive-Export
 out = {k: doc.get(k) for k in keep if k in doc}
 out["entries"] = json.load(open(ent_p)) if ent_p != "-" and os.path.exists(ent_p) else []
 out["topic"] = cfg["topic"]

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="InkaTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#0028FF</item>
+        <item name="colorPrimaryDark">#0028FF</item>
+        <item name="colorAccent">#0028FF</item>
+        <item name="android:statusBarColor">#FFFFFF</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

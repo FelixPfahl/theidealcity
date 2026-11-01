@@ -230,7 +230,7 @@ def soundscape(spec):
     target = {"labor": 0.045, "neon": 0.05, "summen": 0.03, "gojira": 0.06, "wind": 0.035, "kraehen": 0.035, "zug": 0.04}.get(kind, 0.04)
     return (a * (target / rms)).astype(np.float32)
 
-t0 = time.time(); pieces = []; meta = []; t = 0.0; chars = 0; idx = 0
+t0 = time.time(); pieces = []; meta = []; lines = []; t = 0.0; chars = 0; idx = 0
 def add(a):
     global t
     pieces.append(a); t += len(a) / SR
@@ -259,6 +259,7 @@ for ch in chapters:
             ov = min(int(SR * rnd.uniform(0.5, 0.9)), len(pieces[-1]) // 3, len(clip) // 3)
             last = pieces[-1].copy(); fade = np.linspace(1.0, 0.3, ov).astype(np.float32)
             last[-ov:] = last[-ov:] * fade + clip[:ov]
+            lines.append({"t": round(t - ov / SR, 2), "sp": sp, "x": text})
             pieces[-1] = last; add(clip[ov:]); prev = sp; prev_text = text; continue
         if prev is not None:
             gap = 0.25 if sp != prev else 0.45
@@ -268,7 +269,7 @@ for ch in chapters:
             if tg["hes"]: gap += rnd.uniform(0.5, 0.9)
             if tg["pause"]: gap = tg["pause"]                                # betroffenes Schweigen
             add(np.zeros(int(SR * max(0.08, gap)), np.float32))
-        add(clip); prev = sp; prev_text = text
+        lines.append({"t": round(t, 2), "sp": sp, "x": text}); add(clip); prev = sp; prev_text = text
     add(np.zeros(int(SR * 0.9), np.float32))
 
 audio = np.concatenate(pieces)
@@ -302,7 +303,7 @@ os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],
                            capture_output=True, text=True).stdout.strip() or t)
 if abs(dur - t) > 3: sys.exit("Audiolänge passt nicht: %.1f statt %.1f" % (dur, t))
-info = {"duration": round(t, 1), "chapters": meta, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
+info = {"duration": round(t, 1), "chapters": meta, "lines": lines, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
         "elevenChars": chars, "songs": sum(1 for m in meta if m["type"] == "song")}
 if info["sizeBytes"] > int(os.environ.get("SHOW_MAXMB", "15")) * 1024 * 1024: sys.exit("Datei zu groß")
 json.dump(info, open(os.path.join(out, "show.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)

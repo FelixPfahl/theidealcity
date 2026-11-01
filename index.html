@@ -105,6 +105,10 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 .btnl{display:inline-block;margin-top:8px;font-weight:700}
 .si{margin-top:8px}
 .err{color:var(--red)}
+.trbox{max-height:42vh;overflow:auto;margin-top:6px;padding-right:4px}
+.trl{padding:5px 0;color:var(--mut);font-size:16px;line-height:1.4;cursor:pointer}.trl b{color:var(--ink);font-weight:600}
+.trl.cur{color:var(--blue)}.trl.cur b{color:var(--blue)}
+a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-radius:10px;color:var(--blue);text-decoration:none;font-weight:700;font-size:16px}a.btn.pri{background:var(--blue);color:#fff}
 </style>
 </head>
 <body>
@@ -127,10 +131,12 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 12:30 (Show wartet auf den Song)";
+const APPV="1.11. 16:00 (Android-App, Mitlesen, Klangregler)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
+/* Android-App (Josef 1.11.2026): läuft die Seite in der Inka-App, steuert sie Spotify über die App (window.InkaNative). */
+const NAT=(window.InkaNative&&typeof window.InkaNative.isApp==="function")?window.InkaNative:null;
 const AGENT_DEFAULT="agent_0201m64fk5bkfstr5gkhm6rat739";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -393,7 +399,7 @@ SP.connect=async function(){
   const v=Array.from(crypto.getRandomValues(new Uint8Array(48)),b=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[b%62]).join("");
   SP.cfg.verifier=v;SP.save();
   location.href="https://accounts.spotify.com/authorize?"+new URLSearchParams({client_id:SP_CLIENT,response_type:"code",redirect_uri:SP.redirect(),
-    scope:"streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state user-top-read",code_challenge_method:"S256",code_challenge:await sha256u(v)}).toString();
+    scope:"streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state user-top-read playlist-modify-private playlist-modify-public playlist-read-private",code_challenge_method:"S256",code_challenge:await sha256u(v)}).toString();
 };
 SP.handle=async function(){
   const u=new URL(location.href);const code=u.searchParams.get("code"),er=u.searchParams.get("error");
@@ -705,17 +711,22 @@ function renderShow(){
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
   let h='';
   h+='<div class="chips" style="margin-bottom:8px">'+S.dayShows.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-showsel="'+esc(x.id)+'">'+esc(showLabel(x))+'</button>').join("")+'<button class="chip" id="parch">Alle Shows'+(S.shows.length?' ('+S.shows.length+')':'')+'</button></div>';
-  h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
+  h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div>'+(SONG.on&&SONG.track&&SONG.track.uri?'<a class="small" style="color:var(--blue)" href="https://open.spotify.com/track/'+esc(SONG.track.uri.split(":").pop())+'" target="_blank" rel="noopener">Lyrics in Spotify</a>'+(SONG.lost?' <span class="small err">· Spotify verbindet neu …</span>':SONG.held?' <span class="small">· angehalten</span>':''):'')+'<div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
     '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="small">Tempo</span><input type="range" id="prate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'" style="flex:1"><b class="small" id="prv" style="min-width:42px;text-align:right">'+Math.round(RATE()*100)+'%</b></div>';
+    '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="small">Tempo</span><input type="range" id="prate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'" style="flex:1"><b class="small" id="prv" style="min-width:42px;text-align:right">'+Math.round(RATE()*100)+'%</b></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small" style="min-width:44px">Bass</span><input type="range" id="peqb" min="-15" max="6" step="1" value="'+EQ.val("eqb")+'" style="flex:1"><b class="small" id="peqbv" style="min-width:42px;text-align:right">'+EQ.val("eqb")+' dB</b></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small" style="min-width:44px">Höhen</span><input type="range" id="peqt" min="-6" max="9" step="1" value="'+EQ.val("eqt")+'" style="flex:1"><b class="small" id="peqtv" style="min-width:42px;text-align:right">'+EQ.val("eqt")+' dB</b></div>';
+  h+=trHtml();
   h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
   h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button><button id="pnew">Neue Show erstellen</button></div>';
   if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
   el.innerHTML=h;bar();
   $("#chdet").addEventListener("toggle",e=>{S.chOpen=e.target.open;});
+  trWire();
+  [["peqb","eqb"],["peqt","eqt"]].forEach(([id,k])=>{const e=$("#"+id);e.oninput=()=>{store.set(k,+e.value);EQ.init();EQ.set();$("#"+id+"v").textContent=e.value+" dB";};});
   const prt=$("#prate");prt.oninput=()=>{store.set("rate",+prt.value);applyRate();$("#prv").textContent=Math.round(prt.value*100)+"%";};
-  $("#pp").onclick=()=>{if(!AUD.paused||SONG.on)pauseShow();else playShow();};
+  $("#pp").onclick=()=>{if(NAT&&SONG.on){if(SONG.held)appResume();else appPause("knopf");return;}if(!AUD.paused||SONG.on)pauseShow();else playShow();};
   $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();$("#pnew").onclick=()=>sheetShowOrder();
   $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};
   el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
@@ -909,6 +920,15 @@ function renderUeberblick(){
   h+='<div class="k" style="margin-top:14px">Projekte</div>'+((A.projects||[]).map(p=>'<div class="card"><div class="now">'+esc(p.name)+'</div>'+(p.stand?'<div><span class="small">Stand</span> '+esc(p.stand)+'</div>':"")+(p.next?'<div><span class="small">Nächster Schritt</span> <b>'+esc(p.next)+'</b></div>':"")+(p.frist?'<div><span class="small">Frist</span> '+esc(p.frist)+'</div>':"")+(p.quelle?'<div class="small">'+esc(p.quelle)+'</div>':"")+'</div>').join("")||'<div class="small">Noch keine Projektdaten.</div>');
   h+='<div class="card"><div class="k">Post, braucht Antwort</div>'+((A.mails||[]).map(m=>'<div class="li"><b>'+esc(m.from)+'</b> · '+esc(m.subject)+'<div class="de">'+esc([m.since?"seit "+m.since:"",m.why].filter(Boolean).join(" · "))+'</div></div>').join("")||'<div class="small">Nichts offen.</div>')+'<div class="small">Antworttexte formuliere ich dir im Sekretär-Chat.</div></div>';
   h+='<div class="card"><div class="k">Warteschleife</div>'+((A.waiting||[]).map(w=>'<div class="li"><b>'+esc(w.who)+'</b>: '+esc(w.what)+(w.since?' <span class="small">seit '+esc(w.since)+'</span>':"")+'</div>').join("")||'<div class="small">Du wartest auf nichts.</div>')+'</div>';
+  if(NAT){let sp={};try{sp=JSON.parse(NAT.spotifyState());}catch(_){}
+    let off=[];try{off=JSON.parse(NAT.offlineIds());}catch(_){}
+    h+='<div class="card"><div class="k">Android-App '+esc((()=>{try{return NAT.version();}catch(_){return "";}})())+'</div>'+
+      '<div class="small">Spotify: '+(sp.connected?"verbunden":(sp.connecting?"verbindet …":"nicht verbunden"))+(sp.err?" · "+esc(sp.err):"")+'</div>'+
+      '<div class="small">Offline auf dem Handy: '+(off.length?esc(off.map(x=>dlabel(x.slice(0,10))).join(", ")):"noch nichts")+'</div>'+
+      '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button></div></div>';}
+  else h+='<div class="card"><div class="k">Android-App</div><div class="small">Läuft auch ohne Chrome weiter, verbindet Spotify nach Abbrüchen neu und lädt Shows für unterwegs vor.</div>'+
+      '<div class="row" style="margin-top:8px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/inka.apk">App laden</a><a class="btn pri" href="inka://open?k='+encodeURIComponent(KEY.raw||"")+'">In der App öffnen</a></div>'+
+      '<div class="small" style="margin-top:6px">Erst laden und installieren, dann „In der App öffnen“ tippen (überträgt den Schlüssel).</div></div>';
   const vol=store.get("vol",0.5);
   h+='<div class="card"><div class="k">Einstellungen</div>'+
     '<label class="sl">Lautstärke Inka im Verhältnis zur Musik: <b id="volv">'+Math.round(vol*100)+'%</b></label><input type="range" id="vol" min="0.2" max="1" step="0.05" value="'+vol+'">'+
@@ -927,6 +947,8 @@ function renderUeberblick(){
   $("#fset").onclick=()=>{store.set("showSetup",true);setTab("jetzt");};
   $("#frel").onclick=()=>{loadApp();loadShow();toast("Lade neu …");};
   $("#fnew").onclick=()=>sheetShowOrder();
+  if(NAT){const a=$("#nsp");if(a)a.onclick=()=>{try{NAT.spotifyConnect();toast("Verbinde mit Spotify …");setTimeout(renderUeberblick,4000);}catch(_){}};
+    const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();toast("Lade Shows vor …");}catch(_){}};}
   $("#fupd").onclick=()=>{toast("Lade neueste Fassung …");setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
 }
 
@@ -1076,6 +1098,90 @@ $("#mic").onclick=()=>sheetDiktat();
     if(!APP.data||Date.now()-(APP.lastLoad||0)>20*60000){loadApp();loadQuit();}});
   setInterval(()=>{if(!document.hidden)renderJetztLight();},30000);
 })();
+
+/* ===== Android-App: Spotify direkt, Verbindung verloren und wiederhergestellt (Josef 1.11.2026) ===== */
+function armSong(st){if(!SONG.on||!SONG.track)return;clearTimeout(SONG.timer);const dur=(st&&st.dur)||SONG.dur||SONG.track.ms||210000,pos=(st&&st.pos)||SONG.lastPos||0;SONG.timer=setTimeout(()=>SONG.finish("zeit"),Math.max(3000,dur-pos)+2500);}
+function appLost(st){if(SONG.lost)return;SONG.lost=true;clearTimeout(SONG.timer);diag("spotify-verloren",{err:st&&st.err,pos:st&&st.pos});toast("Spotify-Verbindung weg. Die Show wartet, ich verbinde neu …",8000);meta();renderShow();}
+if(NAT){
+  try{NAT.setClientId(SP_CLIENT);if(KEY.raw)NAT.setKey(KEY.raw);}catch(_){}
+  document.documentElement.classList.add("app");
+  SP.ready=()=>{try{return !!NAT.clientId()&&NAT.spotifyInstalled();}catch(_){return false;}};
+  SP.warm=()=>{try{NAT.spotifyConnect();}catch(_){}};
+  SP.unlock=()=>{};
+  SP.play=async function(uri){NAT.spotifyPlay(uri,0);return "app-direkt";};
+  SP.pause=async function(){try{NAT.spotifyStop();}catch(_){}};
+  SONG.handoff=async function(){};
+  SONG.check=async function(){
+    if(!SONG.on||SONG.held||!SONG.track)return;let st;try{st=JSON.parse(NAT.spotifyState());}catch(_){return;}
+    const el=Date.now()-SONG.started;
+    SONG.last=(st.connected?(st.paused?"pausiert ":"spielt "):"verbindet neu ")+Math.round((st.pos||0)/1000)+" s";
+    if(!st.connected){
+      if(/Client-ID|Spotify-App fehlt|Authentication|NotLoggedIn|UserNotAuthorized|Unsupported/i.test(st.err||"")&&el>6000){toast("Spotify geht nicht ("+st.err+"). Inka macht ohne Song weiter.",9000);SONG.finish("spotify-fehler");return;}
+      if(st.connecting&&el<20000&&!SONG.lost){renderShow();return;}
+      appLost(st);return;}
+    if(st.uri===SONG.track.uri){if(st.pos>0)SONG.lastPos=st.pos;if(st.dur)SONG.dur=st.dur;}
+    if(SONG.lost&&st.uri===SONG.track.uri&&!st.paused){SONG.lost=false;diag("spotify-wieder",{pos:st.pos});toast("Spotify wieder da, weiter geht's.");armSong(st);meta();}
+    if(st.ended||(st.uri===SONG.track.uri&&st.dur&&st.pos>=st.dur-2500)){SONG.finish("ende");return;}
+    renderShow();
+  };
+}
+{const _fin=SONG.finish;SONG.finish=async function(w,s){SONG.lost=false;SONG.held=false;return _fin.call(SONG,w,s);};}
+window.__inkaNative=function(o){try{
+  if(!o||!o.type)return;
+  if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
+  if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)toast("Kein Netz. Inka spricht weiter, Songs warten.",6000);renderShow();return;}
+  if(o.type==="offline"){S.offline=o.ids||[];if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
+  if(o.type==="app"&&o.ev==="vorne"){if(S.waitSong!=null&&!SONG.on){const k=S.waitSong;S.waitSong=null;SONG.start(k);}return;}
+}catch(e){console.log("native",e);}};
+/* Pause und Weiter von Sperrbildschirm, Bluetooth und Player: ein Song bleibt an seiner Stelle */
+window.appPause=function(why){diag("pause",{why:why||""});
+  if(SONG.on&&NAT){SONG.held=true;clearTimeout(SONG.timer);try{NAT.spotifyPause();}catch(_){}render();meta();return;}
+  pauseShow();meta();};
+window.appResume=function(){
+  if(SONG.on&&SONG.held&&NAT){SONG.held=false;try{NAT.spotifyResume();}catch(_){}armSong();render();meta();return;}
+  playShow();};
+/* Medien-Steuerung in der App: Titel und Zustand an den Hintergrunddienst */
+{const _meta=meta;meta=function(){_meta();if(!NAT||!S.started)return;try{const c=chapters()[S.ch];
+  const st=S.ended?"stop":(((SONG.on&&!SONG.held&&!SONG.lost)||!AUD.paused)?"playing":"paused");
+  NAT.nowPlaying(SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Inka"),SONG.on&&SONG.track?SONG.track.artist+(SONG.lost?" · verbindet neu":""):((S.doc&&S.doc.title)||"Morning-Show"),st);}catch(_){}};}
+{const _play=playShow;playShow=async function(){S.started=true;return _play();};}
+AUD.addEventListener("pause",()=>meta());AUD.addEventListener("ended",()=>meta());
+
+/* ===== Klang: Bass- und Höhenregler für die Stimmen (Josef 1.11.2026) ===== */
+const EQ={ctx:null,b:null,t:null};
+EQ.val=k=>+store.get(k,0);
+EQ.init=function(){if(EQ.ctx||(EQ.val("eqb")===0&&EQ.val("eqt")===0))return;try{const C=window.AudioContext||window.webkitAudioContext;EQ.ctx=new C();
+  const src=EQ.ctx.createMediaElementSource(AUD);EQ.b=EQ.ctx.createBiquadFilter();EQ.b.type="lowshelf";EQ.b.frequency.value=260;
+  EQ.t=EQ.ctx.createBiquadFilter();EQ.t.type="highshelf";EQ.t.frequency.value=3200;src.connect(EQ.b);EQ.b.connect(EQ.t);EQ.t.connect(EQ.ctx.destination);EQ.set();
+  diag("eq-an",{b:EQ.val("eqb"),t:EQ.val("eqt")});}catch(e){diag("eq-fehler",{e:String(e)});}};
+EQ.set=function(){if(!EQ.ctx)return;EQ.b.gain.value=EQ.val("eqb");EQ.t.gain.value=EQ.val("eqt");if(EQ.ctx.state!=="running")EQ.ctx.resume().catch(()=>{});};
+AUD.addEventListener("play",()=>{EQ.init();if(EQ.ctx&&EQ.ctx.state!=="running")EQ.ctx.resume().catch(()=>{});});
+
+/* ===== Mitlesen: Transkript der Show, aktuelle Zeile hervorgehoben (Josef 1.11.2026) ===== */
+const SPN={inka:"Inka",wagner:"Wagner",sigma:"Sigma",xae:"X Æ A-13"};
+function trLines(){const d=S.doc;if(!d)return [];const sig=(d.id||d.day)+":"+(d.published||d.made||0);if(S.trFor===sig)return S.tr;
+  let L=[];
+  if(Array.isArray(d.lines)&&d.lines.length)L=d.lines.map(x=>({t:+x.t||0,sp:x.sp,x:x.x}));
+  else if(d.text){const all=chapters(),talk=all.filter(c=>c.type==="talk");let ci=-1;const G=[];
+    for(const raw of String(d.text).split("\n")){const l=raw.trim();if(!l)continue;
+      if(/^##\s*\[show\]/i.test(l)){ci++;G[ci]=[];continue;}if(/^##/.test(l)||ci<0)continue;
+      const m=l.match(/^(INKA|WAGNER|SIGMA|XAE)\s*(?:\([^)]*\))?\s*:\s*(.*)$/i);if(m)G[ci].push({sp:m[1].toLowerCase(),x:m[2]});}
+    G.forEach((g,i)=>{const c=talk[i];if(!c||!g||!g.length)return;const nx=all[all.indexOf(c)+1];const end=nx?nx.start:(d.duration||c.start+60);
+      const tot=g.reduce((a,b)=>a+b.x.length,0)||1;let t=c.start;g.forEach(x=>{L.push({t,sp:x.sp,x:x.x});t+=(end-c.start)*x.x.length/tot;});});}
+  S.tr=L;S.trFor=sig;S.trK=-2;return L;}
+function trHtml(){const L=trLines();if(!L.length)return "";
+  return '<details class="chs" id="trdet"'+(S.trOpen?" open":"")+'><summary class="small">Mitlesen</summary><div id="trbox" class="trbox">'+
+    L.map((l,i)=>'<div class="trl" data-tr="'+i+'"><b>'+esc(SPN[l.sp]||l.sp)+'</b> '+esc(l.x)+'</div>').join("")+'</div></details>';}
+function trTick(force){if(!S.trOpen)return;const L=S.tr||[];if(!L.length)return;const t=AUD.currentTime;let k=-1;
+  for(let i=0;i<L.length;i++){if(L[i].t<=t+0.05)k=i;else break;}
+  if(k===S.trK&&!force)return;S.trK=k;const box=$("#trbox");if(!box)return;box.querySelectorAll(".trl.cur").forEach(n=>n.classList.remove("cur"));
+  const n=box.querySelector('[data-tr="'+k+'"]');if(n){n.classList.add("cur");if(Date.now()-(S.trUser||0)>8000)box.scrollTop=Math.max(0,n.offsetTop-box.offsetTop-box.clientHeight*0.3);}}
+function trWire(){const det=$("#trdet");if(!det)return;det.addEventListener("toggle",e=>{S.trOpen=e.target.open;if(S.trOpen)trTick(true);});
+  const box=$("#trbox");["touchstart","wheel","mousedown"].forEach(ev=>box.addEventListener(ev,()=>{S.trUser=Date.now();},{passive:true}));
+  box.querySelectorAll("[data-tr]").forEach(n=>n.onclick=()=>{const l=S.tr[+n.dataset.tr];if(!l)return;S.trUser=0;ensureAudio().then(ok=>{if(!ok)return;AUD.currentTime=l.t;
+    const c=chapters();for(const k in S.songDone)if(c[k]&&c[k].start>l.t)delete S.songDone[k];trTick(true);});});
+  trTick(true);}
+AUD.addEventListener("timeupdate",()=>trTick(false));
 </script>
 </body>
 </html>

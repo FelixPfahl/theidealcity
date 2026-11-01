@@ -48,6 +48,8 @@ a{color:var(--blue)}
 .late{color:var(--red);font-style:normal;font-weight:700}
 .stops .st{padding:6px 0;border-top:1px solid var(--line);display:flex;gap:10px}
 .stops .st.past{color:var(--mut)}.stops .st.now{font-weight:700;color:var(--blue)}
+#dim{display:none;position:fixed;inset:0;z-index:20;background:#000;color:#444;align-items:center;justify-content:center;text-align:center;font-size:18px;padding:24px}
+#dim.on{display:flex}
 #toast{position:fixed;left:16px;right:16px;bottom:24px;background:var(--ink);color:#fff;padding:14px 16px;border-radius:12px;font-size:16px;display:none;z-index:9;max-width:528px;margin:0 auto}
 #vc{position:fixed;inset:0;background:#fff;z-index:8;display:none;flex-direction:column;padding:16px}
 #vc .vs{font-size:22px;font-weight:700;color:var(--blue);margin:8px 0}
@@ -121,10 +123,11 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <div id="sheet"></div>
 <div id="vc"></div>
 <div id="toast"></div>
+<div id="dim"><div>Die Show läuft.<br>Antippen zum Zurückkehren.</div></div>
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 08:20 (Spotify-App bei dunklem Bildschirm)";
+const APPV="1.11. 08:45 (Bildschirm bleibt an, Spotify-App bei dunklem Bildschirm)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -204,15 +207,25 @@ KEEP.on=function(){try{
   const src=KEEP.ctx.createBufferSource();src.buffer=b;src.loop=true;src.connect(KEEP.ctx.destination);src.start();KEEP.src=src;
 }catch(e){diag("wach-fehler",{e:String(e&&e.message||e)});}};
 KEEP.off=function(){try{if(KEEP.src){KEEP.src.stop();KEEP.src.disconnect();KEEP.src=null;}}catch(_){}};
+/* Bildschirm bleibt an (Josef 1.11.2026): Android legt die Seite nur bei dunklem Bildschirm still.
+   Waehrend der Show haelt die Seite den Bildschirm wach; nach 20 s ohne Beruehrung legt sich ein Schwarzbild darueber. */
+const WL={lock:null,touch:Date.now()};
+WL.playing=()=>!!(SONG.on||(!AUD.paused&&!AUD.ended));
+WL.on=async function(){try{if(!("wakeLock" in navigator)||WL.lock||document.hidden)return;WL.lock=await navigator.wakeLock.request("screen");
+  WL.lock.addEventListener("release",()=>{WL.lock=null;});diag("wach",{});}catch(e){diag("wach-fehler",{e:String(e&&e.name||e)});}};
+WL.off=function(){try{if(WL.lock)WL.lock.release();}catch(_){}WL.lock=null;$("#dim").classList.remove("on");};
+["pointerdown","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{WL.touch=Date.now();$("#dim").classList.remove("on");},true));
+setInterval(()=>{if(document.hidden)return;if(WL.playing()){WL.on();if(Date.now()-WL.touch>20000&&!VC.conv&&!$("#sheet").classList.contains("on")&&$("#sheet").style.display!=="block")$("#dim").classList.add("on");}else{if(WL.lock&&!SONG.on)WL.off();$("#dim").classList.remove("on");}},2000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&WL.playing())WL.on();});
 async function playShow(){
-  SP.unlock();KEEP.on();
+  SP.unlock();KEEP.on();WL.touch=Date.now();WL.on();
   if(!(await ensureAudio()))return;
   if(SONG.on){await SONG.finish("weiter");return;}
   if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};}
   try{await AUD.play();}catch(e){toast("Noch einmal auf Play tippen.");}
   SP.warm();
 }
-function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();KEEP.off();}
+function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();KEEP.off();WL.off();}
 function seekCh(k){const c=chapters()[k];if(!c)return;if(SONG.on)SONG.finish("sprung",true);
   ensureAudio().then(ok=>{if(!ok)return;S.songDone={};for(let i=0;i<k;i++)S.songDone[i]=true;AUD.currentTime=c.type==="song"?c.start+1.02:c.start;AUD.play().catch(()=>{});});}
 function nextCh(){const k=SONG.on?SONG.k:chAt(AUD.currentTime);if(SONG.on){SONG.finish("weiter");return;}const c=chapters();for(let i=k+1;i<c.length;i++){if(c[i].type==="talk"){seekCh(i);return;}}AUD.currentTime=Math.max(0,(AUD.duration||1)-0.5);}
@@ -226,7 +239,7 @@ AUD.addEventListener("timeupdate",()=>{
 AUD.addEventListener("play",()=>{KEEP.on();render();meta();});
 AUD.addEventListener("pause",()=>{render();if(!SONG.on&&document.hidden&&!AUD.ended)diag("inka-angehalten",{t:Math.round(AUD.currentTime),vis:document.visibilityState});});
 ["stalled","waiting","error","suspend"].forEach(ev=>AUD.addEventListener(ev,()=>{if(!AUD.paused&&ev!=="suspend"||ev==="error")diag("inka-"+ev,{t:Math.round(AUD.currentTime),vis:document.visibilityState,rs:AUD.readyState});}));
-AUD.addEventListener("ended",()=>{KEEP.off();S.ended=true;render();if(store.get("autochat",true))setTimeout(()=>VC.start(true),900);});
+AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;render();if(store.get("autochat",true))setTimeout(()=>VC.start(true),900);});
 function meta(){try{if(!("mediaSession" in navigator))return;const c=chapters()[S.ch];
   navigator.mediaSession.metadata=new MediaMetadata({title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Morning-Show"),artist:SONG.on&&SONG.track?SONG.track.artist:"Inka",album:"Morning-Show "+(S.doc?S.doc.day:"")});}catch(_){}}
 try{if("mediaSession" in navigator){
@@ -818,6 +831,7 @@ function renderUeberblick(){
     '<div class="si"><span>Gespräch nach der Show</span><button id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</button></div>'+
     '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
     '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
+    '<div class="si"><span>App aktualisieren (neueste Fassung)</span><button class="pri" id="fupd">aktualisieren</button></div>'+
     '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
   h+='<div class="small" style="margin:8px 0 20px">App-Stand: '+esc(APPV)+'</div>';
   $("#t-ueberblick").innerHTML=h;
@@ -825,6 +839,7 @@ function renderUeberblick(){
   $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",true));render();};
   $("#fset").onclick=()=>{store.set("showSetup",true);setTab("jetzt");};
   $("#frel").onclick=()=>{loadApp();loadShow();toast("Lade neu …");};
+  $("#fupd").onclick=()=>{toast("Lade neueste Fassung …");setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
 }
 
 /* ---------- Sheet: Eintrag, neue Aufgabe, Diktat ---------- */

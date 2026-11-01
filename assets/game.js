@@ -356,9 +356,8 @@
         if (pageIdx === pages.length - 1 && L.ask && answered < 2 && !pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } else { more.style.visibility = 'visible'; autoArm(readMs(items)); } }
       function step(now){ if (fin || !dlg) return; if (window.JK_DEVSPD && window.JK_DEVSPD.pause){ due = Math.max(due, now + 60); raf = requestAnimationFrame(step); return; } if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
         if (now < due){ raf = requestAnimationFrame(step); return; }
-        while (i < items.length && items[i].ev){ var ev = items[i++]; if (ev.ev === 'mood') setMood(ev.v); else if (ev.ev === 'pause') due = now + ev.v * 1000 * tspeed(); else if (ev.ev === 'cut'){ dlg.classList.add('cut'); i = items.length; } }
+        while (i < items.length && (items[i].ev || items[i].nm)){ var ev = items[i++]; if (ev.nm){ si++; continue; } if (ev.ev === 'mood') setMood(ev.v); else if (ev.ev === 'pause') due = now + ev.v * 1000 * tspeed(); else if (ev.ev === 'cut'){ dlg.classList.add('cut'); i = items.length; } }
         if (due > now){ raf = requestAnimationFrame(step); return; }
-        while (i < items.length && items[i].nm){ i++; si++; }
         if (i >= items.length){ finish(); return; }
         var it = items[i], el = spans[si]; el.style.visibility = ''; if ((MOOD[curMood] || {}).fx === 'shk' || L.who === 'gojira') el.classList.add('live'); nvis++;
         if (L.who === 'gojira'){ dlg.classList.add('quake'); setTimeout(function(){ if (dlg) dlg.classList.remove('quake'); }, 180); syl('gojira', curMood, 'emph'); }

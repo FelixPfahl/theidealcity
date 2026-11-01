@@ -127,7 +127,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 11:50 (Stimmen langsamer)";
+const APPV="1.11. 12:00 (Tempo-Regler im Player)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -679,13 +679,15 @@ function renderShow(){
   let h='';
   h+='<div class="chips" style="margin-bottom:8px">'+S.dayShows.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-showsel="'+esc(x.id)+'">'+esc(showLabel(x))+'</button>').join("")+'<button class="chip" id="parch">Alle Shows'+(S.shows.length?' ('+S.shows.length+')':'')+'</button></div>';
   h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
-    '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>';
+    '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="small">Tempo</span><input type="range" id="prate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'" style="flex:1"><b class="small" id="prv" style="min-width:42px;text-align:right">'+Math.round(RATE()*100)+'%</b></div>';
   h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
   h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button><button id="pnew">Neue Show erstellen</button></div>';
   if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
   el.innerHTML=h;bar();
   $("#chdet").addEventListener("toggle",e=>{S.chOpen=e.target.open;});
+  const prt=$("#prate");prt.oninput=()=>{store.set("rate",+prt.value);applyRate();$("#prv").textContent=Math.round(prt.value*100)+"%";};
   $("#pp").onclick=()=>{if(!AUD.paused||SONG.on)pauseShow();else playShow();};
   $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();$("#pnew").onclick=()=>sheetShowOrder();
   $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};

@@ -26,6 +26,10 @@ day = doc["day"]
 fid = day + ("_" + slot if slot else "")
 keep = ["day", "title", "kind", "duration", "chapters", "voice", "made", "checked", "weather", "trips", "hints",
         "questions", "songs", "agentId", "nochat", "text", "lines"]  # text: Archiv und Drive-Export
+# Zeitmarken je Zeile fuers Mitlesen (Josef 1.11.2026): aus show.json neben dem Audio, falls doc.json sie nicht hat
+if "lines" not in doc and mp4_p != "-":
+    try: doc["lines"] = json.load(open(os.path.join(os.path.dirname(os.path.abspath(mp4_p)), "show.json"))).get("lines") or []
+    except Exception: pass
 out = {k: doc.get(k) for k in keep if k in doc}
 out["entries"] = json.load(open(ent_p)) if ent_p != "-" and os.path.exists(ent_p) else []
 out["topic"] = cfg["topic"]

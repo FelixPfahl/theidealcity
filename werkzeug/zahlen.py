@@ -4,8 +4,13 @@ Texte ohne Ziffern bleiben unveraendert (deshalb bleiben gecachte Clips gueltig)
 import re
 try:
     from num2words import num2words as _n
-except ImportError:  # ohne Bibliothek: Text unveraendert
-    _n = None
+except ImportError:  # im Morgenlauf einmal nachinstallieren, sonst Text unveraendert
+    try:
+        import subprocess, sys
+        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--break-system-packages", "num2words"], check=True, capture_output=True, timeout=120)
+        from num2words import num2words as _n
+    except Exception:
+        _n = None
 
 MON = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
 DATIV = {"am", "vom", "zum", "im", "beim", "dem", "den", "ab", "seit", "bis", "zur"}

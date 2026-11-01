@@ -127,7 +127,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 11:40 (Fragenkatalog Neue Show, Drive)";
+const APPV="1.11. 11:50 (Stimmen langsamer)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -145,6 +145,10 @@ let toastT=null;
 function toast(m,ms){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
 const AUD=$("#aud");try{AUD.volume=JSON.parse(localStorage.getItem("inka:vol")||"0.5");}catch(_){AUD.volume=0.5;}
 /* Josef 1.11.2026 11:02: "alle Stimmen einen Tick leiser, sonst lauter als die Musik". Einmalig 20 Prozent leiser (etwa 2 dB), Regler bleibt frei. */
+/* Josef 1.11.2026 11:19: "die Stimmen sind alle etwas zu schnell". Abspieltempo der Sprache in der App (Tonhöhe bleibt), gilt für alle Shows. */
+const RATE=()=>{const r=+store.get("rate",0.92);return r>=0.7&&r<=1.2?r:0.92;};
+function applyRate(){try{AUD.defaultPlaybackRate=RATE();AUD.playbackRate=RATE();AUD.preservesPitch=true;}catch(_){}}
+applyRate();["loadedmetadata","play","playing"].forEach(ev=>AUD.addEventListener(ev,()=>{if(Math.abs(AUD.playbackRate-RATE())>0.001)applyRate();}));
 try{if(!localStorage.getItem("inka:volfix1")){const v=Math.max(0.2,Math.round(AUD.volume*0.8/0.05)*0.05);AUD.volume=v;localStorage.setItem("inka:vol",JSON.stringify(v));localStorage.setItem("inka:volfix1","1");}}catch(_){}
 const MOBILE=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
@@ -879,6 +883,7 @@ function renderUeberblick(){
   const vol=store.get("vol",0.5);
   h+='<div class="card"><div class="k">Einstellungen</div>'+
     '<label class="sl">Lautstärke Inka im Verhältnis zur Musik: <b id="volv">'+Math.round(vol*100)+'%</b></label><input type="range" id="vol" min="0.2" max="1" step="0.05" value="'+vol+'">'+
+    '<label class="sl">Sprechtempo: <b id="ratev">'+Math.round(RATE()*100)+'%</b></label><input type="range" id="rate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'">'+
     '<div class="si"><span>Gespräch nach der Show</span><button id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</button></div>'+
     '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
     '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
@@ -887,6 +892,7 @@ function renderUeberblick(){
     '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
   h+='<div class="small" style="margin:8px 0 20px">App-Stand: '+esc(APPV)+'</div>';
   $("#t-ueberblick").innerHTML=h;
+  const rt=$("#rate");rt.oninput=()=>{store.set("rate",+rt.value);applyRate();$("#ratev").textContent=Math.round(rt.value*100)+"%";};
   const v=$("#vol");v.oninput=()=>{store.set("vol",+v.value);AUD.volume=+v.value;$("#volv").textContent=Math.round(v.value*100)+"%";};
   $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",true));render();};
   $("#fset").onclick=()=>{store.set("showSetup",true);setTab("jetzt");};

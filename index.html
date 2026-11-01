@@ -156,7 +156,7 @@ function prevCh(){const k=chAt(AUD.currentTime);const c=chapters();for(let i=k-(
 AUD.addEventListener("timeupdate",()=>{
   const t=AUD.currentTime,k=chAt(t),c=chapters()[k];
   if(c&&c.type==="song"&&!S.songDone[k]&&!SONG.on&&!AUD.paused){S.songDone[k]=true;SONG.start(k);}
-  if(k!==S.ch){S.ch=k;meta();}
+  if(k!==S.ch){S.ch=k;meta();renderShow();}
   bar();
 });
 AUD.addEventListener("play",()=>{render();meta();});

@@ -29,6 +29,8 @@ object SpotifyCtl {
     private var appCtx: Context? = null
     private var watching = false
     private var lostSince = 0L
+    private var nextTry = 0L
+    private var attempt = 0
 
     fun connect(ctx: Context) {
         appCtx = ctx.applicationContext
@@ -37,19 +39,24 @@ object SpotifyCtl {
         if (id.isBlank()) { lastErr = "keine Client-ID"; emit("fehler"); return }
         if (!SpotifyAppRemote.isSpotifyInstalled(ctx)) { lastErr = "Spotify-App fehlt"; emit("fehler"); return }
         connecting = true
+        val my = ++attempt
+        Hub.main.postDelayed({ if (connecting && attempt == my) { connecting = false; lastErr = "Zeitüberschreitung"; markLost(); scheduleReconnect() } }, 20000)
         val params = ConnectionParams.Builder(id).setRedirectUri(Hub.REDIRECT).showAuthView(true).build()
         val c: Context = Hub.activity ?: ctx.applicationContext
         Hub.main.post {
             try {
                 SpotifyAppRemote.connect(c, params, object : Connector.ConnectionListener {
                     override fun onConnected(r: SpotifyAppRemote) {
-                        remote = r; connected = true; connecting = false; backoff = 2000L; lastErr = ""; lostSince = 0L
-                        r.playerApi.subscribeToPlayerState().setEventCallback { ps -> onState(ps) }
-                            .setErrorCallback { t -> lastErr = t.javaClass.simpleName; markLost() }
+                        if (attempt != my) { try { SpotifyAppRemote.disconnect(r) } catch (_: Exception) {}; return }
+                        remote?.let { if (it !== r) try { SpotifyAppRemote.disconnect(it) } catch (_: Exception) {} }
+                        remote = r; connected = true; connecting = false; backoff = 2000L; nextTry = 0L; lastErr = ""; lostSince = 0L
+                        r.playerApi.subscribeToPlayerState().setEventCallback { ps -> if (remote === r) onState(ps) }
+                            .setErrorCallback { t -> if (remote === r) { lastErr = t.javaClass.simpleName; markLost() } }
                         emit("verbunden")
                         if (wantPlaying && wantUri != null) ensurePlaying("nach Neuverbindung")
                     }
                     override fun onFailure(t: Throwable) {
+                        if (attempt != my) return
                         connecting = false; lastErr = t.javaClass.simpleName + ": " + (t.message ?: "").take(80)
                         markLost(); scheduleReconnect()
                     }
@@ -66,9 +73,10 @@ object SpotifyCtl {
     }
 
     private fun scheduleReconnect() {
-        if (!wantPlaying && wantUri == null) return
+        if (!wantPlaying) return
         val d = backoff; backoff = (backoff * 2).coerceAtMost(30000L)
-        Hub.main.postDelayed({ appCtx?.let { connect(it) } }, d)
+        nextTry = System.currentTimeMillis() + d
+        Hub.main.postDelayed({ if (wantPlaying) appCtx?.let { connect(it) } }, d)
     }
 
     private fun onState(ps: PlayerState) {
@@ -122,14 +130,21 @@ object SpotifyCtl {
                 if (!wantPlaying || wantUri == null) { watching = false; return }
                 val ctx = appCtx
                 val r = remote
-                if (r == null || !r.isConnected) { if (connected) markLost(); if (ctx != null && !connecting) connect(ctx) }
+                if (r == null || !r.isConnected) {
+                    if (connected) { markLost(); scheduleReconnect() }
+                    else if (ctx != null && !connecting && System.currentTimeMillis() >= nextTry) connect(ctx)
+                }
                 else {
                     val l = last
                     val stale = System.currentTimeMillis() - lastAt > 15000
                     val wrong = l?.track?.uri != null && l.track.uri != wantUri && !ended
-                    val pausedOdd = l != null && l.track?.uri == wantUri && l.isPaused && System.currentTimeMillis() - lastAt > 6000
-                    if (stale) { r.playerApi.playerState.setResultCallback { onState(it) }.setErrorCallback { markLost() } }
-                    if (wrong || pausedOdd) ensurePlaying(if (wrong) "falscher Titel" else "pausiert")
+                    val userPaused = l != null && l.track?.uri == wantUri && l.isPaused && !ended && System.currentTimeMillis() - lastAt > 3000
+                    if (stale) { r.playerApi.playerState.setResultCallback { if (remote === r) onState(it) }.setErrorCallback { if (remote === r) markLost() } }
+                    if (userPaused) {
+                        // Pause über Kopfhörer, Auto oder Spotify selbst: als Nutzerpause werten, nicht eigenmächtig fortsetzen
+                        wantPlaying = false; emit("pausiert"); watching = false; return
+                    }
+                    if (wrong) ensurePlaying("falscher Titel")
                 }
                 Hub.main.postDelayed(this, 4000)
             }
@@ -138,7 +153,7 @@ object SpotifyCtl {
     }
 
     fun onNetwork(online: Boolean) {
-        if (online && wantPlaying && !connected) appCtx?.let { backoff = 2000L; connect(it) }
+        Hub.main.post { if (online && wantPlaying && !connected && !connecting) appCtx?.let { backoff = 2000L; nextTry = 0L; connect(it) } }
     }
 
     fun stateJson(): JSONObject {

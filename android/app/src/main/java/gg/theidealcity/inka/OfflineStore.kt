@@ -35,7 +35,9 @@ object OfflineStore {
 
     fun dir(c: Context) = File(c.filesDir, "offline").apply { mkdirs() }
 
-    fun intercept(c: Context, req: WebResourceRequest): WebResourceResponse? {
+    fun intercept(c: Context, req: WebResourceRequest): WebResourceResponse? = try { interceptInner(c, req) } catch (e: Exception) { Hub.log("Abfangen: " + e.javaClass.simpleName); null }
+
+    private fun interceptInner(c: Context, req: WebResourceRequest): WebResourceResponse? {
         if (req.method != "GET") return null
         val url = req.url
         val base = url.scheme + "://" + url.host + url.path
@@ -57,7 +59,7 @@ object OfflineStore {
 
     private fun fetch(u: String, timeoutMs: Int): Pair<Int, ByteArray?> = try {
         val con = URL(u).openConnection() as HttpURLConnection
-        con.connectTimeout = timeoutMs; con.readTimeout = maxOf(timeoutMs, 20000); con.useCaches = false
+        con.connectTimeout = timeoutMs; con.readTimeout = if (timeoutMs >= 15000) 60000 else timeoutMs; con.useCaches = false
         val code = con.responseCode
         if (code == 200) code to con.inputStream.use { it.readBytes() } else code to null
     } catch (e: Exception) { -1 to null }
@@ -70,7 +72,7 @@ object OfflineStore {
             val t = url.getQueryParameter("t") ?: "0"
             val exact = File(d, "$name.$t")
             if (exact.exists()) return resp(exact.readBytes(), name)
-            val (code, b) = fetch(url.toString(), 8000)
+            val (code, b) = fetch(url.toString(), 15000)
             if (b != null) { d.listFiles { f -> f.name.startsWith("$name.") }?.forEach { it.delete() }; save(exact, b); return resp(b, name) }
             val any = d.listFiles { f -> f.name.startsWith("$name.") && !f.name.endsWith(".tmp") }?.maxByOrNull { it.lastModified() }
             if (any != null) return resp(any.readBytes(), name)

@@ -25,8 +25,11 @@ static class Program
     }
 
     /// <summary>inka://open?k=... aus dem Browser an das laufende Fenster weitergeben.</summary>
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool AllowSetForegroundWindow(int pid);
+
     static void Forward(string arg)
     {
+        try { AllowSetForegroundWindow(-1); } catch { }
         try { using var c = new NamedPipeClientStream(".", PipeName, PipeDirection.Out); c.Connect(2000); using var w = new StreamWriter(c); w.Write(arg); }
         catch { }
     }
@@ -43,7 +46,7 @@ static class Program
                     s.WaitForConnection();
                     using var r = new StreamReader(s);
                     var msg = r.ReadToEnd();
-                    form.BeginInvoke(() => form.OpenFromOutside(msg));
+                    form.Deliver(msg);
                 }
                 catch { Thread.Sleep(500); }
             }

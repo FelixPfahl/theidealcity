@@ -9,7 +9,7 @@
     <AssemblyName>Inka</AssemblyName>
     <RootNamespace>Inka</RootNamespace>
     <ApplicationIcon>inka.ico</ApplicationIcon>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Product>Inka</Product>
     <Company>The Ideal City</Company>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>

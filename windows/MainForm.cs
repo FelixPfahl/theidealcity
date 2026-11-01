@@ -26,7 +26,17 @@ public class MainForm : Form
         BackColor = Color.White;
         try { Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? Application.ExecutablePath); } catch { }
         Controls.Add(web);
-        Load += async (_, _) => await Init();
+        Load += async (_, _) =>
+        {
+            try { await Init(); }
+            catch (Exception e)
+            {
+                var r = MessageBox.Show("Inka konnte nicht starten: " + e.Message + "\n\nFehlt die Microsoft-Edge-WebView2-Laufzeit? Jetzt die Download-Seite öffnen?",
+                    "Inka", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (r == DialogResult.Yes) Open("https://developer.microsoft.com/microsoft-edge/webview2/");
+                Close();
+            }
+        };
         FormClosed += (_, _) =>
         {
             SetThreadExecutionState(ES_CONTINUOUS);
@@ -34,7 +44,33 @@ public class MainForm : Form
             if (Updater.PendingPath != null) Updater.Install(false);
         };
         updTimer.Tick += async (_, _) => await Updater.Check(ReportUpdate);
-        NetworkChange.NetworkAvailabilityChanged += (_, e) => BeginInvoke(() => Js("window.__inkaNative&&window.__inkaNative({type:'net',online:" + (e.IsAvailable ? "true" : "false") + "})"));
+        NetworkChange.NetworkAvailabilityChanged += OnNet;
+        FormClosed += (_, _) => NetworkChange.NetworkAvailabilityChanged -= OnNet;
+        Shown += (_, _) => { ready = true; if (pendingOpen != null) { var u = pendingOpen; pendingOpen = null; OpenFromOutside(u); } };
+    }
+
+    volatile bool ready;
+    string pendingOpen;
+
+    void OnNet(object sender, NetworkAvailabilityEventArgs e)
+    {
+        try
+        {
+            if (!IsHandleCreated || IsDisposed) return;
+            BeginInvoke(() => Js("window.__inkaNative&&window.__inkaNative({type:'net',online:" + (e.IsAvailable ? "true" : "false") + "})"));
+        }
+        catch { }
+    }
+
+    /// <summary>Aus dem Pipe-Thread: Nachricht puffern, bis das Fenster steht.</summary>
+    public void Deliver(string uri)
+    {
+        try
+        {
+            if (!ready || !IsHandleCreated) { pendingOpen = uri; return; }
+            BeginInvoke(() => OpenFromOutside(uri));
+        }
+        catch { pendingOpen = uri; }
     }
 
     async Task Init()
@@ -72,10 +108,15 @@ public class MainForm : Form
         _ = Updater.Check(ReportUpdate);
     }
 
-    static bool Inside(string u) =>
-        u.StartsWith("https://raw.githack.com/", StringComparison.OrdinalIgnoreCase) ||
-        u.StartsWith("https://accounts.spotify.com/", StringComparison.OrdinalIgnoreCase) ||
-        u.StartsWith("about:", StringComparison.OrdinalIgnoreCase);
+    /// <summary>Bleibt im Fenster: Inka selbst und die Spotify-Anmeldung samt Anmelde-Anbietern; alles andere öffnet der Browser.</summary>
+    static bool Inside(string u)
+    {
+        if (u.StartsWith("about:", StringComparison.OrdinalIgnoreCase) || u.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) return true;
+        if (!Uri.TryCreate(u, UriKind.Absolute, out var x) || x.Scheme != "https") return false;
+        var h = x.Host.ToLowerInvariant();
+        return h == "raw.githack.com" || h == "spotify.com" || h.EndsWith(".spotify.com") || h.EndsWith(".scdn.co") ||
+               h == "accounts.google.com" || h == "appleid.apple.com" || h.EndsWith(".facebook.com");
+    }
 
     static void Open(string u)
     {
@@ -94,7 +135,7 @@ public class MainForm : Form
         try
         {
             if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
-            Activate();
+            TopMost = true; TopMost = false; Activate(); BringToFront();
             if (string.IsNullOrWhiteSpace(uri)) return;
             var q = uri.Contains('?') ? uri[(uri.IndexOf('?') + 1)..] : "";
             foreach (var part in q.Split('&'))

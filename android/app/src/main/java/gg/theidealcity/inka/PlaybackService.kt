@@ -35,10 +35,14 @@ class PlaybackService : Service() {
         const val CH = "inka_show"
         const val ID = 41
 
+        @Volatile var running: PlaybackService? = null
+
         fun update(c: Context, title: String, sub: String, state: String) {
             if (state == "stop") { c.stopService(Intent(c, PlaybackService::class.java)); return }
+            // Läuft der Dienst schon, direkt aktualisieren: ein erneuter Start aus dem Hintergrund ist ab Android 12 verboten
+            running?.let { it.apply(title, sub, state); return }
             val i = Intent(c, PlaybackService::class.java).putExtra("title", title).putExtra("sub", sub).putExtra("state", state)
-            ContextCompat.startForegroundService(c, i)
+            try { ContextCompat.startForegroundService(c, i) } catch (e: Exception) { Hub.log("Dienst-Start nicht erlaubt: " + e.javaClass.simpleName) }
         }
     }
 
@@ -59,6 +63,7 @@ class PlaybackService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        running = this
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(NotificationChannel(CH, "Show", NotificationManager.IMPORTANCE_LOW).apply { setShowBadge(false) })
         session = MediaSessionCompat(this, "Inka").apply {
@@ -88,25 +93,51 @@ class PlaybackService : Service() {
         wifi = wm.createWifiLock(if (Build.VERSION.SDK_INT >= 29) WifiManager.WIFI_MODE_FULL_LOW_LATENCY else WifiManager.WIFI_MODE_FULL_HIGH_PERF, "inka:wifi").apply { setReferenceCounted(false) }
     }
 
+    fun apply(t: String, s: String, st: String) {
+        Hub.main.post {
+            title = t; sub = s; state = st
+            locks()
+            try { getSystemService(NotificationManager::class.java).notify(ID, build()) } catch (_: Exception) {}
+        }
+    }
+
+    /** Mikrofon-Typ nur, wenn die Erlaubnis da ist (Gespräch mit Inka nach der Show, auch bei gesperrtem Bildschirm). */
+    private fun fgType(): Int {
+        var t = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+        if (Build.VERSION.SDK_INT >= 30 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+            t = t or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+        return t
+    }
+
+    private fun fg(n: Notification) {
+        try { if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, fgType()) else startForeground(ID, n) }
+        catch (e: Exception) { if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK) else startForeground(ID, n) }
+    }
+
+    private fun locks() {
+        if (state == "playing" || state == "waiting") { wake?.acquire(3 * 3600 * 1000L); wifi?.acquire() }
+        else { if (wake?.isHeld == true) wake?.release(); if (wifi?.isHeld == true) wifi?.release() }
+    }
+
     override fun onStartCommand(i: Intent?, flags: Int, startId: Int): Int {
         if (i?.action == Intent.ACTION_MEDIA_BUTTON) {
-            val n0 = build()
-            if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n0, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK) else startForeground(ID, n0)
+            fg(build())
+            // Medientaste nach der Show oder ohne Seite: nichts neu starten, Dienst beenden (Fund 7)
+            if (Hub.web == null || state == "stop") { stopForeground(STOP_FOREGROUND_REMOVE); stopSelf(); return START_NOT_STICKY }
             androidx.media.session.MediaButtonReceiver.handleIntent(session, i)
             return START_NOT_STICKY
         }
         title = i?.getStringExtra("title") ?: title
         sub = i?.getStringExtra("sub") ?: sub
         state = i?.getStringExtra("state") ?: state
-        val n = build()
-        if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK) else startForeground(ID, n)
-        // wach halten, solange die Show läuft oder auf Spotify/Netz wartet (bis 3 Stunden)
-        wake?.acquire(3 * 3600 * 1000L); wifi?.acquire()
+        fg(build())
+        // wach halten, solange die Show läuft oder auf Spotify/Netz wartet (bis 3 Stunden), bei Pause loslassen
+        locks()
         return START_NOT_STICKY
     }
 
     private fun build(): Notification {
-        val playing = state == "playing"
+        val playing = state == "playing" || state == "waiting"
         session.setMetadata(MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, sub)
@@ -135,6 +166,7 @@ class PlaybackService : Service() {
     override fun onTaskRemoved(rootIntent: Intent?) { SpotifyCtl.stop(); stopSelf() }
 
     override fun onDestroy() {
+        running = null
         try { unregisterReceiver(noisy) } catch (_: Exception) {}
         try { netCb?.let { getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(it) } } catch (_: Exception) {}
         if (wake?.isHeld == true) wake?.release(); if (wifi?.isHeld == true) wifi?.release()

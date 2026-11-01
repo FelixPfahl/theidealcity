@@ -135,7 +135,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 16:40 (Sprachkontingent, Updates)";
+const APPV="1.11. 17:00 (Fehlerbehebungen aus der Prüfung)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -1156,7 +1156,9 @@ if(NAT){
 {const _fin=SONG.finish;SONG.finish=async function(w,s){SONG.lost=false;SONG.held=false;return _fin.call(SONG,w,s);};}
 window.__inkaNative=function(o){try{
   if(!o||!o.type)return;
-  if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
+  if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){
+      if(o.ev==="pausiert"){SONG.held=true;clearTimeout(SONG.timer);diag("pause",{why:"spotify"});render();meta();}
+      else if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
   if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)toast("Kein Netz. Inka spricht weiter, Songs warten.",6000);renderShow();return;}
   if(o.type==="update"){S.upd=o;if(o.state==="bereit")toast("Inka-Update "+(o.version||"")+" ist bereit.");if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
   if(o.type==="offline"){S.offline=o.ids||[];if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
@@ -1173,7 +1175,7 @@ window.appResume=function(){
 {const _meta=meta;meta=function(){_meta();
   if(WIN&&S.started){try{const c=chapters()[S.ch];WIN.post({type:"np",state:S.ended?"stop":(((SONG.on&&!SONG.held)||!AUD.paused)?"playing":"paused"),title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"")});}catch(_){}}
   if(!NAT||!S.started)return;try{const c=chapters()[S.ch];
-  const st=S.ended?"stop":(((SONG.on&&!SONG.held&&!SONG.lost)||!AUD.paused)?"playing":"paused");
+  const st=S.ended?((VC.conv||VC.starting)?"playing":"stop"):(SONG.on&&SONG.lost&&!SONG.held)?"waiting":(((SONG.on&&!SONG.held)||!AUD.paused)?"playing":"paused");
   NAT.nowPlaying(SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Inka"),SONG.on&&SONG.track?SONG.track.artist+(SONG.lost?" · verbindet neu":""):((S.doc&&S.doc.title)||"Morning-Show"),st);}catch(_){}};}
 {const _play=playShow;playShow=async function(){S.started=true;return _play();};}
 AUD.addEventListener("pause",()=>meta());AUD.addEventListener("ended",()=>meta());
@@ -1251,6 +1253,19 @@ function updHtml(){const u=updState();if(!u)return "";
 function updWire(){const g=$("#updgo");if(g)g.onclick=()=>{if(playingNow()){toast("Die Show läuft gerade. Das Update kommt danach.");return;}
     if(NAT){try{NAT.updateInstall();toast("Lade Update …");}catch(_){}}else if(WIN)WIN.post({type:"update-install"});};
   const c=$("#updchk");if(c)c.onclick=()=>{if(NAT){try{NAT.updateCheck();toast("Suche Updates …");setTimeout(()=>{try{renderUeberblick();}catch(_){}},5000);}catch(_){}}else if(WIN){WIN.post({type:"update-check"});toast("Suche Updates …");}};}
+
+/* Gespräch nach der Show beendet: Hintergrunddienst der App darf dann aufhören */
+{const _vs=VC.stop;VC.stop=async function(){const r=await _vs.apply(VC,arguments);try{meta();}catch(_){}return r;};}
+/* In der Android-App: Show über die App teilen (Drive), weil die WebView kein Teilen-Menü kennt */
+{const _ds=driveShow;driveShow=async function(id,btn){
+  if(!NAT||typeof NAT.shareShow!=="function")return _ds(id,btn);
+  try{btn.textContent="lädt …";btn.disabled=true;const doc=await fetchDoc(id);if(!doc)throw new Error("Show fehlt");
+    const nm=("Inka "+id+" "+(doc.title||"Morning-Show")).replace(/[\\/:*?"<>|]/g,"").trim();
+    const songs=(doc.songs||[]).map((x,i)=>(i+1)+". "+x.name+" · "+x.artist).join("\n");
+    NAT.shareShow(id,nm,(doc.title||"Morning-Show")+", "+id+"\n\nSongs:\n"+(songs||"keine")+"\n\n"+String(doc.text||"").replace(/^(INKA|WAGNER|SIGMA|XAE)\s*\([^)]*\)\s*:/gim,"$1:"));
+    toast("Teilen-Menü öffnet sich, dort Google Drive wählen.");}
+  catch(e){toast("Ging nicht: "+String(e&&e.message||e).slice(0,60));}
+  btn.textContent="Drive";btn.disabled=false;};}
 </script>
 </body>
 </html>

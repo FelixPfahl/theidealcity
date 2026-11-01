@@ -25,6 +25,7 @@ import org.json.JSONObject
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
     private var pendingPerm: PermissionRequest? = null
+    private var pendingGeo: Pair<String, android.webkit.GeolocationPermissions.Callback>? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(b: Bundle?) {
@@ -51,6 +52,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
         web.webChromeClient = object : WebChromeClient() {
+            override fun onGeolocationPermissionsShowPrompt(origin: String, cb: android.webkit.GeolocationPermissions.Callback) {
+                val ok = ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                    ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                if (ok) cb.invoke(origin, true, false)
+                else { pendingGeo = origin to cb; requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 9) }
+            }
             override fun onPermissionRequest(req: PermissionRequest) {
                 runOnUiThread {
                     if (req.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
@@ -65,7 +72,8 @@ class MainActivity : AppCompatActivity() {
         })
         if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 8)
-        if (!handle(intent?.data)) load()
+        handle(intent?.data)
+        if (web.url == null) load()
         OfflineStore.schedule(this)
         Thread { Updates.check(applicationContext) }.start()
     }
@@ -83,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         if (u.host == "open") {
             u.getQueryParameter("k")?.let { Prefs.setKey(this, it) }
             u.getQueryParameter("c")?.let { Prefs.setClientId(this, it) }
-            load(); OfflineStore.now(this); return true
+            if (web.url == null || u.getQueryParameter("k") != null) load(); OfflineStore.now(this); return true
         }
         return u.host == "spotify-callback"
     }
@@ -92,6 +100,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, res: IntArray) {
         super.onRequestPermissionsResult(code, perms, res)
+        if (code == 9) { val g = pendingGeo; pendingGeo = null; g?.second?.invoke(g.first, res.any { it == PackageManager.PERMISSION_GRANTED }, false) }
         if (code == 7) { val p = pendingPerm; pendingPerm = null
             if (res.firstOrNull() == PackageManager.PERMISSION_GRANTED) p?.grant(p.resources) else p?.deny() }
     }
@@ -101,7 +110,7 @@ class MainActivity : AppCompatActivity() {
     // Bewusst kein web.onPause(): die Show soll im Hintergrund weiterlaufen.
 
     override fun onDestroy() {
-        if (Hub.web === web) { Hub.web = null; Hub.activity = null }
+        if (Hub.web === web) { Hub.web = null; Hub.activity = null; PlaybackService.update(this, "", "", "stop"); SpotifyCtl.stop() }
         web.destroy()
         super.onDestroy()
     }
@@ -130,6 +139,8 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun updateInfo(): String = Updates.info(c).toString()
         @JavascriptInterface fun updateCheck() { Thread { Updates.check(c) }.start() }
         @JavascriptInterface fun updateInstall() { Updates.install(c) }
+        /** Show als Audio und Text an Drive oder andere Apps teilen (Josef 1.11.2026). */
+        @JavascriptInterface fun shareShow(id: String, name: String, text: String) { Thread { Share.show(c, id, name, text) }.start() }
         @JavascriptInterface fun openSpotify() {
             try { startActivity(packageManager.getLaunchIntentForPackage("com.spotify.music")?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) {}
         }

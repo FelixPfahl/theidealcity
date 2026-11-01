@@ -43,7 +43,8 @@ Songs: nie zweimal derselbe Song in den Shows von 7 Tagen (rollend, Josef 1.11.2
 
 ## Stil
 - Fließend: Übergänge aus dem Gespräch heraus, Callbacks auf frühere Stellen, keine Aufzählungen.
-- Für das Ohr: kurze Sätze, Uhrzeiten "um 13 Uhr 30", Datum "Mittwoch, der 4. November", keine Gedankenstriche, keine Abkürzungen.
+- Für das Ohr: kurze Sätze, keine Gedankenstriche, keine Abkürzungen.
+- **Zahlen immer als Wörter schreiben** (Josef 1.11.2026: "lange Zahlen im Skript als Text"), keine Ziffern im Sprechtext: Uhrzeiten "um dreizehn Uhr dreißig", Daten "Mittwoch, der vierte November", Jahreszahlen getrennt nach Hundertern "vierzehnhundert fünfzehn", "zweitausend sechsundzwanzig", "einundzwanzighundert siebenundachtzig", große Zahlen in Teilen "dreiundsechzigtausend dreihundert", Kommazahlen "eins Komma fünf", Prozent ausgeschrieben. Lieber runden ("gut dreihundert Kilometer") als lange genaue Zahlen. `zahlen.py` wandelt übrig gebliebene Ziffern nur als Sicherheitsnetz um.
 - Nur belegte Fakten. Länge: Sprechtext etwa 9.000 bis 11.000 Zeichen; bei knappem ElevenLabs-Kontingent kürzer (lieber kürzere Sprechzeit als weniger Songs).
 
 ## Klänge (`werkzeug/show_tts.py`)

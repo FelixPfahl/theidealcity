@@ -16,8 +16,13 @@ MON = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "
 DATIV = {"am", "vom", "zum", "im", "beim", "dem", "den", "ab", "seit", "bis", "zur"}
 
 
+def _teile(w):
+    # lange Zahlwörter für die Stimme in Teile trennen: "zweitausendsechsundzwanzig" -> "zweitausend sechsundzwanzig"
+    return re.sub(r"(tausend|hundert)(?=[a-zäöü])", r"\1 ", w)
+
+
 def card(x):
-    return _n(int(x), lang="de")
+    return _teile(_n(int(x), lang="de"))
 
 
 def ordn(x, prev):
@@ -30,7 +35,7 @@ def ordn(x, prev):
 
 def jahr(x):
     v = int(x)
-    return _n(v, lang="de", to="year") if 1100 <= v <= 2199 else card(v)
+    return _teile(_n(v, lang="de", to="year")) if 1100 <= v <= 2199 else card(v)
 
 
 def sprich(t):

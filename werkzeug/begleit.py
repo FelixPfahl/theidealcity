@@ -30,6 +30,15 @@ keep = ["day", "title", "kind", "duration", "chapters", "voice", "made", "checke
 if "lines" not in doc and mp4_p != "-":
     try: doc["lines"] = json.load(open(os.path.join(os.path.dirname(os.path.abspath(mp4_p)), "show.json"))).get("lines") or []
     except Exception: pass
+# Sprachkontingent fuer die App (Josef 1.11.2026), aus show.json neben dem Audio
+try:
+    _sj = json.load(open(os.path.join(os.path.dirname(os.path.abspath(mp4_p)), "show.json"))) if mp4_p != "-" else {}
+    if _sj.get("quota"):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from kontingent import schreiben
+        schreiben(_sj["quota"], key_p, repo)
+except Exception:
+    pass
 out = {k: doc.get(k) for k in keep if k in doc}
 out["entries"] = json.load(open(ent_p)) if ent_p != "-" and os.path.exists(ent_p) else []
 out["topic"] = cfg["topic"]

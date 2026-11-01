@@ -11,6 +11,8 @@ public class MainForm : Form
 {
     readonly WebView2 web = new() { Dock = DockStyle.Fill };
     readonly string startArg;
+    string playState = "";
+    readonly System.Windows.Forms.Timer updTimer = new() { Interval = 6 * 3600 * 1000 };
 
     [DllImport("kernel32.dll")] static extern uint SetThreadExecutionState(uint esFlags);
     const uint ES_CONTINUOUS = 0x80000000, ES_SYSTEM_REQUIRED = 0x00000001;
@@ -25,7 +27,13 @@ public class MainForm : Form
         try { Icon = Icon.ExtractAssociatedIcon(Environment.ProcessPath ?? Application.ExecutablePath); } catch { }
         Controls.Add(web);
         Load += async (_, _) => await Init();
-        FormClosed += (_, _) => SetThreadExecutionState(ES_CONTINUOUS);
+        FormClosed += (_, _) =>
+        {
+            SetThreadExecutionState(ES_CONTINUOUS);
+            // Update beim Schließen still installieren (Josef 1.11.2026: nie während der Show)
+            if (Updater.PendingPath != null) Updater.Install(false);
+        };
+        updTimer.Tick += async (_, _) => await Updater.Check(ReportUpdate);
         NetworkChange.NetworkAvailabilityChanged += (_, e) => BeginInvoke(() => Js("window.__inkaNative&&window.__inkaNative({type:'net',online:" + (e.IsAvailable ? "true" : "false") + "})"));
     }
 
@@ -57,8 +65,11 @@ public class MainForm : Form
             if (e.PermissionKind == CoreWebView2PermissionKind.Microphone || e.PermissionKind == CoreWebView2PermissionKind.Autoplay)
                 e.State = CoreWebView2PermissionState.Allow;
         };
+        cw.NavigationCompleted += (_, _) => ReportUpdate(Updater.LastState);
         if (!string.IsNullOrWhiteSpace(startArg) && startArg.StartsWith("inka:", StringComparison.OrdinalIgnoreCase)) OpenFromOutside(startArg);
         else Go();
+        updTimer.Start();
+        _ = Updater.Check(ReportUpdate);
     }
 
     static bool Inside(string u) =>
@@ -106,10 +117,17 @@ public class MainForm : Form
             if (type == "np")
             {
                 var st = r.TryGetProperty("state", out var s) ? s.GetString() : "";
+                playState = st ?? "";
                 var title = r.TryGetProperty("title", out var t) ? t.GetString() : "";
                 // PC während der Show nicht schlafen lassen
                 SetThreadExecutionState(st == "playing" || st == "paused" ? ES_CONTINUOUS | ES_SYSTEM_REQUIRED : ES_CONTINUOUS);
                 Text = string.IsNullOrEmpty(title) ? "Inka" : "Inka · " + title;
+            }
+            else if (type == "update-check") _ = Updater.Check(ReportUpdate);
+            else if (type == "update-install")
+            {
+                if (playState == "playing") { Js("window.toast&&toast('Update nach der Show: läuft gerade.')"); return; }
+                if (Updater.Install(true)) { Updater.Forget(); Application.Exit(); }
             }
             else if (type == "openSpotify")
             {
@@ -117,6 +135,13 @@ public class MainForm : Form
             }
         }
         catch { }
+    }
+
+    void ReportUpdate(string state)
+    {
+        if (InvokeRequired) { BeginInvoke(() => ReportUpdate(state)); return; }
+        var o = JsonSerializer.Serialize(new { type = "update", state, current = Updater.CurrentText, version = Updater.PendingVersion ?? "" });
+        Js("window.__inkaNative&&window.__inkaNative(" + o + ")");
     }
 
     void Js(string code) { try { web.CoreWebView2?.ExecuteScriptAsync(code); } catch { } }

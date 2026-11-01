@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 8)
         if (!handle(intent?.data)) load()
         OfflineStore.schedule(this)
+        Thread { Updates.check(applicationContext) }.start()
     }
 
     private fun versionName(): String = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "1" } catch (_: Exception) { "1" }
@@ -126,6 +127,9 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun keepScreen(on: Boolean) { runOnUiThread { if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) } }
         @JavascriptInterface fun prefetch() { OfflineStore.now(c) }
         @JavascriptInterface fun offlineIds(): String = JSONArray(OfflineStore.cachedIds(c)).toString()
+        @JavascriptInterface fun updateInfo(): String = Updates.info(c).toString()
+        @JavascriptInterface fun updateCheck() { Thread { Updates.check(c) }.start() }
+        @JavascriptInterface fun updateInstall() { Updates.install(c) }
         @JavascriptInterface fun openSpotify() {
             try { startActivity(packageManager.getLaunchIntentForPackage("com.spotify.music")?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) {}
         }

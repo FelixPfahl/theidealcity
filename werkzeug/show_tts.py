@@ -303,7 +303,12 @@ os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],
                            capture_output=True, text=True).stdout.strip() or t)
 if abs(dur - t) > 3: sys.exit("Audiolänge passt nicht: %.1f statt %.1f" % (dur, t))
-info = {"duration": round(t, 1), "chapters": meta, "lines": lines, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
+try:
+    from kontingent import abfragen
+    _q = abfragen(KEY) if KEY else None
+except Exception:
+    _q = None
+info = {"duration": round(t, 1), "chapters": meta, "lines": lines, "quota": _q, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
         "elevenChars": chars, "songs": sum(1 for m in meta if m["type"] == "song")}
 if info["sizeBytes"] > int(os.environ.get("SHOW_MAXMB", "15")) * 1024 * 1024: sys.exit("Datei zu groß")
 json.dump(info, open(os.path.join(out, "show.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)

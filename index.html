@@ -131,12 +131,13 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 16:00 (Android-App, Mitlesen, Klangregler)";
+const APPV="1.11. 16:10 (Android- und Windows-App, Mitlesen, Klangregler)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
 /* Android-App (Josef 1.11.2026): läuft die Seite in der Inka-App, steuert sie Spotify über die App (window.InkaNative). */
 const NAT=(window.InkaNative&&typeof window.InkaNative.isApp==="function")?window.InkaNative:null;
+const WIN=(window.InkaWin&&typeof window.InkaWin.post==="function")?window.InkaWin:null;  // Windows-App (WebView2)
 const AGENT_DEFAULT="agent_0201m64fk5bkfstr5gkhm6rat739";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -480,6 +481,9 @@ SP.play=async function(uri){
   const dv=await SP.api("GET","/me/player/devices");const ds=((dv&&dv.devices)||[]).filter(d=>d.id!==SP.deviceId);
   diag("geraete",{ds:ds.map(d=>d.type+":"+d.name+(d.is_active?"*":"")+(d.is_restricted?"!":""))});
   const dev=ds.find(d=>/smartphone/i.test(d.type)&&d.is_active)||ds.find(d=>/smartphone/i.test(d.type))||(MOBILE?null:(ds.find(d=>d.is_active)||ds[0]));
+  if(!dev&&WIN){WIN.post({type:"openSpotify"});diag("spotify-starten",{});await new Promise(r=>setTimeout(r,8000));
+    const dv2=await SP.api("GET","/me/player/devices");const ds2=((dv2&&dv2.devices)||[]).filter(d=>d.id!==SP.deviceId);
+    const d2=ds2.find(d=>/computer/i.test(d.type))||ds2[0];if(d2){SONG.dev=d2.id;await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(d2.id),{uris:[uri],position_ms:0});return "app";}}
   if(!dev)throw new Error("Spotify auf dem Handy nicht erreichbar");
   SONG.dev=dev.id;
   await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(dev.id),{uris:[uri],position_ms:0});
@@ -926,9 +930,12 @@ function renderUeberblick(){
       '<div class="small">Spotify: '+(sp.connected?"verbunden":(sp.connecting?"verbindet …":"nicht verbunden"))+(sp.err?" · "+esc(sp.err):"")+'</div>'+
       '<div class="small">Offline auf dem Handy: '+(off.length?esc(off.map(x=>dlabel(x.slice(0,10))).join(", ")):"noch nichts")+'</div>'+
       '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button></div></div>';}
+  else if(WIN)h+='<div class="card"><div class="k">Windows-App</div><div class="small">Die Songs spielt die Spotify-App am PC. Ist sie zu, startet Inka sie. Der PC schläft während der Show nicht ein.</div></div>';
   else h+='<div class="card"><div class="k">Android-App</div><div class="small">Läuft auch ohne Chrome weiter, verbindet Spotify nach Abbrüchen neu und lädt Shows für unterwegs vor.</div>'+
       '<div class="row" style="margin-top:8px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/inka.apk">App laden</a><a class="btn pri" href="inka://open?k='+encodeURIComponent(KEY.raw||"")+'">In der App öffnen</a></div>'+
-      '<div class="small" style="margin-top:6px">Erst laden und installieren, dann „In der App öffnen“ tippen (überträgt den Schlüssel).</div></div>';
+      '<div class="small" style="margin-top:6px">Erst laden und installieren, dann „In der App öffnen“ tippen (überträgt den Schlüssel).</div>'+
+      '<div class="row" style="margin-top:10px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/Inka.exe">Windows-App laden</a></div>'+
+      '<div class="small" style="margin-top:6px">Am PC: Inka.exe starten, dann hier am PC „In der App öffnen“.</div></div>';
   const vol=store.get("vol",0.5);
   h+='<div class="card"><div class="k">Einstellungen</div>'+
     '<label class="sl">Lautstärke Inka im Verhältnis zur Musik: <b id="volv">'+Math.round(vol*100)+'%</b></label><input type="range" id="vol" min="0.2" max="1" step="0.05" value="'+vol+'">'+
@@ -1141,7 +1148,9 @@ window.appResume=function(){
   if(SONG.on&&SONG.held&&NAT){SONG.held=false;try{NAT.spotifyResume();}catch(_){}armSong();render();meta();return;}
   playShow();};
 /* Medien-Steuerung in der App: Titel und Zustand an den Hintergrunddienst */
-{const _meta=meta;meta=function(){_meta();if(!NAT||!S.started)return;try{const c=chapters()[S.ch];
+{const _meta=meta;meta=function(){_meta();
+  if(WIN&&S.started){try{const c=chapters()[S.ch];WIN.post({type:"np",state:S.ended?"stop":(((SONG.on&&!SONG.held)||!AUD.paused)?"playing":"paused"),title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"")});}catch(_){}}
+  if(!NAT||!S.started)return;try{const c=chapters()[S.ch];
   const st=S.ended?"stop":(((SONG.on&&!SONG.held&&!SONG.lost)||!AUD.paused)?"playing":"paused");
   NAT.nowPlaying(SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Inka"),SONG.on&&SONG.track?SONG.track.artist+(SONG.lost?" · verbindet neu":""):((S.doc&&S.doc.title)||"Morning-Show"),st);}catch(_){}};}
 {const _play=playShow;playShow=async function(){S.started=true;return _play();};}

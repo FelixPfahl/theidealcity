@@ -127,7 +127,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 11:15 (Archiv aller Shows)";
+const APPV="1.11. 11:40 (Fragenkatalog Neue Show, Drive)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -181,8 +181,30 @@ function sheetArchive(){const all=S.shows.slice().sort((a,b)=>a.day<b.day?1:a.da
   if(!all.length)h+='<div class="small">Noch keine Shows im Archiv.</div>';
   let mon="";for(const x of all){const dd=new Date(x.day+"T12:00:00");const m=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"][dd.getMonth()]+" "+dd.getFullYear();
     if(m!==mon){mon=m;h+='<div class="k" style="margin-top:12px">'+esc(m)+'</div>';}
-    h+='<button class="chip'+(S.doc&&S.doc.id===x.id?' on':'')+'" style="display:block;width:100%;text-align:left;margin:6px 0" data-arch="'+esc(x.id)+'">'+esc(showLabel(x))+'</button>';}
-  openSheet(h);document.querySelectorAll("[data-arch]").forEach(b=>b.onclick=()=>pickShow(b.dataset.arch));}
+    h+='<div style="display:flex;gap:6px;align-items:center;margin:6px 0"><button class="chip'+(S.doc&&S.doc.id===x.id?' on':'')+'" style="flex:1;text-align:left;margin:0" data-arch="'+esc(x.id)+'">'+esc(showLabel(x))+'</button><button class="chip" style="margin:0" data-drive="'+esc(x.id)+'" aria-label="In Drive sichern">Drive</button></div>';}
+  h+='<div class="small" style="margin-top:10px">"Drive" bereitet die Show vor (Audio, Text, Songliste); beim zweiten Tippen öffnet sich das Teilen-Menü, dort Google Drive wählen.</div>';
+  openSheet(h);document.querySelectorAll("[data-arch]").forEach(b=>b.onclick=()=>pickShow(b.dataset.arch));
+  document.querySelectorAll("[data-drive]").forEach(b=>b.onclick=()=>driveShow(b.dataset.drive,b));}
+/* Josef 1.11.2026: Shows in Google Drive ablegen. Die Dateien sind zu gross fuer die Drive-Verbindung des Sekretariats,
+   deshalb uebergibt das Handy sie per Teilen-Menue an die Drive-App (erstes Tippen laedt und entschluesselt, zweites teilt). */
+const DRV={};
+async function driveShow(id,btn){
+  if(DRV[id]&&DRV[id].files){const f=DRV[id].files;
+    try{if(navigator.canShare&&navigator.canShare({files:f})){await navigator.share({files:f,title:DRV[id].title});toast("An Drive übergeben.");return;}}catch(e){if(e&&e.name==="AbortError")return;}
+    for(const x of f){const a=document.createElement("a");a.href=URL.createObjectURL(x);a.download=x.name;document.body.appendChild(a);a.click();a.remove();}
+    toast("Heruntergeladen. In der Drive-App hochladen.");return;}
+  btn.textContent="lädt …";btn.disabled=true;
+  try{const doc=await fetchDoc(id);if(!doc)throw new Error("Show fehlt");
+    const nm=("Inka "+id+" "+(doc.title||"Morning-Show")).replace(/[\\/:*?"<>|]/g,"").trim();const files=[];
+    if(doc.audio){const r=await fetch(RAW+"d/"+id+".bin?t="+(doc.published||0));if(!r.ok)throw new Error("Audio "+r.status);
+      const buf=new Uint8Array(await r.arrayBuffer());const k=await cryptoKey();
+      const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:buf.slice(0,12)},k,buf.slice(12));
+      files.push(new File([pt],nm+".m4a",{type:"audio/mp4"}));}
+    const songs=(doc.songs||[]).map((x,i)=>(i+1)+". "+x.name+" · "+x.artist).join("\n");
+    files.push(new File([(doc.title||"Morning-Show")+", "+id+"\n\nSongs:\n"+(songs||"keine")+"\n\n"+(doc.text||"")],nm+".txt",{type:"text/plain"}));
+    DRV[id]={files:files,title:nm};btn.textContent="Jetzt teilen";btn.disabled=false;btn.classList.add("on");
+  }catch(e){btn.textContent="Drive";btn.disabled=false;toast("Ging nicht: "+String(e&&e.message||e).slice(0,60));}
+}
 const showName=x=>x.title||(x.slot?x.slot.charAt(0).toUpperCase()+x.slot.slice(1):"Morning-Show");
 async function loadShow(){
   if(!KEY.raw){S.err="";render();return;}
@@ -927,27 +949,39 @@ const BO_Q=[
 ];
 const BO={a:{}};
 function boDefaults(){BO.a={};BO_Q.forEach(x=>{BO.a[x.k]=x.multi?(x.def||[x.o[0]]).slice():x.o[0];});BO.a.datum=new Date().getHours()>=12?"Morgen":"Heute";BO.a.datumWert="";BO.a.start="";}
+/* Josef 1.11.2026: "Neue Show erstellen" startet einen Fragenkatalog, eine Frage pro Seite, antippen und weiter. */
+const BO_N=()=>BO_Q.length+1;
 function boHtml(){
-  return '<h3>Neue Show erstellen</h3><div class="small">Antippen, die Empfehlung ist schon gewählt. Fertig meist 30 bis 60 Minuten nach dem Absenden, du bekommst eine Nachricht.</div>'+
-    BO_Q.map(x=>'<div class="k" style="margin-top:14px">'+esc(x.q)+'</div><div class="chips">'+x.o.map(o=>{const on=x.multi?BO.a[x.k].includes(o):BO.a[x.k]===o;return '<button class="chip'+(on?' on':'')+'" data-bo="'+esc(x.k)+'|'+esc(o)+'">'+esc(o)+'</button>';}).join("")+'</div>'+
-      (x.k==="datum"&&BO.a.datum==="Datum wählen"?'<input type="date" id="bodate" value="'+esc(BO.a.datumWert)+'">':"")+
-      (x.k==="datum"?'<label class="sl">Startzeit (optional)</label><input type="time" id="botime" value="'+esc(BO.a.start)+'">':"")).join("")+
-    '<div class="k" style="margin-top:14px">Freitext und Diktat</div><textarea id="dk" rows="4" placeholder="Wünsche, Gäste, Orte, was vorkommen soll …"></textarea>'+
-    '<div class="row"><button id="dkmic">● Diktat</button><button class="pri" id="bogo">Show bestellen</button></div><div class="small" id="dkst"></div>';
+  const st=BO.step||0,n=BO_N();
+  const head='<h3>Neue Show erstellen</h3><div class="small">Frage '+Math.min(st+1,n)+' von '+n+'</div><div class="bar" style="margin:8px 0 14px"><i style="width:'+Math.round((st+1)/n*100)+'%"></i></div>';
+  const nav=(next)=>'<div class="row" style="margin-top:16px">'+(st>0?'<button id="boback">Zurück</button>':'')+(next||'')+'</div>';
+  if(st<BO_Q.length){const x=BO_Q[st];
+    let h=head+'<div style="font-size:22px;font-weight:700;margin-bottom:12px">'+esc(x.q)+'</div><div class="chips" style="flex-direction:column;align-items:stretch">'+
+      x.o.map(o=>{const on=x.multi?BO.a[x.k].includes(o):BO.a[x.k]===o;return '<button class="chip'+(on?' on':'')+'" style="text-align:left;font-size:17px;padding:12px 14px" data-bo="'+esc(x.k)+'|'+esc(o)+'">'+(x.multi?(on?'☑ ':'☐ '):'')+esc(o)+(o===x.o[0]&&!x.multi?' <span class="small">(Empfehlung)</span>':'')+'</button>';}).join("")+'</div>';
+    if(x.k==="datum"){h+=(BO.a.datum==="Datum wählen"?'<label class="sl">Datum</label><input type="date" id="bodate" value="'+esc(BO.a.datumWert)+'">':"")+'<label class="sl">Startzeit (optional)</label><input type="time" id="botime" value="'+esc(BO.a.start)+'">';}
+    const needNext=x.multi||x.k==="datum";
+    return h+nav((needNext?'<button class="pri" id="bonext">Weiter</button>':'<button id="bonext">Überspringen</button>')+'<button id="boskip">Rest auf Empfehlung</button>');}
+  const sum=BO_Q.map(x=>'<div class="small"><b>'+esc(x.q)+'</b> '+esc(x.multi?BO.a[x.k].join(", "):(x.k==="datum"&&BO.a.datum==="Datum wählen"?BO.a.datumWert:BO.a[x.k]))+(x.k==="datum"&&BO.a.start?" ab "+esc(BO.a.start):"")+'</div>').join("");
+  return head+'<div style="font-size:22px;font-weight:700;margin-bottom:8px">Noch Wünsche?</div><textarea id="dk" rows="4" placeholder="Gäste, Orte, was vorkommen soll …"></textarea>'+
+    '<div class="row"><button id="dkmic">● Diktat</button></div><div class="small" id="dkst"></div>'+
+    '<div class="k" style="margin-top:14px">Deine Auswahl</div>'+sum+
+    nav('<button class="pri" id="bogo">Show bestellen</button>')+'<div class="small" style="margin-top:8px">Fertig meist 30 bis 60 Minuten nach dem Absenden, du bekommst eine Nachricht.</div>';
 }
 function sheetShowOrder(){
-  if(!BO.a.anlass)boDefaults();
-  const keep=()=>{const t=$("#dk");BO.txt=t?t.value:BO.txt;const d=$("#bodate");if(d)BO.a.datumWert=d.value;const tm=$("#botime");if(tm)BO.a.start=tm.value;};
+  if(!BO.a.anlass){boDefaults();BO.step=0;}
+  const keep=()=>{const t=$("#dk");if(t)BO.txt=t.value;const d=$("#bodate");if(d)BO.a.datumWert=d.value;const tm=$("#botime");if(tm)BO.a.start=tm.value;};
   const draw=()=>{openSheet(boHtml());const t=$("#dk");if(t&&BO.txt)t.value=BO.txt;
     document.querySelectorAll("[data-bo]").forEach(b=>b.onclick=()=>{keep();const [k,o]=b.dataset.bo.split("|");const q=BO_Q.find(x=>x.k===k);
-      if(q.multi){const a=BO.a[k];const i=a.indexOf(o);if(i>=0)a.splice(i,1);else a.push(o);}else BO.a[k]=o;draw();});
-    $("#dkmic").onclick=()=>dikStart();
-    $("#bogo").onclick=async()=>{keep();const a=Object.assign({},BO.a);
+      if(q.multi){const a=BO.a[k];const i=a.indexOf(o);if(i>=0)a.splice(i,1);else a.push(o);}else{BO.a[k]=o;if(k!=="datum")BO.step++;}draw();});
+    const g=(id,f)=>{const e=$("#"+id);if(e)e.onclick=()=>{keep();f();draw();};};
+    g("bonext",()=>{BO.step++;});g("boback",()=>{BO.step=Math.max(0,(BO.step||0)-1);});g("boskip",()=>{BO.step=BO_Q.length;});
+    const mic=$("#dkmic");if(mic)mic.onclick=()=>dikStart();
+    const go=$("#bogo");if(go)go.onclick=async()=>{keep();const a=Object.assign({},BO.a);
       const day=a.datum==="Heute"?ymd(new Date()):a.datum==="Morgen"?ymd(addD(new Date(),1)):a.datum==="Übermorgen"?ymd(addD(new Date(),2)):(a.datumWert||"");
-      if(!day){toast("Bitte ein Datum wählen.");return;}
+      if(!day){toast("Bitte ein Datum wählen.");BO.step=1;draw();return;}
       const args={anlass:a.anlass,datum:day,start:a.start||"",laenge_min:parseInt(a.laenge,10)||30,thema:a.thema,geschichte:a.geschichte,figuren:a.figuren,songs:a.songs,ton:a.ton,tiefe:a.tiefe,ertappt:a.ertappt,klaenge:a.klaenge,nachrichten:a.nachrichten,kunst:a.kunst,aufgaben:a.aufgaben,freitext:(BO.txt||"").trim()};
       const ok=await auftrag("show_bestellen",args,"Show bestellt: "+a.anlass+", "+dlabel(day)+(a.start?" "+a.start:"")+", "+args.laenge_min+" Min","");
-      if(ok){BO.a={};BO.txt="";}};
+      if(ok){BO.a={};BO.txt="";BO.step=0;}};
   };
   draw();
 }

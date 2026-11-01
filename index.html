@@ -547,7 +547,7 @@ function renderShow(){
   if(!S.doc){el.innerHTML='<div class="card"><div class="k">Morning-Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button></div></div>';$("#reload").onclick=()=>loadShow();return;}
   const d=S.doc,dd=new Date(d.day+"T12:00:00"),isTom=d.day!==ymd(new Date());
   $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
-  $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round(totalSec()/60)+" Min, davon "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");
+  $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round(totalSec()/60)+" Min, davon "+((d.songs||[]).length)+" Songs"+(d.made?" · Fassung "+hm(new Date(d.made)):"")+(d.weather&&d.weather.short?" · "+d.weather.short:"");
   const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
   let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
@@ -829,7 +829,7 @@ $("#mic").onclick=()=>sheetDiktat();
 (async()=>{await SP.handle();await permCheck();render();await Promise.all([loadShow(),loadApp()]);loadQuit();setInterval(()=>{if(!document.hidden)loadQuit();},180000);
   if(D.tripNow()){D.open=true;D.locate();render();}
   document.addEventListener("visibilitychange",()=>{if(document.hidden||SONG.on||VC.conv)return;
-    if(AUD.paused){const day=ymd(new Date());if(!S.doc||S.doc.day<day||new Date().getHours()>=17)loadShow();}
+    if(AUD.paused)loadShow();
     if(!APP.data||Date.now()-(APP.lastLoad||0)>20*60000){loadApp();loadQuit();}});
   setInterval(()=>{if(!document.hidden)renderJetztLight();},30000);
 })();

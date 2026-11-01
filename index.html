@@ -212,7 +212,7 @@ KEEP.off=function(){try{if(KEEP.src){KEEP.src.stop();KEEP.src.disconnect();KEEP.
 const WL={lock:null,touch:Date.now()};
 WL.playing=()=>!!(SONG.on||(!AUD.paused&&!AUD.ended));
 WL.on=async function(){try{if(!("wakeLock" in navigator)||WL.lock||document.hidden)return;WL.lock=await navigator.wakeLock.request("screen");
-  WL.lock.addEventListener("release",()=>{WL.lock=null;});diag("wach",{});}catch(e){diag("wach-fehler",{e:String(e&&e.name||e)});}};
+  WL.lock.addEventListener("release",()=>{WL.lock=null;});if(!WL.logged){WL.logged=1;diag("wach",{});}}catch(e){if(!WL.errLogged){WL.errLogged=1;diag("wach-fehler",{e:String(e&&e.name||e)});}}};
 WL.off=function(){try{if(WL.lock)WL.lock.release();}catch(_){}WL.lock=null;$("#dim").classList.remove("on");};
 ["pointerdown","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{WL.touch=Date.now();$("#dim").classList.remove("on");},true));
 setInterval(()=>{if(document.hidden)return;if(WL.playing()){WL.on();if(Date.now()-WL.touch>20000&&!VC.conv&&!$("#sheet").classList.contains("on")&&$("#sheet").style.display!=="block")$("#dim").classList.add("on");}else{if(WL.lock&&!SONG.on)WL.off();$("#dim").classList.remove("on");}},2000);

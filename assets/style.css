@@ -1500,3 +1500,6 @@ body.sbdlgon .sbfab{opacity:.55;pointer-events:auto}
 
 .sbad.pop{pointer-events:none;opacity:.94}
 .sbad.pop .x{pointer-events:auto}
+
+/* Kontrast (axe, 1.11.): Name in der Blase in Textfarbe, Figurenfarbe als Strich */
+.sbbub b{color:var(--ink);border-left:4px solid var(--c,var(--ink));padding-left:5px}

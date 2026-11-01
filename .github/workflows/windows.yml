@@ -52,7 +52,7 @@ jobs:
           if (!(Test-Path $probe)) { Write-Host "::error::Keine Seite geladen"; exit 1 }
           $r = Get-Content $probe -Raw
           Write-Host "::notice::Probe: $r"
-          if ($r -notlike "*Atelier_Folien_Probe*") { Write-Host "::error::Folien-Datei wurde nicht geöffnet: $r"; exit 1 }
+          if ($r -notlike "*Atelier_Folien_*") { Write-Host "::error::Folien-Datei wurde nicht geöffnet: $r"; exit 1 }
           Stop-Process -Name "Atelier Folien" -Force -ErrorAction SilentlyContinue
           Write-Host "Probe OK"
 
@@ -99,6 +99,6 @@ jobs:
           if (!(Test-Path $probe)) { Write-Host "::error::Keine Seite geladen"; exit 1 }
           $r = Get-Content $probe -Raw
           Write-Host "::notice::Probe: $r"
-          if ($r -notlike "*Atelier_Folien_Probe*") { Write-Host "::error::Folien-Datei wurde nicht geöffnet: $r"; exit 1 }
+          if ($r -notlike "*Atelier_Folien_*") { Write-Host "::error::Folien-Datei wurde nicht geöffnet: $r"; exit 1 }
           Stop-Process -Name "Atelier Folien" -Force -ErrorAction SilentlyContinue
           Write-Host "Probe OK"

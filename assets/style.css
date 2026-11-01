@@ -1497,3 +1497,6 @@ html.calm .modem .mava img,html.calm .modem .mava i{animation:none}
 .sbdlg .win{pointer-events:auto}
 body.sbdlgon .sbfab{opacity:.55;pointer-events:auto}
 @media (max-width:600px){body.sbdlgon .sbfab{opacity:0;pointer-events:none}}
+
+.sbad.pop{pointer-events:none;opacity:.94}
+.sbad.pop .x{pointer-events:auto}

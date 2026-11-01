@@ -48,7 +48,7 @@
     ['dlg.pitch.xae', 'Ton', 'Dialogstimmen', 'Tonhöhe X Æ A-13', 'Verschiebung der Stimme in Halbtönen.', 0, -12, 12, .5, 'HT'],
     ['dlg.pitch.sigma', 'Ton', 'Dialogstimmen', 'Tonhöhe Sigma', 'Verschiebung der Stimme in Halbtönen.', 0, -12, 12, .5, 'HT'],
     ['dlg.pitch.gojira', 'Ton', 'Dialogstimmen', 'Tonhöhe Gojira', 'Verschiebung der Stimme in Halbtönen.', 0, -12, 12, .5, 'HT'],
-    ['dlg.blipvol', 'Ton', 'Dialogstimmen', 'Lautstärke Blips', 'Faktor für alle Dialogstimmen (Josef, 1.11.: ein Drittel lauter).', 1.33, 0, 3, .05],
+    ['dlg.blipvol', 'Ton', 'Dialogstimmen', 'Lautstärke Blips', 'Faktor für alle Dialogstimmen (Josef, 1.11., 11:35: viel lauter).', 2.6, 0, 3, .05],
     ['dlg.blipevery', 'Ton', 'Dialogstimmen', 'Blip-Dichte', 'Blip auf jedem n-ten Buchstaben.', 2, 1, 5, 1],
     ['gsnd.find', 'Ton', 'Spielklänge', 'Fund', 'Lautstärke beim Finden.', 1, 0, 3, .05],
     ['gsnd.stamp', 'Ton', 'Spielklänge', 'Stempel', 'Lautstärke des Stempels auf der Urkunde.', 1, 0, 3, .05],

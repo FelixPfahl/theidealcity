@@ -218,7 +218,16 @@
   /* Figurenlaute (Josef, 1.11., 10:12: "wie in Breath of the Wild manchmal Character Sounds"): kurze Formant-Ausrufe je Figur und Stimmung, synthetisch */
   var VOXP = {neutral:[['u', .1, 1], ['u', .12, .94]], froh:[['a', .08, 1.12], ['a', .11, 1.25]], wuetend:[['o', .1, .9], ['u', .16, .78]], ueberrascht:[['o', .16, 1.35]], traurig:[['u', .14, 1], ['o', .2, .8]], nachdenklich:[['u', .26, .96]], verlegen:[['e', .07, 1.1], ['e', .1, 1.2]], gelangweilt:[['e', .2, .85]], stolz:[['a', .18, 1.08]]};
   var lastVox = 0;
-  function vox(who, mood){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var vv = CF('dlg.voxvol', 1); if (vv <= 0) return; if (Date.now() - lastVox < 1800) return; lastVox = Date.now();
+  /* echte Stimm-Schnipsel (CC0, OpenGameArt; src/build_vox.py), je Figur und Stimmung; ohne Datei die Synthese */
+  var VOXF = {inka:'*', sigma:'*', wagner:'*', xae:'*', polizei:'neutral froh wuetend ueberrascht', nole:'neutral froh wuetend', grind:'neutral froh wuetend', griffith:'neutral froh wuetend', libido:'neutral froh wuetend ueberrascht', kalmar:'neutral froh wuetend', haendler:'neutral froh wuetend'};
+  var voxBuf = {};
+  function voxFile(who, mood){ var m = VOXF[who]; if (!m) return null; if (m !== '*' && m.split(' ').indexOf(mood) < 0) mood = 'neutral'; return who + '-' + mood; }
+  function vox(who, mood){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var vv = CF('dlg.voxvol', 1); if (vv <= 0) return; var key = voxFile(who, mood); if (!key || who === 'gojira') return voxSynth(who, mood);
+    if (Date.now() - lastVox < 1800) return; lastVox = Date.now();
+    function play(buf){ var src = A.ac.createBufferSource(); src.buffer = buf; src.playbackRate.value = .97 + Math.random() * .06; var g = A.ac.createGain(); g.gain.value = .9 * vv; src.connect(g); g.connect(A.bus); src.start(); }
+    if (voxBuf[key] && voxBuf[key] !== 1){ play(voxBuf[key]); return; } if (voxBuf[key] === 1) return; voxBuf[key] = 1;
+    fetch('../assets/game/vox/' + key + '.mp3').then(function(r){ if (!r.ok) throw 0; return r.arrayBuffer(); }).then(function(ab){ return new Promise(function(res, rej){ A.ac.decodeAudioData(ab, res, rej); }); }).then(function(buf){ voxBuf[key] = buf; play(buf); }).catch(function(){ voxBuf[key] = null; lastVox = 0; voxSynth(who, mood); }); }
+  function voxSynth(who, mood){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var vv = CF('dlg.voxvol', 1); if (vv <= 0) return; if (Date.now() - lastVox < 1800) return; lastVox = Date.now();
     if (who === 'gojira'){ try { rumble(); } catch(e){} return; }
     var V = VOICE[who] || VOICE.inka, pat = VOXP[mood] || VOXP.neutral, ac = A.ac, t0 = ac.currentTime + .01;
     var base = Math.max(90, Math.min(420, V.f * .42)) * Math.pow(2, CF('dlg.pitch.' + who, 0) / 12);

@@ -257,7 +257,8 @@ SONG.check=async function(){
     if(!st){diag("kein-status",{el});if(el>20000)SONG.finish("kein Status");return;}
     const pos=sdk?st.position:st.progress_ms,dur=sdk?(st.duration||0):((st.item&&st.item.duration_ms)||0),paused=sdk?st.paused:!st.is_playing;
     SONG.last=(paused?"pausiert ":"spielt ")+Math.round((pos||0)/1000)+" s";renderShow();
-    if(el<40000||paused)diag("status",{el,pos,paused,dev:sdk?"seite":(st.device&&(st.device.type+":"+st.device.name)),vis:document.visibilityState});
+    const hb=document.hidden&&(!SONG.hb||Date.now()-SONG.hb>20000);if(hb)SONG.hb=Date.now();
+    if(el<40000||paused||hb)diag("status",{el,pos,paused,dev:sdk?"seite":(st.device&&(st.device.type+":"+st.device.name)),vis:document.visibilityState,ac:KEEP.ctx?KEEP.ctx.state:"-",keep:!!KEEP.src});
     if(!paused&&pos>0)SONG.lastPos=pos;if(dur)SONG.dur=dur;
     if(dur&&pos>=dur-2500){SONG.finish("ende");return;}
     if(SONG.broken&&Date.now()-SONG.broken<30000)return;
@@ -274,7 +275,7 @@ SONG.finish=async function(why,stay){
 /* Weiter mit Inka nach dem Song; klappt das im Hintergrund nicht, beim naechsten Antippen oder Zurueckkehren */
 let needResume=false;
 async function resume(){try{await AUD.play();needResume=false;diag("inka-weiter",{});}catch(e){diag("inka-blockiert",{e:String(e&&e.name||e)});needResume=true;toast("Weiter mit Inka: einmal auf Play tippen.",10000);render();}}
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&needResume)resume();});
+document.addEventListener("visibilitychange",()=>{diag("sicht",{vis:document.visibilityState,song:SONG.on,aud:AUD.paused?"pause":"spielt",ac:KEEP.ctx?KEEP.ctx.state:"-"});if(!document.hidden&&needResume)resume();});
 document.addEventListener("click",()=>{if(needResume&&AUD.paused)resume();},true);
 
 /* ---------- Spotify (eigene Anmeldung dieser Seite, Code-Austausch hier im Browser) ---------- */

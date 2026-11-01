@@ -275,6 +275,18 @@ SONG.finish=async function(why,stay){
 /* Weiter mit Inka nach dem Song; klappt das im Hintergrund nicht, beim naechsten Antippen oder Zurueckkehren */
 let needResume=false;
 async function resume(){try{await AUD.play();needResume=false;diag("inka-weiter",{});}catch(e){diag("inka-blockiert",{e:String(e&&e.name||e)});needResume=true;toast("Weiter mit Inka: einmal auf Play tippen.",10000);render();}}
+/* Bildschirm geht aus, waehrend die Seite selbst spielt: an derselben Stelle an die Spotify-App uebergeben */
+SONG.handoff=async function(){
+  if(!MOBILE||!SONG.on||SONG.via!=="seite"||!SP.player||SONG.handing)return;SONG.handing=true;
+  try{const st=await SP.player.getCurrentState();const pos=st?st.position:(SONG.lastPos||0);
+    await SP.player.pause().catch(()=>{});
+    SONG.via=await SP.playApp(SONG.track.uri,pos);SONG.pausedN=0;SONG.broken=0;
+    const rest=(SONG.dur||(st&&st.duration)||SONG.track.ms||210000)-pos;clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),rest+1500);
+    diag("an-app-uebergeben",{pos:Math.round(pos/1000)});
+  }catch(e){diag("uebergabe-fehler",{e:String(e&&e.message||e)});try{await SP.player.resume();}catch(_){}}
+  SONG.handing=false;
+};
+document.addEventListener("visibilitychange",()=>{if(document.hidden)SONG.handoff();});
 document.addEventListener("visibilitychange",()=>{diag("sicht",{vis:document.visibilityState,song:SONG.on,aud:AUD.paused?"pause":"spielt",ac:KEEP.ctx?KEEP.ctx.state:"-"});if(!document.hidden&&needResume)resume();});
 document.addEventListener("click",()=>{if(needResume&&AUD.paused)resume();},true);
 
@@ -335,6 +347,8 @@ SP.sdk=function(){
 /* Song nach Abbruch an derselben Stelle fortsetzen (hoechstens zweimal), sonst weiter mit Inka */
 SONG.recover=async function(){
   if(!SONG.on||!SONG.track)return;SONG.retries=(SONG.retries||0)+1;const pos=Math.max(0,(SONG.lastPos||0)-1500);
+  if(MOBILE&&document.hidden){try{SONG.via=await SP.playApp(SONG.track.uri,pos);diag("song-wieder-app",{pos});SONG.broken=0;SONG.pausedN=0;
+      const rest=(SONG.dur||SONG.track.ms||210000)-pos;clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),rest+1500);return;}catch(e){diag("app-fehler",{e:String(e&&e.message||e)});}}
   try{SP.cfg.exp=0;await SP.token();
     if(!SP.deviceId){try{await SP.player.connect();}catch(_){}for(let i=0;i<20&&!SP.deviceId;i++)await new Promise(r=>setTimeout(r,500));}
     if(!SP.deviceId)throw new Error("Gerät weg");
@@ -345,8 +359,20 @@ SONG.recover=async function(){
 };
 SP.unlock=function(){try{if(SP.player&&SP.player.activateElement)SP.player.activateElement();}catch(_){}};
 SP.warm=function(){if(!store.get("noSdk",false)&&SP.ready()&&!SP.player&&!SP.sdkP)SP.sdk().catch(()=>{});};
+/* Spotify-App auf dem Handy direkt ansteuern (laeuft im Hintergrund zuverlaessig) */
+SP.playApp=async function(uri,pos){
+  const dv=await SP.api("GET","/me/player/devices");const ds=((dv&&dv.devices)||[]).filter(d=>d.id!==SP.deviceId);
+  diag("geraete",{ds:ds.map(d=>d.type+":"+d.name+(d.is_active?"*":"")+(d.is_restricted?"!":""))});
+  const dev=ds.find(d=>/smartphone/i.test(d.type)&&d.is_active)||ds.find(d=>/smartphone/i.test(d.type));
+  if(!dev)throw new Error("Spotify-App auf dem Handy nicht erreichbar");
+  SONG.dev=dev.id;
+  await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(dev.id),{uris:[uri],position_ms:Math.max(0,pos||0)});
+  try{await SP.api("PUT","/me/player/repeat?state=off&device_id="+encodeURIComponent(dev.id));}catch(_){}
+  return "app";
+};
 SP.play=async function(uri){
-  /* Handy: die Spotify-App fernsteuern (die Seite als Spotify-Geraet bricht auf Android nach Sekunden ab) */
+  /* Bildschirm aus (Josef 1.11.2026): die Seite wird von Android im Hintergrund stillgelegt, dann spielt die Spotify-App */
+  if(MOBILE&&document.hidden){try{return await SP.playApp(uri,0);}catch(e){diag("app-fehler",{e:String(e&&e.message||e)});}}
   if(!store.get("noSdk",false)){try{await SP.sdk();SP.unlock();await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(SP.deviceId),{uris:[uri]});return "seite";}catch(e){diag("sdk-fehler",{e:String(e&&e.message||e)});}}
   const dv=await SP.api("GET","/me/player/devices");const ds=((dv&&dv.devices)||[]).filter(d=>d.id!==SP.deviceId);
   diag("geraete",{ds:ds.map(d=>d.type+":"+d.name+(d.is_active?"*":"")+(d.is_restricted?"!":""))});

@@ -1483,3 +1483,8 @@ html.calm .modem .mava img,html.calm .modem .mava i{animation:none}
 
 .lb2 img.sbobj.sblb{position:fixed;z-index:5;cursor:pointer;opacity:.7}
 .lb2 img.sbobj.sblb.found{opacity:0;transition:opacity .5s}
+
+/* Songs direkt unter der Arbeit (Josef, 1.11., 10:49) */
+.grid > .song.under,.wgroup .song.under{grid-column:1/-1;border-top:1px solid var(--hair)}
+
+.lb2 .play2{bottom:104px}

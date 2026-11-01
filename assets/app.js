@@ -994,12 +994,17 @@
         vb.addEventListener('click', function(ev){ ev.stopPropagation(); var on = vb.classList.toggle('on'); img.src = on ? voll : cur0; vb.textContent = on ? 'mit Löchern' : 'vollständig'; }); }
       window.dispatchEvent(new CustomEvent('jk:lb', {detail:{a:a}}));
       resetZoom(); lensOn = !!a.closest('#suchbilder'); lens.classList.remove('on');
-      if (spotBox){ spotBox.remove(); spotBox = null; } if (playBtn){ playBtn.remove(); playBtn = null; }
+      if (spotBox){ spotBox.remove(); spotBox = null; } if (playBtn){ playBtn.remove(); playBtn = null; } var oldP2 = lb.querySelector('button.play2'); if (oldP2) oldP2.remove();
       var fig = a.closest('figure'); var song = fig && fig.getAttribute('data-song');
       if (song){ playBtn = document.createElement('button'); playBtn.className = 'play'; playBtn.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="6"/><polygon points="40,28 74,50 40,72" fill="currentColor"/></svg><span>' + song.replace(/</g,'&lt;') + '</span>'; lb.appendChild(playBtn);
         var src = fig.getAttribute('data-spot');
         playBtn.addEventListener('click', function(e){ e.stopPropagation(); if (!src){ window.open('https://open.spotify.com/search/' + encodeURIComponent(song), '_blank'); return; }
           softPlay('boom', .6); playBtn.remove(); playBtn = null; spotBox = document.createElement('div'); spotBox.className = 'lbspot'; var f2 = document.createElement('iframe'); f2.src = src; f2.title = song; f2.setAttribute('allow','autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'); spotBox.appendChild(f2); lb.appendChild(spotBox); }); }
+      /* zweiter Song zur selben Arbeit (Josef, 1.11., 10:50: Songs auch im Fenster, in dem man die Arbeiten anschaut) */
+      var song2 = fig && fig.getAttribute('data-song2');
+      if (song2){ var pb2 = document.createElement('button'); pb2.className = 'play play2'; pb2.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="6"/><polygon points="40,28 74,50 40,72" fill="currentColor"/></svg><span>' + song2.replace(/</g,'&lt;') + '</span>'; lb.appendChild(pb2);
+        var src2 = fig.getAttribute('data-spot2');
+        pb2.addEventListener('click', function(e){ e.stopPropagation(); if (!src2){ window.open('https://open.spotify.com/search/' + encodeURIComponent(song2), '_blank'); return; } softPlay('boom', .6); pb2.remove(); if (playBtn){ playBtn.remove(); playBtn = null; } if (spotBox) spotBox.remove(); spotBox = document.createElement('div'); spotBox.className = 'lbspot'; var f3 = document.createElement('iframe'); f3.src = src2; f3.title = song2; f3.setAttribute('allow','autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture'); spotBox.appendChild(f3); lb.appendChild(spotBox); }); }
     }
     function open(a){ group = groupOf(a); show(group.indexOf(a)); lb.classList.add('on'); document.body.classList.add('lbopen'); requestAnimationFrame(function(){ requestAnimationFrame(function(){ lb.classList.add('vis'); }); }); if (hov) hov.classList.remove('on'); softPlay(secSound(a), .5); }
     function close(){ lb.classList.remove('vis'); setTimeout(function(){ lb.classList.remove('on'); document.body.classList.remove('lbopen'); img.removeAttribute('src'); if (spotBox){ spotBox.remove(); spotBox = null; } }, 300); }

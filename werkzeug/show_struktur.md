@@ -39,7 +39,7 @@ Nach Songs (freier Tag 3 bis 4 Mal, Schultag 4 bis 6 Mal, nie zweimal gleich) be
 - **Übergang**: Inka übernimmt mit einem warmen Satz zu Sigma und leitet ins Kapitel über.
 - Länge 4 bis 8 Zeilen. Ein Thema darf über mehrere Ertappt-Szenen weiterlaufen (Fortsetzung beim nächsten Song).
 
-Songs: Schultag 12, freier Tag 6 (doppelt so viele wie früher); bei 12 Songs weitere `## [song]` zwischen kürzeren Kapiteln. Jeder Song wird im Gespräch angesagt (Titel, Künstler, ein Satz Haltung von Wagner oder Inka), nicht als Liste.
+Songs: nie zweimal derselbe Song in den Shows von 7 Tagen (rollend, Josef 1.11.2026; Werkzeug `songs_woche.py`, Quelle Top-Tracks aller Zeiträume). Schultag 12, freier Tag 6 (doppelt so viele wie früher); bei 12 Songs weitere `## [song]` zwischen kürzeren Kapiteln. Jeder Song wird im Gespräch angesagt (Titel, Künstler, ein Satz Haltung von Wagner oder Inka), nicht als Liste.
 
 ## Stil
 - Fließend: Übergänge aus dem Gespräch heraus, Callbacks auf frühere Stellen, keine Aufzählungen.

@@ -387,8 +387,9 @@ const D={pos:null,src:"",watch:null,near:[],trip:null,routes:[],err:"",at:0,time
 const dist=(a,b)=>{const R=6371000,r=x=>x*Math.PI/180;const dl=r(b.lat-a.lat),dn=r(b.lon-a.lon);const h=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));};
 D.locate=function(){
   if(D.watch!=null)return;if(!navigator.geolocation){D.pos=HOME;D.src="zu Hause (kein Standort)";D.refresh();return;}
-  D.watch=navigator.geolocation.watchPosition(p=>{const first=!D.pos||D.src!=="Standort";D.pos={lat:p.coords.latitude,lon:p.coords.longitude};D.src="Standort";if(first)D.refresh();else D.detect();},
-    e=>{if(!D.pos||D.src!=="Standort"){D.pos=HOME;D.src="zu Hause (Standort nicht erlaubt)";D.refresh();}},{enableHighAccuracy:true,maximumAge:15000,timeout:20000});
+  diag("dep-standort-start",{});
+  D.watch=navigator.geolocation.watchPosition(p=>{const first=!D.pos||D.src!=="Standort";if(first)diag("dep-standort",{acc:Math.round(p.coords.accuracy)});D.pos={lat:p.coords.latitude,lon:p.coords.longitude};D.src="Standort";if(first)D.refresh();else D.detect();},
+    e=>{diag("dep-standort-fehler",{code:e&&e.code,msg:String(e&&e.message||"")});if(!D.pos||D.src!=="Standort"){D.pos=HOME;D.src="zu Hause (Standort nicht erlaubt)";D.refresh();}},{enableHighAccuracy:true,maximumAge:15000,timeout:20000});
 };
 D.stop=function(){if(D.watch!=null){try{navigator.geolocation.clearWatch(D.watch);}catch(_){}D.watch=null;}clearTimeout(D.timer);D.open=false;D.ride=false;D.chosen=null;render();};
 D.tripNow=function(){
@@ -410,8 +411,8 @@ D.refresh=async function(){
     if(D.trip){if(!D.dest||D.dest.q!==D.trip.dest){const lj=await (await fetch(MVG+"/locations?query="+encodeURIComponent(D.trip.dest))).json();const hit=(lj||[]).find(x=>x.latitude)||null;D.dest=hit?{q:D.trip.dest,lat:hit.latitude,lon:hit.longitude}:null;}
       if(D.dest){const u=MVG+"/routes?"+new URLSearchParams({originLatitude:D.pos.lat,originLongitude:D.pos.lon,destinationLatitude:D.dest.lat,destinationLongitude:D.dest.lon,routingDateTime:new Date().toISOString(),routingDateTimeIsArrival:"false",transportTypes:"UBAHN,TRAM,BUS,SBAHN,BAHN"});
         const rj=await (await fetch(u)).json();D.routes=(Array.isArray(rj)?rj:[]).map(normRoute).filter(r=>r.veh).slice(0,3);}}
-    D.err="";D.at=Date.now();
-  }catch(e){D.err=String(e&&e.message||e).slice(0,80);}
+    D.err="";D.at=Date.now();if(!D.logged){D.logged=true;diag("dep-ergebnis",{stationen:st.length,abfahrten:all.length,top:D.near.length,trip:!!D.trip,routen:D.routes.length,src:D.src});}
+  }catch(e){D.err=String(e&&e.message||e).slice(0,80);diag("dep-fehler",{e:D.err,src:D.src});}
   D.detect();renderDeps();
   const first=D.near[0]?(D.near[0].real-Date.now())/60000:99;
   D.timer=setTimeout(()=>D.refresh(),D.ride?20000:first<=3?10000:first<=5?20000:60000);

@@ -9,6 +9,12 @@ Sprecherzeilen `INKA:`, `WAGNER:`, `SIGMA:`; Klänge mit `KLANG:` (siehe unten);
 - **Sigma**, der Homunkulus im Glas: kommt oft vor, kurze, seltsam poetische Sätze, kindlich. Wiederkehrende Motive (z. B. sein beschlagenes "Fenster" im Glas) dürfen über die ganze Show laufen.
 - Ort: Wagners Labor (Brummen, Blubbern, Neonröhre, Piepen). Inka streut ein paar Beobachtungen aus dem Labor ein.
 
+## Ton und Welt (Josef 1.11.2026: "immer genau den Ton treffen, den die Story hat", "die Welt der Geschichte soll richtig lebendig werden")
+- Ton der Story: Groteske, Satire, Kaiju-Pathos und philosophischer Ernst zugleich; keine Kalauer um ihrer selbst willen. Wagner eloquent, charismatisch und abstoßend, nie bloß laut. Sigma seltsam, präzise, sehnsüchtig. Inka genau beobachtend, trocken, warm.
+- Die Welt lebt mit: Das Labor ist Wagners Keller mit dem Raster und Sigmas Glas. Draußen die 2180er: Gojira gräbt nachts Monumente ein (bewahrend, nie zerstörend), der Konzern Nil, Werbung, Straßen, Krähen. Pro Show 2 bis 4 kleine Weltdetails, beiläufig erzählt (Inka sieht es vom Fenster aus), ein Detail darf am Schluss wiederkehren.
+- Josefs Alltag (München 2026) und die Welt der Figuren stehen nebeneinander, ohne Erklärung. Keine Spoiler aus dem Finale.
+- Ortskunde stimmt: Laufstrecken an der Isar oder im Englischen Garten, nicht "am Kanal".
+
 ## Ablauf
 1. `## [show] Im Labor`: **Einstieg mit Soundscape und Skit mit allen dreien** (ca. 45 bis 60 Sekunden), z. B. `KLANG: labor 6`, `WAGNER: Licht.`, `KLANG: neon`, dann eine kleine Szene zu dritt mit einem Motiv, das später wiederkehrt. Danach Begrüßung (Wochentag, Datum, Besonderheiten wie Feiertag oder Ferien) und ein Satz zum Charakter des Tages. Ansage des ersten Songs im Gespräch.
 2. `## [song]`

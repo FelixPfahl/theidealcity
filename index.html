@@ -135,7 +135,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 17:00 (Fehlerbehebungen aus der Prüfung)";
+const APPV="1.11. 17:10 (Spotify-Anmeldung am PC im Browser)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -398,13 +398,16 @@ document.addEventListener("click",()=>{if(needResume&&AUD.paused)resume();},true
 const SP={cfg:store.get("spot",{}),player:null,deviceId:"",sdkState:"",sdkP:null};
 SP.save=()=>store.set("spot",SP.cfg);
 SP.ready=()=>!!SP.cfg.refresh;
-SP.redirect=()=>location.origin+location.pathname;
+SP.redirect=()=>WIN?"inka://spotify-callback":location.origin+location.pathname;
 async function sha256u(s){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return tob64(d).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
 SP.connect=async function(){
   const v=Array.from(crypto.getRandomValues(new Uint8Array(48)),b=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[b%62]).join("");
   SP.cfg.verifier=v;SP.save();
-  location.href="https://accounts.spotify.com/authorize?"+new URLSearchParams({client_id:SP_CLIENT,response_type:"code",redirect_uri:SP.redirect(),
+  const authUrl="https://accounts.spotify.com/authorize?"+new URLSearchParams({client_id:SP_CLIENT,response_type:"code",redirect_uri:SP.redirect(),
     scope:"streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state user-top-read playlist-modify-private playlist-modify-public playlist-read-private",code_challenge_method:"S256",code_challenge:await sha256u(v)}).toString();
+  /* Windows-App (Josef 1.11.2026, Google-Fehler 400 im eingebetteten Fenster): Anmeldung im normalen Browser, zurück über inka:// */
+  if(WIN){WIN.post({type:"auth",url:authUrl});toast("Die Spotify-Anmeldung öffnet sich in deinem Browser. Danach „Inka öffnen“ bestätigen.",12000);return;}
+  location.href=authUrl;
 };
 SP.handle=async function(){
   const u=new URL(location.href);const code=u.searchParams.get("code"),er=u.searchParams.get("error");

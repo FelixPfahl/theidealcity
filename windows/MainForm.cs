@@ -104,6 +104,7 @@ public class MainForm : Form
         cw.NavigationCompleted += (_, _) => ReportUpdate(Updater.LastState);
         if (!string.IsNullOrWhiteSpace(startArg) && startArg.StartsWith("inka:", StringComparison.OrdinalIgnoreCase)) OpenFromOutside(startArg);
         else Go();
+        if (pendingOpen != null) { var po = pendingOpen; pendingOpen = null; OpenFromOutside(po); }
         updTimer.Start();
         _ = Updater.Check(ReportUpdate);
     }
@@ -139,6 +140,13 @@ public class MainForm : Form
             TopMost = true; TopMost = false; Activate(); BringToFront();
             if (string.IsNullOrWhiteSpace(uri)) return;
             var q = uri.Contains('?') ? uri[(uri.IndexOf('?') + 1)..] : "";
+            // Rückkehr aus der Spotify-Anmeldung im Browser: Code an die Seite geben (sie tauscht ihn selbst ein)
+            if (uri.StartsWith("inka://spotify-callback", StringComparison.OrdinalIgnoreCase))
+            {
+                if (web.CoreWebView2 != null) web.CoreWebView2.Navigate(Program.Page + "?" + q);
+                else pendingOpen = uri;
+                return;
+            }
             foreach (var part in q.Split('&'))
             {
                 var kv = part.Split('=', 2);
@@ -170,6 +178,11 @@ public class MainForm : Form
             {
                 if (playState == "playing") { Js("window.toast&&toast('Update nach der Show: läuft gerade.')"); return; }
                 if (Updater.Install(true)) { Updater.Forget(); Application.Exit(); }
+            }
+            else if (type == "auth")
+            {
+                var url = r.TryGetProperty("url", out var u) ? u.GetString() : "";
+                if (!string.IsNullOrEmpty(url) && url.StartsWith("https://accounts.spotify.com/", StringComparison.OrdinalIgnoreCase)) Open(url);
             }
             else if (type == "openSpotify")
             {

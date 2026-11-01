@@ -1,14 +1,14 @@
 {
  "windows": {
-  "version": "1.1.1",
+  "version": "1.1.2",
   "url": "https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/Inka-Setup.exe",
-  "sha256": "dd579d9446e570268fb5ee5555cbb4185bbb895c9074f9f6b95f0ebebd38cfb9"
+  "sha256": "fe029c57724205a5de021467e91cb96d8ac9f46ba065e6d3b91e9d75cde4a936"
  },
  "android": {
-  "versionCode": 4,
-  "versionName": "1.1.1",
+  "versionCode": 5,
+  "versionName": "1.1.2",
   "url": "https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/inka.apk",
-  "sha256": "4aea942ad47df5720cd5c903662c9a8dc93a67e42a3a8e7913a259715de3b880"
+  "sha256": "d5b4ad390c6e50608a9437ae32551dac5e7b0d77aa0abd63d2ee0e261afec742"
  },
  "hinweis": "Wird von den Apps gelesen. Bei jedem Release Version und Prüfsumme anpassen."
 }

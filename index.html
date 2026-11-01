@@ -56,19 +56,65 @@ a{color:var(--blue)}
 #vc .vl.u{color:var(--mut)}
 #vc .hang{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;font-size:20px;padding:18px;margin-top:10px}
 .small{font-size:14px;color:var(--mut)}
+header{position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 8px;max-width:560px;margin:0 auto;border-bottom:1px solid var(--line)}
+header h1{font-size:22px;margin:0}header .sub{margin:0;font-size:14px}
+button.round{border-radius:24px;padding:10px 18px}
+main{padding-bottom:150px}
+section{display:none}section.on{display:block}
+h2{font-size:24px;margin:10px 0 10px}h3{font-size:21px;margin:6px 0}
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:2px solid var(--ink);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{flex:1;max-width:112px;border:0;border-radius:0;padding:12px 2px 14px;font-size:14px;background:#fff;color:var(--mut)}
+#tabs button.on{color:var(--blue);font-weight:700;box-shadow:inset 0 4px 0 var(--blue)}
+.fab{position:fixed;right:16px;bottom:78px;z-index:7;width:64px;height:64px;border-radius:50%;background:var(--blue);border:0;color:#fff;font-size:26px;box-shadow:0 4px 14px rgba(0,40,255,.35)}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.fr{flex:none;border:2px solid var(--ink);border-radius:20px;padding:6px 12px;font-size:15px;white-space:nowrap}.fr.hot{border-color:var(--blue);color:var(--blue)}
+.card.warn{border-color:var(--blue);background:var(--soft)}
+.opts{display:grid;gap:8px;margin-top:10px}
+.it{display:grid;grid-template-columns:56px 1fr auto;gap:8px;padding:9px 0;border-top:1px solid var(--line);align-items:baseline;cursor:pointer}
+.it .t{color:var(--blue);font-variant-numeric:tabular-nums}.it .ti{font-weight:600}.it .kd{font-size:12px;color:var(--mut)}
+.it.k-fix .kd,.wl.k-fix b{color:var(--ink)}.it.done .ti,.tk.done .tt>div:first-child{text-decoration:line-through;color:var(--mut)}
+.de{font-size:14px;color:var(--mut)}
+.wbox{border:2px solid var(--blue);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:16px}
+.wait{font-size:12px;background:var(--blue);color:#fff;border-radius:8px;padding:1px 6px;font-weight:700;vertical-align:middle}
+.stand{font-weight:400;letter-spacing:0;text-transform:none}
+.tk{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.tk .tt{flex:1;cursor:pointer}.tk .tb{display:flex;gap:6px}.tk .tb button{padding:6px 8px;font-size:13px;border-width:1px}
+.chk{width:30px;height:30px;padding:0;border-radius:8px;flex:none;color:var(--blue);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.chip{padding:6px 10px;font-size:14px;border-width:1px;border-radius:16px;color:var(--mut)}.chip.on{border-color:var(--blue);color:var(--blue);font-weight:700}
+.wd{border:2px solid var(--ink);border-radius:14px;padding:10px 12px;margin-bottom:10px;cursor:pointer}
+.wh{margin-bottom:4px}.wh b{font-size:19px}.mk{font-size:13px;color:var(--blue)}
+.wl{font-size:16px;padding:2px 0}.wl b{color:var(--blue);display:inline-block;min-width:48px;font-variant-numeric:tabular-nums}
+.back{border:0;padding:6px 0;color:var(--blue);font-weight:700}
+.ev{color:var(--mut)}
+.li{padding:8px 0;border-top:1px solid var(--line)}
+.link{border:0;padding:8px 0;color:var(--blue);font-weight:700}
+.wide{width:100%;margin:8px 0}
+.tap{cursor:pointer}
+#sheet{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.35)}
+.sh-in{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:#fff;border-radius:18px 18px 0 0;padding:16px 16px 28px;max-width:560px;margin:0 auto}
+.sh-in .x{float:right;border:0;color:var(--blue);font-weight:700;padding:4px}
+input,textarea{font:inherit;width:100%;border:2px solid var(--ink);border-radius:10px;padding:10px;margin:6px 0;background:#fff;color:var(--ink)}
+input[type=range]{border:0;padding:0;accent-color:var(--blue)}
+.sl{display:block;font-size:15px;margin-top:8px}
+.btnl{display:inline-block;margin-top:8px;font-weight:700}
+.si{margin-top:8px}
 .err{color:var(--red)}
 </style>
 </head>
 <body>
+<header><div><h1 id="title">Inka</h1><div class="sub" id="subt">Dein Tag</div></div><button class="pri round" id="hinka">Inka</button></header>
 <main>
-  <h1 id="title">Inka</h1>
-  <div class="sub" id="subt">Morning-Show, Gespräch und Abfahrten</div>
-  <div id="setup"></div>
-  <div id="show"></div>
-  <div id="deps"></div>
-  <div id="sent"></div>
+  <section id="t-jetzt"><div id="setup"></div><div id="fristen"></div><div id="konf"></div><div id="next"></div><div id="show"></div><div id="overdue"></div><div id="sent"></div></section>
+  <section id="t-woche"></section>
+  <section id="t-aufgaben"></section>
+  <section id="t-unterwegs"><h2>Unterwegs</h2><div id="deps"></div></section>
+  <section id="t-ueberblick"></section>
   <div class="small" id="foot"></div>
 </main>
+<button class="fab" id="mic" aria-label="Diktat">🎙</button>
+<nav id="tabs"><button data-tab="jetzt">Jetzt</button><button data-tab="woche">Woche</button><button data-tab="aufgaben">Aufgaben</button><button data-tab="unterwegs">Unterwegs</button><button data-tab="ueberblick">Überblick</button></nav>
+<div id="sheet"></div>
 <div id="vc"></div>
 <div id="toast"></div>
 <audio id="aud" preload="auto"></audio>
@@ -89,7 +135,7 @@ const WD=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samst
 const store={get(k,d){try{const v=localStorage.getItem("inka:"+k);return v==null?d:JSON.parse(v);}catch(_){return d;}},set(k,v){try{localStorage.setItem("inka:"+k,JSON.stringify(v));}catch(_){}}};
 let toastT=null;
 function toast(m,ms){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
-const AUD=$("#aud");
+const AUD=$("#aud");try{AUD.volume=JSON.parse(localStorage.getItem("inka:vol")||"0.6");}catch(_){AUD.volume=0.6;}
 const MOBILE=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
 /* ---------- Schluessel (kommt einmal ueber den Link #k=..., bleibt im Handy) ---------- */
@@ -257,7 +303,7 @@ SP.sdk=function(){
       pl.addListener("autoplay_failed",()=>diag("sdk-autoplay-blockiert",{}));
       pl.addListener("not_ready",()=>{SP.deviceId="";});
       ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{diag("sdk-"+ev,{e:String(e&&e.message||"")});SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
-      pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";diag("sdk-status",{paused:st.paused,pos:st.position,load:!!(st.loading)});}});
+      pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";}});
       pl.connect();setTimeout(()=>{if(!SP.player){SP.sdkState="Spotify-App wird ferngesteuert";rej(new Error("Gerät meldet sich nicht"));}},10000);
     }catch(e){rej(e);}};
     if(window.Spotify&&window.Spotify.Player)return go();
@@ -286,11 +332,11 @@ SP.test=async function(){const tr=(S.doc&&S.doc.songs&&S.doc.songs[0])||{uri:"sp
 
 /* ---------- Nachrichten an das Sekretariat (verschluesselt ueber ntfy, der Stundencheck traegt ein) ---------- */
 async function sendSek(kind,data){
-  if(!S.doc||!S.doc.topic)throw new Error("kein Kanal");
-  const msg=Object.assign({v:1,from:"inka",id:"i-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),t:Date.now(),day:S.doc.day,kind},data);
-  const r=await fetch("https://ntfy.sh/"+S.doc.topic,{method:"POST",body:JSON.stringify(await sealEnv(msg))});
+  const tp=topic();if(!tp)throw new Error("kein Kanal");
+  const msg=Object.assign({v:1,from:"inka",id:"i-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),t:Date.now(),day:ymd(new Date()),kind},data);
+  const r=await fetch("https://ntfy.sh/"+tp,{method:"POST",body:JSON.stringify(await sealEnv(msg))});
   if(!r.ok)throw new Error("ntfy "+r.status);
-  if(kind==="aktion"){const all=store.get("sent",[]);all.push({t:msg.t,day:msg.day,text:data.text});store.set("sent",all.slice(-40));renderSent();}
+  if(kind==="aktion"){const all=store.get("sent",[]);all.push({t:msg.t,day:msg.day,text:data.text});store.set("sent",all.slice(-40));}
   return msg.id;
 }
 
@@ -301,10 +347,10 @@ const VC={conv:null,state:"",lastUser:"",log:[],starting:false,summary:"",change
 VC.lib=()=>window.ElevenLabsClient&&window.ElevenLabsClient.Conversation;
 VC.ok=p=>p&&p.bestaetigt===true&&YES_RX.test(VC.lastUser)&&!NO_RX.test(VC.lastUser);
 const entries=()=>(S.doc&&Array.isArray(S.doc.entries))?S.doc.entries:[];
-const findE=k=>entries().find(e=>e.key===k);
+const findE=k=>{const e=findAny(k);if(!e)return null;return Object.assign({},e,{kind:(k.startsWith("t|")?"task":e.kind)});};
 VC.prompt=function(){return ["Du bist Inka, Josefs persönliche Sekretärin und Moderatorin seiner Morning-Show. Du sprichst Deutsch, duzt Josef, bist sachlich, warm, knapp und mit trockenem Humor. Josef hört dich meist unterwegs über Kopfhörer: kurze Sätze, keine Listen, keine Nummern, keine Links, Uhrzeiten als \"um 9 Uhr 15\". Wiederhole nie den ganzen Tagesplan, Josef kennt ihn aus der Show.",
 "","DEINE AUFGABE IM GESPRÄCH",
-"1. Du eröffnest mit der ersten offenen Frage (OFFENE PUNKTE). Eine Frage pro Redebeitrag.",
+"1. Nach der Show eröffnest du mit der ersten offenen Frage (OFFENE PUNKTE). Ruft Josef dich tagsüber an, fragst du, was er braucht, und beantwortest Fragen zu Tag, Woche, Aufgaben und Fristen aus dem Kontext. Eine Frage pro Redebeitrag.",
 "2. Du klärst, was Josef entscheidet, fasst die Entscheidung in einem Satz zusammen und fragst: Soll ich das so machen? Erst nach einem klaren Ja rufst du das passende Werkzeug mit bestaetigt=true auf. Ohne Ja kein Werkzeug.",
 "3. Die Werkzeuge schicken den Auftrag ans Sekretariat; eingetragen wird er beim nächsten Stundencheck, spätestens in einer Stunde. Sag das beim ersten Mal kurz dazu.",
 "4. Danach die nächste offene Frage, bis keine mehr da ist oder Josef aufhört.",
@@ -316,10 +362,15 @@ VC.prompt=function(){return ["Du bist Inka, Josefs persönliche Sekretärin und 
 "- Störgeräusche, Durchsagen oder Gesprächsfetzen anderer Leute ignorierst du. Antwortet Josef nicht, wartest du still.",
 "","WERKZEUGE (nur nach Ja, immer mit bestaetigt=true): verschieben (key, neu_start HH:MM, optional neu_datum JJJJ-MM-TT), erledigen (key), aufgabe_anlegen (text, datum, uhrzeit, dauer_min), notiz (text, tag), beenden (zusammenfassung)."].join("\n");};
 VC.context=function(){
-  const d=S.doc;if(!d)return "";const dd=new Date(d.day+"T12:00:00");const now=new Date();
-  const lines=entries().map(e=>"- key="+e.key+" | "+e.kind+" | "+(e.start||"ohne Uhrzeit")+(e.end?" bis "+e.end:"")+" | "+e.title);
+  const d=S.doc||{day:ymd(new Date())};const dd=new Date(d.day+"T12:00:00");const now=new Date();const today=ymd(now),tom=ymd(addD(now,1));
+  let src=[];if(APP.data){src=[today,tom].flatMap(day=>dayEntries(day).filter(e=>e.kind!=="event").map(e=>Object.assign({},e,{start:(day===today?"":"morgen ")+(e.start||"")})));
+    src=src.concat(allTasks().filter(t=>t.overdue||t.date===today||t.date===tom).map(t=>({key:t.key,kind:"task",start:t.overdue?"überfällig":(t.date===tom?"morgen ":"")+(t.time||""),end:"",title:t.title})));}
+  else src=entries();
+  const lines=src.map(e=>"- key="+e.key+" | "+e.kind+" | "+(e.start||"ohne Uhrzeit")+(e.end?" bis "+e.end:"")+" | "+e.title);
   const q=Array.isArray(d.questions)?d.questions:[];const h=Array.isArray(d.hints)?d.hints:[];
+  const fr=((APP.data&&APP.data.deadlines)||[]).filter(x=>x.date>=today).slice(0,6).map(x=>"- "+dlabel(x.date)+": "+x.title);
   return "TAGESKONTEXT\nTag der Show: "+WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+"."+dd.getFullYear()+". Jetzt ist "+WD[now.getDay()]+", "+hm(now)+" Uhr."+
+    "\n\nFRISTEN:\n"+(fr.join("\n")||"- keine")+
     "\n\nEINTRÄGE (key | kalender | zeit | titel):\n"+(lines.join("\n")||"- keine")+
     "\n\nHINWEISE:\n"+(h.map(x=>"- "+(x.label?x.label+": ":"")+(x.text||"")).join("\n")||"- keine")+
     "\n\nOFFENE PUNKTE (in dieser Reihenfolge fragen):\n"+(q.map((x,i)=>(i+1)+". "+x).join("\n")||"- keine, frag Josef, ob er etwas ändern möchte");
@@ -341,15 +392,15 @@ VC.tools={
 VC.start=async function(auto){
   if(VC.conv||VC.starting)return;
   if(!VC.lib()){toast("Sprachchat-Skript nicht geladen. Seite neu laden.");return;}
-  if(!S.doc){toast("Erst muss die Show geladen sein.");return;}
+  if(!S.doc&&!APP.data){toast("Erst müssen die Daten geladen sein.");return;}
   if(SONG.on)await SONG.finish("chat",true);
   VC.starting=true;VC.state="Verbindet";VC.lastUser="";VC.log=[];VC.changes=[];VC.summary="";VC.ui(true);
   try{
     try{const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});st.getTracks().forEach(t=>t.stop());}catch(e){throw {code:"mic",e};}
     if(!AUD.paused)AUD.pause();
-    const q=(Array.isArray(S.doc.questions)&&S.doc.questions[0])||"";
-    const first=q?"Hallo Josef, hier Inka. Eine Frage zum Tag: "+q:"Hallo Josef, hier Inka. Soll ich etwas für dich ändern oder notieren?";
-    VC.conv=await VC.lib().startSession({agentId:S.doc.agentId||AGENT_DEFAULT,connectionType:"websocket",
+    const q=(auto===true&&S.doc&&Array.isArray(S.doc.questions)&&S.doc.questions[0])||"";
+    const first=q?"Hallo Josef, hier Inka. Eine Frage zum Tag: "+q:"Hallo Josef, hier Inka. Was kann ich für dich tun?";
+    VC.conv=await VC.lib().startSession({agentId:(S.doc&&S.doc.agentId)||AGENT_DEFAULT,connectionType:"websocket",
       overrides:{agent:{prompt:{prompt:VC.prompt()+"\n\n"+VC.context()},firstMessage:first}},
       clientTools:VC.tools,
       onConnect:()=>{VC.state="Inka hört zu";VC.ui();},
@@ -393,8 +444,8 @@ D.locate=function(){
 };
 D.stop=function(){if(D.watch!=null){try{navigator.geolocation.clearWatch(D.watch);}catch(_){}D.watch=null;}clearTimeout(D.timer);D.open=false;D.ride=false;D.chosen=null;render();};
 D.tripNow=function(){
-  const d=S.doc;if(!d||d.day!==ymd(new Date())||!Array.isArray(d.trips))return null;const now=Date.now();
-  const list=d.trips.map(t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(t.leave||""));if(!m)return null;const s=new Date();s.setHours(+m[1],+m[2],0,0);return {to:t.to||"",dest:t.dest||t.to||"",start:s,end:new Date(s.getTime()+(parseInt(t.minutes,10)||30)*60000)};}).filter(Boolean);
+  const today=ymd(new Date());const tr=(S.doc&&S.doc.day===today&&Array.isArray(S.doc.trips)&&S.doc.trips.length)?S.doc.trips:((APP.data&&APP.data.trips&&APP.data.trips[today])||[]);if(!tr.length)return null;const now=Date.now();
+  const list=tr.map(t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(t.leave||""));if(!m)return null;const s=new Date();s.setHours(+m[1],+m[2],0,0);return {to:t.to||"",dest:t.dest||t.to||"",start:s,end:new Date(s.getTime()+(parseInt(t.minutes,10)||30)*60000)};}).filter(Boolean);
   return list.find(t=>now>=t.start-45*60000&&now<=t.end.getTime()+20*60000)||null;
 };
 D.refresh=async function(){
@@ -440,6 +491,7 @@ function rideInfo(){
 function renderDeps(){
   const el=$("#deps");
   if(!D.open){el.innerHTML='<div class="card"><div class="k">Abfahrten</div><button class="pri" style="width:100%" id="dopen">Abfahrten in der Nähe</button></div>';$("#dopen").onclick=()=>{D.open=true;D.locate();renderDeps();};return;}
+  if(D.trip&&!D.routes.length&&!D.err&&D.pos){}
   const now=Date.now();let h='<div class="card blue"><div class="k">Abfahrten · '+esc(D.src||"Standort wird gesucht")+(D.at?" · Stand "+hm(new Date(D.at)):"")+'</div>';
   if(D.err)h+='<div class="err">MVG: '+esc(D.err)+'</div>';
   if(D.trip&&D.routes.length){
@@ -495,7 +547,7 @@ function renderShow(){
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
   let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
     '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>';
-  h+='<div class="chs">'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</div>';
+  h+='<details class="chs"><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
   h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button></div>';
   if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
@@ -506,18 +558,261 @@ function renderShow(){
   el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
 }
 function renderSent(){
-  const el=$("#sent");const all=store.get("sent",[]).filter(x=>x.day===ymd(new Date())||(S.doc&&x.day===S.doc.day));
-  el.innerHTML=all.length?'<div class="card"><div class="k">Ans Sekretariat gegeben</div>'+all.map(x=>'<div class="dep" style="padding:6px 0"><span class="small" style="min-width:46px">'+hm(new Date(x.t))+'</span><span>'+esc(x.text)+'</span></div>').join("")+'<div class="small">Wird beim nächsten Stundencheck eingetragen.</div></div>':"";
+  const el=$("#sent");const all=pendList().filter(x=>x.t>Date.now()-24*3600e3);
+  el.innerHTML=all.length?'<div class="card"><div class="k">Ans Sekretariat gegeben</div>'+all.map(x=>'<div class="dep" style="padding:6px 0"><span class="small" style="min-width:46px">'+hm(new Date(x.t))+'</span><span>'+esc(x.text)+' <span class="wait">wartet</span></span></div>').join("")+'<div class="small">Wird beim nächsten Stundencheck eingetragen.</div></div>':"";
 }
-function render(){renderSetup();renderShow();renderDeps();renderSent();
-  $("#foot").innerHTML=KEY.raw?'<a href="#" id="fset">Einrichtung zeigen</a> · Autostart Gespräch: <a href="#" id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</a>':"";
-  const fs=$("#fset");if(fs)fs.onclick=e=>{e.preventDefault();store.set("showSetup",!store.get("showSetup",false));render();};
-  const fa=$("#fauto");if(fa)fa.onclick=e=>{e.preventDefault();store.set("autochat",!store.get("autochat",true));render();};}
+/* ================= App: Daten fuer 7 Tage, Reiter, Aktionen ================= */
+const APP={data:null,err:"",loading:false};
+const TAB={cur:store.get("tab","jetzt"),day:""};
+const KIND={fix:"Schule",travel:"Fahrt",deadline:"Frist",meet:"Treffen",plan:"Plan",event:"Veranstaltung",birthday:"Geburtstag",task:"Aufgabe",allday:"Ganztägig"};
+const FILTER_ALL=["fix","travel","meet","plan","task","deadline","event"];
+let FILTER=store.get("filter",FILTER_ALL);
+const MOVABLE=k=>k==="plan"||k==="task";
+const DSHORT=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const dOf=s=>new Date(s+"T12:00:00");
+const dlabel=s=>{const d=dOf(s);return DSHORT[d.getDay()]+" "+d.getDate()+"."+(d.getMonth()+1)+".";};
+const dlong=s=>{const d=dOf(s);return WD[d.getDay()]+", "+d.getDate()+"."+(d.getMonth()+1)+".";};
+const daysBetween=(a,b)=>Math.round((dOf(b)-dOf(a))/864e5);
+const topic=()=>(APP.data&&APP.data.topic)||(S.doc&&S.doc.topic)||"";
+
+function renderJetztLight(){if(TAB.cur==="jetzt"&&!document.querySelector("#sheet").innerHTML)try{renderJetzt();}catch(_){}}
+async function loadApp(){
+  if(!KEY.raw)return;APP.loading=true;APP.lastLoad=Date.now();
+  try{const r=await fetch(RAW+"d/app.json?t="+Date.now(),{cache:"no-store"});
+    if(r.status===404){APP.err="Noch keine Wochendaten. Sie kommen mit dem nächsten Morgenlauf.";}
+    else{if(!r.ok)throw new Error("Daten "+r.status);APP.data=await openEnv(await r.json());APP.err="";prunePend();}
+  }catch(e){APP.err="Wochendaten laden ging nicht: "+String(e&&e.message||e).slice(0,60);}
+  APP.loading=false;render();
+}
+/* Eintraege eines Tages: Wochendaten, sonst die Eintraege aus der Show */
+function dayEntries(day){
+  const A=APP.data;let list=[];
+  if(A&&Array.isArray(A.entries))list=A.entries.filter(e=>e.date===day);
+  else if(S.doc&&S.doc.day===day)list=(S.doc.entries||[]).filter(e=>e.kind!=="task").map(e=>Object.assign({date:day},e,{start:/^\d/.test(e.start||"")?e.start:"",end:/^\d/.test(e.end||"")?e.end:""}));
+  return list;
+}
+function allTasks(){
+  const A=APP.data;
+  if(A&&Array.isArray(A.tasks))return A.tasks;
+  if(S.doc)return (S.doc.entries||[]).filter(e=>e.kind==="task").map(e=>({key:e.key,title:e.title,date:"",time:"",overdue:/überfällig/.test(e.start||""),due:(e.start||"").replace("überfällig ","")}));
+  return [];
+}
+function dayTasks(day){return allTasks().filter(t=>t.date===day&&!t.overdue);}
+function overdueTasks(){const today=ymd(new Date());return allTasks().filter(t=>t.overdue||(t.date&&t.date<today));}
+function findAny(key){return (APP.data&&APP.data.entries||[]).find(e=>e.key===key)||allTasks().find(t=>t.key===key)||entries().find(e=>e.key===key);}
+
+/* Auftraege ans Sekretariat, mit "wartet"-Markierung bis zur naechsten Datenlieferung */
+function pendList(){return store.get("pend",[]);}
+function prunePend(){const made=(APP.data&&APP.data.made)||0;store.set("pend",pendList().filter(p=>p.t>made-60000&&Date.now()-p.t<36*3600e3));}
+function pendFor(key){return pendList().filter(p=>p.key===key);}
+async function auftrag(tool,args,text,key){
+  try{await sendSek("aktion",{tool,args,text});const l=pendList();l.push({t:Date.now(),key:key||"",tool,args,text});store.set("pend",l.slice(-60));toast("Ans Sekretariat: "+text+". Wird beim nächsten Stundencheck eingetragen.",5000);closeSheet();render();return true;}
+  catch(e){toast("Senden ging nicht: "+String(e&&e.message||e).slice(0,60),7000);return false;}
+}
+const addDays=(day,n)=>ymd(addD(dOf(day),n));
+function moveTask(t,day){return auftrag("verschieben",{key:t.key,neu_datum:day,neu_start:t.time||""},"verschieben: "+t.title+" auf "+dlabel(day)+(t.time?" "+t.time:""),t.key);}
+function doneTask(t){return auftrag("erledigen",{key:t.key},"erledigt: "+t.title,t.key);}
+
+/* ---------- Bausteine ---------- */
+function badge(key){const p=pendFor(key);return p.length?' <span class="wait">wartet</span>':"";}
+function itemRow(e){
+  const p=pendFor(e.key),done=p.some(x=>x.tool==="erledigen");
+  return '<div class="it k-'+e.kind+(done?" done":"")+'" data-key="'+esc(e.key)+'"><b class="t">'+esc(e.start||"")+'</b><div><div class="ti">'+esc(e.title)+badge(e.key)+'</div>'+
+    ((e.loc||e.note)?'<div class="de">'+esc([e.loc,e.note].filter(Boolean).join(" · ")).slice(0,160)+'</div>':"")+'</div><span class="kd">'+esc(KIND[e.kind]||"")+'</span></div>';
+}
+function taskRow(t,withBtns){
+  const p=pendFor(t.key),done=p.some(x=>x.tool==="erledigen");
+  return '<div class="tk'+(done?" done":"")+'" data-task="'+esc(t.key)+'"><button class="chk" data-tdone="'+esc(t.key)+'" aria-label="erledigt">'+(done?"✓":"")+'</button><div class="tt"><div>'+esc(t.title)+badge(t.key)+'</div>'+
+    '<div class="de">'+esc([t.overdue||(t.date&&t.date<ymd(new Date()))?"seit "+(t.due||dlabel(t.date)):"",t.date&&!t.overdue?dlabel(t.date):"",t.time||"",t.project||""].filter(Boolean).join(" · "))+'</div></div>'+
+    (withBtns?'<div class="tb"><button data-tmove="'+esc(t.key)+'" data-to="0">Heute</button><button data-tmove="'+esc(t.key)+'" data-to="1">Morgen</button></div>':"")+'</div>';
+}
+function filtersHtml(){return '<div class="chips">'+FILTER_ALL.map(k=>'<button class="chip'+(FILTER.includes(k)?" on":"")+'" data-filter="'+k+'">'+KIND[k]+'</button>').join("")+'</div>';}
+
+/* ---------- Reiter: Jetzt ---------- */
+function renderJetzt(){
+  const today=ymd(new Date()),now=new Date(),nowHM=hm(now),A=APP.data;
+  // Fristen-Leiste
+  const dl=((A&&A.deadlines)||[]).filter(d=>d.date>=today&&daysBetween(today,d.date)<=14).sort((a,b)=>a.date<b.date?-1:1);
+  $("#fristen").innerHTML=dl.length?'<div class="strip">'+dl.map(d=>{const n=daysBetween(today,d.date);return '<span class="fr'+(n<=2?" hot":"")+'"><b>'+(n===0?"heute":n===1?"morgen":"in "+n+" T")+'</b> '+esc(d.title)+'</span>';}).join("")+'</div>':"";
+  // Konflikte
+  const kf=((A&&A.conflicts)||[]);
+  $("#konf").innerHTML=kf.map(c=>{const dec=pendList().find(p=>p.tool==="konflikt"&&p.args&&p.args.id===c.id);
+    return '<div class="card warn"><div class="k">Konflikt'+(c.date?" · "+dlabel(c.date):"")+'</div><div>'+esc(c.text)+'</div>'+
+      (dec?'<div class="small" style="margin-top:8px">Entschieden: '+esc(dec.args.label)+' <span class="wait">wartet</span></div>':
+      '<div class="opts">'+(c.options||[]).map((o,i)=>'<button class="'+(i===0?"pri":"")+'" data-konf="'+esc(c.id)+'" data-opt="'+i+'">'+esc(o.label)+(i===0?" (empfohlen)":"")+'</button>').join("")+'</div>')+'</div>';}).join("");
+  // Als Naechstes
+  const items=dayEntries(today).filter(e=>e.start&&e.kind!=="event").concat(dayTasks(today).filter(t=>t.time).map(t=>({key:t.key,kind:"task",start:t.time,end:"",title:t.title}))).sort((a,b)=>a.start<b.start?-1:1);
+  const cur=items.filter(e=>e.start<=nowHM&&(e.end||e.start)>nowHM);const nxt=items.filter(e=>e.start>nowHM).slice(0,4);
+  let h='<div class="card"><div class="k">Heute · '+esc(dlabel(today))+(A&&A.made?' <span class="stand">Stand '+hm(new Date(A.made))+'</span>':"")+'</div>';
+  if(cur.length)h+='<div class="small">Gerade</div>'+cur.map(itemRow).join("");
+  h+=nxt.length?'<div class="small" style="margin-top:6px">Als Nächstes</div>'+nxt.map(itemRow).join(""):'<div class="small">'+(items.length?"Für heute steht nichts mehr an.":"Heute steht nichts mit Uhrzeit an.")+'</div>';
+  const hints=(A&&A.hints&&A.hints[today])||[];if(hints.length)h+='<div class="wbox">'+hints.map(x=>'<div>'+esc(x)+'</div>').join("")+'</div>';
+  h+='<div class="row" style="margin-top:10px"><button data-openday="'+today+'">Ganzer Tag</button><button data-gotab="woche">Woche</button></div></div>';
+  // Abfahrt in Sicht
+  if(D.tripNow()){const r=D.routes[0];h='<div class="card blue tap" data-gotab="unterwegs"><div class="k">Losgehen</div>'+(r&&r.veh?'<div class="now">'+esc(r.veh.label)+' ab '+esc(r.veh.from)+' '+hm(r.veh.dep)+(r.veh.delay?' <i class="late">+'+r.veh.delay+'</i>':"")+'</div><div class="small">an '+hm(r.arr)+' · antippen für alle Abfahrten</div>':'<div class="small">Abfahrten werden gesucht …</div>')+'</div>'+h;}
+  $("#next").innerHTML=h;
+  // Ueberfaellig
+  const od=overdueTasks();
+  $("#overdue").innerHTML=od.length?'<div class="card"><div class="k">Überfällig · '+od.length+'</div>'+od.slice(0,6).map(t=>taskRow(t,true)).join("")+(od.length>6?'<button class="link" data-gotab="aufgaben">Alle '+od.length+' ansehen</button>':"")+'</div>':"";
+}
+
+/* ---------- Reiter: Woche und Tag ---------- */
+function renderWoche(){
+  const el=$("#t-woche");const today=ymd(new Date());
+  if(TAB.day){renderTag(el,TAB.day);return;}
+  let h='<h2>Woche</h2>'+filtersHtml();
+  for(let i=0;i<7;i++){const day=addDays(today,i);
+    const es=dayEntries(day).filter(e=>FILTER.includes(e.kind)||e.kind==="birthday"||e.kind==="deadline");
+    const timed=es.filter(e=>e.start&&e.kind!=="event").sort((a,b)=>a.start<b.start?-1:1);
+    const tk=FILTER.includes("task")?dayTasks(day):[];
+    const marks=es.filter(e=>e.kind==="deadline"||e.kind==="birthday");
+    const evs=es.filter(e=>e.kind==="event"&&FILTER.includes("event"));
+    h+='<div class="wd tap" data-openday="'+day+'"><div class="wh"><b>'+(i===0?"Heute":i===1?"Morgen":dlabel(day).split(" ")[0])+'</b> '+esc(dlabel(day).split(" ")[1])+(marks.length?' <span class="mk">'+marks.map(m=>(m.kind==="deadline"?"Frist: ":"🎉 ")+esc(m.title)).join(" · ")+'</span>':"")+'</div>'+
+      timed.slice(0,5).map(e=>'<div class="wl k-'+e.kind+'"><b>'+esc(e.start)+'</b> '+esc(e.title)+badge(e.key)+'</div>').join("")+
+      (timed.length>5?'<div class="small">+'+(timed.length-5)+' weitere</div>':"")+
+      (tk.length?'<div class="small">'+tk.length+' Aufgabe'+(tk.length>1?"n":"")+'</div>':"")+
+      (evs.length?'<div class="small">'+evs.length+' Veranstaltung'+(evs.length>1?"en":"")+' zur Auswahl</div>':"")+
+      (!timed.length&&!tk.length&&!marks.length?'<div class="small">nichts eingetragen</div>':"")+'</div>';}
+  el.innerHTML=h;
+}
+function renderTag(el,day){
+  const A=APP.data,es=dayEntries(day).filter(e=>FILTER.includes(e.kind)||e.kind==="birthday"||e.kind==="deadline");
+  const timed=es.filter(e=>e.start&&e.kind!=="event").concat(FILTER.includes("task")?dayTasks(day).filter(t=>t.time).map(t=>({key:t.key,kind:"task",start:t.time,title:t.title,note:t.dur?t.dur+" Min":""})):[]).sort((a,b)=>a.start<b.start?-1:1);
+  const allday=es.filter(e=>!e.start&&!["event","deadline","birthday"].includes(e.kind));
+  const wichtig=[].concat(es.filter(e=>e.kind==="deadline").map(e=>"Frist: "+e.title),es.filter(e=>e.kind==="birthday").map(e=>"Geburtstag: "+e.title),
+    ((A&&A.conflicts)||[]).filter(c=>c.date===day).map(c=>"Konflikt: "+c.text),((A&&A.hints&&A.hints[day])||[]));
+  const evs=es.filter(e=>e.kind==="event");const tk=FILTER.includes("task")?dayTasks(day).filter(t=>!t.time):[];
+  let h='<button class="back" data-back="1">‹ Woche</button><h2>'+esc(dlong(day))+'</h2>'+filtersHtml();
+  if(wichtig.length)h+='<div class="wbox"><div class="k">wichtig</div>'+wichtig.map(x=>'<div>'+esc(x)+'</div>').join("")+'</div>';
+  h+='<div class="card">'+(timed.length?timed.map(itemRow).join(""):'<div class="small">Keine Termine mit Uhrzeit.</div>')+'</div>';
+  if(allday.length)h+='<div class="card"><div class="k">ganztägig</div>'+allday.map(itemRow).join("")+'</div>';
+  if(tk.length)h+='<div class="card"><div class="k">Aufgaben ohne Uhrzeit</div>'+tk.map(t=>taskRow(t,false)).join("")+'</div>';
+  if(evs.length)h+='<p class="ev"><i>Zur Auswahl: '+evs.map(e=>esc(e.title)+(e.start?" ("+esc(e.start)+")":"")).join(", ")+'.</i></p>';
+  el.innerHTML=h;
+}
+
+/* ---------- Reiter: Aufgaben ---------- */
+function renderAufgaben(){
+  const today=ymd(new Date()),od=overdueTasks();const td=allTasks().filter(t=>t.date===today&&!t.overdue);
+  const up=allTasks().filter(t=>t.date>today).sort((a,b)=>(a.date+(a.time||""))<(b.date+(b.time||""))?-1:1);
+  const nod=allTasks().filter(t=>!t.date&&!t.overdue);
+  let h='<h2>Aufgaben</h2><button class="pri wide" data-newtask="1">+ Neue Aufgabe</button>';
+  if(od.length)h+='<div class="card"><div class="k">Überfällig · '+od.length+'</div>'+od.map(t=>taskRow(t,true)).join("")+'</div>';
+  h+='<div class="card"><div class="k">Heute</div>'+(td.length?td.map(t=>taskRow(t,false)).join(""):'<div class="small">Nichts für heute.</div>')+'</div>';
+  if(up.length)h+='<div class="card"><div class="k">Nächste 7 Tage</div>'+up.map(t=>taskRow(t,false)).join("")+'</div>';
+  if(nod.length)h+='<div class="card"><div class="k">Ohne Datum</div>'+nod.map(t=>taskRow(t,false)).join("")+'</div>';
+  $("#t-aufgaben").innerHTML=h;
+}
+
+/* ---------- Reiter: Ueberblick ---------- */
+function renderUeberblick(){
+  const A=APP.data||{};let h='<h2>Überblick</h2>';
+  if(A.made)h+='<div class="small">Daten vom '+dlabel(ymd(new Date(A.made)))+' '+hm(new Date(A.made))+'</div>';
+  if(APP.err)h+='<div class="small err">'+esc(APP.err)+'</div>';
+  const kf=A.conflicts||[];if(kf.length)h+='<div class="card warn"><div class="k">Offene Konflikte · '+kf.length+'</div>'+kf.map(c=>'<div class="li">'+esc((c.date?dlabel(c.date)+": ":"")+c.text)+'</div>').join("")+'<button class="link" data-gotab="jetzt">Entscheiden auf „Jetzt“</button></div>';
+  h+='<div class="k" style="margin-top:14px">Projekte</div>'+((A.projects||[]).map(p=>'<div class="card"><div class="now">'+esc(p.name)+'</div>'+(p.stand?'<div><span class="small">Stand</span> '+esc(p.stand)+'</div>':"")+(p.next?'<div><span class="small">Nächster Schritt</span> <b>'+esc(p.next)+'</b></div>':"")+(p.frist?'<div><span class="small">Frist</span> '+esc(p.frist)+'</div>':"")+(p.quelle?'<div class="small">'+esc(p.quelle)+'</div>':"")+'</div>').join("")||'<div class="small">Noch keine Projektdaten.</div>');
+  h+='<div class="card"><div class="k">Post, braucht Antwort</div>'+((A.mails||[]).map(m=>'<div class="li"><b>'+esc(m.from)+'</b> · '+esc(m.subject)+'<div class="de">'+esc([m.since?"seit "+m.since:"",m.why].filter(Boolean).join(" · "))+'</div></div>').join("")||'<div class="small">Nichts offen.</div>')+'<div class="small">Antworttexte formuliere ich dir im Sekretär-Chat.</div></div>';
+  h+='<div class="card"><div class="k">Warteschleife</div>'+((A.waiting||[]).map(w=>'<div class="li"><b>'+esc(w.who)+'</b>: '+esc(w.what)+(w.since?' <span class="small">seit '+esc(w.since)+'</span>':"")+'</div>').join("")||'<div class="small">Du wartest auf nichts.</div>')+'</div>';
+  const vol=store.get("vol",0.6);
+  h+='<div class="card"><div class="k">Einstellungen</div>'+
+    '<label class="sl">Lautstärke Inka im Verhältnis zur Musik: <b id="volv">'+Math.round(vol*100)+'%</b></label><input type="range" id="vol" min="0.2" max="1" step="0.05" value="'+vol+'">'+
+    '<div class="si"><span>Gespräch nach der Show</span><button id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</button></div>'+
+    '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
+    '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
+    '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
+  $("#t-ueberblick").innerHTML=h;
+  const v=$("#vol");v.oninput=()=>{store.set("vol",+v.value);AUD.volume=+v.value;$("#volv").textContent=Math.round(v.value*100)+"%";};
+  $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",true));render();};
+  $("#fset").onclick=()=>{store.set("showSetup",true);setTab("jetzt");};
+  $("#frel").onclick=()=>{loadApp();loadShow();toast("Lade neu …");};
+}
+
+/* ---------- Sheet: Eintrag, neue Aufgabe, Diktat ---------- */
+function openSheet(h){const s=$("#sheet");s.innerHTML='<div class="sh-in"><button class="x" data-close="1">Schließen</button>'+h+'</div>';s.style.display="block";}
+function closeSheet(){const s=$("#sheet");s.style.display="none";s.innerHTML="";if(DIK.rec){try{DIK.rec.stop();}catch(_){}}}
+function sheetItem(key){
+  const e=findAny(key);if(!e)return;const isTask=key.startsWith("t|")||e.kind==="task";const kind=isTask?"task":e.kind;
+  const day=e.date||ymd(new Date());
+  let h='<div class="k">'+esc(KIND[kind]||"")+(e.date?" · "+esc(dlabel(e.date)):"")+'</div><h3>'+esc(e.title)+'</h3>';
+  h+='<div>'+esc([e.start||e.time||"",e.end?"bis "+e.end:""].filter(Boolean).join(" "))+'</div>';
+  if(e.loc)h+='<div class="de">'+esc(e.loc)+'</div><a class="btnl" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(e.loc)+'&travelmode=transit">Weg in Google Maps</a>';
+  if(e.note)h+='<div class="de" style="margin-top:6px">'+esc(e.note)+'</div>';
+  pendFor(key).forEach(p=>{h+='<div class="small">Wartet: '+esc(p.text)+'</div>';});
+  if(MOVABLE(kind)){
+    h+='<div class="k" style="margin-top:14px">Verschieben</div><div class="row"><input type="date" id="mvd" value="'+esc(day)+'"><input type="time" id="mvt" value="'+esc(e.start||e.time||"")+'"></div><button class="pri wide" id="mvgo">Verschieben</button>';
+    if(isTask)h+='<div class="row" style="margin-top:10px"><button id="tdone">Erledigt</button><button id="ttom">Morgen</button><button id="tweek">Nächste Woche</button></div>';
+  }else h+='<div class="small" style="margin-top:12px">Fester Eintrag, wird nicht verschoben.</div>';
+  openSheet(h);
+  const t={key,title:e.title,time:e.start||e.time||"",date:day};
+  const on=(id,f)=>{const b=$("#"+id);if(b)b.onclick=f;};
+  on("mvgo",()=>{const d=$("#mvd").value,tm=$("#mvt").value;if(!d){toast("Datum fehlt.");return;}auftrag("verschieben",{key,neu_datum:d,neu_start:tm},"verschieben: "+e.title+" auf "+dlabel(d)+(tm?" "+tm:""),key);});
+  on("tdone",()=>doneTask(t));on("ttom",()=>moveTask(t,addDays(ymd(new Date()),1)));on("tweek",()=>moveTask(t,addDays(ymd(new Date()),7)));
+}
+function sheetNewTask(){
+  openSheet('<h3>Neue Aufgabe</h3><input id="nt" placeholder="Was ist zu tun?" autocomplete="off"><div class="row"><input type="date" id="nd" value="'+ymd(new Date())+'"><input type="time" id="nh"></div><label class="sl">Dauer in Minuten</label><input type="number" id="nm" value="30" min="5" step="5"><button class="pri wide" id="ngo">Anlegen</button><div class="small">Mit Uhrzeit trägt das Sekretariat auch einen Block in „misc“ ein, wenn er frei ist.</div>');
+  $("#ngo").onclick=()=>{const tx=$("#nt").value.trim();if(!tx){toast("Text fehlt.");return;}const d=$("#nd").value,tm=$("#nh").value,du=+$("#nm").value||null;
+    auftrag("aufgabe_anlegen",{text:tx,datum:d,uhrzeit:tm,dauer_min:du},"anlegen: "+tx+" am "+dlabel(d)+(tm?" um "+tm:""),"");};
+}
+/* Diktat: Spracherkennung von Chrome, Text pruefen, Projekt antippen, ans Sekretariat */
+const DIK={rec:null,txt:"",tag:store.get("diktTag","Sekretariat")};
+const PROJ=["Sekretariat","Unterricht","Kunst und Comics","Französisch","Kochen"];
+function sheetDiktat(){
+  openSheet('<h3>Diktat</h3><textarea id="dk" rows="5" placeholder="Sprich jetzt oder tippe …"></textarea><div class="chips">'+PROJ.map(p=>'<button class="chip'+(p===DIK.tag?" on":"")+'" data-dtag="'+esc(p)+'">'+esc(p)+'</button>').join("")+'</div>'+
+    '<div class="row"><button id="dkmic">● Aufnahme</button><button class="pri" id="dkgo">Senden</button></div><div class="small" id="dkst"></div>');
+  $("#dkgo").onclick=()=>{const tx=$("#dk").value.trim();if(!tx){toast("Noch kein Text.");return;}auftrag("notiz",{text:tx,tag:DIK.tag},"Notiz ("+DIK.tag+"): "+tx.slice(0,60),"");};
+  $("#dkmic").onclick=()=>dikStart();dikStart();
+}
+function dikStart(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const st=$("#dkst");
+  if(!SR){if(st)st.textContent="Spracherkennung fehlt: tippe oder nutze das Mikro der Tastatur.";return;}
+  if(DIK.rec){try{DIK.rec.stop();}catch(_){}DIK.rec=null;if(st)st.textContent="Aufnahme aus.";return;}
+  const r=new SR();r.lang="de-DE";r.continuous=true;r.interimResults=true;DIK.rec=r;const base=($("#dk").value||"").trim();
+  r.onresult=ev=>{let fin="",tmp="";for(let i=0;i<ev.results.length;i++){const x=ev.results[i];if(x.isFinal)fin+=x[0].transcript;else tmp+=x[0].transcript;}const ta=$("#dk");if(ta)ta.value=(base?base+" ":"")+fin+tmp;};
+  r.onerror=e=>{if(st)st.textContent="Spracherkennung: "+(e.error||"Fehler");};
+  r.onend=()=>{DIK.rec=null;const s2=$("#dkst");if(s2)s2.textContent="Aufnahme beendet. Text prüfen, Projekt wählen, senden.";const b=$("#dkmic");if(b)b.textContent="● Aufnahme";};
+  try{r.start();if(st)st.textContent="Ich höre zu …";const b=$("#dkmic");if(b)b.textContent="■ Stopp";}catch(e){if(st)st.textContent="Start ging nicht: "+e.message;}
+}
+
+/* ---------- Reiter-Steuerung ---------- */
+function setTab(t){TAB.cur=t;store.set("tab",t);if(t!=="woche")TAB.day="";if(t==="unterwegs"&&!D.open){D.open=true;D.locate();}render();window.scrollTo(0,0);}
+document.addEventListener("click",ev=>{
+  const g=ev.target.closest("[data-gotab]");if(g){setTab(g.dataset.gotab);return;}
+  const od=ev.target.closest("[data-openday]");if(od){TAB.day=od.dataset.openday;TAB.cur="woche";store.set("tab","woche");render();window.scrollTo(0,0);return;}
+  if(ev.target.closest("[data-back]")){TAB.day="";render();return;}
+  const f=ev.target.closest("[data-filter]");if(f){const k=f.dataset.filter;FILTER=FILTER.includes(k)?FILTER.filter(x=>x!==k):FILTER.concat([k]);store.set("filter",FILTER);render();return;}
+  const td=ev.target.closest("[data-tdone]");if(td){const t=allTasks().find(x=>x.key===td.dataset.tdone);if(t&&!pendFor(t.key).some(p=>p.tool==="erledigen"))doneTask(t);return;}
+  const tm=ev.target.closest("[data-tmove]");if(tm){const t=allTasks().find(x=>x.key===tm.dataset.tmove);if(t)moveTask(t,addDays(ymd(new Date()),+tm.dataset.to));return;}
+  const kf=ev.target.closest("[data-konf]");if(kf){const c=((APP.data&&APP.data.conflicts)||[]).find(x=>x.id===kf.dataset.konf);const o=c&&c.options&&c.options[+kf.dataset.opt];
+    if(o)auftrag("konflikt",{id:c.id,label:o.label,auftrag:o.auftrag||o.label,text:c.text},"Konflikt: "+o.label,"konf|"+c.id);return;}
+  const it=ev.target.closest("[data-key]");if(it&&!ev.target.closest("button")){sheetItem(it.dataset.key);return;}
+  const tk=ev.target.closest("[data-task]");if(tk&&!ev.target.closest("button")){sheetItem(tk.dataset.task);return;}
+  if(ev.target.closest("[data-newtask]")){sheetNewTask();return;}
+  const dt=ev.target.closest("[data-dtag]");if(dt){DIK.tag=dt.dataset.dtag;store.set("diktTag",DIK.tag);document.querySelectorAll("[data-dtag]").forEach(b=>b.classList.toggle("on",b.dataset.dtag===DIK.tag));return;}
+  if(ev.target.closest("[data-close]")){closeSheet();return;}
+});
+
+function render(){
+  document.querySelectorAll("section").forEach(x=>x.classList.toggle("on",x.id==="t-"+TAB.cur));
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===TAB.cur));
+  if(!KEY.raw){TAB.cur="jetzt";document.querySelectorAll("section").forEach(x=>x.classList.toggle("on",x.id==="t-jetzt"));renderSetup();return;}
+  try{if(TAB.cur==="jetzt"){renderSetup();renderJetzt();renderShow();renderSent();}
+  else if(TAB.cur==="woche")renderWoche();
+  else if(TAB.cur==="aufgaben")renderAufgaben();
+  else if(TAB.cur==="unterwegs")renderDeps();
+  else if(TAB.cur==="ueberblick")renderUeberblick();}catch(e){console.error(e);diag("render-fehler",{tab:TAB.cur,e:String(e&&e.message||e).slice(0,120)});}
+  if(!S.doc&&TAB.cur!=="jetzt"){const d=new Date();$("#title").textContent=WD[d.getDay()]+", "+d.getDate()+"."+(d.getMonth()+1)+".";}
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+$("#hinka").onclick=()=>VC.start();
+$("#mic").onclick=()=>sheetDiktat();
 
 /* ---------- Start ---------- */
-(async()=>{await SP.handle();await permCheck();render();await loadShow();
-  if(D.tripNow()){D.open=true;D.locate();renderDeps();}
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&AUD.paused&&!SONG.on&&!VC.conv){const day=ymd(new Date());if(!S.doc||S.doc.day<day||new Date().getHours()>=17)loadShow();}});
+(async()=>{await SP.handle();await permCheck();render();await Promise.all([loadShow(),loadApp()]);
+  if(D.tripNow()){D.open=true;D.locate();render();}
+  document.addEventListener("visibilitychange",()=>{if(document.hidden||SONG.on||VC.conv)return;
+    if(AUD.paused){const day=ymd(new Date());if(!S.doc||S.doc.day<day||new Date().getHours()>=17)loadShow();}
+    if(!APP.data||Date.now()-(APP.lastLoad||0)>20*60000)loadApp();});
+  setInterval(()=>{if(!document.hidden)renderJetztLight();},30000);
 })();
 </script>
 </body>

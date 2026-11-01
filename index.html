@@ -135,7 +135,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 17:15 (Spotify am PC zuverlässig starten)";
+const APPV="1.11. 17:20 (Playlist mit neuer Spotify-Schnittstelle)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -1238,8 +1238,9 @@ async function syncPlaylist(force){
   if(!uris.length)return false;const sig=uris.join(",");if(!force&&store.get("plsig","")===sig)return true;
   try{let pl=store.get("plid","");
     if(pl){try{await SP.api("GET","/playlists/"+pl+"?fields=id");}catch(_){pl="";}}
-    if(!pl){const me=await SP.api("GET","/me");const r=await SP.api("POST","/users/"+encodeURIComponent(me.id)+"/playlists",{name:"Inka · Shows",public:false,description:"Songs der Inka-Shows von heute und morgen. In Spotify herunterladen, dann laufen sie auch ohne Netz."});pl=r.id;store.set("plid",pl);}
-    await SP.api("PUT","/playlists/"+pl+"/tracks",{uris:uris.slice(0,100)});
+    /* Spotify-Änderung Februar 2026: /users/{id}/playlists und /playlists/{id}/tracks gibt es nicht mehr, neu /me/playlists und /items */
+    if(!pl){const r=await SP.api("POST","/me/playlists",{name:"Inka · Shows",public:false,description:"Songs der Inka-Shows von heute und morgen. In Spotify herunterladen, dann laufen sie auch ohne Netz."});pl=r.id;store.set("plid",pl);}
+    await SP.api("PUT","/playlists/"+pl+"/items",{uris:uris.slice(0,100)});
     store.set("plsig",sig);diag("playlist",{n:uris.length});toast("Spotify-Playlist „Inka · Shows“ aktualisiert: "+uris.length+" Songs.");return true;
   }catch(e){diag("playlist-fehler",{e:String(e&&e.message||e)});return false;}}
 {const _ls=loadShow;loadShow=async function(){const r=await _ls.apply(this,arguments);setTimeout(()=>syncPlaylist(false),1500);return r;};}

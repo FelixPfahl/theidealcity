@@ -353,7 +353,8 @@
         if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); bs[(cur_ - 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
         if (e.key === 'Escape'){ close(); } return; }
       var ae = document.activeElement, free = !ae || ae === document.body || ae === document.documentElement;
-      if (e.key === 'Escape') close(); else if (dlg && ((e.key === 'Enter' && (free || dlg.contains(ae))) || (e.key === ' ' && dlg.contains(ae)))) next(e); }   /* Enter blättert, wenn nichts anderes den Fokus hat; Leertaste nur im Dialog (sonst scrollt sie die Seite) */
+      var inForm = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+      if (e.key === 'Escape') close(); else if (dlg && ((e.key === 'Enter' && !inForm) || (e.key === ' ' && dlg.contains(ae)))) next(e); }   /* Enter blättert, wenn nichts anderes den Fokus hat; Leertaste nur im Dialog (sonst scrollt sie die Seite) */
     dlg.addEventListener('click', function(e){ if (e.target.closest('.answers')) return; next(e); }); document.addEventListener('keydown', onkey);
     /* Josef, 1.11., 10:50: Dialoge blockieren die Seite nicht; ohne Klick geht es von allein weiter, am Ende verschwindet das Fenster von selbst */
     document.addEventListener('visibilitychange', function vis(){ if (!dlg){ document.removeEventListener('visibilitychange', vis); return; } });

@@ -94,8 +94,8 @@
     ['dlg.fg', 'Dialoge', 'Box', 'Schriftfarbe', 'Farbe des Texts in der Box.', '#F4F4F4', 0, 0, 0, 'color', '--mmfg'],
     ['dlg.hi', 'Dialoge', 'Box', 'Betonung', 'Farbe für Betonungen, Links, Cursor und Dreieck.', '#F8E038', 0, 0, 0, 'color', '--mmhi'],
     ['dlg.open', 'Dialoge', 'Box', 'Öffnen und Schließen', 'Dauer der Linien-Animation.', 240, 0, 1500, 10, 'ms', '--mmopen'],
-    ['dlg.autominms', 'Dialoge', 'Fenster', 'Weiter nach mindestens', 'Untergrenze in Millisekunden, bevor eine fertige Seite von allein weiterblättert (sonst nur Lesezeit).', 700, 500, 10000, 100, 'ms'],
-    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Millisekunden je Zeichen der Seite, nachdem sie fertig geschrieben ist.', 35, 0, 200, 1, 'ms'],
+    ['dlg.autominms', 'Dialoge', 'Fenster', 'Mindestens nach dem Schreiben', 'Millisekunden, die eine fertig geschriebene Seite mindestens stehen bleibt.', 400, 0, 5000, 50, 'ms'],
+    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Millisekunden je Zeichen, gezählt ab Beginn des Schreibens (während geschrieben wird, wird schon gelesen); für alle Figuren gleich.', 60, 10, 200, 1, 'ms'],
     ['dlg.endwait', 'Dialoge', 'Fenster', 'Stehen nach dem letzten Satz', 'Millisekunden, die die Box nach der Lesezeit des letzten Satzes noch stehen bleibt (Josef, 1.11., 17:43).', 1000, 0, 10000, 100, 'ms'],
     ['dlg.askwait', 'Dialoge', 'Fenster', 'Warten auf Antwort', 'Sekunden, bevor eine unbeantwortete Frage das Fenster schließt.', 25, 5, 120, 1, 's'],
     /* ---------- Grafik ---------- */

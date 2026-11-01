@@ -1394,4 +1394,6 @@ html.lh-hc .sbdlg .who,html.lh-hc .sbrels b,html.lh-hc .sbalbum small,html.lh-hc
 .mbcite{user-select:all;-webkit-user-select:all;border-bottom:1px dotted var(--hair)}
 .work picture,.figs picture{display:block}
 /* Fußnote: Trefferfläche immer mindestens 24 px breit (axe target-size, seit die Textebene markierbar ist) */
-sup.fn{min-width:10px;text-align:right;display:inline-block}
+.plotted .plotsrc.vh a,.plotted .plotsrc.vh button{pointer-events:none}   /* Links der Textebene sind nur Text; geklickt wird über die Flächen (.plotlink); sonst zählt axe doppelte Ziele neben den Fußnoten */
+.plotted sup.plotsup{z-index:7}
+sup.fn.plotsup,sup.fn{padding-left:20px!important;margin-left:-20px!important}

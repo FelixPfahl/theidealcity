@@ -371,7 +371,7 @@
     function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); H('onAnswer', a, L.who); if (a.fn) try { a.fn(); } catch(x){} var box = dlg.querySelector('.answers'); if (box) box.remove();
       var re = (a.re || []).map(norm); if (!re.length) re = [{who:L.who, text:'...'}];
       lines.splice(k + 1, 0, ...re); next(); }
-    function readMs(items){ var n = items.filter(function(x){ return x.ch !== undefined && !x.nm; }).length; var d = window.JK_DEVSPD, m = d && d.mult ? Math.min(d.mult, 20) : 1; return (CF('dlg.autominms', 2000) + n * CF('dlg.automs', 45)) / m; }   /* kurz warten: etwa 2 s plus Lesezeit */
+    function readMs(items){ var n = items.filter(function(x){ return x.ch !== undefined && !x.nm; }).length; var d = window.JK_DEVSPD, m = d && d.mult ? Math.min(d.mult, 20) : 1; return Math.max(CF('dlg.autominms', 700), n * CF('dlg.automs', 35)) / m; }   /* nur Lesezeit (Josef, 1.11., 17:43: Fensterwechsel deutlich schneller) */
     var autoT = null; function autoArm(ms, isAsk){ clearTimeout(autoT); autoT = setTimeout(function(){ if (!dlg) return; if (window.JK_DEVSPD && window.JK_DEVSPD.pause){ autoArm(400, isAsk); return; } if (isAsk){ if (pending){ pending = null; close(false); } return; } if (!document.hidden) next(); else autoArm(1500); }, ms); }
     function next(e){ clearTimeout(autoT); if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
       if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });

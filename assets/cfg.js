@@ -94,8 +94,8 @@
     ['dlg.fg', 'Dialoge', 'Box', 'Schriftfarbe', 'Farbe des Texts in der Box.', '#F4F4F4', 0, 0, 0, 'color', '--mmfg'],
     ['dlg.hi', 'Dialoge', 'Box', 'Betonung', 'Farbe für Betonungen, Links, Cursor und Dreieck.', '#F8E038', 0, 0, 0, 'color', '--mmhi'],
     ['dlg.open', 'Dialoge', 'Box', 'Öffnen und Schließen', 'Dauer der Linien-Animation.', 240, 0, 1500, 10, 'ms', '--mmopen'],
-    ['dlg.autominms', 'Dialoge', 'Fenster', 'Weiter nach mindestens', 'Millisekunden, bevor eine fertige Seite von allein weiterblättert.', 2000, 500, 10000, 100, 'ms'],
-    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Zusätzliche Millisekunden je Zeichen der Seite.', 45, 0, 200, 1, 'ms'],
+    ['dlg.autominms', 'Dialoge', 'Fenster', 'Weiter nach mindestens', 'Untergrenze in Millisekunden, bevor eine fertige Seite von allein weiterblättert (sonst nur Lesezeit).', 700, 500, 10000, 100, 'ms'],
+    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Millisekunden je Zeichen der Seite, nachdem sie fertig geschrieben ist.', 35, 0, 200, 1, 'ms'],
     ['dlg.askwait', 'Dialoge', 'Fenster', 'Warten auf Antwort', 'Sekunden, bevor eine unbeantwortete Frage das Fenster schließt.', 25, 5, 120, 1, 's'],
     /* ---------- Grafik ---------- */
     ['ui.barh', 'Grafik', 'Balken', 'Höhe Balken', 'Höhe des grünen Fortschrittsbalkens.', [56, 44], 8, 120, 1, 'px', '--pbh'],

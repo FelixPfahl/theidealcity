@@ -930,7 +930,10 @@ function renderUeberblick(){
       '<div class="small">Spotify: '+(sp.connected?"verbunden":(sp.connecting?"verbindet …":"nicht verbunden"))+(sp.err?" · "+esc(sp.err):"")+'</div>'+
       '<div class="small">Offline auf dem Handy: '+(off.length?esc(off.map(x=>dlabel(x.slice(0,10))).join(", ")):"noch nichts")+'</div>'+
       '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button></div></div>';}
-  else if(WIN)h+='<div class="card"><div class="k">Windows-App</div><div class="small">Die Songs spielt die Spotify-App am PC. Ist sie zu, startet Inka sie. Der PC schläft während der Show nicht ein.</div></div>';
+  if(!NAT&&SP.ready())h+='<div class="card"><div class="k">Spotify-Playlist für unterwegs</div>'+(/playlist-modify/.test(SP.cfg.scopes||"")?
+      '<div class="small">„Inka · Shows“ in deinem Spotify enthält die Songs von heute und morgen. Einmal in Spotify auf Herunterladen tippen, dann laufen sie auch ohne Netz.</div><div class="row" style="margin-top:8px"><button id="plsync">Jetzt aktualisieren</button></div>':
+      '<div class="small">Für die Playlist braucht Inka eine zusätzliche Spotify-Erlaubnis.</div><div class="row" style="margin-top:8px"><button id="plcon">Spotify neu verbinden</button></div>')+'</div>';
+  if(NAT){}else if(WIN)h+='<div class="card"><div class="k">Windows-App</div><div class="small">Die Songs spielt die Spotify-App am PC. Ist sie zu, startet Inka sie. Der PC schläft während der Show nicht ein.</div></div>';
   else h+='<div class="card"><div class="k">Android-App</div><div class="small">Läuft auch ohne Chrome weiter, verbindet Spotify nach Abbrüchen neu und lädt Shows für unterwegs vor.</div>'+
       '<div class="row" style="margin-top:8px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/inka.apk">App laden</a><a class="btn pri" href="inka://open?k='+encodeURIComponent(KEY.raw||"")+'">In der App öffnen</a></div>'+
       '<div class="small" style="margin-top:6px">Erst laden und installieren, dann „In der App öffnen“ tippen (überträgt den Schlüssel).</div>'+
@@ -956,6 +959,8 @@ function renderUeberblick(){
   $("#fnew").onclick=()=>sheetShowOrder();
   if(NAT){const a=$("#nsp");if(a)a.onclick=()=>{try{NAT.spotifyConnect();toast("Verbinde mit Spotify …");setTimeout(renderUeberblick,4000);}catch(_){}};
     const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();toast("Lade Shows vor …");}catch(_){}};}
+  {const a=$("#plsync");if(a)a.onclick=async()=>{toast("Aktualisiere Playlist …");if(!(await syncPlaylist(true)))toast("Playlist ging nicht, siehe Protokoll.");};
+   const b=$("#plcon");if(b)b.onclick=()=>SP.connect();}
   $("#fupd").onclick=()=>{toast("Lade neueste Fassung …");setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
 }
 
@@ -1191,6 +1196,22 @@ function trWire(){const det=$("#trdet");if(!det)return;det.addEventListener("tog
     const c=chapters();for(const k in S.songDone)if(c[k]&&c[k].start>l.t)delete S.songDone[k];trTick(true);});});
   trTick(true);}
 AUD.addEventListener("timeupdate",()=>trTick(false));
+
+/* ===== Spotify-Playlist "Inka · Shows" (Josef 1.11.2026: Songs offline, z. B. im Zug) =====
+   Enthält die Songs der Shows von heute und morgen. Einmal in Spotify herunterladen, danach hält Spotify sie selbst aktuell. */
+async function syncPlaylist(force){
+  if(NAT||!SP.ready()||!/playlist-modify/.test(SP.cfg.scopes||""))return false;
+  const t=ymd(new Date()),m=ymd(addD(new Date(),1));
+  const ids=(S.shows||[]).filter(x=>x.day===t||x.day===m).map(x=>x.id);
+  const uris=[];for(const id of ids){try{const d=await fetchDoc(id);((d&&d.songs)||[]).forEach(x=>{if(x.uri&&!uris.includes(x.uri))uris.push(x.uri);});}catch(_){}}
+  if(!uris.length)return false;const sig=uris.join(",");if(!force&&store.get("plsig","")===sig)return true;
+  try{let pl=store.get("plid","");
+    if(pl){try{await SP.api("GET","/playlists/"+pl+"?fields=id");}catch(_){pl="";}}
+    if(!pl){const me=await SP.api("GET","/me");const r=await SP.api("POST","/users/"+encodeURIComponent(me.id)+"/playlists",{name:"Inka · Shows",public:false,description:"Songs der Inka-Shows von heute und morgen. In Spotify herunterladen, dann laufen sie auch ohne Netz."});pl=r.id;store.set("plid",pl);}
+    await SP.api("PUT","/playlists/"+pl+"/tracks",{uris:uris.slice(0,100)});
+    store.set("plsig",sig);diag("playlist",{n:uris.length});toast("Spotify-Playlist „Inka · Shows“ aktualisiert: "+uris.length+" Songs.");return true;
+  }catch(e){diag("playlist-fehler",{e:String(e&&e.message||e)});return false;}}
+{const _ls=loadShow;loadShow=async function(){const r=await _ls.apply(this,arguments);setTimeout(()=>syncPlaylist(false),1500);return r;};}
 </script>
 </body>
 </html>

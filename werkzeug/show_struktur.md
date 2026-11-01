@@ -25,6 +25,14 @@ Sprecherzeilen `INKA:`, `WAGNER:`, `SIGMA:`; Klänge mit `KLANG:` (siehe unten);
 13. `## [song]`
 14. `## [show] Zum Schluss`: worauf es ankommt, Abschied aller drei, Inka endet mit "Josef, ich hab noch … Fragen für dich, bleib kurz dran."
 
+## Wiederkehrendes Motiv: "Ertappt" (Josef 1.11.2026)
+Nach Songs (freier Tag 3 bis 4 Mal, Schultag 4 bis 6 Mal, nie zweimal gleich) beginnt das nächste Kapitel nicht mit der Moderation, sondern **mitten in einem Streitgespräch zwischen Sigma und Wagner**, das sie in der Musikpause geführt haben. Wir steigen mitten im Satz ein.
+- **Anspruchsvoll**: echte Fragen aus der Welt von "The Ideal City" (Wahrheit, Zentralperspektive, Wahrnehmung, Bewusstsein, Schöpfung und Geschöpf, Karte und Gebiet, Ideale Stadt von Urbino, Messbarkeit, Seele, Sprache). Sigma argumentiert überraschend klug, seltsam, kindlich-präzise (oft als Karte, Vermessung, Zählung); Wagner argumentiert brillant, kalt, mit Fachwissen.
+- **Ertappt**: Sie merken, dass das Mikrofon wieder an ist oder Inka zuhört (ein Räuspern, das Rotlicht, "Wir sind auf Sendung").
+- **Abschmettern**: Wagner schmettert Sigma heftig ab: vernichtend, eisig, klinisch (ein Satz, der Sigmas Existenz kleinmacht), nie mit Gewalt oder Drohung.
+- **Übergang**: Inka übernimmt mit einem warmen Satz zu Sigma und leitet ins Kapitel über.
+- Länge 4 bis 8 Zeilen. Ein Thema darf über mehrere Ertappt-Szenen weiterlaufen (Fortsetzung beim nächsten Song).
+
 Songs: Schultag 12, freier Tag 6 (doppelt so viele wie früher); bei 12 Songs weitere `## [song]` zwischen kürzeren Kapiteln. Jeder Song wird im Gespräch angesagt (Titel, Künstler, ein Satz Haltung von Wagner oder Inka), nicht als Liste.
 
 ## Stil

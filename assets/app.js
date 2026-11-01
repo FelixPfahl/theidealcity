@@ -67,15 +67,17 @@
   function spriteLoad(tool){ if (SPR[tool]) return SPR[tool].p; var ac = ctx(); if (!ac) return null; var base = '../assets/snd/' + tool + (MOBILE ? '-m' : '');
     var ext = (document.createElement('audio').canPlayType('audio/ogg; codecs=vorbis') ? '.ogg' : '.mp3');
     var st = {buf:null, clips:[], last:-1, voices:[], lastT:0};
-    st.p = Promise.all([fetch(base + '.json').then(function(r){ return r.json(); }), fetch(base + ext).then(function(r){ return r.arrayBuffer(); }).then(function(ab){ return ac.decodeAudioData(ab); })])
+    var dev = window.JK_DEVSND && window.JK_DEVSND['snd/' + tool];   /* Dev Tools Etappe 4: eigener Klang (ein Clip) */
+    st.p = dev ? fetch(dev).then(function(r){ return r.arrayBuffer(); }).then(function(ab){ return ac.decodeAudioData(ab); }).then(function(b){ st.buf = b; st.clips = [[0, b.duration]]; }).catch(function(){ st.buf = null; })
+      : Promise.all([fetch(base + '.json').then(function(r){ return r.json(); }), fetch(base + ext).then(function(r){ return r.arrayBuffer(); }).then(function(ab){ return ac.decodeAudioData(ab); })])
       .then(function(r){ st.clips = r[0].clips; st.buf = r[1]; }).catch(function(){ st.buf = null; });
     SPR[tool] = st; return st.p; }
   function spritePlay(tool, opt){ opt = opt || {}; var ac = ctx(); if (!ac || FX.vol === 0) return; var st = SPR[tool];
     if (!st){ spriteLoad(tool); return; } if (!st.buf || !st.clips.length) return;
     var now = ac.currentTime; if (now - st.lastT < .06 && !opt.force) return; st.lastT = now;
-    var i; do { i = Math.floor(Math.random() * st.clips.length); } while (st.clips.length > 1 && i === st.last); st.last = i;
+    var i; if (opt.clip !== undefined) i = Math.min(opt.clip, st.clips.length - 1); else { do { i = Math.floor(Math.random() * st.clips.length); } while (st.clips.length > 1 && i === st.last); } st.last = i;
     var c = st.clips[i]; var src = ac.createBufferSource(); src.buffer = st.buf; src.playbackRate.value = Math.pow(2, ((Math.random() * 4 - 2) + (opt.semi || 0)) / 12);
-    var g = ac.createGain(); var vol = (opt.vol || 1) * Math.pow(10, (Math.random() * 6 - 3) / 20); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(vol, now + .01);
+    var g = ac.createGain(); var dv = window.JK_DEVSNDVOL && window.JK_DEVSNDVOL[tool]; var vol = (opt.vol || 1) * (dv === undefined ? 1 : dv) * Math.pow(10, (Math.random() * 6 - 3) / 20); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(vol, now + .01);
     var dur = Math.min(c[1], opt.max || c[1]); g.gain.setValueAtTime(vol, now + dur - .03); g.gain.linearRampToValueAtTime(0, now + dur);
     var pan = null; if (ac.createStereoPanner && opt.x !== undefined){ pan = ac.createStereoPanner(); pan.pan.value = panFor(opt.x); }
     /* Josef, 29.10., 14:14: weiter weg klingt dumpfer (Tiefpass nach Abstand) */
@@ -118,7 +120,7 @@
     document.querySelectorAll('filter[id^="holz"] feColorMatrix').forEach(function(m){ if (!m.hasAttribute('data-base')) m.setAttribute('data-base', m.getAttribute('values')); var v = m.getAttribute('data-base').trim().split(/\s+/); var off = parseFloat(v[19]); v[19] = String(g <= 0 ? -3 : off - (1 - g) * (3 + off)); m.setAttribute('values', v.join(' ')); }); }
   if (window.JK_CFG){ document.addEventListener('DOMContentLoaded', wood); window.JK_CFG.sub(function(k){ if (k === '*' || /^fx\.wood/.test(k)) wood(); }); }
   window.JK_BUSLEVELS = function(){ return BUS ? {tools:BUS.tools.gain.value, ui:BUS.ui.gain.value, atmos:BUS.atmos.gain.value, game:BUS.game.gain.value, master:MASTER ? MASTER.node.gain.value : 0} : null; };
-  window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
+  window.JK_SPRITE = spritePlay; window.JK_SPRITE_LOAD = spriteLoad; window.JK_SPRITE_RESET = function(tool){ delete SPR[tool]; }; window.JK_SPRITE_INFO = function(tool){ var st = SPR[tool]; return st ? {clips:st.clips, ready:!!st.buf} : null; }; window.JK_AUDIO = function(){ var ac = ctx(); return ac ? {ac:ac, bus:bus(ac, 'game'), vol:FX.vol} : null; };
   /* Erste Nutzeraktion (Modem-Intro, Klick, Tipp) schaltet Audio frei und lädt die Werkzeug-Sprites nach */
   var unlocked = false; function unlock(){ if (unlocked) return; unlocked = true; var ac = ctx(); if (!ac) return; ['plotter', 'feder', 'zirkel', 'papier'].forEach(function(t){ spriteLoad(t); }); }
 

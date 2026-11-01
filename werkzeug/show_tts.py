@@ -45,7 +45,7 @@ MOODS = {
     "pathos":    {"speed": 0.92, "pitch": -0.5, "gain": 0.5, "fx": "aecho=0.8:0.8:80|140:0.1|0.05", "pause": 0.35},
 }
 MOOD_SCALE = float(os.environ.get("MOOD_SCALE", "0.5"))
-BASS_CUT = "highpass=f=130:poles=2,bass=g=-7:f=230:w=0.7"   # Josef 1.11.2026: "Der Bass muss überall stark minimiert werden"
+BASS_CUT = "highpass=f=190:poles=2,bass=g=-10:f=300:w=0.8"   # Josef 1.11.2026: "Der Bass muss überall stark minimiert werden"
 # Regie in Klammern, mehrere mit Komma: Stimmung, "pause 2" (Schweigen davor, Sekunden), "unterbricht" (fällt der vorigen
 # Figur ins Wort, die Stimmen überlappen kurz, die vorige wird leiser), "zoegernd" (etwas längere Pause davor).
 def parse_tags(raw):
@@ -93,7 +93,11 @@ for line in open(src, encoding="utf-8").read().splitlines():
         else: cur["blocks"].append([sp, line, {}])
 if not chapters: sys.exit("Kein Text")
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from zahlen import sprich  # Zahlen als Woerter (Josef 1.11.2026)
+
 def tts(speaker, text, idx):
+    text = sprich(text)
     vid = VOICES[speaker]
     h = hashlib.sha1((vid + MODEL + speaker + text).encode()).hexdigest()[:12]
     mp3 = os.path.join(out, "el_%03d_%s_%s.mp3" % (idx, speaker, h))
@@ -102,6 +106,7 @@ def tts(speaker, text, idx):
     for old in glob.glob(os.path.join(out, "el_*_%s_%s.mp3" % (speaker, h))):
         if os.path.getsize(old) > 1000: shutil.copyfile(old, mp3); return mp3, 0
     payload = {"text": text, "model_id": MODEL, "voice_settings": SETTINGS[speaker]}
+    if "flash" in MODEL or "turbo" in MODEL: payload["language_code"] = "de"
     for attempt in range(3):
         r = subprocess.run(["curl", "-sS", "-m", "300", "-o", mp3, "-w", "%{http_code}", "-X", "POST",
                             "-H", "xi-api-key: " + KEY, "-H", "Content-Type: application/json", "-d", json.dumps(payload),
@@ -291,7 +296,7 @@ if os.environ.get("SHOW_AMBIENCE", "lab") == "lab":
     audio = audio + lab_ambience(len(audio), SR)
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
-subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "highpass=f=120:poles=2,bass=g=-5:f=200:w=0.7,loudnorm=I=-20:TP=-2:LRA=11",
+subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "highpass=f=170:poles=2,bass=g=-8:f=260:w=0.8,loudnorm=I=-20:TP=-2:LRA=11",
                 "-c:a", "aac", "-b:a", os.environ.get("SHOW_BITRATE", "64k"), "-movflags", "+faststart", mp4], check=True)
 os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],

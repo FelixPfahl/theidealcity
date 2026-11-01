@@ -69,15 +69,14 @@
   window.addEventListener('jk:lb', function(e){ var a = e.detail && e.detail.a, f = a && a.closest && a.closest('figure.work'); if (!f || !T) return; beh('lightbox');
     setTimeout(function(){ if (!document.querySelector('.lb2.on') || X.busy() || X.optedOut()) return; var c = pick({work:f.id.slice(2)}); if (c) show(c, 'work'); }, 3500); });
 
-  /* ---------- Mini-Blasen am Inka-Knopf ---------- */
-  var bub = null, bubT = null, lastBub = 0;
-  function bubble(who, text){ if (W.nowatch || X.optedOut() || !text) return false; if (now() - lastBub < 7000) return false; lastBub = now();
-    text = text.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph(k); return v === null || v === undefined ? m : v; }).replace(/(^|[^A-Za-zÄÖÜäöüß])\*([^*]+)\*/g, '$1$2').replace(/\[[^\]]*\]/g, '');
-    if (!bub){ bub = document.createElement('div'); bub.className = 'sbbub'; bub.setAttribute('role', 'status'); bub.setAttribute('aria-live', 'polite'); document.body.appendChild(bub); }
-    var ch = X.CH[who] || X.CH.inka; bub.style.setProperty('--c', ch.col); bub.className = 'sbbub on c-' + who; bub.innerHTML = '<b>' + X.esc(ch.name) + '</b><span>' + X.esc(text) + '</span>';
-    clearTimeout(bubT); bubT = setTimeout(function(){ bub.classList.remove('on'); }, Math.max(4000, Math.min(9000, text.length * 55)));
-    try { X.syl(who === 'self' ? 'inka' : (X.VOICE[who] ? who : 'inka'), 'neutral', 'quick'); setTimeout(function(){ X.syl(X.VOICE[who] ? who : 'inka', 'neutral', 'end'); }, 120); } catch(e){}
-    log([who, text], 'Blase'); return true; }
+  /* ---------- Reaktionen als kurze Mega-Man-Box (Josef, 1.11., 16:18: keine Extra-Blasen mehr) ----------
+     höchstens alle 90 s, nie während ein Gespräch läuft, nach Psst gar nichts Ungefragtes; Klick aufs Porträt: Zeile in der laufenden Box */
+  var lastBub = 0;
+  function bubble(who, text, opt){ opt = opt || {}; if (W.nowatch || X.optedOut() || !text) return false;
+    text = text.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph(k); return v === null || v === undefined ? m : v; });
+    if (opt.inject){ if (X.inject({who:X.CH[who] ? who : 'inka', text:text})){ log([who, text], 'Reaktion'); return true; } return false; }
+    if (X.quiet() || X.busy() || document.hidden) return false; if (now() - lastBub < X.CF('game.reactgap', 90) * 1000 || now() - X.lastDlg() < 20000) return false; lastBub = now();
+    X.dialog([{who:X.CH[who] ? who : 'inka', text:text}], null, {psst:true}); log([who, text], 'Reaktion'); return true; }
   function log(line, kind){ var who = Array.isArray(line) ? line[0] : line && line.who, t = Array.isArray(line) ? line[1] : line && line.text; if (!who || !t) return; t = String(t).replace(/\[[^\]]*\]/g, '').replace(/\*/g, ''); W.enc.push({w:who, t:t.slice(0, 160), d:now(), k:kind}); if (W.enc.length > 150) W.enc = W.enc.slice(-150); save(); }
 
   /* ---------- Verhalten: drei Stufen, nie dieselbe Variante doppelt, Punkte einmal je Partie ---------- */
@@ -88,8 +87,8 @@
     var st = n <= 2 ? 0 : n <= 5 ? 1 : 2, arr = B.stages[st] || B.stages[0]; var used = W.bv[key + st] = W.bv[key + st] || []; var free = []; arr.forEach(function(_, i){ if (used.indexOf(i) < 0) free.push(i); }); if (!free.length){ used.length = 0; free = arr.map(function(_, i){ return i; }); }
     var i = rnd(free); used.push(i); var v = arr[i]; var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka;
     if (extra) Object.keys(extra).forEach(function(k){ ctx[k] = extra[k]; });
-    var shown = bubble(w, v); if (!shown){ W.bh[key]--; cool[key] = 0; save(); return false; }
-    if (!W.bp[key] && PTS[key] !== undefined){ W.bp[key] = PTS[key]; save(); X.refresh(); }
+    if (!W.bp[key] && PTS[key] !== undefined){ W.bp[key] = PTS[key]; save(); X.refresh(); }   /* Punkte zählen auch, wenn gerade keine Box erscheinen darf */
+    var shown = bubble(w, v, {inject:key === 'poke'}); if (!shown){ used.pop(); W.bh[key]--; cool[key] = 0; save(); achievements(); return false; }
     achievements(); return true; }
   X.beh = beh;
 
@@ -184,8 +183,7 @@
     if (r < .12){ for (var i = 1; i <= 6; i++){ if (!W.sc['nole_grind_' + i]) return scene('nole_grind_' + i); } }
     else if (r < .22){ for (var j = 1; j <= 5; j++){ if (!W.sc['libido_' + j]) { if (j > ch / 2 + 1) break; return scene('libido_' + j); } } }
     else if (r < .3 && ch >= 8){ for (var k2 = 1; k2 <= 5; k2++){ if (!W.sc['kalmar_' + k2]) return scene('kalmar_' + k2); } }
-    else if (r < .4) ticker();
-    return false; }
+    return false; }   /* Ticker und Nil-Werbung entfernt (Josef, 1.11., 16:18) */
   /* Ticker: schmales Laufband unten zwischen den Ecken, höchstens 3 je Besuch */
   var tick = null, tickN = 0;
   function ticker(force){ if (!T || !T.ticker || W.nowatch || tickN >= 3 || X.optedOut()) return false; var n = X.count(); var pool = T.ticker.filter(function(x){ return x.tag !== 'du' || n >= 3; }); W.tk = W.tk || []; var free = pool.filter(function(x, i){ return W.tk.indexOf(x.t.slice(0, 24)) < 0; }); if (!free.length){ W.tk = []; free = pool; }
@@ -243,7 +241,7 @@
   X.hooks.badgeExtra = function(){ return ACH.map(function(a){ return {id:a[0], name:a[1], who:a[3], line:a[4], got:!!W.ach[a[0]]}; }); };
 
   /* ---------- Laden der Texte ---------- */
-  function boot(data){ T = data || {}; T.convos = T.convos || []; ready = true; visitPatterns(); setTimeout(ad, 2500); setTimeout(eye, 60000 + Math.random() * 240000); setInterval(ambient, 5000); achievements(); }
+  function boot(data){ T = data || {}; T.convos = T.convos || []; ready = true; visitPatterns(); setTimeout(eye, 60000 + Math.random() * 240000); setInterval(ambient, 5000); achievements(); }
   var src = (document.currentScript && document.currentScript.src) || ''; var v = (src.match(/[?&]v=([^&]+)/) || [])[1] || '';
   fetch('../assets/game/talk.json' + (v ? '?v=' + v : '')).then(function(r){ return r.json(); }).then(boot).catch(function(){ boot({}); });
 })();

@@ -1504,3 +1504,48 @@ body.sbdlgon .sbfab{opacity:.55;pointer-events:auto}
 /* Kontrast (axe, 1.11.): Name in der Blase in Textfarbe, Figurenfarbe als Strich */
 .sbbub b{color:var(--ink);border-left:4px solid var(--c,var(--ink));padding-left:5px}
 .sbad .sbadk{color:var(--ink);opacity:1}
+
+/* ---------- Dialoge wie Mega Man X (Josef, 1.11.2026, 16:00, D1 bis D30): Pixelify Sans, dunkle Box, einheitlicher Rahmen in der Figurenfarbe ---------- */
+@font-face{font-family:"Pixelify";src:url(fonts/PixelifySans-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Pixelify";src:url(fonts/PixelifySans-Bold.woff2) format("woff2");font-weight:700;font-display:swap}
+html body .sbdlg.mm{--pf:"Pixelify","Courier New",monospace;--fs:20px;--lh:32px;--pt:96px;--bg:#0A0A18;--fg:#F4F4F4;--hi:#F8E038;animation:none;padding:0 16px var(--dlgb,18px);align-items:center;-webkit-font-smoothing:none;font-smooth:never;text-rendering:optimizeSpeed}
+html body .sbdlg.mm.sd-r,html body .sbdlg.mm.gut{align-items:flex-end}
+html body .sbdlg.mm.sd-l{align-items:flex-start}
+html body .sbdlg.mm.off{opacity:1;transform:none;transition:none}
+html body .sbdlg.mm[class] .win{width:auto;max-width:100%;min-height:0;display:flex;flex-direction:row-reverse;gap:14px;align-items:flex-start;background:var(--bg);background-image:none;color:var(--fg);border:4px solid var(--c2,#fff);border-radius:0;box-shadow:0 0 0 3px #000,inset 0 0 0 2px #000;filter:none;padding:12px 14px;font-family:var(--pf);transform-origin:center}
+html body .sbdlg.mm.sd-l[class] .win{flex-direction:row}
+html body .sbdlg.mm.opening .win{animation:mmopen .24s linear both}
+html body .sbdlg.mm.off .win,html body .sbdlg.mm.off .answers{animation:mmclose .22s linear forwards}
+@keyframes mmopen{0%{transform:scale(.02,.05)}50%{transform:scale(1,.05)}100%{transform:none}}
+@keyframes mmclose{0%{transform:none}50%{transform:scale(1,.05)}100%{transform:scale(0,.05)}}
+html body .sbdlg.mm .who{display:none}
+html body .sbdlg.mm img{width:var(--pt);height:var(--pt);flex:none;object-fit:cover;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid var(--c2,#fff);background:#000;border-radius:0}
+html body .sbdlg.mm[class] .txt{flex:0 1 auto;width:41ch;max-width:calc(100vw - 32px - var(--pt) - 52px);min-width:0;min-height:calc(var(--lh) * 3);font-family:var(--pf);font-size:var(--fs);line-height:var(--lh);background:none;padding:0;color:var(--fg)}
+html body .sbdlg.mm[class] p{min-height:calc(var(--lh) * 3);margin:0;padding-right:22px;letter-spacing:0;font-variant-numeric:normal}
+html body .sbdlg.mm .ch.nm{color:var(--c2,#fff)}
+html body .sbdlg.mm[class] .ch.emph{color:var(--hi);font-weight:400;font-size:1em}
+html body .sbdlg.mm[class] p a.wl,html body .sbdlg.mm[class] p a.wl .ch{color:var(--hi);font-weight:400;font-size:1em;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+html body .sbdlg.mm[class] .more{position:absolute;right:0;bottom:4px;font-size:14px;line-height:1;color:var(--hi);animation:mmblink .8s steps(2,jump-none) infinite}
+@keyframes mmblink{0%{opacity:1}100%{opacity:0}}
+html body .sbdlg.mm.cut p::after{color:var(--hi)}
+html body .sbdlg.mm.c-gojira[class] p{font-size:calc(var(--fs) * 2);line-height:calc(var(--lh) * 3);letter-spacing:.2em}
+html body .sbdlg.mm.c-kalmar .ch{text-shadow:none}
+html body .sbdlg.mm[class] .answers{width:auto;max-width:100%;min-width:min(380px,100%);margin:0 0 10px;background:var(--bg);color:var(--fg);border:4px solid var(--c2,#fff);box-shadow:0 0 0 3px #000;border-radius:0;padding:8px 12px 8px 30px;font-family:var(--pf);gap:2px}
+html body .sbdlg.mm[class] .ans{font-family:var(--pf);font-size:var(--fs);line-height:1.3;color:var(--fg);background:none;padding:3px 4px;gap:8px;align-items:baseline}
+html body .sbdlg.mm[class] .ans i{width:auto;min-width:1em;font-size:.65em;font-weight:400;color:var(--c2,#fff);opacity:.9}
+html body .sbdlg.mm[class] .ans:hover,html body .sbdlg.mm[class] .ans:focus-visible{background:none;color:var(--hi)}
+html body .sbdlg.mm[class] .ans:hover i,html body .sbdlg.mm[class] .ans:focus-visible i{color:var(--hi)}
+html body .sbdlg.mm[class] .ans::before{content:'\25BA';position:absolute;left:-22px;top:3px;font-size:var(--fs);line-height:1.3;color:var(--hi);visibility:hidden}
+html body .sbdlg.mm[class] .ans:hover::before,html body .sbdlg.mm[class] .ans:focus-visible::before{visibility:visible}
+html body .sbdlg.mm[class] .win .psst{font-family:var(--pf);font-size:14px;letter-spacing:0;background:var(--bg);color:var(--fg);border:2px solid var(--c2,#fff);border-radius:0;box-shadow:0 0 0 2px #000}
+html body .sbdlg.mm[class] .win .psst:hover,html body .sbdlg.mm[class] .win .psst:focus-visible{background:var(--fg);color:var(--bg)}
+html body .sbdlg.mm.sd-r[class] .win .psst{right:auto;left:10px}html body .sbdlg.mm.sd-r[class] .win .psst.notnow{left:auto;right:10px}
+@media (max-width:600px){html body .sbdlg.mm{--fs:16px;--lh:26px;--pt:78px;padding:0 8px 12px}html body .sbdlg.mm.sd-r,html body .sbdlg.mm.sd-l{align-items:stretch}html body .sbdlg.mm[class] .win{gap:10px;padding:10px}html body .sbdlg.mm[class] .txt{flex:1 1 auto;width:auto;max-width:none}html body .sbdlg.mm[class] .answers{min-width:0;padding-left:26px}}
+/* Lesehilfe an: lesbare Schrift, Box und Farben bleiben (D29) */
+html[class*="lh-"] body .sbdlg.mm{--pf:var(--body);--fs:18px;-webkit-font-smoothing:auto;font-smooth:auto;text-rendering:auto}
+html.calm body .sbdlg.mm .win,html.calm body .sbdlg.mm .more{animation:none!important}
+/* Modem-Terminal in Pixelschrift (D28) */
+.modem,.modem button{font-family:"Pixelify","Courier New",monospace;-webkit-font-smoothing:none}
+.modem pre{font-size:20px;line-height:1.5}
+@media (max-width:600px){.modem pre{font-size:16px}}
+.sbbub,.sbtick,.sbad{display:none!important}

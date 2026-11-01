@@ -1269,8 +1269,10 @@
       var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = HC + 'px'; cv.style.marginTop = (-PAD) + 'px'; cv.style.marginBottom = (-PAD) + 'px'; cv.width = 0; cv.height = 0;
       var lv = document.createElement('canvas'); lv.className = 'plot live'; lv.style.width = W + 'px'; lv.style.height = HC + 'px'; lv.style.top = (-PAD) + 'px'; lv.width = 0; lv.height = 0;
       var keep = document.createElement('span'); keep.className = 'vh plotsrc';
+      var sbk = [].slice.call(el.children).filter(function(c){ return c.classList && (c.classList.contains('sbobj') || c.classList.contains('sbli')); });   /* versteckte Dinge des Suchbilds bleiben direkt im Absatz, nicht in der Textebene (Test 1.11., 07:50) */
+      sbk.forEach(function(c){ c.remove(); });
       while (el.firstChild) keep.appendChild(el.firstChild);
-      el.appendChild(keep); el.appendChild(cv); el.appendChild(lv); el.classList.add('plotted'); el.style.minHeight = H + 'px';
+      el.appendChild(keep); el.appendChild(cv); el.appendChild(lv); sbk.forEach(function(c){ el.appendChild(c); }); el.classList.add('plotted'); el.style.minHeight = H + 'px';
       sups.forEach(function(s){ s.el.classList.add('plotsup'); s.el.style.left = s.x + 'px'; s.el.style.top = s.y + 'px'; el.appendChild(s.el); });
       /* Links und Felix Pfahl als unsichtbare Flächen über dem Canvas */
       overlays.forEach(function(o){ var a = document.createElement(o.href ? 'a' : 'span'); a.className = 'plotlink' + (o.pf ? ' pfahl2' : ''); if (o.href){ a.href = o.href; a.setAttribute('tabindex', '-1'); } a.setAttribute('aria-hidden', 'true');   /* Barrierefreiheit: die echten Links stehen im Quelltext (.plotsrc), Flächen nur für die Maus */

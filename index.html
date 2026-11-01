@@ -135,7 +135,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 17:20 (Playlist mit neuer Spotify-Schnittstelle)";
+const APPV="1.11. 17:30 (Show-Songs in Lieblingssongs)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -952,7 +952,8 @@ function renderUeberblick(){
     h+='<div class="card"><div class="k">Android-App '+esc((()=>{try{return NAT.version();}catch(_){return "";}})())+'</div>'+
       '<div class="small">Spotify: '+(sp.connected?"verbunden":(sp.connecting?"verbindet …":"nicht verbunden"))+(sp.err?" · "+esc(sp.err):"")+'</div>'+
       '<div class="small">Offline auf dem Handy: '+(off.length?esc(off.map(x=>dlabel(x.slice(0,10))).join(", ")):"noch nichts")+'</div>'+
-      '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button></div>'+updHtml()+'</div>';}
+      '<div class="small">Show-Songs für unterwegs: '+(S.lib?(S.lib.saved+" in den Spotify-Lieblingssongs"+(S.lib.failed?", "+S.lib.failed+" ging nicht":"")):"noch nicht gemerkt")+'</div>'+
+      '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button><button id="nlike">Songs merken</button></div>'+updHtml()+'</div>';}
   if(!NAT&&SP.ready())h+='<div class="card"><div class="k">Spotify-Playlist für unterwegs</div>'+(/playlist-modify/.test(SP.cfg.scopes||"")?
       '<div class="small">„Inka · Shows“ in deinem Spotify enthält die Songs von heute und morgen. Einmal in Spotify auf Herunterladen tippen, dann laufen sie auch ohne Netz.</div><div class="row" style="margin-top:8px"><button id="plsync">Jetzt aktualisieren</button></div>':
       '<div class="small">Für die Playlist braucht Inka eine zusätzliche Spotify-Erlaubnis.</div><div class="row" style="margin-top:8px"><button id="plcon">Spotify neu verbinden</button></div>')+'</div>';
@@ -983,7 +984,8 @@ function renderUeberblick(){
   $("#fnew").onclick=()=>sheetShowOrder();
   updWire();
   if(NAT){const a=$("#nsp");if(a)a.onclick=()=>{try{NAT.spotifyConnect();toast("Verbinde mit Spotify …");setTimeout(renderUeberblick,4000);}catch(_){}};
-    const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();toast("Lade Shows vor …");}catch(_){}};}
+    const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();toast("Lade Shows vor …");}catch(_){}};
+    const l=$("#nlike");if(l)l.onclick=()=>{syncLiked(true);toast("Merke die Songs von heute und morgen in Spotify …");};}
   {const a=$("#plsync");if(a)a.onclick=async()=>{toast("Aktualisiere Playlist …");if(!(await syncPlaylist(true)))toast("Playlist ging nicht, siehe Protokoll.");};
    const b=$("#plcon");if(b)b.onclick=()=>SP.connect();}
   {const k=$("#fkey");if(k)k.onclick=async()=>{const link="https://raw.githack.com/FelixPfahl/theidealcity/inka/index.html#k="+KEY.raw;
@@ -1173,6 +1175,9 @@ window.__inkaNative=function(o){try{
       else if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
   if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)toast("Kein Netz. Inka spricht weiter, Songs warten.",6000);renderShow();return;}
   if(o.type==="update"){S.upd=o;if(o.state==="bereit")toast("Inka-Update "+(o.version||"")+" ist bereit.");if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
+  if(o.type==="lib"){S.lib=o;diag("lieblingssongs",{ok:o.saved,bad:o.failed,e:o.err});
+    if(o.saved>0){if(S.likeSig)store.set("likesig",S.likeSig);toast(o.saved+" Show-Songs in deinen Spotify-Lieblingssongs. Dort einmal „Herunterladen“ einschalten, dann laufen sie auch ohne Netz.",9000);}
+    else toast("Songs merken ging nicht ("+(o.err||"Spotify")+").");return;}
   if(o.type==="offline"){S.offline=o.ids||[];if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
   if(o.type==="app"&&o.ev==="vorne"){if(S.waitSong!=null&&!SONG.on){const k=S.waitSong;S.waitSong=null;SONG.start(k);}return;}
 }catch(e){console.log("native",e);}};
@@ -1279,6 +1284,16 @@ function updWire(){const g=$("#updgo");if(g)g.onclick=()=>{if(playingNow()){toas
     toast("Teilen-Menü öffnet sich, dort Google Drive wählen.");}
   catch(e){toast("Ging nicht: "+String(e&&e.message||e).slice(0,60));}
   btn.textContent="Drive";btn.disabled=false;};}
+
+/* ===== Android-App: Show-Songs in Spotify "Lieblingssongs" (Josef 1.11.2026; Playlists darf die Inka-App bei Spotify nicht mehr anlegen) ===== */
+async function syncLiked(force){
+  if(!NAT||typeof NAT.saveSongs!=="function")return;
+  const t=ymd(new Date()),m=ymd(addD(new Date(),1));
+  const ids=(S.shows||[]).filter(x=>x.day===t||x.day===m).map(x=>x.id);
+  const uris=[];for(const id of ids){try{const d=await fetchDoc(id);((d&&d.songs)||[]).forEach(x=>{if(x.uri&&!uris.includes(x.uri))uris.push(x.uri);});}catch(_){}}
+  if(!uris.length)return;const sig=uris.join(",");if(!force&&store.get("likesig","")===sig)return;
+  S.likeSig=sig;try{NAT.saveSongs(JSON.stringify(uris));}catch(_){}}
+{const _ls3=loadShow;loadShow=async function(){const r=await _ls3.apply(this,arguments);setTimeout(()=>syncLiked(false),2500);return r;};}
 </script>
 </body>
 </html>

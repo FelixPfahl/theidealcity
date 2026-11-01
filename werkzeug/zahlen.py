@@ -38,8 +38,24 @@ def jahr(x):
     return _teile(_n(v, lang="de", to="year")) if 1100 <= v <= 2199 else card(v)
 
 
+# Abkürzungen so geschrieben, wie man sie spricht (Josef 1.11.2026: "ICE klappt nicht, das muss als Text irgendwie tricksen")
+ABK = {"ICE": "Ih-Zeh-Eh", "ICEs": "Ih-Zeh-Ehs", "IC": "Ih-Zeh", "MVV": "Em-Vau-Vau", "MVG": "Em-Vau-Geh", "DB": "De-Be",
+       "FAZ": "Eff-Ah-Zett", "FAS": "Eff-Ah-Ess", "SZ": "Ess-Zett", "NZZ": "En-Zett-Zett", "KI": "Ka-Ih", "USA": "U-Ess-Ah",
+       "PC": "Peh-Zeh", "AG": "Ah-Geh", "ARD": "Ah-Er-De", "ZDF": "Zett-De-Eff", "EU": "Eh-Uh", "BR": "Beh-Er", "WDR": "Weh-De-Er",
+       "NDR": "En-De-Er", "SWR": "Ess-Weh-Er", "TU": "Teh-Uh", "LMU": "Ell-Em-Uh", "ÖPNV": "Öffentlicher Nahverkehr",
+       "RE": "Regionalexpress", "RB": "Regionalbahn", "ZOB": "Zentraler Omnibusbahnhof", "ca.": "zirka", "z. B.": "zum Beispiel",
+       "bzw.": "beziehungsweise", "usw.": "und so weiter", "Nr.": "Nummer", "Std.": "Stunden", "Min.": "Minuten", "km": "Kilometer"}
+_ABK_RE = re.compile(r"(?<![\w-])(" + "|".join(re.escape(k) for k in sorted(ABK, key=len, reverse=True)) + r")(?![\w])")
+
+
+def abk(t):
+    return _ABK_RE.sub(lambda m: ABK[m.group(1)], t)
+
+
 def sprich(t):
+    t = abk(t)
     if _n is None or not re.search(r"\d", t): return t
+    t = re.sub(r"(?<=[A-Za-zÄÖÜäöü])(?=\d)", " ", t)   # "U6" -> "U 6"
     t = re.sub(r"X Æ A-?(\d+)", lambda m: "X Æ A " + card(m.group(1)).capitalize(), t)
     t = re.sub(r"\bA-(\d+)\b", lambda m: "A " + card(m.group(1)).capitalize(), t)
     # Uhrzeiten 8:15 und "8 Uhr 15"

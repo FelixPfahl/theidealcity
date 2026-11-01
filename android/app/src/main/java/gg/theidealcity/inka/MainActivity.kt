@@ -132,6 +132,11 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyResume() { Hub.main.post { SpotifyCtl.resume(c) } }
         @JavascriptInterface fun spotifyStop() { Hub.main.post { SpotifyCtl.stop() } }
         @JavascriptInterface fun spotifyState(): String = SpotifyCtl.stateJson().toString()
+        /** uris als JSON-Liste; speichert sie in Spotify "Lieblingssongs" */
+        @JavascriptInterface fun saveSongs(json: String) {
+            val l = try { val a = JSONArray(json); (0 until a.length()).map { a.getString(it) }.filter { it.startsWith("spotify:track:") } } catch (_: Exception) { emptyList() }
+            Hub.main.post { SpotifyCtl.saveToLibrary(c, l) }
+        }
         /** state: playing | paused | stop */
         @JavascriptInterface fun nowPlaying(title: String, sub: String, state: String) { Hub.main.post { PlaybackService.update(c, title, sub, state) } }
         @JavascriptInterface fun keepScreen(on: Boolean) { runOnUiThread { if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) } }

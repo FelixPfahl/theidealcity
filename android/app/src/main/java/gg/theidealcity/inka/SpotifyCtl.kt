@@ -31,6 +31,7 @@ object SpotifyCtl {
     private var lostSince = 0L
     private var nextTry = 0L
     private var attempt = 0
+    @Volatile private var pendingSave: List<String> = emptyList()
 
     fun connect(ctx: Context) {
         appCtx = ctx.applicationContext
@@ -53,6 +54,7 @@ object SpotifyCtl {
                         r.playerApi.subscribeToPlayerState().setEventCallback { ps -> if (remote === r) onState(ps) }
                             .setErrorCallback { t -> if (remote === r) { lastErr = t.javaClass.simpleName; markLost() } }
                         emit("verbunden")
+                        if (pendingSave.isNotEmpty()) { val l = pendingSave; pendingSave = emptyList(); doSave(l) }
                         if (wantPlaying && wantUri != null) ensurePlaying("nach Neuverbindung")
                     }
                     override fun onFailure(t: Throwable) {
@@ -116,6 +118,28 @@ object SpotifyCtl {
         Hub.log("Song wieder aufnehmen ($why) bei $pos ms")
         if (l?.track?.uri == u && l.isPaused) remote?.playerApi?.resume() else doPlay(u, pos)
         emit("wieder")
+    }
+
+    /**
+     * Songs in "Lieblingssongs" speichern (Josef 1.11.2026): Spotify lässt kleine Apps keine Playlists mehr anlegen,
+     * über die Spotify-App selbst geht das Merken. Danach in Spotify "Lieblingssongs" herunterladen, dann laufen sie offline.
+     */
+    fun saveToLibrary(ctx: Context, uris: List<String>) {
+        appCtx = ctx.applicationContext
+        if (uris.isEmpty()) return
+        if (!connected) { pendingSave = uris; connect(ctx); return }
+        doSave(uris)
+    }
+
+    private fun doSave(uris: List<String>) {
+        val api = remote?.userApi ?: run { pendingSave = uris; return }
+        var ok = 0; var bad = 0; var err = ""
+        fun done() { if (ok + bad == uris.size) Hub.emit(JSONObject().put("type", "lib").put("saved", ok).put("failed", bad).put("err", err)) }
+        uris.forEach { u ->
+            try {
+                api.addToLibrary(u).setResultCallback { ok++; done() }.setErrorCallback { t -> bad++; err = t.javaClass.simpleName; done() }
+            } catch (e: Exception) { bad++; err = e.javaClass.simpleName; done() }
+        }
     }
 
     fun pause() { wantPlaying = false; try { remote?.playerApi?.pause() } catch (_: Exception) {} }

@@ -81,6 +81,13 @@
     ['game.longsearch', 'Spiel', 'Reaktionen', 'Lange Suche nach', 'Sekunden ohne Fund auf einer Seite mit Dingen, dann meldet sich Sigma.', 150, 30, 900, 10, 's'],
     ['game.idle', 'Spiel', 'Reaktionen', 'Untätig nach', 'Sekunden ohne Eingabe, dann meldet sich Sigma.', 90, 20, 600, 10, 's'],
     ['game.hint', 'Spiel', 'Punkte', 'Kosten Hinweis', 'Abzug je Hinweis.', 50, 0, 500, 5],
+    /* Welt-Regeln (Josef, 1.11., T18: als Regler) */
+    ['game.reactgap', 'Spiel', 'Welt', 'Abstand Reaktions-Boxen', 'Sekunden zwischen zwei kurzen Reaktionen auf das Verhalten (nie während ein Gespräch läuft).', 90, 10, 900, 5, 's'],
+    ['game.ambskip', 'Spiel', 'Welt', 'Ruhe-Anteil', 'Anteil der Gelegenheiten, bei denen trotzdem kein ungefragtes Gespräch kommt.', .35, 0, 1, .05],
+    ['game.behcool', 'Spiel', 'Welt', 'Abkühlung je Verhalten', 'Sekunden, bevor dasselbe Verhalten wieder zählt.', 45, 0, 600, 5, 's'],
+    ['dlg.autominms', 'Dialoge', 'Fenster', 'Weiter nach mindestens', 'Millisekunden, bevor eine fertige Seite von allein weiterblättert.', 2000, 500, 10000, 100, 'ms'],
+    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Zusätzliche Millisekunden je Zeichen der Seite.', 45, 0, 200, 1, 'ms'],
+    ['dlg.askwait', 'Dialoge', 'Fenster', 'Warten auf Antwort', 'Sekunden, bevor eine unbeantwortete Frage das Fenster schließt.', 25, 5, 120, 1, 's'],
     /* ---------- Grafik ---------- */
     ['ui.barh', 'Grafik', 'Balken', 'Höhe Balken', 'Höhe des grünen Fortschrittsbalkens.', [56, 44], 8, 120, 1, 'px', '--pbh'],
     ['ui.barfs', 'Grafik', 'Balken', 'Schriftgröße im Balken', 'Anteil der Balkenhöhe (lange Namen werden am Handy kleiner, bis sie passen).', .5, .2, 1, .01, '', '--pbk'],
@@ -112,6 +119,13 @@
   var DEF = {}, META = {}; P.forEach(function(p){ DEF[p[0]] = p[5]; META[p[0]] = p; });
   var PUB = {};   /* veröffentlichte Werte: hier trägt Claude nach Josefs Übernahme ein (Schlüssel, @d, @m) */
   var ON = false, LOC = {};
+  /* Dev Tools (Josef, 1.11.2026, T1: geheimer Link ?dev, ?dev=aus meldet ab); schalten auch die Regler frei. Zeit-Simulation: Date läuft mit Versatz */
+  var DEVON = false; try { if (/[?&]dev=aus\b/.test(location.search)){ localStorage.removeItem('jk_dev_on'); localStorage.removeItem('jk_regler_on'); } else if (/[?&]dev\b/.test(location.search)) localStorage.setItem('jk_dev_on', '1'); DEVON = localStorage.getItem('jk_dev_on') === '1'; } catch(e){}
+  if (DEVON){ window.JK_DEV_ON = true; window.__jkdevbuf = []; window.__jkdeverr = []; window.JK_DEVLOG = function(k, m){ var b = window.__jkdevbuf; b.push({t:Date.now(), k:k, m:String(m)}); if (b.length > 600) b.splice(0, b.length - 600); if (window.JK_DEVLOG_ON) try { window.JK_DEVLOG_ON(b[b.length - 1]); } catch(e){} };
+    window.addEventListener('error', function(e){ var t = e.target; var m = t && t !== window && (t.src || t.href) ? 'Datei fehlt: ' + (t.src || t.href) : (e.message || 'Fehler') + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''); window.__jkdeverr.push({t:Date.now(), m:m}); }, true);
+    window.addEventListener('unhandledrejection', function(e){ window.__jkdeverr.push({t:Date.now(), m:'Promise: ' + (e.reason && e.reason.message || e.reason)}); });
+    try { window.JK_DEVSPD = JSON.parse(localStorage.getItem('jk_dev_spd') || 'null') || {mult:1, pause:false}; } catch(e){ window.JK_DEVSPD = {mult:1, pause:false}; } try { localStorage.setItem('jk_regler_open', '1'); localStorage.setItem('jk_regler_side', 'r'); } catch(e){} }
+  if (DEVON){ try { localStorage.setItem('jk_regler_on', '1'); var toff = +localStorage.getItem('jk_dev_toff') || 0; if (toff){ var RD = Date; var DD = function(){ var a = [].slice.call(arguments); if (!(this instanceof DD)) return new RD(RD.now() + toff).toString(); return a.length ? new (Function.prototype.bind.apply(RD, [null].concat(a)))() : new RD(RD.now() + toff); }; DD.now = function(){ return RD.now() + toff; }; DD.UTC = RD.UTC; DD.parse = RD.parse; DD.prototype = RD.prototype; window.Date = DD; window.JK_REALDATE = RD; } } catch(e){} }
   try { if (/[?&]regler\b/.test(location.search)) localStorage.setItem('jk_regler_on', '1'); if (/[?&]regler=aus\b/.test(location.search)) localStorage.removeItem('jk_regler_on'); ON = localStorage.getItem('jk_regler_on') === '1'; if (ON) LOC = JSON.parse(localStorage.getItem('jk_regler') || '{}') || {}; } catch(e){}
   function dev(v){ return Array.isArray(v) ? v[MOB ? 1 : 0] : v; }
   function get(k){ var s = MOB ? '@m' : '@d';
@@ -121,11 +135,12 @@
   var subs = [];
   function css(){ var r = document.documentElement; P.forEach(function(p){ if (!p[10]) return; var v = get(p[0]), base = dev(p[5]); var u = p[9] === 'color' || p[9] === '%' || p[9] === '°' ? '' : (p[9] || '');
       if (v === base){ r.style.removeProperty(p[10]); return; } r.style.setProperty(p[10], (p[9] === 'color' ? v : v + u)); }); }
-  window.JK_CF = function(k){ return get(k); };
+  window.JK_CF = function(k){ var v = get(k); var d = window.JK_DEVSPD; if (d && k === 'plot.speed' && d.mult > 1) v = v * Math.min(d.mult, 50); return v; };
   window.JK_CFG = {P:P, DEF:DEF, META:META, PUB:PUB, MOB:MOB, on:function(){ return ON; }, local:function(){ return LOC; }, dev:dev,
     set:function(k, v, scope){ var key = k + (scope === 'd' ? '@d' : scope === 'm' ? '@m' : ''); if (v === null) delete LOC[key]; else LOC[key] = v; try { localStorage.setItem('jk_regler', JSON.stringify(LOC)); } catch(e){} css(); subs.forEach(function(f){ try { f(k); } catch(e){} }); },
     replace:function(obj){ LOC = obj || {}; try { localStorage.setItem('jk_regler', JSON.stringify(LOC)); } catch(e){} css(); subs.forEach(function(f){ try { f('*'); } catch(e){} }); },
     sub:function(f){ subs.push(f); }, css:css};
   css();
+  if (DEVON){ var ds = document.createElement('script'); ds.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'devtools.js') + '?t=' + Math.floor(Date.now() / 60000); ds.defer = true; document.head.appendChild(ds); }
   if (ON){ document.documentElement.classList.add('regler'); var s = document.createElement('script'); s.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'regler.js') + '?t=' + Math.floor(Date.now() / 60000); s.defer = true; document.head.appendChild(s); }
 })();

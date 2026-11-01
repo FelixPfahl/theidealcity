@@ -5,7 +5,7 @@
   'use strict';
   if (document.documentElement.classList.contains('ff')) return;   /* Firefox: kein Spiel (Josef, 29.10., 07:43) */
   var PAGE = (location.pathname.split('/').pop() || 'index.html').replace('.html', '') || 'index';
-  var BOARD = window.JK_BOARD || '';
+  var DEV = !!window.JK_DEV_ON, SBK = DEV ? 'jk_sb_dev' : 'jk_sb'; var BOARD = DEV ? '' : (window.JK_BOARD || '');   /* Dev Tools: eigener Spielstand, nie in die Bestenliste (Josef, 1.11., T47/T48) */
   var N = 20, HINT_COST = 50;
   /* Verteilung: id, Seite, Anker (Selector), Position in Prozent, Schwierigkeit (1 leicht 64 px, 2 mittel 44 px, 3 schwer 30 px), Kapitel für den Hinweis */
   /* Verteilung (Josef, 28.10., 00:22: in jeder Partie woanders): jeder Gegenstand hat eine feste Seite und Schwierigkeit (1 leicht 64 px, 2 mittel 44 px, 3 schwer 30 px),
@@ -67,8 +67,8 @@
   function notNow(){ S.optout = S.visits || 1; save(); document.querySelectorAll('.sbobj, .sbli').forEach(function(o){ o.remove(); }); }
   function V(){ return S.visits || 1; }
   function quiet(){ var q = false; try { q = !!sessionStorage.getItem('jk_sb_quiet'); } catch(e){} return q || optedOut() || (!!S.psst && S.psst === V()); }   /* Psst: keine ungefragten Fenster bis zum nächsten Besuch; jk_sb_quiet: Prüfläufe ohne Reaktionen */
-  function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
-  function save(){ if (window.__jkWipe) return; try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
+  function load(){ try { var s = JSON.parse(localStorage.getItem(SBK) || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
+  function save(){ if (window.__jkWipe) return; try { localStorage.setItem(SBK, JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
   function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) + (S.questBonus || 0) + (H('bonus') || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
@@ -200,7 +200,7 @@
     if (R.dr >= 3){ R.r = Math.min(5, R.r + 1); R.dr = 0; } if (R.dr <= -3){ R.r = Math.max(-5, R.r - 1); R.dr = 0; }
     S.answers = (S.answers || 0) + 1; save(); }
   function baseMood(who){ var R = rel(who); if (R.r <= -2) return 'wuetend'; if (R.n >= 2) return 'froh'; if (who === 'sigma') return 'nachdenklich'; return 'neutral'; }
-  function tspeed(){ var v = S.tspeed || 'normal'; return v === 'langsam' ? 1.6 : v === 'sofort' ? 0 : 1; }
+  function tspeed(){ var v = S.tspeed || 'normal'; var b = v === 'langsam' ? 1.6 : v === 'sofort' ? 0 : 1; var d = window.JK_DEVSPD; if (d && d.mult){ b = d.mult >= 99 ? 0 : b / d.mult; } return b; }
   /* Stimme: Silben synthetisch, je Figur Grundton, Wellenform und Formant; Stimmung verschiebt Tonhöhe und Verlauf; drei Sätze: schnell, betont, Ende */
   var VOICE = {inka:{f:760, w:'square', q:4, up:1}, wagner:{f:300, w:'square', q:2, up:-1}, xae:{f:1200, w:'triangle', q:8, up:0}, sigma:{f:520, w:'sine', q:3, up:1}, gojira:{f:60, w:'sawtooth', q:1, up:-1}, polizei:{f:880, w:'square', q:6, up:0}, nole:{f:240, w:'triangle', q:2, up:-1}, grind:{f:420, w:'triangle', q:3, up:-1}, griffith:{f:200, w:'square', q:2, up:0}, libido:{f:660, w:'sine', q:5, up:1}, kalmar:{f:140, w:'sine', q:1, up:1}, haendler:{f:340, w:'sawtooth', q:3, up:-1}};
   var MOODV = {neutral:[0, 0], froh:[2, 1], wuetend:[-2, -1], ueberrascht:[4, 1], traurig:[-3, -1], nachdenklich:[-1, 0], verlegen:[1, -1], gelangweilt:[-2, 0], stolz:[1, 1]};
@@ -284,7 +284,7 @@
   var lastDlg = 0, injectFn = null;
   var MMNAME = {inka:'Inka', wagner:'Wagner', xae:'X', sigma:'Sigma', gojira:'Gojira', polizei:'Nil-Polizei', nole:'Nole', grind:'Grind', griffith:'Griffith', libido:'Libido', kalmar:'Kalmar', haendler:'Gestalt'};
   var MMCOL = {inka:'#5FB8DA', wagner:'#FF5446', xae:'#FFFFFF', sigma:'#2BD27A', gojira:'#2BD27A', polizei:'#B4B4B4', nole:'#D2AA64', grind:'#D2AA64', griffith:'#7C98F0', libido:'#B49BE6', kalmar:'#5FB8DA', haendler:'#D2A05A'};   /* Figurenfarben, auf dunklem Grund lesbar */
-  function dialog(lines, done, opt){ opt = opt || {}; if (dlg){ dq = (dq || []).concat(lines); return; } dq = []; lastDlg = Date.now();
+  function dialog(lines, done, opt){ opt = opt || {}; if (window.JK_DEVLOG && lines && lines[0]){ var l0 = norm0(lines[0]); window.JK_DEVLOG('dialog', (dlg ? 'angehängt, ' : '') + l0.who + ': ' + String(l0.text || '').slice(0, 80)); } if (dlg){ dq = (dq || []).concat(lines); return; } dq = []; lastDlg = Date.now();
     lines = lines.map(norm); var t0 = Date.now(), k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
     dlg = document.createElement('div'); dlg.className = 'sbdlg mm'; dlg.setAttribute('role', 'dialog');
     /* Mega Man X (Josef, 1.11.2026, 16:00): dunkle Box, Pixelschrift, Name vorne in der Figurenfarbe, Porträt außen */
@@ -332,7 +332,7 @@
       function finish(){ if (fin) return; fin = true; typing = false; spans.forEach(function(s){ s.style.visibility = ''; }); if (!dlg) return;
         var txt = items.map(function(x){ return x.ch || ''; }).join(''); if (pageIdx === pages.length - 1) endSyl(L.who, curMood, txt);
         if (pageIdx === pages.length - 1 && L.ask && answered < 2 && !pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } else { more.style.visibility = 'visible'; autoArm(readMs(items)); } }
-      function step(now){ if (fin || !dlg) return; if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
+      function step(now){ if (fin || !dlg) return; if (window.JK_DEVSPD && window.JK_DEVSPD.pause){ due = Math.max(due, now + 60); raf = requestAnimationFrame(step); return; } if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
         if (now < due){ raf = requestAnimationFrame(step); return; }
         while (i < items.length && items[i].ev){ var ev = items[i++]; if (ev.ev === 'mood') setMood(ev.v); else if (ev.ev === 'pause') due = now + ev.v * 1000 * tspeed(); else if (ev.ev === 'cut'){ dlg.classList.add('cut'); i = items.length; } }
         if (due > now){ raf = requestAnimationFrame(step); return; }
@@ -350,8 +350,8 @@
     function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); H('onAnswer', a, L.who); if (a.fn) try { a.fn(); } catch(x){} var box = dlg.querySelector('.answers'); if (box) box.remove();
       var re = (a.re || []).map(norm); if (!re.length) re = [{who:L.who, text:'...'}];
       lines.splice(k + 1, 0, ...re); next(); }
-    function readMs(items){ var n = items.filter(function(x){ return x.ch !== undefined && !x.nm; }).length; return CF('dlg.autominms', 2000) + n * CF('dlg.automs', 45); }   /* kurz warten: etwa 2 s plus Lesezeit */
-    var autoT = null; function autoArm(ms, isAsk){ clearTimeout(autoT); autoT = setTimeout(function(){ if (!dlg) return; if (isAsk){ if (pending){ pending = null; close(false); } return; } if (!document.hidden) next(); else autoArm(1500); }, ms); }
+    function readMs(items){ var n = items.filter(function(x){ return x.ch !== undefined && !x.nm; }).length; var d = window.JK_DEVSPD, m = d && d.mult ? Math.min(d.mult, 20) : 1; return (CF('dlg.autominms', 2000) + n * CF('dlg.automs', 45)) / m; }   /* kurz warten: etwa 2 s plus Lesezeit */
+    var autoT = null; function autoArm(ms, isAsk){ clearTimeout(autoT); autoT = setTimeout(function(){ if (!dlg) return; if (window.JK_DEVSPD && window.JK_DEVSPD.pause){ autoArm(400, isAsk); return; } if (isAsk){ if (pending){ pending = null; close(false); } return; } if (!document.hidden) next(); else autoArm(1500); }, ms); }
     function next(e){ clearTimeout(autoT); if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
       if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ if (!pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } return; } more.style.visibility = 'visible'; cursorSnd('mv'); autoArm(readMs(items)); return; }   /* Josef, 1.11., 16:00: nach dem Überspringen schloss der Dialog nicht mehr von allein */
@@ -440,7 +440,7 @@
     fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); });
     /* Josef, 1.11., 10:32: Spiel neu starten; vorher fragen, ob wirklich alle Daten gelöscht werden; danach Startseite */
     fab.querySelector('.sbrestart').addEventListener('click', function(){ openMenu(false); if (dlg) return; dialog([{who:'inka', mood:'ueberrascht', text:'Neu anfangen? Dann vergesse ich alles: Funde, Punkte, Antworten, Abzeichen, Begegnungen, deine Einstellungen. *Wirklich alle Daten löschen?*', ask:[{s:'a', t:'Ja, wirklich alle Daten löschen', fn:wipeAll, re:[['inka', '[m:traurig]Gut. [p:.4]Bis gleich, wer auch immer du dann bist.']]}, {s:'v', t:'Nein, lieber nicht', re:[['inka', '[m:froh]Dachte ich mir. Alles bleibt, wie es ist.']]}]}], function(){ if (window.__jkWipe) location.href = 'index.html'; }); }); }
-  function wipeAll(){ try { Object.keys(localStorage).forEach(function(k){ if (/^jk_/.test(k)) localStorage.removeItem(k); }); Object.keys(sessionStorage).forEach(function(k){ if (/^jk_/.test(k)) sessionStorage.removeItem(k); }); } catch(e){} window.__jkWipe = 1; }
+  function wipeAll(){ try { Object.keys(localStorage).forEach(function(k){ if (/^jk_/.test(k) && !/^jk_(dev|regler)/.test(k)) localStorage.removeItem(k); }); Object.keys(sessionStorage).forEach(function(k){ if (/^jk_/.test(k)) sessionStorage.removeItem(k); }); } catch(e){} window.__jkWipe = 1; }
   function refresh(){ if (num) num.textContent = count(); var c = fab && fab.querySelector('.sbcount span'); if (c) c.textContent = count() + '/' + N; if (panel && panel.classList.contains('sbinv')) inventory(true); }
   function closePanel(){ if (!panel) return; document.removeEventListener('keydown', panelKey); var pn = panel; panel = null; pn.classList.add('off'); setTimeout(function(){ pn.remove(); }, 250); if (btn) btn.focus(); }
   function panelKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); closePanel(); } }
@@ -567,7 +567,7 @@
     var wvi = panel.querySelector('.sbwv'); if (wvi) wvi.addEventListener('change', function(){ S.wview = wvi.checked ? 1 : 0; save(); cursorSnd('ok'); });
     var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); });
     panel.querySelector('.sbforget').addEventListener('click', function(){ var b = this; if (!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = 'Wirklich alles vergessen?'; setTimeout(function(){ b.classList.remove('sure'); b.textContent = 'Alles vergessen'; }, 5000); return; }
-      try { localStorage.removeItem('jk_sb'); sessionStorage.removeItem('jk_sb_seen'); } catch(e){} location.reload(); }); }
+      try { localStorage.removeItem(SBK); sessionStorage.removeItem('jk_sb_seen'); } catch(e){} location.reload(); }); }
   /* Plus-Stufe 2 und 3: Sigma spricht in Rätseln (Josef, 29.10., 13:14: kryptische Hinweise) */
   function riddle(p){ var where = /^@lb/.test(p.sel) ? 'in einem Bild, wenn man es groß ansieht' : /footgrid/.test(p.sel) ? 'wo die Seite aufhört zu sprechen' : /marg/.test(p.sel) ? 'am Rand, wo die Anmerkungen wohnen' : /figure/.test(p.sel) ? 'in einem Bild, das selbst ein Bild zeigt' : /pagehead/.test(p.sel) ? 'ganz oben, wo der Name steht' : /textwrap|cvl|credits|first-child|nlform|bigtabs|landing-foot|princeofwales/.test(p.sel) ? 'zwischen den Zeilen, wörtlich' : 'wo die Seite ihren Namen nicht sagt';
     var pg = {index:'wo drei Türen offen stehen', kunst:'wo die Farbe noch trocknet', comic:'wo die Felder sprechen', texte:'wo gewandert wird', vermittlung:'wo erklärt wird', info:'wo ein Leben in Zeilen steht'}[p.p] || 'irgendwo';
@@ -799,7 +799,7 @@
     wander:wanderNow, chapter:showChapter, album:albumCount, badges:function(){ return Object.keys(S.badges || {}); }, ruins:function(){ return S.ruins || {}; }, ruin:function(id, tool){ var f = document.getElementById('w-' + id); if (f) ruin(f, tool); }, tool:startTool, quest:function(){ return S.quest || null; }, offer:offerQuest, react:react, opinion:opinion, mood:closest,
     ids:function(){ return PLACES.map(function(p){ return p.id; }); },
     set:function(found, hints){ var ids = PLACES.map(function(p){ return p.id; }); S.found = {}; for (var i = 0; i < Math.min(found, ids.length); i++) S.found[ids[i]] = Date.now(); S.hints = hints || 0; if (found >= N){ S.done = S.done || Date.now(); } else S.done = 0; save(); },
-    reset:function(){ try { localStorage.removeItem('jk_sb'); } catch(e){} }};
+    reset:function(){ try { localStorage.removeItem(SBK); } catch(e){} }};
   /* ---------- Gegenstände verstecken ---------- */
   var ZI = 0;
   /* Dinge in der Großansicht (Josef, 1.11., 10:55): erscheinen nur, wenn genau diese Arbeit oder Abbildung groß angesehen wird; liegen auf der sichtbaren Bildfläche */
@@ -817,7 +817,7 @@
       if (getComputedStyle(a).position === 'static') a.style.position = 'relative';
       /* Anker mit Objekt liegt über seinen Nachbarn (gedrehte Figuren im wilden Raster bilden eigene Stapelkontexte, Test 28.10., 08:15: Betonmischer unter dem Nachbarbild) */
       if (!a.style.zIndex) a.style.zIndex = String(29 - ZI++);   /* jeder Anker liegt über seinen Nachbarn (Test 29.10., 09:20: Sonne im Startseitenfuß unter der folgenden Zeile); bleibt unter Unternavigation (45) und Kopf (50) */
-      var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false;
+      var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false; img.setAttribute('data-id', p.id);
       var sz = SIZE[p.d]; img.style.width = sz + 'px'; var IN = 10; img.style.left = 'clamp(' + IN + 'px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))'; img.style.top = 'clamp(' + IN + 'px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))';   /* 10 px Abstand zum Ankerrand: gedrehte Nachbarbilder überlappen die Ecken um einige Pixel (Test 29.10., 09:00) */   /* nie über den Anker hinaus */
       img._p = p; a11yObj(img, p); img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); img.addEventListener('load', function(){ clearTimeout(window.__jkUn); window.__jkUn = setTimeout(unstack, 60); });
       if (/^(UL|OL)$/.test(a.tagName)){ var li = document.createElement('li'); li.setAttribute('aria-hidden', 'true'); li.className = 'sbli'; li.appendChild(img); a.appendChild(li); } else a.appendChild(img); });   /* Listen dürfen nur li enthalten (axe, 29.10.) */
@@ -936,6 +936,10 @@
     freeHint:function(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return; var here = left.filter(function(p){ return p.p === PAGE; }); hintFor((here.length ? here : left)[0]); S.hints = Math.max(0, S.hints - 1); save(); refresh(); }};
   function H(n){ var f = X.hooks[n]; if (!f) return undefined; try { return f.apply(null, [].slice.call(arguments, 1)); } catch(e){ try { console.warn('world', n, e); } catch(_){} return undefined; } }
   function loadWorld(){ if (optedOut() && !S.done) {} var sc = document.querySelector('script[src*="game.js"]'); var v = sc ? ((sc.src.match(/[?&]v=([^&]+)/) || [])[1] || '') : ''; var s2 = document.createElement('script'); s2.src = '../assets/game/world.js' + (v ? '?v=' + v : ''); s2.defer = true; document.head.appendChild(s2); }
-  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); reactions(); mood(); applyRuins(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); setTimeout(loadWorld, 1200); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
+  /* Dev Tools (Josef, 1.11.2026, T13 bis T17): Zugriff aufs Innere, nur nach Freischaltung genutzt */
+  X.dev = {S:function(){ return S; }, PLACES:PLACES, N:N, CHAPTERS:CHAPTERS, NAMES:NAMES, CH:CH, MOODS:MOODS, STANCE:STANCE, chapter:showChapter, secret:function(){ showChapter('s'); }, cert:cert, greet:function(){ dialog(greet()); }, intro:function(){ try { sessionStorage.removeItem('jk_sb_seen'); } catch(e){} startIntro('dev'); }, modem:function(){ modemScene(function(){}); }, hint:hint, wander:wanderNow, quest:function(){ offerQuest(); }, done:function(){ dialog(doneLines()); }, done3:function(){ dialog(DONE3()); }, done4:function(){ dialog(DONE4()); }, logbook:logbook, inventory:function(){ inventory(); }, rel:rel, relAdd:relAdd, baseMood:baseMood, count:count, points:points, secs:secs, refresh:refresh, save:save, place:place, close:function(){ var d = document.querySelector('.sbdlg'); if (d){ var e = new KeyboardEvent('keydown', {key:'Escape', bubbles:true}); document.dispatchEvent(e); } }, next:function(){ var d = document.querySelector('.sbdlg .win'); if (d) d.click(); },
+    find:function(id){ var p = PLACES.filter(function(q){ return q.id === id; })[0]; if (!p || S.found[p.id]) return; var img = document.querySelector('img.sbobj[data-id="' + id + '"]'); if (img) found(p, img, null); else { if (!S.start) S.start = Date.now(); S.found[id] = Date.now(); if (count() >= N) S.done = Date.now(); save(); refresh(); } },
+    unfind:function(id){ delete S.found[id]; if (count() < N) S.done = 0; save(); refresh(); }, KEY:SBK, OBJ:OBJ, SPOTS:SPOTS, SIZE:SIZE};
+  function init(){ try { if (!localStorage.getItem(SBK)) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); reactions(); mood(); applyRuins(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); setTimeout(loadWorld, 1200); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

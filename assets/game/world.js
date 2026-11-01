@@ -5,6 +5,7 @@
   var S = X.S(), PAGE = X.PAGE, T = null, ready = false;
   var now = function(){ return Date.now(); };
   function save(){ X.save(); }
+  function dl(k, m){ if (window.JK_DEVLOG) try { window.JK_DEVLOG(k, m); } catch(e){} }   /* Ereignis-Protokoll der Dev Tools */
   function rnd(a){ return a[Math.floor(Math.random() * a.length)]; }
   function H(){ return new Date().getHours(); }
   S.w = S.w || {}; var W = S.w;   /* Weltzustand: cs gesehen, bh Verhalten, bv Varianten, bp Verhaltenspunkte, enc Begegnungen, fac, wanted, fines, mem */
@@ -57,13 +58,13 @@
     return true; }
   function score(c){ var t = c.trig || {}, s = 0; ['page', 'fmin', 'fmax', 'chap', 'time', 'dow', 'rel', 'visits', 'ng'].forEach(function(k){ if (t[k] !== undefined) s += 1; }); ['sec', 'mem', 'after', 'fac', 'wanted'].forEach(function(k){ if (t[k] !== undefined) s += 2; }); if (t.day) s += 6; if (t.work) s += 5; return s + Math.random() * 2.5; }
   function pick(opt){ if (!T) return null; var best = null, bs = -1; T.convos.forEach(function(c){ if (!eligible(c, opt)) return; var s = score(c); if (s > bs){ bs = s; best = c; } }); return best; }
-  function show(c, how){ if (!c) return false; W.cs[c.id] = 1; save(); X.dialog(c.lines, null, {psst:how !== 'call'}); log(c.lines[0], how === 'call' ? 'Gespräch' : 'Gespräch'); return true; }
+  function show(c, how){ if (!c) return false; dl('gespräch', c.id + ' (' + how + ')'); W.cs[c.id] = 1; save(); X.dialog(c.lines, null, {psst:how !== 'call'}); log(c.lines[0], how === 'call' ? 'Gespräch' : 'Gespräch'); return true; }
   X.hooks.greetExtra = function(){ var c = pick({}); if (!c) return []; W.cs[c.id] = 1; save(); return c.lines; };
   /* ungefragt: höchstens alle 40 s, nie während der Plotter im Sichtfeld schreibt, nie über Panels */
   var lastAmb = now();
   function ambient(){ if (!ready || document.hidden || X.busy() || X.quiet() || X.optedOut()) return; var gap = X.CF('game.gap', 40) * 1000; if (now() - X.lastDlg() < gap || now() - lastAmb < gap) return; if (X.readingNow()) return; if (now() - lastInput > 120000) return;
     var w = worldEvent(); if (w) { lastAmb = now(); return; }
-    if (Math.random() < .35) return;   /* nicht jedes Mal */
+    if (Math.random() < X.CF('game.ambskip', .35)) return;   /* nicht jedes Mal */
     var c = pick({}); if (c && show(c, 'amb')) lastAmb = now(); }
   var lastInput = now(); ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function(ev){ window.addEventListener(ev, function(){ lastInput = now(); }, {passive:true, capture:true}); });
   window.addEventListener('jk:lb', function(e){ var a = e.detail && e.detail.a, f = a && a.closest && a.closest('figure.work'); if (!f || !T) return; beh('lightbox');
@@ -72,20 +73,20 @@
   /* ---------- Reaktionen als kurze Mega-Man-Box (Josef, 1.11., 16:18: keine Extra-Blasen mehr) ----------
      höchstens alle 90 s, nie während ein Gespräch läuft, nach Psst gar nichts Ungefragtes; Klick aufs Porträt: Zeile in der laufenden Box */
   var lastBub = 0;
-  function bubble(who, text, opt){ opt = opt || {}; if (W.nowatch || X.optedOut() || !text) return false;
+  function bubble(who, text, opt){ opt = opt || {}; if (W.nowatch || X.optedOut() || !text){ dl('reaktion', 'nicht gezeigt: ' + (W.nowatch ? 'Beobachten aus' : X.optedOut() ? 'Nicht jetzt' : 'kein Text')); return false; }
     text = text.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph(k); return v === null || v === undefined ? m : v; });
     if (opt.inject){ if (X.inject({who:X.CH[who] ? who : 'inka', text:text})){ log([who, text], 'Reaktion'); return true; } return false; }
-    if (X.quiet() || X.busy() || document.hidden) return false; if (now() - lastBub < X.CF('game.reactgap', 90) * 1000 || now() - X.lastDlg() < 20000) return false; lastBub = now();
+    if (X.quiet() || X.busy() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.busy() ? 'Fenster offen' : 'Tab verborgen')); return false; } if (now() - lastBub < X.CF('game.reactgap', 90) * 1000 || now() - X.lastDlg() < 20000){ dl('reaktion', 'nicht gezeigt: Abstand (' + Math.round((now() - Math.max(lastBub, X.lastDlg())) / 1000) + ' s)'); return false; } lastBub = now();
     X.dialog([{who:X.CH[who] ? who : 'inka', text:text}], null, {psst:true}); log([who, text], 'Reaktion'); return true; }
   function log(line, kind){ var who = Array.isArray(line) ? line[0] : line && line.who, t = Array.isArray(line) ? line[1] : line && line.text; if (!who || !t) return; t = String(t).replace(/\[[^\]]*\]/g, '').replace(/\*/g, ''); W.enc.push({w:who, t:t.slice(0, 160), d:now(), k:kind}); if (W.enc.length > 150) W.enc = W.enc.slice(-150); save(); }
 
   /* ---------- Verhalten: drei Stufen, nie dieselbe Variante doppelt, Punkte einmal je Partie ---------- */
   var PTS = {read_full:20, footnote:15, ref_open:15, captions:15, slow_read:15, musterbuch:15, pdf:10, spotify:10, lightbox:10, tab_jump:5, page_change:5, select_text:5, copy:5, mode_change:5, lesehilfe:10, zoom:5, calm_toggle:5, rotate:5, resize:5, tab_return:5, external_link:5, find_ctrlf:5, find_streak:20, long_session:15, daily:20, same_hour:10, long_away:10, fav_page:10, type_title:15, type_name:10, cheat_code:10, poke:5, restored:15, scroll_pingpong:5, plot_interrupt:5, images_only:5, pointer_circle:5, page_404:10, back_button:5};
   var cool = {};
-  function beh(key, who, extra){ if (!T || !T.beh || !T.beh[key] || W.nowatch || X.optedOut()) return false; var B = T.beh[key]; var n = W.bh[key] = (W.bh[key] || 0) + 1; save();
-    if (cool[key] && now() - cool[key] < 45000) return false; cool[key] = now();
+  function beh(key, who, extra){ if (!T || !T.beh || !T.beh[key] || W.nowatch || X.optedOut()){ dl('verhalten', key + ': aus'); return false; } var B = T.beh[key]; var n = W.bh[key] = (W.bh[key] || 0) + 1; save();
+    if (cool[key] && now() - cool[key] < X.CF('game.behcool', 45) * 1000){ dl('verhalten', key + ': Abkühlung'); return false; } cool[key] = now();
     var st = n <= 2 ? 0 : n <= 5 ? 1 : 2, arr = B.stages[st] || B.stages[0]; var used = W.bv[key + st] = W.bv[key + st] || []; var free = []; arr.forEach(function(_, i){ if (used.indexOf(i) < 0) free.push(i); }); if (!free.length){ used.length = 0; free = arr.map(function(_, i){ return i; }); }
-    var i = rnd(free); used.push(i); var v = arr[i]; var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka;
+    var i = rnd(free); used.push(i); var v = arr[i]; dl('verhalten', key + ' Stufe ' + (st + 1) + ' Variante ' + (i + 1)); var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka;
     if (extra) Object.keys(extra).forEach(function(k){ ctx[k] = extra[k]; });
     if (!W.bp[key] && PTS[key] !== undefined){ W.bp[key] = PTS[key]; save(); X.refresh(); }   /* Punkte zählen auch, wenn gerade keine Box erscheinen darf */
     var shown = bubble(w, v, {inject:key === 'poke'}); if (!shown){ used.pop(); W.bh[key]--; cool[key] = 0; save(); achievements(); return false; }
@@ -172,7 +173,7 @@
   setInterval(function(){ if (W.wanted >= 1 && T && T.police && Math.random() < .25) bubble('polizei', rnd(T.police.durchsage)); }, 150000);
 
   /* ---------- Welt-Ereignisse: Szenen der Gäste, Ticker, Auge, Werbung, Händler*in ---------- */
-  function scene(key, once){ if (!T || !T.scenes || !T.scenes[key]) return false; if (once !== false && W.sc[key]) return false; W.sc[key] = now(); save(); X.dialog(T.scenes[key], null, {psst:true}); log(T.scenes[key][0], 'Szene'); return true; }
+  function scene(key, once){ if (!T || !T.scenes || !T.scenes[key]) return false; if (once !== false && W.sc[key]) return false; dl('szene', key); W.sc[key] = now(); save(); X.dialog(T.scenes[key], null, {psst:true}); log(T.scenes[key][0], 'Szene'); return true; }
   function milestones(){ var n = X.count(); W.ms = W.ms || {}; [[4, 'griffith_1'], [8, 'griffith_2'], [12, 'griffith_3'], [16, 'griffith_4'], [19, 'griffith_5']].forEach(function(m){ if (n >= m[0] && !W.ms[m[1]]) { W.ms[m[1]] = 1; W.queue = (W.queue || []).concat([m[1]]); } }); if (n >= 12 && !W.ms.job){ W.ms.job = 1; W.queue = (W.queue || []).concat(['nil_job']); } save(); }
   function worldEvent(){ if (police()) return true;
     if (W.queue && W.queue.length){ var k = W.queue.shift(); save(); if (scene(k)) return true; }
@@ -192,7 +193,7 @@
     if (!tick){ tick = document.createElement('div'); tick.className = 'sbtick'; tick.setAttribute('role', 'status'); tick.setAttribute('aria-live', 'polite'); document.body.appendChild(tick); }
     tick.innerHTML = '<b>NIL NEWS 2186</b><span>' + X.esc(txt) + '</span>'; tick.classList.add('on'); setTimeout(function(){ tick.classList.remove('on'); }, 14000); log(['libido', txt], 'Ticker'); return true; }
   /* das schwebende Auge: selten, einmal je Besuch höchstens */
-  function eye(){ if (W.nowatch || X.optedOut() || W.eyeV === X.V() || Math.random() > .25) return; W.eyeV = X.V(); W.eyeN = (W.eyeN || 0) + 1; save();
+  function eye(force){ if (!force && (W.nowatch || X.optedOut() || W.eyeV === X.V() || Math.random() > .25)) return; dl('welt', 'Auge'); W.eyeV = X.V(); W.eyeN = (W.eyeN || 0) + 1; save();
     var e = document.createElement('div'); e.className = 'sbeye'; e.setAttribute('aria-hidden', 'true'); e.innerHTML = '<svg viewBox="0 0 120 60" width="120" height="60"><path class="wl" d="M42 30 C20 10 6 14 0 22 C14 22 24 28 40 34"/><path class="wr" d="M78 30 C100 10 114 14 120 22 C106 22 96 28 80 34"/><ellipse cx="60" cy="30" rx="18" ry="12" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="60" cy="30" r="6" fill="#000"/><path d="M60 30 L74 4" stroke="#000" stroke-width="2.5"/></svg>'; document.body.appendChild(e);
     setTimeout(function(){ e.remove(); }, 9000); setTimeout(function(){ bubble(rnd(['inka', 'sigma', 'xae']), rnd(['Da oben. Das Auge. Hast du es gesehen?', '... es fliegt wieder. Es sieht alles, nur nicht sich selbst.', 'Mein Auge. Flex: es hat Flügel. Ich nicht.'])); achievements(); }, 5000); }
   /* Werbung: eine kleine Anzeige je Seite, selten, schließbar */
@@ -241,6 +242,12 @@
   X.hooks.badgeExtra = function(){ return ACH.map(function(a){ return {id:a[0], name:a[1], who:a[3], line:a[4], got:!!W.ach[a[0]]}; }); };
 
   /* ---------- Laden der Texte ---------- */
+  /* Dev Tools: Zugriff (Josef, 1.11., T13 bis T18) */
+  X.wdev = {W:W, T:function(){ return T; }, PTS:PTS, ACH:ACH, lead:lead, achievements:achievements,
+    scene:function(k){ if (T && T.scenes && T.scenes[k]){ dl('szene', k + ' (dev)'); X.dialog(T.scenes[k]); } },
+    convo:function(id){ var c = T && T.convos.filter(function(x){ return x.id === id; })[0]; if (c){ dl('gespräch', id + ' (dev)'); X.dialog(c.lines); } },
+    beh:function(key, st, i, who){ var B = T && T.beh[key]; if (!B) return; var arr = B.stages[st] || []; var v = arr[i]; var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka; if (v){ dl('verhalten', key + ' Stufe ' + (st + 1) + ' Variante ' + (i + 1) + ' (dev)'); X.dialog([{who:X.CH[w] ? w : 'inka', text:v}]); } },
+    police:function(lv){ pendingPolice = lv; delete W.sc['polizei_kontrolle_' + lv + ':' + X.V()]; police(); }, eye:function(){ eye(true); }, ambient:function(){ lastAmb = 0; ambient(); }, worldEvent:function(){ return worldEvent(); } };
   function boot(data){ T = data || {}; T.convos = T.convos || []; ready = true; visitPatterns(); setTimeout(eye, 60000 + Math.random() * 240000); setInterval(ambient, 5000); achievements(); }
   var src = (document.currentScript && document.currentScript.src) || ''; var v = (src.match(/[?&]v=([^&]+)/) || [])[1] || '';
   fetch('../assets/game/talk.json' + (v ? '?v=' + v : '')).then(function(r){ return r.json(); }).then(boot).catch(function(){ boot({}); });

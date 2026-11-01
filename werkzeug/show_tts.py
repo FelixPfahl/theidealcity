@@ -17,7 +17,7 @@ src, out, keyfile = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
 MODEL = os.environ.get("EL_MODEL", "eleven_v3")
 # Tempo je Stimme (Josef 1.11.2026: schneller, Inka etwas langsamer als Wagner)
-SPEEDS = {"inka": float(os.environ.get("SPEED_INKA", "1.1")), "wagner": float(os.environ.get("SPEED_WAGNER", "1.25")), "sigma": float(os.environ.get("SPEED_SIGMA", "1.15"))}
+SPEEDS = {"inka": float(os.environ.get("SPEED_INKA", "1.0")), "wagner": float(os.environ.get("SPEED_WAGNER", "1.25")), "sigma": float(os.environ.get("SPEED_SIGMA", "1.15"))}
 VOICES = {"inka": os.environ.get("EL_VOICE_INKA", "S87WJpstXs0Ge2ukRiXJ"),
           "wagner": os.environ.get("EL_VOICE_WAGNER", "qsEcR8IqZUmxT1rxm9G9"),
           "sigma": os.environ.get("EL_VOICE_SIGMA", "JudZUClAOU1jP3wA2eDG")}

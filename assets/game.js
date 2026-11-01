@@ -102,7 +102,7 @@
     inka:   {name:'INKA SCHALTER', col:'#3F97B8', speed:45, blip:[760, 'square']},      /* Manga mit Rasterfolie: Punktraster, schnell */
     wagner: {name:'WAGNER ROHRSCHACH', col:'#E2231A', speed:55, blip:[300, 'square']},  /* frankobelgisch, ligne claire: klarer Rahmen, gemessen */
     xae:    {name:'X Æ A-13', col:'#000', speed:38, blip:[1200, 'triangle']},            /* dokumentarisch: nüchtern, sehr schnell */
-    sigma:  {name:'TEST SIGMA', col:'#00A651', speed:66, blip:[520, 'sine']},            /* Indie: wackliger Rahmen, langsam, hinter Glas */
+    sigma:  {name:'TEST SIGMA', col:'#00A651', speed:40, blip:[520, 'sine']},            /* Indie: wackliger Rahmen, langsam, hinter Glas */
     gojira: {name:'GOJIRA', col:'#00A651', speed:150, blip:[60, 'sine']}                 /* nur Punkte und ein Beben */
   };
   var RULES = [
@@ -251,9 +251,13 @@
     function items3dots(it){ return it._dots; }
     function showPage(){ var items = pages[pageIdx]; p.innerHTML = ''; more.style.visibility = 'hidden'; typing = true; if (raf) cancelAnimationFrame(raf); dlg.classList.remove('cut');
       /* drei Punkte markieren */ for (var q = 0; q < items.length; q++){ if (items[q].ch === '.' && items[q + 1] && items[q + 1].ch === '.' && items[q + 2] && items[q + 2].ch === '.'){ items[q + 2]._dots = true; } }
-      var spans = [], curLink = null, linkEl = null; items.forEach(function(it){ if (it.ev) return; var el;
-        if (it.link){ if (!linkEl || curLink !== it.link){ linkEl = document.createElement('a'); linkEl.className = 'wl'; linkEl.href = (document.getElementById('w-' + it.link.id) ? '' : (it.link.page || 'kunst') + '.html') + '#w-' + it.link.id; linkEl.addEventListener('click', function(e){ e.stopPropagation(); }); p.appendChild(linkEl); curLink = it.link; } el = document.createElement('span'); linkEl.appendChild(el); }
-        else { curLink = null; el = document.createElement('span'); p.appendChild(el); }
+      var spans = [], curLink = null, linkEl = null, wordEl = null; items.forEach(function(it){ if (it.ev) return; var el;
+        /* Josef, 1.11., 09:01: Wörter nie mitten im Wort umbrechen; jedes Wort liegt in einer nicht umbrechenden Klammer, Leerzeichen dazwischen */
+        var host; if (it.link){ if (!linkEl || curLink !== it.link){ linkEl = document.createElement('a'); linkEl.className = 'wl'; linkEl.href = (document.getElementById('w-' + it.link.id) ? '' : (it.link.page || 'kunst') + '.html') + '#w-' + it.link.id; linkEl.addEventListener('click', function(e){ e.stopPropagation(); }); p.appendChild(linkEl); curLink = it.link; wordEl = null; } host = linkEl; }
+        else { if (curLink){ wordEl = null; } curLink = null; host = p; }
+        el = document.createElement('span');
+        if (it.ch === ' '){ wordEl = null; host.appendChild(el); }
+        else { if (!wordEl || wordEl.parentNode !== host){ wordEl = document.createElement('span'); wordEl.className = 'wd'; host.appendChild(wordEl); } wordEl.appendChild(el); }
         el.textContent = it.ch; el.className = 'ch' + (it.ch === ' ' ? ' sp' : '') + (it.emph ? ' emph' : '') + ((MOOD[curMood] || {}).fx ? ' ' + MOOD[curMood].fx : '') + (lines[k].who === 'sigma' ? ' wav' : ''); el.style.visibility = 'hidden'; el.style.animationDelay = (spans.length * 37 % 400) + 'ms'; spans.push(el); });
       var L = lines[k], i = 0, si = 0, due = performance.now(), fin = false, nvis = 0;
       var hidden = document.hidden;

@@ -57,7 +57,7 @@
     ['dlg.ms.inka', 'Dialoge', 'Tempo und Pausen', 'Tempo Inka', 'Millisekunden je Zeichen (kleiner = schneller).', 45, 5, 200, 1, 'ms'],
     ['dlg.ms.wagner', 'Dialoge', 'Tempo und Pausen', 'Tempo Wagner', 'Millisekunden je Zeichen.', 55, 5, 200, 1, 'ms'],
     ['dlg.ms.xae', 'Dialoge', 'Tempo und Pausen', 'Tempo X Æ A-13', 'Millisekunden je Zeichen.', 38, 5, 200, 1, 'ms'],
-    ['dlg.ms.sigma', 'Dialoge', 'Tempo und Pausen', 'Tempo Sigma', 'Millisekunden je Zeichen.', 66, 5, 200, 1, 'ms'],
+    ['dlg.ms.sigma', 'Dialoge', 'Tempo und Pausen', 'Tempo Sigma', 'Millisekunden je Zeichen.', 40, 5, 200, 1, 'ms'],
     ['dlg.ms.gojira', 'Dialoge', 'Tempo und Pausen', 'Tempo Gojira', 'Millisekunden je Zeichen.', 150, 20, 600, 5, 'ms'],
     ['dlg.p.comma', 'Dialoge', 'Tempo und Pausen', 'Pause Komma', 'Pause nach Komma, Semikolon, Doppelpunkt.', .15, 0, 1, .01, 's'],
     ['dlg.p.stop', 'Dialoge', 'Tempo und Pausen', 'Pause Punkt', 'Pause nach Punkt.', .35, 0, 2, .01, 's'],

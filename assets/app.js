@@ -1169,10 +1169,12 @@
       if (/\bpfahl\b/.test(cl)) s2.pf = true; return s2; }
     /* Lage jedes Worts aus dem Browser-Satz: ein Range je Wort, Buchstaben nach ihren Breiten verteilt; Zeile auf das Raster lh gerundet */
     function measureWords(keep, sc, fs, lh, TILT){ var kr = keep.getBoundingClientRect(), rng = document.createRange(), words = [], cur = null, space = true;
+      var Z = (keep.offsetWidth > 0 && kr.width > 0) ? kr.width / keep.offsetWidth : 1;   /* CSS-zoom (body zoom ab 2200 px, Lesehilfe): Rechtecke kommen gezoomt, gezeichnet wird in Layout-Pixeln */
       function addTok(tn, i0, tok, st){
         rng.setStart(tn, i0); rng.setEnd(tn, i0 + tok.length); var rs = rng.getClientRects(); if (!rs.length) return;
         var r = rs[0]; if (rs.length > 1){ var wsum = 0; for (var q = 0; q < rs.length; q++) wsum += rs[q].width; if (rs[rs.length - 1].top - rs[0].top > 2) r = rs[0]; else r = {left:rs[0].left, top:rs[0].top, width:wsum, height:rs[0].height}; }
-        var li = Math.max(0, Math.round((r.top - kr.top - (lh - r.height) / 2) / lh)), y = li * lh, x0 = r.left - kr.left;
+        r = {left:(r.left - kr.left) / Z, top:(r.top - kr.top) / Z, width:r.width / Z, height:r.height / Z};
+        var li = Math.max(0, Math.round((r.top - (lh - r.height) / 2) / lh)), y = li * lh, x0 = r.left;
         var its = [], tot = 0;
         for (var i = 0; i < tok.length; i++){ var ch = tok[i], hand = !!st.acc; var g = glyph(ch, hand); var kk = g.hand ? R(.95, 1.05) : 1; var s1 = (g.hand ? sc * CF('hand.size', 1.6) : sc) * kk;
           var adv = g.a * s1; its.push({ch:ch, g:g, adv:adv, s:st, sc:s1, rot:g.hand ? R(-TILT, TILT) : 0}); tot += adv; }
@@ -1442,7 +1444,7 @@
     window.addEventListener('scroll', function(){ if (!raf){ raf = true; requestAnimationFrame(update); } }, {passive:true});
     /* Hintergrund-Tab: Stifte pausieren (rAF ruht), Ton aus; zurück im Tab geht es weiter */
     document.addEventListener('visibilitychange', function(){ if (document.hidden) plotterLoopsOff(); else if (!raf){ raf = true; requestAnimationFrame(update); } });
-    var rs = null, lastW = window.innerWidth; window.addEventListener('resize', function(){ clearTimeout(rs); rs = setTimeout(function(){ if (!F || window.innerWidth === lastW) return; lastW = window.innerWidth; buildAll(); }, 250); });   /* nur Breitenänderung baut neu, Höhe (Adressleiste am Handy) nie */
+    var rs = null, lastW = window.innerWidth; window.addEventListener('resize', function(){ clearTimeout(rs); rs = setTimeout(function(){ if (!F || (window.innerWidth === lastW && Math.min(2, window.devicePixelRatio || 1) === DPR)) return; lastW = window.innerWidth; DPR = Math.min(2, window.devicePixelRatio || 1); buildAll(); }, 250); });   /* Strg+Plus/Minus: neue Breite und neue Pixeldichte, alles neu gesetzt */   /* nur Breitenänderung baut neu, Höhe (Adressleiste am Handy) nie */
     document.querySelectorAll('.modes button').forEach(function(bt){ bt.addEventListener('click', function(){ setTimeout(function(){ built.forEach(function(b){ b.col = colors(b.el); b.done = 0; if (b.alive){ var c = b.cv.getContext('2d'); c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,b.cv.width,b.cv.height); } b.dirty = true; }); update(); }, 30); }); });
     document.addEventListener('pointerdown', function(){ if (built.some(function(b){ return b.hero && b.f < 1; })) requestAnimationFrame(update); }, {passive:true});
   });

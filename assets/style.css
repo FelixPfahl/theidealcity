@@ -1412,3 +1412,5 @@ span.plotted{display:inline-block;vertical-align:top}
 
 /* Josef, 1.11.: Leerzeichen in Dialogen nie als inline-block (sonst Breite 0 bei Sigma und Zittern) */
 .sbdlg .ch.sp,.sbdlg.c-sigma .ch.sp,.sbdlg .ch.sp.shk.live{display:inline!important;animation:none!important}
+
+.sbdlg .wd{white-space:nowrap;display:inline}

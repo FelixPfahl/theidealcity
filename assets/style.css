@@ -298,7 +298,7 @@ a.wl:hover{color:var(--accent);background:none}
 .cta.links{grid-template-columns:1fr;max-width:720px}
 #pfahlface.fade{opacity:0!important;transition:opacity 6s ease-out;animation:none!important}
 @media (hover:none){#pfahlface.fade{transition:opacity 9s ease-out}}
-.hero,.bigtabs,.mark,nav.tabs,.pagehead h1,.serhead h2,.ctabtn,.subnav,.work,.powtiles,.cover,.divider{-webkit-user-select:none;user-select:none}
+.mark,nav.tabs,.ctabtn,.subnav,.work,.powtiles,.cover,.divider{-webkit-user-select:none;user-select:none}   /* Josef, 1.11., 11:56: Texte der Startseite und Titel kopierbar (hero, bigtabs, pagehead, serhead aus der Liste genommen) */
 /* Handy: lange Titel dürfen nicht über den Rand laufen */
 .serhead h2{overflow-wrap:break-word;hyphens:auto;-webkit-hyphens:auto}
 .serhead .meta{overflow-wrap:anywhere}
@@ -1492,3 +1492,8 @@ html.calm .modem .mava img,html.calm .modem .mava i{animation:none}
 /* Nil-Anzeige ohne Layoutverschiebung (Test 1.11., 11:50) */
 .sbad.float{position:absolute;right:0;top:12px;margin:0;width:min(300px,28vw);z-index:4;box-shadow:4px 4px 0 var(--line)}
 .sbad.pop{position:fixed;left:12px;right:12px;bottom:72px;margin:0;z-index:94;max-width:none;box-shadow:4px 4px 0 var(--line)}
+
+/* Dialoge: Fenster anklickbar (weiterblättern), Seite darunter frei; Inka-Knopf bleibt während Dialogen erreichbar (Josef, 1.11., 11:55) */
+.sbdlg .win{pointer-events:auto}
+body.sbdlgon .sbfab{opacity:.55;pointer-events:auto}
+@media (max-width:600px){body.sbdlgon .sbfab{opacity:0;pointer-events:none}}

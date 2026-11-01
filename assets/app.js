@@ -993,7 +993,7 @@
       if (voll){ var vb = document.createElement('button'); vb.type = 'button'; vb.className = 'voll'; vb.textContent = 'vollständig'; var cur0 = img.src; lb.appendChild(vb);
         vb.addEventListener('click', function(ev){ ev.stopPropagation(); var on = vb.classList.toggle('on'); img.src = on ? voll : cur0; vb.textContent = on ? 'mit Löchern' : 'vollständig'; }); }
       window.dispatchEvent(new CustomEvent('jk:lb', {detail:{a:a}}));
-      resetZoom(); lensOn = !!a.closest('#suchbilder'); lens.classList.remove('on');
+      resetZoom(); lensOn = true; lens.classList.remove('on');   /* Josef, 1.11., 11:44: Lupe bei allen Arbeiten und Abbildungen */
       if (spotBox){ spotBox.remove(); spotBox = null; } if (playBtn){ playBtn.remove(); playBtn = null; } var oldP2 = lb.querySelector('button.play2'); if (oldP2) oldP2.remove();
       var fig = a.closest('figure'); var song = fig && fig.getAttribute('data-song');
       if (song){ playBtn = document.createElement('button'); playBtn.className = 'play'; playBtn.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="6"/><polygon points="40,28 74,50 40,72" fill="currentColor"/></svg><span>' + song.replace(/</g,'&lt;') + '</span>'; lb.appendChild(playBtn);
@@ -1033,7 +1033,8 @@
       if (Object.keys(pts).length < 2) pinch = null; setTimeout(function(){ drag = null; }, 50); });
     lb.addEventListener('pointercancel', function(e){ delete pts[e.pointerId]; pinch = null; });
     lb.addEventListener('dblclick', function(e){ if (z > 1) resetZoom(); else { z = 2.5; var r = img.getBoundingClientRect(); px = e.clientX - (e.clientX - r.left) * 2.5; py = e.clientY - (e.clientY - r.top) * 2.5; applyZoom(); } });
-    function moveLens(e){ var r = img.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom){ lens.classList.remove('on'); return; }
+    function moveLens(e){ var r0 = img.getBoundingClientRect(); if (!img.naturalWidth || z !== 1){ lens.classList.remove('on'); return; } var kk = Math.min(r0.width / img.naturalWidth, r0.height / img.naturalHeight), cw = img.naturalWidth * kk, chh = img.naturalHeight * kk; var r = {left:r0.left + (r0.width - cw) / 2, top:r0.top + (r0.height - chh) / 2, width:cw, height:chh}; r.right = r.left + cw; r.bottom = r.top + chh;   /* sichtbare Bildfläche (object-fit: contain) */
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom){ lens.classList.remove('on'); return; }
       lens.classList.add('on'); lens.style.left = e.clientX + 'px'; lens.style.top = e.clientY + 'px';
       var f = 2.6, bw = r.width * f, bh = r.height * f, fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
       lens.style.backgroundImage = 'url("' + img.src + '")'; lens.style.backgroundSize = bw + 'px ' + bh + 'px'; lens.style.backgroundPosition = (-(fx * bw) + 120) + 'px ' + (-(fy * bh) + 120) + 'px'; }

@@ -81,7 +81,7 @@ section.series:last-of-type{border-bottom:0}
 .meta .acc{color:var(--accent)}
 .meta .credit{text-transform:none;letter-spacing:0;color:var(--grey);font-family:var(--body);font-size:15px}
 .topics{font-family:var(--acc);font-style:italic;color:var(--grey);font-size:17px;margin-top:6px}
-.sertext{max-width:62ch;margin:28px 0 0;font-size:clamp(20px,1.55vw,28px);line-height:1.42}
+.sertext{max-width:62ch;margin:28px 0 0;font-size:clamp(18px,1.15vw,22px);line-height:1.42}   /* Josef, 1.11., 11:45: Fließtext zu groß (vorher bis 28 px) */
 .sertext p{margin:0 0 1em}
 .sertext p.motto{font-family:var(--acc);font-style:italic;font-size:1.12em}
 @media (min-width:1400px){.sertext.cols{max-width:none;columns:2;column-gap:56px}.sertext.cols p{break-inside:avoid}}
@@ -1136,7 +1136,7 @@ section[id],.series[id],[id].powlead{scroll-margin-top:calc(var(--headh,70px) + 
 /* Regler-Leiste (Josef, 29.10., 14:44): Werte greifen nur, wenn cfg.js sie gesetzt hat (Inline-Variable am html); sonst gilt alles wie oben */
 html[style*="--pbtrack"] .progress{background:linear-gradient(rgba(128,128,128,var(--pbtrack)),rgba(128,128,128,var(--pbtrack))),var(--paper)}
 html[style*="--pbfs"] .plab{font-size:var(--pbfs)}
-html[style*="--kbody"] .sertext{font-size:calc(clamp(20px,1.55vw,28px) * var(--kbody))}
+html[style*="--kbody"] .sertext{font-size:calc(clamp(18px,1.15vw,22px) * var(--kbody))}
 html[style*="--lh"] .sertext{line-height:var(--lh)}
 html[style*="--khead"] .opener h2,html[style*="--khead"] .pagehead h1,html[style*="--khead"] .bigcap,html[style*="--khead"] .nextpart,html[style*="--khead"] .serhead .minititle{zoom:var(--khead)}
 html[style*="--kcap"] figcaption,html[style*="--kcap"] .marg,html[style*="--kcap"] .notes{zoom:var(--kcap)}
@@ -1200,8 +1200,8 @@ html.calm .mute.wait{animation:none}
 .lhpanel fieldset input{width:20px;height:20px;accent-color:var(--accent)}
 .lhpanel .lhclose{margin-top:12px;font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 14px;cursor:pointer}
 .lhpanel .lhclose:hover{background:var(--ink);color:var(--paper)}
-html.lh-s1 .sertext{font-size:calc(clamp(20px,1.55vw,28px) * 1.2)}
-html.lh-s2 .sertext{font-size:calc(clamp(20px,1.55vw,28px) * 1.45)}
+html.lh-s1 .sertext{font-size:calc(clamp(18px,1.15vw,22px) * 1.2)}
+html.lh-s2 .sertext{font-size:calc(clamp(18px,1.15vw,22px) * 1.45)}
 html.lh-s1 figcaption,html.lh-s1 .marg,html.lh-s1 .notes,html.lh-s1 .cvl,html.lh-s1 .info,html.lh-s1 footer{zoom:1.15}
 html.lh-s2 figcaption,html.lh-s2 .marg,html.lh-s2 .notes,html.lh-s2 .cvl,html.lh-s2 .info,html.lh-s2 footer{zoom:1.35}
 html.lh-lines .sertext,html.lh-lines .cvl,html.lh-lines .info,html.lh-lines .notes{line-height:1.9;letter-spacing:.03em;word-spacing:.12em}

@@ -477,14 +477,19 @@ function renderSetup(){
   on("bmic",async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());PERM.mic="granted";toast("Mikrofon erlaubt.");}catch(e){toast("Mikrofon gesperrt: Schloss in der Adresszeile > Berechtigungen > Mikrofon.",8000);}render();});
   on("bgeo",()=>{navigator.geolocation.getCurrentPosition(()=>{PERM.geo="granted";toast("Standort erlaubt.");render();},()=>toast("Standort gesperrt: Schloss in der Adresszeile > Berechtigungen.",8000));});
 }
-function bar(){const i=$("#pbar");if(!i)return;const d=AUD.duration||(S.doc&&S.doc.duration)||1;i.style.width=Math.min(100,AUD.currentTime/d*100)+"%";const t=$("#ptime");if(t)t.textContent=mmss(AUD.currentTime)+" / "+mmss(d);}
+/* Gesamtlaenge = Inka + alle Songs; Fortschritt zaehlt gespielte Songs mit */
+function songMs(n){const l=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];return Math.min((l[n]&&l[n].ms)||0,6*60000);}
+function totalSec(){const c=chapters();let n=0,ms=0;c.forEach(x=>{if(x.type==="song"){ms+=songMs(n);n++;}});return ((AUD.duration&&isFinite(AUD.duration))?AUD.duration:((S.doc&&S.doc.duration)||0))+ms/1000;}
+function elapsedSec(){const c=chapters(),t=AUD.currentTime;let n=0,ms=0;c.forEach((x,i)=>{if(x.type==="song"){if(SONG.on&&i===SONG.k)ms+=Math.min(Date.now()-SONG.started,songMs(n));else if(x.start<t-0.5)ms+=songMs(n);n++;}});return t+ms/1000;}
+function bar(){const i=$("#pbar");if(!i)return;const d=totalSec()||1,e=elapsedSec();i.style.width=Math.min(100,e/d*100)+"%";const t=$("#ptime");if(t)t.textContent=mmss(e)+" / "+mmss(d);}
+setInterval(()=>{if(SONG.on)bar();},1000);
 function renderShow(){
   const el=$("#show");
   if(!KEY.raw){el.innerHTML="";return;}
   if(!S.doc){el.innerHTML='<div class="card"><div class="k">Morning-Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button></div></div>';$("#reload").onclick=()=>loadShow();return;}
   const d=S.doc,dd=new Date(d.day+"T12:00:00"),isTom=d.day!==ymd(new Date());
   $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
-  $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round((d.duration||0)/60)+" Min Inka, "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");
+  $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round(totalSec()/60)+" Min, davon "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");
   const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
   let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+

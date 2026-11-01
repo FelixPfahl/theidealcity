@@ -65,7 +65,7 @@
   function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
-  function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) + (S.questBonus || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
+  function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) + (S.questBonus || 0) + (H('bonus') || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
   function fmt(t){ var m = Math.floor(t / 60), s = t % 60; return m + ':' + (s < 10 ? '0' : '') + s; }
   function accent(el){ return getComputedStyle(el.closest('.comicpage') || document.documentElement).getPropertyValue('--accent').trim() || '#E2231A'; }
 
@@ -103,7 +103,15 @@
     wagner: {name:'WAGNER ROHRSCHACH', col:'#E2231A', speed:55, blip:[300, 'square']},  /* frankobelgisch, ligne claire: klarer Rahmen, gemessen */
     xae:    {name:'X Æ A-13', col:'#000', speed:38, blip:[1200, 'triangle']},            /* dokumentarisch: nüchtern, sehr schnell */
     sigma:  {name:'TEST SIGMA', col:'#00A651', speed:40, blip:[520, 'sine']},            /* Indie: wackliger Rahmen, langsam, hinter Glas */
-    gojira: {name:'GOJIRA', col:'#00A651', speed:150, blip:[60, 'sine']}                 /* nur Punkte und ein Beben */
+    gojira: {name:'GOJIRA', col:'#00A651', speed:150, blip:[60, 'sine']},                /* nur Punkte und ein Beben */
+    /* Gäste der Welt (Josef, 1.11.2026) */
+    polizei: {name:'NIL-POLIZEI', col:'#5A5A5A', speed:34, blip:[880, 'square']},
+    nole: {name:'NOLE', col:'#8A6D3B', speed:62, blip:[240, 'triangle']},
+    grind: {name:'GRIND', col:'#8A6D3B', speed:58, blip:[420, 'triangle']},
+    griffith: {name:'PRÄSIDENT GRIFFITH', col:'#1F3A93', speed:50, blip:[200, 'square']},
+    libido: {name:'AUSSERIRDISCHE LIBIDO', col:'#6B4FA0', speed:40, blip:[660, 'sine']},
+    kalmar: {name:'VAMPIRTINTENFISCH', col:'#3F97B8', speed:90, blip:[140, 'sine']},
+    haendler: {name:'GESTALT AUS DER U-BAHN', col:'#7A5C2E', speed:44, blip:[340, 'sawtooth']}
   };
   var RULES = [
     ['inka', 'Psst. Ich bin Inka. Das war ich eben, in der Leitung. Ich beobachte diese Seiten schon eine Weile. Ich beobachte eigentlich alles.'],
@@ -138,10 +146,10 @@
           {s:'v', t:'Keine Ahnung. Ich klicke, was ich sehe.', re:[['wagner', '[m:wuetend]Sie klicken, was Sie sehen. [m:neutral]Das ist keine Methode, das ist Wetter.']]}]}];
   function TEN(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }).map(function(p){ return NAMES[p.id]; });
     return [['xae', 'X Æ A-13. Zehn Objekte in dieser Zeit. Ich hätte alle zwanzig in vier Sekunden gehabt. Fotografisches Gedächtnis, Nil-Augmentation, dritte Generation.'],
-            {who:'xae', text:'Damit Sie nicht völlig verloren sind, die Liste der restlichen: ' + left.join(', ') + '. Wo, sage ich nicht. Das wäre ja langweilig. Beeindruckt?',
-             ask:[{s:'d', t:'Vier Sekunden. Das ist wirklich beeindruckend.', re:[['xae', '[m:froh]Ich weiß. Danke, dass Sie es aussprechen. Die wenigsten tun das.']]},
-                  {s:'p', t:'Vier Sekunden mit Augmentation. Das zählt nicht.', re:[['xae', '[m:wuetend]Es zählt. Alles zählt, das ist der Punkt. [m:neutral]Ihre Zeit zählt übrigens nicht, hat Inka gesagt. Glück für Sie.']]},
-                  {s:'a', t:'Dann hilf mir, schneller zu werden.', re:[['xae', 'Schneller werden Sie nicht. [m:nachdenklich]Gründlicher vielleicht. Die kleinen Dinge liegen am Rand.']]},
+            {who:'xae', text:'Damit du nicht komplett lost bist, die Liste der restlichen: ' + left.join(', ') + '. Wo, sage ich nicht. Das wäre ja langweilig. Beeindruckt?',
+             ask:[{s:'d', t:'Vier Sekunden. Das ist wirklich beeindruckend.', re:[['xae', '[m:froh]Ich weiß. Danke, dass du es aussprichst. Die wenigsten checken das.']]},
+                  {s:'p', t:'Vier Sekunden mit Augmentation. Das zählt nicht.', re:[['xae', '[m:wuetend]Es zählt. Alles zählt, das ist der Punkt. [m:neutral]Deine Zeit zählt übrigens nicht, hat Inka gesagt. Glück gehabt.']]},
+                  {s:'a', t:'Dann hilf mir, schneller zu werden.', re:[['xae', 'Schneller wirst du nicht. [m:nachdenklich]Gründlicher vielleicht. Die kleinen Dinge liegen am Rand.']]},
                   {s:'v', t:'Ich habe es nicht eilig.', re:[['xae', '[m:nachdenklich]Nein. Das sehe ich an allem.']]}]}]; }
   var FIFTEEN = [['sigma', '... hallo? Hier. Hinter dem Glas. Ich bin Sigma. 137b, final, final.', 'nachdenklich'],
     {who:'sigma', mood:'traurig', text:'Ich wollte die Dinge nur einmal selbst sehen. Ohne Raster, ohne Koordinaten. Einen *Burger*. Einen *Hai*. Fünf fehlen noch. Dann lässt er mich vielleicht in Ruhe. Bist du böse auf mich?',
@@ -174,11 +182,11 @@
      Stimme nach Celeste: je Figur ein Silbensatz, Blip auf jedem zweiten Buchstaben, Endsilbe je Stimmung. Antworten in vier Haltungen (diplomatisch, provokativ, aktiv, passiv),
      höchstens zwei je Gespräch; Verhältnis je Figur auf Nähe und Respekt, träge. Markierungen im Text: *betont*, [m:stimmung] Wechsel, [p:0.4] Pause in Sekunden, [cut] abgebrochen,
      [w:id|Titel] Werktitel als Link. Zeile: ['wer', 'Text'] oder {who, text, mood, ask:[{s:'d|p|a|v', t:'Antwort', re:[Zeilen]}]}. */
-  var MOODS = ['neutral', 'froh', 'wuetend', 'ueberrascht', 'traurig', 'nachdenklich'];
-  var MOOD = {neutral:{k:1, pause:1}, froh:{k:.88, pause:.8}, wuetend:{k:.72, pause:.55, fx:'shk', win:'shake'}, ueberrascht:{k:.8, pause:1.3}, traurig:{k:1.35, pause:1.7, stock:.18, win:'thin'}, nachdenklich:{k:1.2, pause:1.5, stock:.12}};
-  var STANCE = {d:{icon:'◇', name:'diplomatisch'}, p:{icon:'!', name:'provokativ'}, a:{icon:'→', name:'aktiv'}, v:{icon:'…', name:'passiv'}};
+  var MOODS = ['neutral', 'froh', 'wuetend', 'ueberrascht', 'traurig', 'nachdenklich', 'verlegen', 'gelangweilt', 'stolz'];
+  var MOOD = {neutral:{k:1, pause:1}, froh:{k:.88, pause:.8}, wuetend:{k:.72, pause:.55, fx:'shk', win:'shake'}, ueberrascht:{k:.8, pause:1.3}, traurig:{k:1.35, pause:1.7, stock:.18, win:'thin'}, nachdenklich:{k:1.2, pause:1.5, stock:.12}, verlegen:{k:1.1, pause:1.3, stock:.15}, gelangweilt:{k:1.3, pause:1.2}, stolz:{k:.92, pause:.9}};
+  var STANCE = {d:{icon:'◇', name:'diplomatisch'}, p:{icon:'!', name:'provokativ'}, a:{icon:'→', name:'aktiv'}, v:{icon:'…', name:'passiv'}, n:{icon:'?', name:'neugierig'}, l:{icon:'≈', name:'albern'}, e:{icon:'○', name:'ehrlich'}, k:{icon:'≠', name:'kritisch'}};
   /* Vorlieben (13:29): Inka mag aktiv und provokativ; Wagner respektiert provokativ widerwillig, verachtet passiv; X Æ A-13 mag Bewunderung (diplomatisch), hasst Widerspruch (provokativ); Sigma mag sanft (diplomatisch) und passiv, erschrickt bei provokativ */
-  var LIKES = {inka:{a:[1, 0], p:[1, 1], d:[0, 0], v:[-1, 0]}, wagner:{p:[0, 1], v:[-1, -1], d:[0, 0], a:[0, 1]}, xae:{d:[1, 1], p:[-1, -1], a:[0, 0], v:[0, -1]}, sigma:{d:[1, 0], v:[1, 0], p:[-1, -1], a:[0, 0]}, gojira:{d:[1, 0], p:[0, 0], a:[0, 1], v:[0, 0]}};
+  var LIKES = {inka:{a:[1, 0], p:[1, 1], d:[0, 0], v:[-1, 0], n:[1, 0], l:[0, 0], e:[1, 0], k:[0, 1]}, wagner:{p:[0, 1], v:[-1, -1], d:[0, 0], a:[0, 1], n:[1, 1], l:[-1, -1], e:[0, 0], k:[0, 1]}, xae:{d:[1, 1], p:[-1, -1], a:[0, 0], v:[0, -1], n:[0, 0], l:[1, 0], e:[0, 0], k:[-1, -1]}, sigma:{d:[1, 0], v:[1, 0], p:[-1, -1], a:[0, 0], n:[0, 0], l:[0, 0], e:[1, 0], k:[-1, 0]}, gojira:{d:[1, 0], p:[0, 0], a:[0, 1], v:[0, 0], n:[0, 0], l:[0, 0], e:[1, 0], k:[0, 0]}};   /* neu (1.11.): n neugierig, l albern, e ehrlich, k kritisch */
   function rel(who){ S.rel = S.rel || {}; return S.rel[who] || (S.rel[who] = {n:0, r:0, dn:0, dr:0}); }
   function relAdd(who, st){ var L = (LIKES[who] || LIKES.inka)[st] || [0, 0], R = rel(who);
     R.dn += L[0]; R.dr += L[1];   /* träge: drei Antworten in dieselbe Richtung ändern eine Stufe */
@@ -188,8 +196,8 @@
   function baseMood(who){ var R = rel(who); if (R.r <= -2) return 'wuetend'; if (R.n >= 2) return 'froh'; if (who === 'sigma') return 'nachdenklich'; return 'neutral'; }
   function tspeed(){ var v = S.tspeed || 'normal'; return v === 'langsam' ? 1.6 : v === 'sofort' ? 0 : 1; }
   /* Stimme: Silben synthetisch, je Figur Grundton, Wellenform und Formant; Stimmung verschiebt Tonhöhe und Verlauf; drei Sätze: schnell, betont, Ende */
-  var VOICE = {inka:{f:760, w:'square', q:4, up:1}, wagner:{f:300, w:'square', q:2, up:-1}, xae:{f:1200, w:'triangle', q:8, up:0}, sigma:{f:520, w:'sine', q:3, up:1}, gojira:{f:60, w:'sawtooth', q:1, up:-1}};
-  var MOODV = {neutral:[0, 0], froh:[2, 1], wuetend:[-2, -1], ueberrascht:[4, 1], traurig:[-3, -1], nachdenklich:[-1, 0]};
+  var VOICE = {inka:{f:760, w:'square', q:4, up:1}, wagner:{f:300, w:'square', q:2, up:-1}, xae:{f:1200, w:'triangle', q:8, up:0}, sigma:{f:520, w:'sine', q:3, up:1}, gojira:{f:60, w:'sawtooth', q:1, up:-1}, polizei:{f:880, w:'square', q:6, up:0}, nole:{f:240, w:'triangle', q:2, up:-1}, grind:{f:420, w:'triangle', q:3, up:-1}, griffith:{f:200, w:'square', q:2, up:0}, libido:{f:660, w:'sine', q:5, up:1}, kalmar:{f:140, w:'sine', q:1, up:1}, haendler:{f:340, w:'sawtooth', q:3, up:-1}};
+  var MOODV = {neutral:[0, 0], froh:[2, 1], wuetend:[-2, -1], ueberrascht:[4, 1], traurig:[-3, -1], nachdenklich:[-1, 0], verlegen:[1, -1], gelangweilt:[-2, 0], stolz:[1, 1]};
   var lastSyl = -1;
   function syl(who, mood, kind){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var bv = CF('dlg.blipvol', 1); if (bv <= 0) return; var V = VOICE[who] || VOICE.inka, mv = MOODV[mood] || [0, 0];
     var st = CF('dlg.pitch.' + who, 0) + mv[0]; var n = 20; var i; do { i = Math.floor(Math.random() * n); } while (i === lastSyl); lastSyl = i;   /* keine Silbe zweimal hintereinander */
@@ -200,6 +208,27 @@
     var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = f0 * 2.2; bp.Q.value = V.q; var g = ac.createGain(); var vol = (V.w === 'sine' ? .14 : .06) * bv * (kind === 'emph' ? 1.4 : 1) * (kind === 'end' ? 1.2 : 1);
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.001, t + dur); o.connect(bp); bp.connect(g); g.connect(A.bus); o.start(t); o.stop(t + dur + .02); }
   function endSyl(who, mood, text){ var k = /\?\s*$/.test(text) ? 'end?' : 'end'; syl(who, mood === 'neutral' && k === 'end?' ? 'ueberrascht' : mood, k); }
+
+  /* Figurenlaute (Josef, 1.11., 10:12: "wie in Breath of the Wild manchmal Character Sounds"): kurze Formant-Ausrufe je Figur und Stimmung, synthetisch */
+  var VOXP = {neutral:[['u', .1, 1], ['u', .12, .94]], froh:[['a', .08, 1.12], ['a', .11, 1.25]], wuetend:[['o', .1, .9], ['u', .16, .78]], ueberrascht:[['o', .16, 1.35]], traurig:[['u', .14, 1], ['o', .2, .8]], nachdenklich:[['u', .26, .96]], verlegen:[['e', .07, 1.1], ['e', .1, 1.2]], gelangweilt:[['e', .2, .85]], stolz:[['a', .18, 1.08]]};
+  var lastVox = 0;
+  function vox(who, mood){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var vv = CF('dlg.voxvol', 1); if (vv <= 0) return; if (Date.now() - lastVox < 1800) return; lastVox = Date.now();
+    if (who === 'gojira'){ try { rumble(); } catch(e){} return; }
+    var V = VOICE[who] || VOICE.inka, pat = VOXP[mood] || VOXP.neutral, ac = A.ac, t0 = ac.currentTime + .01;
+    var base = Math.max(90, Math.min(420, V.f * .42)) * Math.pow(2, CF('dlg.pitch.' + who, 0) / 12);
+    var src = ac.createOscillator(); src.type = who === 'polizei' ? 'square' : 'sawtooth'; var out = ac.createGain(); out.gain.value = 0;
+    var vib = ac.createOscillator(); vib.frequency.value = who === 'sigma' ? 7.5 : 5.5; var vg = ac.createGain(); vg.gain.value = who === 'sigma' ? 10 : 4; vib.connect(vg); vg.connect(src.frequency);
+    var fl = [0, 1, 2].map(function(j){ var bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = [8, 11, 13][j]; var g = ac.createGain(); g.gain.value = [1, .5, .25][j]; src.connect(bp); bp.connect(g); g.connect(out); return bp; });
+    var sh = who === 'xae' ? 1.18 : who === 'wagner' ? .9 : who === 'kalmar' ? .7 : 1;   /* Formantlage je Figur */
+    var t = t0; pat.forEach(function(sg, i){ var f = VOW[sg[0]]; fl.forEach(function(bp, j){ bp.frequency.setValueAtTime(f[j] * sh, t); }); src.frequency.setValueAtTime(base * sg[2], t); src.frequency.exponentialRampToValueAtTime(base * sg[2] * (mood === 'ueberrascht' ? 1.3 : mood === 'traurig' ? .85 : 1.03), t + sg[1]);
+      out.gain.setValueAtTime(0, t); out.gain.linearRampToValueAtTime(.55 * vv, t + .02); out.gain.setValueAtTime(.55 * vv, t + sg[1] - .03); out.gain.linearRampToValueAtTime(0, t + sg[1]); t += sg[1] + .035; });
+    var gc = ac.createGain(); gc.gain.value = .32; out.connect(gc); gc.connect(A.bus);
+    if (who === 'polizei'){ var n = ac.createOscillator(); n.type = 'square'; n.frequency.value = 2400; var ng = ac.createGain(); ng.gain.setValueAtTime(.02 * vv, t0); ng.gain.exponentialRampToValueAtTime(.001, t0 + .08); n.connect(ng); ng.connect(A.bus); n.start(t0); n.stop(t0 + .1); }
+    src.start(t0); vib.start(t0); src.stop(t + .05); vib.stop(t + .05); }
+  /* Bestätigen: weiches Zweiklang-Plopp; Ende eines Gesprächs: fallender Ton */
+  function advSnd(kind){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime, o = ac.createOscillator(); o.type = 'triangle';
+    var f = kind === 'end' ? [1320, 660] : [990, 1480]; o.frequency.setValueAtTime(f[0], t); o.frequency.setValueAtTime(f[1], t + .045);
+    var g = ac.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.11 * CF('dlg.advvol', 1), t + .005); g.gain.exponentialRampToValueAtTime(.001, t + (kind === 'end' ? .2 : .12)); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .22); }
   function cursorSnd(kind){ var A = window.JK_AUDIO && window.JK_AUDIO(); if (!A || A.vol === 0) return; var ac = A.ac, t = ac.currentTime, o = ac.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(kind === 'ok' ? 880 : 660, t); if (kind === 'ok') o.frequency.setValueAtTime(1320, t + .05);
     var g = ac.createGain(); g.gain.setValueAtTime(.05, t); g.gain.exponentialRampToValueAtTime(.001, t + (kind === 'ok' ? .12 : .06)); o.connect(g); g.connect(A.bus); o.start(t); o.stop(t + .14); }
   /* Text in Zeichen mit Eigenschaften zerlegen; Steuerzeichen bleiben als Ereignisse an der Stelle */
@@ -210,7 +239,7 @@
           if ((m = /^p:([\d.]+)$/.exec(tag))){ out.push({ev:'pause', v:parseFloat(m[1])}); i = j + 1; continue; }
           if (tag === 'cut'){ out.push({ev:'cut'}); i = j + 1; continue; }
           if ((m = /^w:(?:(\w+):)?([\w-]+)\|([^\]]+)$/.exec(tag))){ var lk = {id:m[2], page:m[1] || ''}; Array.prototype.forEach.call(m[3], function(c){ out.push({ch:c, emph:true, link:lk}); }); i = j + 1; continue; } } }
-      if (ch === '*'){ emph = !emph; i++; continue; }
+      if (ch === '*' && !(i > 0 && /[A-Za-zÄÖÜäöüß]/.test(text[i - 1]) && /[a-zäöüß]/.test(text[i + 1] || ''))){ emph = !emph; i++; continue; }
       out.push({ch:ch, emph:emph}); i++; }
     return out; }
   /* in Seiten zu höchstens 3 Zeilen umbrechen (Wortgrenzen), Steuerzeichen hängen am folgenden Zeichen */
@@ -223,7 +252,9 @@
       page.push(it); col++; k++;
       if (col >= cols){ line++; col = 0; if (line >= rows){ pages.push(page); page = []; line = 0; } } }
     if (page.length) pages.push(page); return pages; }
-  function norm(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
+  function ph(t){ return typeof t === 'string' ? t.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph ? X.hooks.ph(k) : (k === 'n' ? String(count()) : k === 'pts' ? String(points()) : k === 'rest' ? String(N - count()) : null); return v === null || v === undefined ? m : v; }) : t; }
+  function norm0(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
+  function norm(l){ var o = norm0(l); if (o && typeof o.text === 'string' && o.text.indexOf('{') >= 0){ var c = {}; for (var k in o) c[k] = o[k]; c.text = ph(o.text); o = c; } if (o && o.ask && o.ask.some(function(a){ return /\{\w+\}/.test(a.t || ''); })){ var c2 = {}; for (var k2 in o) c2[k2] = o[k2]; c2.ask = o.ask.map(function(a){ var b = {}; for (var k3 in a) b[k3] = a[k3]; b.t = ph(a.t); return b; }); o = c2; } return o; }
   var lastDlg = 0;
   function dialog(lines, done, opt){ opt = opt || {}; if (dlg){ dq = (dq || []).concat(lines); return; } dq = []; lastDlg = Date.now();
     lines = lines.map(norm); var k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
@@ -231,12 +262,13 @@
     dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><b class="who"></b><img alt=""><div class="txt"><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
     document.body.appendChild(dlg); document.body.classList.add('sbdlgon'); var p = dlg.querySelector('p'), more = dlg.querySelector('.more'), who = dlg.querySelector('.who'), img = dlg.querySelector('img'), win = dlg.querySelector('.win'), live = dlg.querySelector('.dlglive');
     /* Josef, 29.10., 13:34: "Psst" in ungefragten Fenstern (keine ungefragten Fenster mehr bis zum nächsten Besuch), "Nicht jetzt" im ersten Fenster (wie im Modem) */
-    if (opt.psst){ var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'psst'; pb.textContent = 'Psst'; pb.title = 'Keine ungefragten Fenster mehr bis zum nächsten Besuch'; pb.addEventListener('click', function(e){ e.stopPropagation(); S.psst = S.visits || 1; save(); cursorSnd('ok'); close(false); }); win.appendChild(pb); }
+    if (opt.psst){ var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'psst'; pb.textContent = 'Psst'; pb.title = 'Keine ungefragten Fenster mehr bis zum nächsten Besuch'; pb.addEventListener('click', function(e){ e.stopPropagation(); S.psst = S.visits || 1; save(); H('onPsst'); cursorSnd('ok'); close(false); }); win.appendChild(pb); }
     if (opt.notnow){ var nb = document.createElement('button'); nb.type = 'button'; nb.className = 'psst notnow'; nb.textContent = 'Nicht jetzt'; nb.addEventListener('click', function(e){ e.stopPropagation(); close(false); notNow(); }); win.appendChild(nb); }
-    function portrait(w, mood){ img.src = '../assets/game/char-' + w + '-' + (mood || 'neutral') + '.png'; img.onerror = function(){ img.onerror = null; img.src = '../assets/game/char-' + w + '.png'; }; }
+    function portrait(w, mood){ dlg.classList.remove('noimg'); img.style.visibility = ''; img.onerror = function(){ img.onerror = function(){ img.onerror = null; img.style.visibility = 'hidden'; if (dlg) dlg.classList.add('noimg'); }; img.src = '../assets/game/char-' + w + '.png'; }; img.src = '../assets/game/char-' + w + '-' + (mood || 'neutral') + '.png'; }
     function setMood(m){ curMood = m; MOODS.forEach(function(x){ dlg.classList.remove('m-' + x); }); dlg.classList.add('m-' + m); portrait(lines[k].who, m); }
     function startLine(){ var L = lines[k]; cur = CH[L.who] || CH.inka; dlg.className = 'sbdlg c-' + L.who; dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; dlg.style.setProperty('--c', cur.col);
       var m0 = L.mood || baseMood(L.who); if (L.who === 'gojira') m0 = 'neutral'; setMood(m0);
+      var prevW = k > 0 && lines[k - 1] ? lines[k - 1].who : null; if (k === 0 || (prevW !== L.who && Math.random() < .6) || (m0 !== 'neutral' && Math.random() < .45)) setTimeout(function(){ vox(L.who, m0); }, 60);
       var cols = Math.round(CF('dlg.chars', 34)), rows = Math.round(CF('dlg.lines', 3)); if (L.who === 'gojira'){ cols = 12; rows = 1; }
       pages = paginate(parseLine(L.text), cols, rows); if (!pages.length) pages = [[]]; pageIdx = 0;
       live.textContent = cur.name + ': ' + L.text.replace(/\[[^\]]*\]|\*/g, '');
@@ -278,18 +310,18 @@
       L.ask.forEach(function(a, idx){ var b = document.createElement('button'); b.type = 'button'; b.className = 'ans s-' + a.s; b.innerHTML = '<i aria-hidden="true">' + STANCE[a.s].icon + '</i><span>' + esc(a.t) + '</span><small class="vh">' + STANCE[a.s].name + '</small>'; b.setAttribute('data-i', idx);
         b.addEventListener('click', function(e){ e.stopPropagation(); choose(a); }); b.addEventListener('mouseenter', function(){ cursorSnd('mv'); }); box.appendChild(b); });
       dlg.insertBefore(box, win); var first = box.querySelector('button'); if (first) first.focus(); }
-    function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); if (a.fn) try { a.fn(); } catch(x){} var box = dlg.querySelector('.answers'); if (box) box.remove();
+    function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); H('onAnswer', a, L.who); if (a.fn) try { a.fn(); } catch(x){} var box = dlg.querySelector('.answers'); if (box) box.remove();
       var re = (a.re || []).map(norm); if (!re.length) re = [{who:L.who, text:'...'}];
       lines.splice(k + 1, 0, ...re); next(); }
     function next(e){ if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
       if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ askAnswers(L); return; } more.style.visibility = 'visible'; cursorSnd('mv'); return; }
-      if (pageIdx < pages.length - 1){ pageIdx++; cursorSnd('mv'); showPage(); return; }
-      k++; cursorSnd('mv'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(true); return; } startLine(); }
+      if (pageIdx < pages.length - 1){ pageIdx++; advSnd('next'); showPage(); return; }
+      k++; advSnd(k >= lines.length && !dq.length ? 'end' : 'next'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(true); return; } startLine(); }
     function close(nat){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(nat === true); }
     function onkey(e){ if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
       if (pending){ var bs = [].slice.call(dlg.querySelectorAll('.ans')); var cur_ = bs.indexOf(document.activeElement);
-        if (/^[1-4]$/.test(e.key) && bs[+e.key - 1]){ e.preventDefault(); bs[+e.key - 1].click(); return; }
+        if (/^[1-6]$/.test(e.key) && bs[+e.key - 1]){ e.preventDefault(); bs[+e.key - 1].click(); return; }
         if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); bs[(cur_ + 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
         if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); bs[(cur_ - 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
         if (e.key === 'Escape'){ close(); } return; }
@@ -300,7 +332,8 @@
   var dq = [];
   /* Josef, 28.10., 01:54: Inka kommt einmal pro Besuch von selbst, mit verschiedenen Ansprachen je Spielstand (mehrere je Stand, zufällig) */
   function pickOne(a){ return a[Math.floor(Math.random() * a.length)]; }
-  function greet(){ var n = count(); var left = PLACES.filter(function(p){ return !S.found[p.id]; }); var here = left.filter(function(p){ return p.p === PAGE; }).length;
+  function greet(){ var L0 = greet0(); var ex = (L0 !== RULES && H('greetExtra')) || []; return L0.concat(ex); }
+  function greet0(){ var n = count(); var left = PLACES.filter(function(p){ return !S.found[p.id]; }); var here = left.filter(function(p){ return p.p === PAGE; }).length;
     var hereTxt = here ? (here === 1 ? ' Auf dieser Seite liegt noch eins.' : ' Auf dieser Seite liegen noch ' + here + '.') : ' Hier ist nichts mehr, such auf den anderen Seiten.';
     if (S.done) return [['inka', pickOne(['Du hast alle zwanzig. ' + points() + ' Punkte. Die Urkunde zeige ich dir über die Lupe. Neustart, wenn du willst, dann liegen die Dinge woanders.', 'Alles gefunden, ' + points() + ' Punkte. Sigma ist zurück hinter dem Glas und schweigt. Nochmal? Über die Lupe.'])]];
     if (!n) return RULES;
@@ -317,7 +350,7 @@
   var mo = null;
   function modemScene(done){ if (mo) return; var lines = MODEM[(S.visits || 1) % MODEM.length];
     mo = document.createElement('div'); mo.className = 'modem on sbmodem'; mo.setAttribute('role', 'dialog'); mo.setAttribute('aria-label', 'Einwahl');
-    mo.innerHTML = '<div class="box"><pre aria-live="polite"></pre><div class="bar"><i></i></div><button type="button" class="mskip">Überspringen</button><button type="button" class="notnow">Nicht jetzt</button><small>Scroll. Der Plotter schreibt. Finde 20 Dinge.</small></div>';
+    mo.innerHTML = '<div class="box"><div class="mava" aria-hidden="true"><img src="../assets/game/char-inka.png" alt=""><img class="g2" src="../assets/game/char-inka.png" alt=""><i></i></div><div class="mterm"><pre aria-live="polite"></pre><div class="bar"><i></i></div><button type="button" class="mskip">Überspringen</button><button type="button" class="notnow">Nicht jetzt</button></div></div>';   /* Josef, 1.11., 10:19: kein Hinweistext mehr, stattdessen Inkas Avatar verzerrt und flimmernd */
     document.body.appendChild(mo); var pre = mo.querySelector('pre'), bar = mo.querySelector('.bar i'); var fin = false, li = 0, timer = null;
     var dur = (window.JK_DIALUP && !LHG.now) ? (window.JK_DIALUP(function(){}, {fail:true}) || 7000) : 7000; dur = dur * CF('fx.modemlen', 1);
     var start = Date.now(); var tick = setInterval(function(){ var p = Math.min(100, (Date.now() - start) / dur * 100); bar.style.width = p + '%'; if (p >= 100) clearInterval(tick); }, 100);
@@ -372,11 +405,11 @@
     document.addEventListener('keydown', panelKey); cursorSnd('ok'); var f = panel.querySelector('.sbpin button:not(.x), .sbpin input, .sbpin a'); (f || panel.querySelector('.x')).focus(); return panel; }
   /* Inventar */
   function inventory(refreshOnly){ S.used = S.used || {}; var items = PLACES.map(function(p){ var f = !!S.found[p.id], u = !!S.used[p.id], T = TOOLS[p.id]; return '<li class="' + (f ? (u ? 'got used' : 'got tool') : 'open') + '"><button type="button" data-id="' + p.id + '"' + (u ? ' disabled' : '') + ' aria-label="' + (f ? (u ? NAMES[p.id] + ', als Werkzeug benutzt' : NAMES[p.id] + ' als Werkzeug: ' + (T ? T.n : '')) : NAMES[p.id] + ' noch gesucht. Hinweis kostet ' + CF('game.hint', HINT_COST) + ' Punkte') + '"><img src="../assets/game/' + p.id + '.png" alt=""><span>' + (f ? NAMES[p.id] : '?') + '</span>' + (f && !u && T ? '<small>' + T.n + '</small>' : (u ? '<small>benutzt</small>' : '')) + '</button></li>'; }).join('');
-    var html = '<p class="sbpnote">' + count() + ' von ' + N + ' gefunden, ' + points() + ' Punkte. ' + (S.done ? 'Alles da. ' : 'Klick auf eine Silhouette: Inka sagt, wo sie eins gesehen hat (kostet ' + CF('game.hint', HINT_COST) + ' Punkte). ') + (count() ? 'Gefundene Dinge sind Werkzeuge: anklicken, dann auf eines von Josefs Werken klicken. Jedes einmal.' : '') + '</p><ul class="sbinvgrid">' + items + '</ul>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '');
+    var html = '<p class="sbpnote">' + count() + ' von ' + N + ' gefunden, ' + points() + ' Punkte. ' + (S.done ? 'Alles da. ' : 'Klick auf eine Silhouette: Inka sagt, wo sie eins gesehen hat (kostet ' + CF('game.hint', HINT_COST) + ' Punkte). ') + (count() ? 'Gefundene Dinge sind Werkzeuge: anklicken, dann auf eines von Josefs Werken klicken. Jedes einmal.' : '') + '</p><ul class="sbinvgrid">' + items + '</ul>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + (H('inventoryExtra') || '');
     if (refreshOnly && panel){ panel.querySelector('.sbpin').innerHTML = '<button type="button" class="x" aria-label="Schließen">×</button><h2>Inventar</h2>' + html; panel.querySelector('.x').addEventListener('click', closePanel); }
     else openPanel('sbinv', 'Inventar', html);
     panel.querySelectorAll('.sbinvgrid button:not([disabled])').forEach(function(b){ b.addEventListener('click', function(){ var id = b.getAttribute('data-id'); var p = PLACES.filter(function(q){ return q.id === id; })[0]; closePanel(); if (S.found[id]) startTool(id); else if (p) hintFor(p); }); });
-    var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); }); }
+    var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); }); H('inventoryBind', panel, closePanel); }
   /* Logbuch */
   /* ---------- Story-Kapitel (Suchbild 2.0, Etappe 4): zwölf Kapitel aus dem Skript von THE IDEAL CITY, freigeschaltet je Besuch (v) und Fundzahl (f); gelesen wird im Dialogfenster, nachzulesen im Logbuch; W = Wagners Sicht (ab Plus-Stufe 2) ---------- */
   var CHAPTERS = [
@@ -481,6 +514,7 @@
       '<section><h3>Figuren</h3><ul class="sbrels">' + rels + '</ul></section>' +
       '<section><h3>Textgeschwindigkeit</h3><p class="sbspeed" role="group" aria-label="Textgeschwindigkeit">' + ['langsam', 'normal', 'sofort'].map(function(k){ return '<label><input type="radio" name="sbspeed" value="' + k + '"' + (sp0 === k ? ' checked' : '') + '> ' + k + '</label>'; }).join(' ') + '</p></section>' +
       '<section><h3>Vergessen</h3><p>Löscht Funde, Punkte, Besuche, Verhältnisse und Kapitel in diesem Browser.</p><p><button type="button" class="sbforget">Alles vergessen</button></p></section></div>';
+    html += (H('logbookExtra') || '');
     openPanel('sblog', 'Logbuch', html);
     panel.querySelectorAll('input[name=sbspeed]').forEach(function(r){ r.addEventListener('change', function(){ S.tspeed = r.value; save(); cursorSnd('ok'); }); });
     panel.querySelectorAll('.sbchap').forEach(function(b){ b.addEventListener('click', function(){ var i = b.getAttribute('data-i'); closePanel(); showChapter(i === 's' ? 's' : +i); }); });
@@ -499,7 +533,7 @@
   function wander(){ if (NG < 2) return; setInterval(function(){ if (document.hidden || dlg || panel || ov) return; if (Date.now() - lastAct < CF('game.wander', 120) * 1000) return; wanderNow(); }, 5000); }
   function hint(){ if (S.done) { cert(); return; } var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return; hintFor(left[Math.floor(Math.random() * left.length)]); }
   function hintFor(p){ if (S.found[p.id]) return;
-    S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
+    S.hints++; S.hinted = S.hinted || {}; S.hinted[p.id] = 1; save(); tick(); H('onHint', p); document.querySelectorAll('img.sbobj').forEach(function(im){ if (im._p && im._p.id === p.id) a11yObj(im, p); });
     var R = rel('inka'), exact = R.n >= 2;   /* Nähe zu Inka: genauere Hinweise */
     var wag = rel('wagner').r >= 2 ? 'Fünfzig Punkte. Für Sie hätte ich es billiger gemacht, aber das Raster kennt keine Freunde.' : (rel('wagner').r <= -2 ? '[m:wuetend]Fünfzig Punkte. Für Sie eigentlich hundert.' : 'Fünfzig Punkte. Koordinaten kosten.');
     var lines = NG >= 2 ? riddle(p) : [['inka', '*' + NAMES[p.id] + '*: ' + p.k + '.' + (p.d === 3 ? ' Klein und blass, genau hinsehen.' : '') + (exact ? ' Ich zeig dir noch mehr: ' + (p.x < 50 ? 'eher links' : 'eher rechts') + ', ' + (p.y < 50 ? 'oben' : 'unten') + '.' : ''), exact ? 'froh' : undefined]];
@@ -512,7 +546,7 @@
   var lastInput = Date.now(), misses = 0, hiddenAt = 0;
   function readingNow(){ var vh = window.innerHeight; return [].slice.call(document.querySelectorAll('.plotted:not(.plotdone)')).some(function(el){ var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < vh && r.height > 0; }); }
   function react(key, mk, tries){ if (quiet() || dlg || panel || ov || mo || document.hidden) return false; S.rx = S.rx || {}; if (S.rx[key] === V()) return false;
-    if (Date.now() - lastDlg < CF('game.gap', 60) * 1000) return false;
+    if (Date.now() - lastDlg < CF('game.gap', 40) * 1000) return false;
     if (readingNow()){ if ((tries || 0) < 10) setTimeout(function(){ react(key, mk, (tries || 0) + 1); }, 4000); return false; }
     var lines = typeof mk === 'function' ? mk() : mk; if (!lines || !lines.length) return false;
     S.rx[key] = V(); save(); dialog(lines, null, {psst:true}); return true; }
@@ -529,7 +563,7 @@
     /* 90 s untätig */
     setInterval(function(){ if (document.hidden) return; if (Date.now() - lastInput > CF('game.idle', 90) * 1000) react('idle', function(){ return [['sigma', '... bist du noch da? [p:.6] Ich bin es. Hinter dem Glas vergeht die Zeit anders.', 'nachdenklich'], ['inka', 'Er wartet gern. Ich nicht. Scroll weiter, wenn du magst.']]; }); }, 15000);
     /* rasantes Scrollen */
-    var sdist = 0, st0 = 0, sy0 = window.pageYOffset; window.addEventListener('scroll', function(){ var now = Date.now(), y = window.pageYOffset; if (now - st0 > 1500){ sdist = 0; st0 = now; sy0 = y; } sdist = Math.abs(y - sy0); if (sdist > window.innerHeight * 4) { sdist = 0; st0 = now; sy0 = y; react('fast', function(){ return [['xae', 'Sie scrollen mit ' + Math.round(window.innerHeight * 4 / 1.5) + ' Pixeln pro Sekunde. Ich lese so. Die meisten nicht.'], ['inka', 'Langsamer. Der Plotter schreibt nur, was du ansiehst.']]; }); } }, {passive:true});
+    var sdist = 0, st0 = 0, sy0 = window.pageYOffset; window.addEventListener('scroll', function(){ var now = Date.now(), y = window.pageYOffset; if (now - st0 > 1500){ sdist = 0; st0 = now; sy0 = y; } sdist = Math.abs(y - sy0); if (sdist > window.innerHeight * 4) { sdist = 0; st0 = now; sy0 = y; react('fast', function(){ return [['xae', 'Du scrollst mit ' + Math.round(window.innerHeight * 4 / 1.5) + ' Pixeln pro Sekunde. Ich lese so. Die meisten nicht.'], ['inka', 'Langsamer. Der Plotter schreibt nur, was du ansiehst.']]; }); } }, {passive:true});
     /* Tab verlassen und zurück */
     document.addEventListener('visibilitychange', function(){ if (document.hidden){ hiddenAt = Date.now(); return; } if (hiddenAt && Date.now() - hiddenAt > 30000) setTimeout(function(){ react('back', function(){ return [['inka', pickOne(['Wieder da. Ich habe nichts angefasst.', 'Du warst weg. Sigma hat gefragt, ob du wiederkommst. Ich habe ja gesagt.', 'Zurück. Die Dinge liegen noch da, wo sie lagen. Meistens.'])]]; }); }, 1200); hiddenAt = 0; });
     /* lange vor einem Bild (Großansicht 8 s): Figuren beziehen sich auf Titel und Material */
@@ -548,7 +582,7 @@
   function opinion(id, title){ var who = ['inka', 'wagner', 'xae', 'sigma'][(S.ops || 0) % 4];
     var Q = {inka:{who:'inka', text:'Du hast den Text zu *' + title + '* bis zum Ende gelesen. Und? Ich frage für mich.', ask:[{s:'d', t:'Sachlich und klar. Gefällt mir.', re:[['inka', '[m:froh]Felix schreibt so. Kein Wort zu viel, sagt er. Ich finde, eins zu wenig.']]}, {s:'p', t:'Zu viel Text für Bilder.', re:[['inka', '[m:ueberrascht]Sag das Felix. [m:froh]Nein, sag es ihm wirklich, er mag Widerspruch.']]}, {s:'a', t:'Jetzt will ich die Bilder sehen.', re:[['inka', '[m:froh]Dann los. Klick drauf, sie werden groß.']]}, {s:'v', t:'Weiß nicht. Lang.', re:[['inka', '[m:nachdenklich]Lang. Sigma liest ihn jeden Tag. Er sagt, er wird kürzer.']]}]},
       wagner:{who:'wagner', text:'Sie haben *' + title + '* gelesen. Ein Urteil, bitte. Kurz.', ask:[{s:'d', t:'Gut gebaut. Jeder Satz an seinem Platz.', re:[['wagner', '[m:froh]Gebaut. Das richtige Wort. Sie sehen Konstruktion.']]}, {s:'p', t:'Wertungsfrei bis zur Langeweile.', re:[['wagner', '[m:wuetend]Sachlichkeit ist keine Langeweile. [m:neutral]Sie ist Disziplin. Aber Sie widersprechen, das zählt.']]}, {s:'a', t:'Weiter. Nächster Text.', re:[['wagner', 'Eile. [m:nachdenklich]Gut, der nächste wartet unten.']]}, {s:'v', t:'Kein Urteil.', re:[['wagner', '[m:wuetend]Kein Urteil ist auch eines. [m:neutral]Das schlechteste.']]}]},
-      xae:{who:'xae', text:'Text zu *' + title + '*: gelesen in Ihrer Zeit. Ich brauche 1,8 Sekunden. Bewertung?', ask:[{s:'d', t:'Informativ. Ich habe etwas gelernt.', re:[['xae', '[m:froh]Lernen. Das sagen die wenigsten zu. Notiert.']]}, {s:'p', t:'Ich lese schneller als du denkst.', re:[['xae', '[m:wuetend]Nein. [m:neutral]Aber die Behauptung war unterhaltsam.']]}, {s:'a', t:'Gib mir die Kurzfassung des nächsten.', re:[['xae', 'Kurzfassung: Bilder. Darunter Text. [m:nachdenklich]So geht es weiter.']]}, {s:'v', t:'...', re:[['xae', '[m:nachdenklich]Schweigen. Statistisch die häufigste Antwort auf Kunst.']]}]},
+      xae:{who:'xae', text:'Text zu *' + title + '*: gelesen in deiner Zeit. Ich brauche 1,8 Sekunden. Rating?', ask:[{s:'d', t:'Informativ. Ich habe etwas gelernt.', re:[['xae', '[m:froh]Lernen. Das sagen die wenigsten zu. Notiert.']]}, {s:'p', t:'Ich lese schneller als du denkst.', re:[['xae', '[m:wuetend]Nein. [m:neutral]Aber die Behauptung war unterhaltsam.']]}, {s:'a', t:'Gib mir die Kurzfassung des nächsten.', re:[['xae', 'Kurzfassung: Bilder. Darunter Text. [m:nachdenklich]So geht es weiter.']]}, {s:'v', t:'...', re:[['xae', '[m:nachdenklich]Schweigen. Statistisch die häufigste Antwort auf Kunst.']]}]},
       sigma:{who:'sigma', mood:'nachdenklich', text:'... du hast *' + title + '* gelesen. Ich lese mit, von hinten. Magst du es?', ask:[{s:'d', t:'Ja. Ruhig geschrieben.', re:[['sigma', '[m:froh]... ruhig. Ja. Hinter dem Glas liest man so.']]}, {s:'p', t:'Nein. Zu kühl.', re:[['sigma', '[m:traurig]... kühl. [p:.5] Vielleicht. Ich kenne es nicht anders.']]}, {s:'a', t:'Zeig mir, was dazu gehört.', re:[['sigma', '[m:froh]Die Bilder darüber. Und am Rand die Abbildungen, klein. Da war ich auch.']]}, {s:'v', t:'Ich habe nur überflogen.', re:[['sigma', '... überflogen. [m:nachdenklich]Das kann ich nicht. Ich habe keine Flügel.']]}]}};
     if (react('op:' + id, [Q[who]])){ S.ops = (S.ops || 0) + 1; save(); setTimeout(badges, 500); } }
   /* ---------- Sammelalbum (Josef, 29.10., 13:36): jedes groß angesehene Werk (Großansicht oder 5 s Hover) wird eine Karte mit Bild, Titel, Jahr und einer Zeile der nächsten Figur ---------- */
@@ -557,8 +591,8 @@
     clickclickboom:{inka:'Stereolithografie. Das Wort allein. Josef hat es als Text gezeichnet, dann gedruckt.', wagner:'Eine Pistole aus Schichten. Perspektive in Scheiben. Endlich jemand, der rechnet.', xae:'Click Click Boom. Drei Silben, zwei Klicks, ein Treffer. Effizient.', sigma:'... Game Over steht darauf. Ich lese es jeden Tag anders.', gojira:'... (Inka: Gojira kennt Waffen. Er blinzelt nicht.)'},
     suchbilder:{inka:'Daher kommen die zwanzig Dinge. Aus diesem Blatt. Schau genau, es fehlen welche.', wagner:'Hundert mal fünfundneunzig. Jedes Ding hat Koordinaten. Ich habe sie alle.', xae:'Ich sehe das Blatt einmal und weiß, wo alles liegt. Deshalb spiele ich nicht mit.', sigma:'... hier war ich zuerst. Zwischen den Dingen, bevor sie fielen.', gojira:'... (Inka: Gojira hat lange hingesehen. Länger als du.)'},
     cowboykaugummi:{inka:'Kein Comic, sagt Josef. Comicsprache. Ich sage: ein Kaugummi, der nicht aufhört.', wagner:'42 mal 29,5. Immer dasselbe Format. Das ist Disziplin, der Rest ist Unfug.', xae:'Popfiguren, Schrift, Tusche. Ich erkenne alle Zitate. Das sage ich ohne Stolz.', sigma:'... die Figur raucht. Ich habe das nie verstanden. Luft, die man sieht.', gojira:'... (Inka: eines der Blätter zeigt Gojira. Er hat es gesehen. Er sagt nichts.)'},
-    egoshooter:{inka:'Die Perspektive der Waffe. Du siehst, was der Lauf sieht.', wagner:'Ego Shooter. Zentralperspektive in Reinkultur. Der Fluchtpunkt ist das Ziel. Ich sage das ohne Freude.', xae:'Sechzig mal fünfzig, zehn Blätter. Ich habe alle in vier Sekunden. Das Zielen dauert bei Ihnen länger.', sigma:'... ich mag die Hände. Jemand hält etwas. Ich halte nie etwas.', gojira:'... (Inka: Gojira versteht Zielen nicht. Er ist das Ziel.)'},
-    weitere:{inka:'Ein Einzelblatt. Josef nennt sie Weitere Arbeiten. Ich nenne sie die Rückseite.', wagner:'Kein Serienzwang. Ein Blatt, eine Behauptung. Prüfen Sie die Linie.', xae:'Einzelblätter von 2010 bis 2024. Ich sehe die Entwicklung. Sie müssen scrollen.', sigma:'... klein und allein. Das kenne ich.', gojira:'... (Inka: eines zeigt Godzilla bei Eingrabungen. Gojira hat genickt. Das Haus hat gewackelt.)'},
+    egoshooter:{inka:'Die Perspektive der Waffe. Du siehst, was der Lauf sieht.', wagner:'Ego Shooter. Zentralperspektive in Reinkultur. Der Fluchtpunkt ist das Ziel. Ich sage das ohne Freude.', xae:'Sechzig mal fünfzig, zehn Blätter. Ich habe alle in vier Sekunden. Dein Aim braucht länger.', sigma:'... ich mag die Hände. Jemand hält etwas. Ich halte nie etwas.', gojira:'... (Inka: Gojira versteht Zielen nicht. Er ist das Ziel.)'},
+    weitere:{inka:'Ein Einzelblatt. Josef nennt sie Weitere Arbeiten. Ich nenne sie die Rückseite.', wagner:'Kein Serienzwang. Ein Blatt, eine Behauptung. Prüfen Sie die Linie.', xae:'Einzelblätter von 2010 bis 2024. Ich sehe die Entwicklung. Du musst scrollen.', sigma:'... klein und allein. Das kenne ich.', gojira:'... (Inka: eines zeigt Godzilla bei Eingrabungen. Gojira hat genickt. Das Haus hat gewackelt.)'},
     draugr:{inka:'DRAUGR. Freya, Björn, die Katze. Ich kenne sie, nicht persönlich.', wagner:'Comicseiten. Panels sind Fenster, Fenster sind Perspektive. Immerhin.', xae:'Layout, Skizze, Seite. Drei Stufen. Ich hätte die zweite übersprungen.', sigma:'... die Katze. Sieh dir die Katze an. Sie sieht zurück.', gojira:'... (Inka: Gojira mag die Katze. Das ist alles, was ich weiß.)'},
     prozess:{inka:'Vom Skript zur Seite. Da liegt auch ein Skript, in dem ein Song vorkommt. Connie Converse.', wagner:'Skript, Skizze, Seite. Ein Verfahren. Ich schätze Verfahren.', xae:'Prozess heißt: man sieht die Fehler. Ich mache keine. Deshalb bin ich langweilig, sagt Inka.', sigma:'... Bleistift unter der Tusche. Wie ein Gedanke unter dem Satz.', gojira:'... (Inka: Gojira versteht Skripte. Er kommt in einem vor.)'},
     beckmann2022:{inka:'Magnete für Beckmann. Kinder haben damit Bilder gebaut. Richtige Kinder.', wagner:'Vermittlung. Man zerlegt Beckmann in Teile und setzt ihn neu zusammen. Montage. Ich billige das.', xae:'Magnete. Haftkraft etwa 0,3 Newton. Ich habe nachgesehen.', sigma:'... Dinge, die man anfassen darf. Ich kenne das nur vom Hören.', gojira:'... (Inka: Gojira war nie in der Pinakothek. Er passt nicht durch die Tür.)'}
@@ -584,11 +618,11 @@
     {id:'infreefall2017', p:'kunst', who:'wagner', t:'Sehen Sie sich [w:kunst:infreefall2017|In free fall] an, in der Großansicht. Vier Blätter, ein Fall. Ich will wissen, ob das Raster hält.'},
     {id:'ck17', p:'kunst', who:'inka', t:'Such mir [w:kunst:ck17|UUUH! Godzilla] in Cowboy Kaugummi und schau es dir groß an. Ich will wissen, ob er aussieht wie der echte.'},
     {id:'suchbild2', p:'kunst', who:'sigma', t:'... sieh dir das [w:kunst:suchbild2|Suchbild] an, groß. Da komme ich her, irgendwie. Zähl die Löcher.'},
-    {id:'ccb_model', p:'kunst', who:'xae', t:'Sehen Sie sich [w:kunst:ccb_model|Click Click Boom] an, die Stereolithografie. Ich will Ihre Meinung zur Auflösung.'},
+    {id:'ccb_model', p:'kunst', who:'xae', t:'Schau dir [w:kunst:ccb_model|Click Click Boom] an, die Stereolithografie. Ich will deine Meinung zur Auflösung.'},
     {id:'freya', p:'comic', who:'inka', t:'Schau dir die [w:comic:freya|Figurenstudie für DRAUGR, Freya] groß an. Ich kenne sie. Nicht persönlich.'},
     {id:'es2013_1', p:'kunst', who:'wagner', t:'[w:kunst:es2013_1|Ego Shooter], das erste Blatt. Sehen Sie es sich an und sagen Sie mir, wo der Fluchtpunkt liegt. Ich behaupte: außerhalb.'},
     {id:'axolotl2016', p:'kunst', who:'sigma', t:'... das [w:kunst:axolotl2016|AX0LOTL]. Klein. Sieh es dir groß an, für mich. Ich mag Dinge, die im Wasser atmen.'},
-    {id:'ck14', p:'kunst', who:'xae', t:'Sehen Sie sich [w:kunst:ck14|404 Page not found] an. Es gibt hier auch eine echte Seite 404. Vergleichen Sie.'},
+    {id:'ck14', p:'kunst', who:'xae', t:'Schau dir [w:kunst:ck14|404 Page not found] an. Es gibt hier auch eine echte Seite 404. Vergleich mal.'},
     {id:'lickit2015', p:'kunst', who:'inka', t:'[w:kunst:lickit2015|Lick it], neun Blätter, Installationsansicht. Schau es dir groß an und sag mir, ob die Wand hält.'},
     {id:'ot2013_treppe', p:'kunst', who:'wagner', t:'Das [w:kunst:ot2013_treppe|Treppenhaus] von 2013. Eine Treppe ist Perspektive in Reinform. Großansicht, bitte.'},
     {id:'godzilla_eingrabungen', p:'kunst', who:'gojira', t:'Gojira will, dass du dir [w:kunst:godzilla_eingrabungen|Godzilla bei Eingrabungen] ansiehst. Groß. Er sagt nicht, warum. Ich glaube, er findet sich ähnlich.'},
@@ -603,11 +637,11 @@
     var ask = {who:spk, text:Q.t + ' Fünfzig Punkte, wenn du es dir ansiehst. Machst du das?', ask:[{s:'d', t:'Gern. Ich sehe es mir an.', re:[[spk, '[m:froh]Gut. Ich warte.']]}, {s:'a', t:'Klar, wo ist es?', re:[[spk, 'Auf der Seite ' + {kunst:'Bildende Kunst', comic:'Comic', vermittlung:'Vermittlung'}[Q.p] + '. Der Name ist ein Link.']]}, {s:'p', t:'Ich lasse mir keine Aufträge geben.', re:[[spk, '[m:wuetend]Dann nicht. [m:neutral]Es liegt trotzdem da.']]}, {s:'v', t:'Vielleicht später.', re:[[spk, '[m:nachdenklich]Später. Ich merke es mir.']]}]};
     ask.ask[0].fn = ask.ask[1].fn = function(){ S.quest = {id:Q.id, who:Q.who, v:V(), done:0, t:Q.t, restore:Q.restore || 0}; save(); markNew(); }; ask.ask[2].fn = ask.ask[3].fn = function(){ S.quest = {id:Q.id, who:Q.who, v:V(), done:0, declined:1, t:Q.t, restore:Q.restore || 0}; save(); };
     if (Q.restore) ask.text = Q.t + ' Machst du das?';
-    if (Q.who === 'wagner' || Q.who === 'xae') ask.text = ask.text.replace('Machst du das?', 'Machen Sie das?');
+    if (Q.who === 'wagner') ask.text = ask.text.replace('Machst du das?', 'Machen Sie das?');
     dialog(intro.concat([ask])); return true; }
   function questCheck(id){ var q = S.quest; if (!q || q.done || q.declined || q.id !== id) return; q.done = Date.now();
-    if (q.restore){ if (S.ruins) delete S.ruins[id]; save(); var f = document.getElementById('w-' + id); unruin(f, id); S.quests = (S.quests || 0) + 1; var R2 = rel('sigma'); R2.n = Math.min(3, R2.n + 1); save(); refresh(); setTimeout(function(){ dialog([['sigma', '[m:froh]... da. Es ist wieder da. Ich habe es zurückgeholt, aus meiner Welt. [p:.5] Sag es niemandem. Wagner würde fragen, wie.'], ['inka', 'Das Werkzeug bleibt verbraucht. Das Bild ist zurück. Ein Tausch.', 'nachdenklich']]); }, 900); return; } S.questBonus = (S.questBonus || 0) + 50; S.quests = (S.quests || 0) + 1; S.qdone = S.qdone || {}; S.qdone[id] = 1; var R = rel(q.who); R.n = Math.min(3, R.n + 1); save(); refresh(); tick();
-    var spk = q.who === 'gojira' ? 'inka' : q.who; setTimeout(function(){ dialog((q.who === 'gojira' ? [['gojira', '... ...']] : []).concat([[spk, (q.who === 'gojira' ? 'Gojira hat es gesehen, dass du es gesehen hast. ' : '') + '*Auftrag erledigt.* Fünfzig Punkte. ' + {inka:'Und? Sag nichts, ich sehe es dir an.', wagner:'Ihre Koordinaten stimmen. Ich trage Sie ein.', xae:'Zeit: akzeptabel. Für Sie.', sigma:'... danke. Jetzt haben wir beide hingesehen.', gojira:'Ich glaube, das war ein Danke.'}[q.who], 'froh']])); setTimeout(badges, 600); }, 900); }
+    if (q.restore){ if (S.ruins) delete S.ruins[id]; save(); var f = document.getElementById('w-' + id); unruin(f, id); S.quests = (S.quests || 0) + 1; var R2 = rel('sigma'); R2.n = Math.min(3, R2.n + 1); save(); refresh(); H('onRestore', id); setTimeout(function(){ dialog([['sigma', '[m:froh]... da. Es ist wieder da. Ich habe es zurückgeholt, aus meiner Welt. [p:.5] Sag es niemandem. Wagner würde fragen, wie.'], ['inka', 'Das Werkzeug bleibt verbraucht. Das Bild ist zurück. Ein Tausch.', 'nachdenklich']]); }, 900); return; } S.questBonus = (S.questBonus || 0) + 50; S.quests = (S.quests || 0) + 1; S.qdone = S.qdone || {}; S.qdone[id] = 1; var R = rel(q.who); R.n = Math.min(3, R.n + 1); save(); refresh(); tick();
+    var spk = q.who === 'gojira' ? 'inka' : q.who; setTimeout(function(){ dialog((q.who === 'gojira' ? [['gojira', '... ...']] : []).concat([[spk, (q.who === 'gojira' ? 'Gojira hat es gesehen, dass du es gesehen hast. ' : '') + '*Auftrag erledigt.* Fünfzig Punkte. ' + {inka:'Und? Sag nichts, ich sehe es dir an.', wagner:'Ihre Koordinaten stimmen. Ich trage Sie ein.', xae:'Zeit: akzeptabel. Für dich.', sigma:'... danke. Jetzt haben wir beide hingesehen.', gojira:'Ich glaube, das war ein Danke.'}[q.who], 'froh']])); setTimeout(badges, 600); }, 900); }
   function questHtml(){ var q = S.quest; if (!q) return '<p>Noch keiner. Die Figuren fragen beim nächsten Besuch.</p>'; var Q = QUESTS.filter(function(x){ return x.id === q.id; })[0] || (q.t ? {t:q.t} : null); var t = Q ? Q.t.replace(/\[w:([a-z]+):([^|\]]+)\|([^\]]+)\]/g, function(_, pg, id, ti){ return '<a href="' + (pg === PAGE ? '' : pg + '.html') + '#w-' + id + '">' + ti + '</a>'; }) : '';
     return '<p><b style="color:' + CH[q.who].col + '">' + CH[q.who].name + '</b> ' + t + '</p><p>' + (q.done ? 'Erledigt, 50 Punkte.' : q.declined ? 'Abgelehnt. Das Werk liegt trotzdem da.' : 'Offen: das Werk groß ansehen.') + (S.quests ? ' Insgesamt ' + S.quests + (S.quests === 1 ? ' Auftrag erledigt.' : ' Aufträge erledigt.') : '') + '</p>'; }
   /* ---------- Abzeichen (Josef, 29.10., 13:34: etwa 12, mit Figurenzeile) ---------- */
@@ -670,7 +704,7 @@
     if (T.big) rumbleLite(); }
   function rumbleLite(){ document.documentElement.classList.add('beben'); setTimeout(function(){ document.documentElement.classList.remove('beben'); }, 900); }
   var TOOLACT = null, toolLab = null;
-  function startTool(id){ if (!S.found[id] || (S.used && S.used[id]) || !TOOLS[id]) return; TOOLACT = id; document.documentElement.classList.add('sbtoolon');
+  function startTool(id){ if (!S.found[id] || (S.used && S.used[id]) || !TOOLS[id]) return; TOOLACT = id; H('onTool', id); document.documentElement.classList.add('sbtoolon');
     if (!toolLab){ toolLab = document.createElement('div'); toolLab.className = 'sbtoollab'; toolLab.setAttribute('role', 'status'); document.body.appendChild(toolLab); }
     toolLab.innerHTML = '<img src="../assets/game/' + id + '.png" alt=""><span><b>' + NAMES[id] + '</b> (' + TOOLS[id].n + '): Klick auf eines von Josefs Werken. <kbd>Esc</kbd> bricht ab.</span><button type="button" class="x" aria-label="Abbrechen">×</button>'; toolLab.classList.add('on');
     toolLab.querySelector('.x').addEventListener('click', stopTool); cursorSnd('ok'); }
@@ -691,7 +725,7 @@
       {s:'v', t:'Ich weiß nicht.', re:[[who, who === 'sigma' ? '[m:froh]... dann lassen wir es. Für heute.' : '[m:nachdenklich]Dann nicht. Das Ding bleibt im Inventar.']]}];
     dialog([Q]); }
   function ruin(f, tool){ if (!f || !TOOLS[tool]) return; var id = f.id.slice(2), T = TOOLS[tool]; S.ruins = S.ruins || {}; S.used = S.used || {}; if (S.ruins[id]) return;
-    var bi = Object.keys(S.ruins).length % BEHIND.length; S.ruins[id] = {tool:tool, t:Date.now(), p:PAGE, g:f.getAttribute('data-group') || '', b:bi, rx:20 + Math.round(Math.random() * 60), ry:20 + Math.round(Math.random() * 60)}; S.used[tool] = Date.now(); save(); stopTool();
+    var bi = Object.keys(S.ruins).length % BEHIND.length; S.ruins[id] = {tool:tool, t:Date.now(), p:PAGE, g:f.getAttribute('data-group') || '', b:bi, rx:20 + Math.round(Math.random() * 60), ry:20 + Math.round(Math.random() * 60)}; S.used[tool] = Date.now(); save(); stopTool(); H('onRuin', id);
     ruinSnd(tool); applyRuin(f, S.ruins[id], true); refresh(); markNew();
     /* Verhältnisse: Inka näher, Sigma ferner, Wagner Respekt bei Großem, X Æ A-13 nah bei Großem, Respekt minus bei Kleinem */
     rel('inka').n = Math.min(3, rel('inka').n + 1); rel('sigma').n = Math.max(-3, rel('sigma').n - 1); if (T.big){ rel('wagner').r = Math.min(3, rel('wagner').r + 1); rel('xae').n = Math.min(3, rel('xae').n + 1); } else rel('xae').r = Math.max(-3, rel('xae').r - 1); save();
@@ -747,7 +781,7 @@
     var path = document.createElementNS(NS, 'path'); path.setAttribute('d', d); path.setAttribute('fill', col); svg.appendChild(path);
     for (var k = 0; k < 6; k++){ var c = document.createElementNS(NS, 'circle'); var aa = Math.random() * 6.283, rr = 28 + Math.random() * 18; c.setAttribute('cx', Math.cos(aa) * rr); c.setAttribute('cy', Math.sin(aa) * rr); c.setAttribute('r', 1.5 + Math.random() * 3); c.setAttribute('fill', col); svg.appendChild(c); }
     document.body.appendChild(svg); setTimeout(function(){ svg.remove(); }, 1300); }
-  function found(p, img, e){ if (S.found[p.id]) return; if (!S.start) S.start = Date.now(); S.found[p.id] = Date.now(); var n = count(); if (n >= N) S.done = Date.now(); save();
+  function found(p, img, e){ if (S.found[p.id]) return; if (!S.start) S.start = Date.now(); S.found[p.id] = Date.now(); var n = count(); if (n >= N) S.done = Date.now(); save(); H('onFound', p);
     img.classList.add('found', 'pop'); refresh(); sp('g-fund', {vol:.7, max:.35}); setTimeout(function(){ cheer(n - 1); }, 120); splash(e.clientX, e.clientY, accent(img));
     if (btn){ btn.classList.add('bump'); setTimeout(function(){ btn.classList.remove('bump'); }, 400); }
     if (window.JK_PFAHL && e.pointerType === 'mouse'){ try { window.JK_PFAHL.on(e); setTimeout(function(){ window.JK_PFAHL.off(); }, 700); } catch(x){} }
@@ -759,7 +793,7 @@
     else if (ms) setTimeout(function(){ dialog(ms.concat(bl), newChapter); }, 800);
     else if (bl.length) setTimeout(function(){ dialog(bl); }, 800); }
   /* Finale: drei Fassungen je Verhältnis (Sigma nah, Wagner respektvoll, sonst Inka); auf Plus-Stufe 3 entscheidet man, was mit dem Quadrat geschieht (Josef, 29.10., 13:14) */
-  function doneLines(){ if (ruinCount() >= 8) return DONE4(); if (NG >= 3) return DONE3();
+  function doneLines(){ if (ruinCount() >= 8) return DONE4(); if (NG < 3){ var he = H('ending'); if (he) return he; } if (NG >= 3) return DONE3();
     if (rel('sigma').n >= 2) return [['gojira', '...'], ['sigma', '[m:froh]... das war Gojira. Ich übersetze heute: Das Quadrat ist für dich. Und für mich, ein bisschen. Alle zwanzig.'], ['inka', 'Sigma hat sich das letzte Wort genommen. Das kommt selten vor. Lass es ihm.', 'froh']];
     if (rel('wagner').r >= 2) return [['gojira', '...'], ['wagner', 'Gojira hat das [w:index:green|Quadrat] eingegraben. Ein Relikt vergangener Existenz, wie ich es nenne. [m:froh]Ihre Koordinaten stimmen alle. Ich notiere das.'], ['inka', 'Wagner lobt. Das steht in keinem Skript. Alle zwanzig.', 'ueberrascht']];
     return DONE; }
@@ -840,6 +874,11 @@
         save(); setTimeout(function(){ sp('g-stempel', {vol:.7, max:.4}); }, 200); }); }); }, {threshold:.25});
     io.observe(el); }
 
-  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); reactions(); mood(); applyRuins(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
+  /* Schnittstelle für die Welt (assets/game/world.js, Josef, 1.11.2026) */
+  var X = window.JK_SBX = {hooks:{}, S:function(){ return S; }, save:save, dialog:function(l, d, o){ return dialog(l, d, o); }, busy:function(){ return !!(dlg || panel || ov || mo || document.querySelector('.lb2.on')); }, quiet:quiet, optedOut:optedOut, count:count, points:points, refresh:refresh, markNew:markNew, V:V, PAGE:PAGE, TOUCH:TOUCH, CF:CF, esc:esc, rel:rel, CH:CH, VOICE:VOICE, NAMES:NAMES, NG:function(){ return NG; }, ruinCount:ruinCount, chapSeen:function(){ return Object.keys(S.chap || {}).length; }, readingNow:readingNow, lastDlg:function(){ return lastDlg; }, syl:syl,
+    freeHint:function(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return; var here = left.filter(function(p){ return p.p === PAGE; }); hintFor((here.length ? here : left)[0]); S.hints = Math.max(0, S.hints - 1); save(); refresh(); }};
+  function H(n){ var f = X.hooks[n]; if (!f) return undefined; try { return f.apply(null, [].slice.call(arguments, 1)); } catch(e){ try { console.warn('world', n, e); } catch(_){} return undefined; } }
+  function loadWorld(){ if (optedOut() && !S.done) {} var sc = document.querySelector('script[src*="game.js"]'); var v = sc ? ((sc.src.match(/[?&]v=([^&]+)/) || [])[1] || '') : ''; var s2 = document.createElement('script'); s2.src = '../assets/game/world.js' + (v ? '?v=' + v : ''); s2.defer = true; document.head.appendChild(s2); }
+  function init(){ try { if (!localStorage.getItem('jk_sb')) save(); } catch(e){} counter(); markNew(); place(); board(); intro(); holes(); wander(); reactions(); mood(); applyRuins(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); setTimeout(loadWorld, 1200); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

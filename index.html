@@ -124,6 +124,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
+const APPV="1.11. 08:20 (Spotify-App bei dunklem Bildschirm)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -818,6 +819,7 @@ function renderUeberblick(){
     '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
     '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
     '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
+  h+='<div class="small" style="margin:8px 0 20px">App-Stand: '+esc(APPV)+'</div>';
   $("#t-ueberblick").innerHTML=h;
   const v=$("#vol");v.oninput=()=>{store.set("vol",+v.value);AUD.volume=+v.value;$("#volv").textContent=Math.round(v.value*100)+"%";};
   $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",true));render();};

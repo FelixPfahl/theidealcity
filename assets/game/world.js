@@ -200,7 +200,9 @@
   /* Werbung: eine kleine Anzeige je Seite, selten, schließbar */
   function ad(){ if (!T || !T.ads || W.nowatch || X.optedOut() || W.noads || Math.random() > .5) return; if (!/^(kunst|comic|texte|vermittlung)$/.test(PAGE)) return; var secs = [].slice.call(document.querySelectorAll('main section[id]')); if (secs.length < 3) return; var s = secs[1 + Math.floor(Math.random() * (secs.length - 2))];
     var a = rnd(T.ads); var el = document.createElement('aside'); el.className = 'sbad'; el.setAttribute('aria-label', 'Anzeige von Nil (Teil des Spiels)'); el.innerHTML = '<span class="sbadk">Anzeige</span><b>NIL</b><p>' + X.esc(a.t) + '</p><button type="button" class="x" aria-label="Anzeige schließen">×</button>';
-    s.parentNode.insertBefore(el, s); el.querySelector('.x').addEventListener('click', function(){ el.remove(); W.adclosed = (W.adclosed || 0) + 1; save(); if (W.adclosed === 3) bubble('polizei', 'Sie haben drei Anzeigen geschlossen. Nil respektiert Ihre Wahl. Nil merkt sich Ihre Wahl.'); }); }
+    /* ohne Layoutverschiebung: breit als schwebende Karte am Abschnittsanfang, schmal als kurze Einblendung unten */
+    var hd = s.querySelector('.serhead'); if (window.innerWidth >= 1400 && hd){ if (getComputedStyle(hd).position === 'static') hd.style.position = 'relative'; el.classList.add('float'); hd.appendChild(el); } else { el.classList.add('pop'); document.body.appendChild(el); setTimeout(function(){ el.remove(); }, 9000); }
+    el.querySelector('.x').addEventListener('click', function(){ el.remove(); W.adclosed = (W.adclosed || 0) + 1; save(); if (W.adclosed === 3) bubble('polizei', 'Sie haben drei Anzeigen geschlossen. Nil respektiert Ihre Wahl. Nil merkt sich Ihre Wahl.'); }); }
   /* Händler*in: erscheint selten im Inventar (ab 3 Funden) */
   var trader = X.count() >= 3 && Math.random() < .35;
   X.hooks.inventoryExtra = function(){ var h = '<p class="sbwatch"><label><input type="checkbox" class="sbnowatch"' + (W.nowatch ? ' checked' : '') + '> Figuren beobachten mich nicht</label></p>';

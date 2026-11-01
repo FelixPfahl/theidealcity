@@ -1488,3 +1488,7 @@ html.calm .modem .mava img,html.calm .modem .mava i{animation:none}
 .grid > .song.under,.wgroup .song.under{grid-column:1/-1;border-top:1px solid var(--hair)}
 
 .lb2 .play2{bottom:104px}
+
+/* Nil-Anzeige ohne Layoutverschiebung (Test 1.11., 11:50) */
+.sbad.float{position:absolute;right:0;top:12px;margin:0;width:min(300px,28vw);z-index:4;box-shadow:4px 4px 0 var(--line)}
+.sbad.pop{position:fixed;left:12px;right:12px;bottom:72px;margin:0;z-index:94;max-width:none;box-shadow:4px 4px 0 var(--line)}

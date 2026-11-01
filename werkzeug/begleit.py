@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 doc_p, mp4_p, ent_p, key_p, repo = sys.argv[1:6]
 cfg = json.load(open(key_p))
+cfg = cfg.get("data", cfg)
 pad = lambda s: s + "=" * (-len(s) % 4)
 key = base64.urlsafe_b64decode(pad(cfg["key"]))
 assert len(key) == 32

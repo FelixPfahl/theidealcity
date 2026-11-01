@@ -1550,3 +1550,5 @@ html.calm body .sbdlg.mm .win,html.calm body .sbdlg.mm .more{animation:none!impo
 .modem pre{font-size:20px;line-height:1.5}
 @media (max-width:600px){.modem pre{font-size:16px}}
 .sbbub,.sbtick,.sbad{display:none!important}
+body.sbdlgon .sbfab{pointer-events:auto}   /* Inka-Knopf bleibt bedienbar, während ein Dialog läuft (Dialoge blockieren nichts) */
+@media (min-width:601px){html body .sbdlg.mm.sd-r,html body .sbdlg.mm.gut{padding-right:84px}}   /* Box rechts neben dem Inka-Knopf, nicht darüber (Knopf bleibt bedienbar) */

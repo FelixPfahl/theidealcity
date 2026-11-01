@@ -278,7 +278,8 @@ async function resume(){try{await AUD.play();needResume=false;diag("inka-weiter"
 /* Bildschirm geht aus, waehrend die Seite selbst spielt: an derselben Stelle an die Spotify-App uebergeben */
 SONG.handoff=async function(){
   if(!MOBILE||!SONG.on||SONG.via!=="seite"||!SP.player||SONG.handing)return;SONG.handing=true;
-  try{const st=await SP.player.getCurrentState();const pos=st?st.position:(SONG.lastPos||0);
+  try{const app=await SP.findApp();if(!app){diag("keine-app",{});SONG.handing=false;return;}
+    const st=await SP.player.getCurrentState();const pos=st?st.position:(SONG.lastPos||0);
     await SP.player.pause().catch(()=>{});
     SONG.via=await SP.playApp(SONG.track.uri,pos);SONG.pausedN=0;SONG.broken=0;
     const rest=(SONG.dur||(st&&st.duration)||SONG.track.ms||210000)-pos;clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),rest+1500);
@@ -360,6 +361,10 @@ SONG.recover=async function(){
 SP.unlock=function(){try{if(SP.player&&SP.player.activateElement)SP.player.activateElement();}catch(_){}};
 SP.warm=function(){if(!store.get("noSdk",false)&&SP.ready()&&!SP.player&&!SP.sdkP)SP.sdk().catch(()=>{});};
 /* Spotify-App auf dem Handy direkt ansteuern (laeuft im Hintergrund zuverlaessig) */
+SP.findApp=async function(){
+  const dv=await SP.api("GET","/me/player/devices");const ds=((dv&&dv.devices)||[]).filter(d=>d.id!==SP.deviceId);
+  return ds.find(d=>/smartphone/i.test(d.type)&&d.is_active)||ds.find(d=>/smartphone/i.test(d.type))||null;
+};
 SP.playApp=async function(uri,pos){
   const dv=await SP.api("GET","/me/player/devices");const ds=((dv&&dv.devices)||[]).filter(d=>d.id!==SP.deviceId);
   diag("geraete",{ds:ds.map(d=>d.type+":"+d.name+(d.is_active?"*":"")+(d.is_restricted?"!":""))});

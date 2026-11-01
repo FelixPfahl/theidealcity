@@ -42,11 +42,7 @@ iv = os.urandom(12)
 ct = aes.encrypt(iv, json.dumps(out, ensure_ascii=False).encode(), None)
 json.dump({"v": 1, "iv": b64(iv), "ct": b64(ct)}, open(os.path.join(repo, "d", fid + ".json"), "w"))
 
-# Aufraeumen: nur die letzten 3 Tage behalten
-cut = (datetime.date.fromisoformat(day) - datetime.timedelta(days=3)).isoformat()
-for f in os.listdir(os.path.join(repo, "d")):
-    if f[:10] < cut:
-        os.remove(os.path.join(repo, "d", f))
+# Archiv: alle Shows bleiben dauerhaft gespeichert (Josef 1.11.2026), nichts wird geloescht.
 # Index aller Shows (verschluesselt)
 ip = os.path.join(repo, "d", "shows.json")
 idx = []

@@ -242,7 +242,7 @@ const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:""};
 SONG.start=async function(k){
   const list=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];const tr=list[songIndex(k)];
   if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
-  AUD.pause();SONG.on=true;SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
+  SONG.on=true;AUD.pause();SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
   try{SONG.via=await SP.play(tr.uri);diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){diag("song-fehler",{e:String(e&&e.message||e)});toast("Song ging nicht: "+String(e&&e.message||e).slice(0,70)+". Inka macht weiter.");SONG.on=false;SONG.track=null;AUD.play().catch(()=>{});render();return;}
   const ms=Math.min(tr.ms||210000,6*60000);
@@ -321,7 +321,7 @@ SP.sdk=function(){
       pl.addListener("ready",({device_id})=>{SP.deviceId=device_id;SP.player=pl;SP.sdkState="Seite spielt selbst";diag("sdk-bereit",{});render();res(pl);});
       pl.addListener("autoplay_failed",()=>diag("sdk-autoplay-blockiert",{}));
       pl.addListener("not_ready",()=>{SP.deviceId="";});
-      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{diag("sdk-"+ev,{e:String(e&&e.message||""),tok:Math.round(((SP.cfg.exp||0)-Date.now())/1000)});if(SONG.on&&SONG.via==="seite"&&!SONG.broken&&(SONG.retries||0)<2){SONG.broken=Date.now();setTimeout(()=>SONG.recover(),2500);}SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
+      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{diag("sdk-"+ev,{e:String(e&&e.message||""),tok:Math.round(((SP.cfg.exp||0)-Date.now())/1000)});if(SONG.on&&SONG.via==="seite"&&!SONG.broken&&(SONG.retries||0)<5){SONG.broken=Date.now();setTimeout(()=>SONG.recover(),2500);}SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
       pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";}});
       pl.connect();setTimeout(()=>{if(!SP.player){SP.sdkState="Spotify-App wird ferngesteuert";rej(new Error("Gerät meldet sich nicht"));}},10000);
     }catch(e){rej(e);}};

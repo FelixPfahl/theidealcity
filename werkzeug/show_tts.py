@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Morning-Show-Audio mit mehreren Stimmen (Inka, Wagner, selten Sigma) und Musikmarken.
+"""Morning-Show-Audio mit mehreren Stimmen (Inka, Wagner, Sigma), Klaengen und Musikmarken.
+VERBINDLICHER AUFBAU DES TEXTES: werkzeug/show_struktur.md (Einstieg mit KLANG-Soundscape und Skit zu dritt).
+Klaenge: Zeile "KLANG: labor 6" | "KLANG: neon" | "KLANG: summen 2" | "KLANG: stille 1".
 Aufruf: show_tts.py <show.txt> <ausgabeordner> <schluesseldatei>
 Format show.txt:
   ## [show] Kapitelname        Kapitel mit Sprecherzeilen
@@ -46,7 +48,7 @@ for line in open(src, encoding="utf-8").read().splitlines():
     if cur is None or not line.strip():
         if cur is not None: cur["blocks"].append(None)  # Absatzgrenze
         continue
-    sm = re.match(r"^\s*(INKA|WAGNER|SIGMA)\s*:\s*(.*)$", line, re.I)
+    sm = re.match(r"^\s*(INKA|WAGNER|SIGMA|KLANG)\s*:\s*(.*)$", line, re.I)
     if sm:
         cur["blocks"].append([sm.group(1).lower(), sm.group(2)])
     else:
@@ -61,6 +63,9 @@ def tts(speaker, text, idx):
     h = hashlib.sha1((vid + MODEL + speaker + text).encode()).hexdigest()[:12]
     mp3 = os.path.join(out, "el_%03d_%s_%s.mp3" % (idx, speaker, h))
     if os.path.exists(mp3) and os.path.getsize(mp3) > 1000: return mp3, 0
+    import glob  # gleiche Zeile an anderer Stelle schon vertont: wiederverwenden, kostet nichts
+    for old in glob.glob(os.path.join(out, "el_*_%s_%s.mp3" % (speaker, h))):
+        if os.path.getsize(old) > 1000: shutil.copyfile(old, mp3); return mp3, 0
     payload = {"text": text, "model_id": MODEL, "voice_settings": SETTINGS[speaker]}
     for attempt in range(3):
         r = subprocess.run(["curl", "-sS", "-m", "300", "-o", mp3, "-w", "%{http_code}", "-X", "POST",
@@ -79,6 +84,52 @@ def to_wav(path, fx=None, speed=1.0):
     subprocess.run(cmd + ["-ac", "1", "-ar", str(SR), wav], check=True)
     a, _ = sf.read(wav, dtype="float32"); os.remove(wav); return a
 
+# Klaenge (Josef 1.11.2026: kleine Soundscape zum Einstieg). Zeile "KLANG: labor 6" | "KLANG: neon" | "KLANG: summen 2" | "KLANG: stille 1"
+def soundscape(spec):
+    parts = spec.lower().split(); kind = parts[0] if parts else "labor"
+    sec = float(parts[1]) if len(parts) > 1 else {"labor": 6, "neon": 2.6, "summen": 2.0, "stille": 1.0}.get(kind, 3)
+    n = int(SR * sec); tt = np.arange(n) / SR; rng = np.random.default_rng(len(spec) * 31 + n)
+    if kind == "stille": return np.zeros(n, np.float32)
+    if kind == "labor":
+        fade = np.minimum(1, tt / (sec * 0.6))
+        hum = (0.5 * np.sin(2*np.pi*50*tt) + 0.3 * np.sin(2*np.pi*100*tt) + 0.12 * np.sin(2*np.pi*150*tt)) * fade
+        k = int(SR * 0.004); vent = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same") * 2.5 * fade
+        bub = np.zeros(n); i = int(SR * 0.6)
+        while i < n:
+            L = int(SR * rng.uniform(0.03, 0.09))
+            if i + L >= n: break
+            f = rng.uniform(250, 650); x = np.arange(L) / SR
+            bub[i:i+L] += np.sin(2*np.pi*(f + 1100*x)*x) * np.exp(-x*40) * rng.uniform(0.5, 1.0)
+            i += int(SR * rng.uniform(0.12, 0.55))
+        beep = np.zeros(n)
+        for at in (sec * 0.45, sec * 0.8):
+            j = int(SR * at); L = int(SR * 0.12)
+            if j + L < n: x = np.arange(L) / SR; beep[j:j+L] = np.sin(2*np.pi*1760*x) * np.minimum(1, (L - np.arange(L)) / (SR * 0.02))
+        drip = np.zeros(n); j = int(SR * sec * 0.3); L = int(SR * 0.05)
+        if j + L < n: x = np.arange(L) / SR; drip[j:j+L] = np.sin(2*np.pi*(1400 - 9000*x)*x) * np.exp(-x*70)
+        a = 0.10 * hum + 0.06 * vent + 0.30 * bub + 0.16 * beep + 0.35 * drip
+        a *= np.minimum(1, (n - np.arange(n)) / (SR * 0.6)) * 0.6 + 0.4  # leicht abklingen, bleibt unter der Stimme
+    elif kind == "neon":
+        a = np.zeros(n)
+        def buzz(j, L, amp):
+            L = min(L, n - j); x = np.arange(L) / SR
+            b = sum(np.sin(2*np.pi*100*h*x) / h for h in (1, 2, 3, 5, 7)) + 0.3 * rng.standard_normal(L)
+            a[j:j+L] += amp * b * np.minimum(1, np.arange(L) / (SR * 0.004))
+            c = int(SR * 0.012); a[j:j+c] += 1.2 * rng.standard_normal(c) * np.exp(-np.arange(c) / (SR * 0.003))
+        buzz(int(SR*0.15), int(SR*0.07), 0.5); buzz(int(SR*0.55), int(SR*0.14), 0.55); buzz(int(SR*1.05), n, 0.35)
+        a *= np.where(tt > 1.05, np.maximum(0.35, 1 - (tt - 1.05) / 1.2), 1)
+        a *= 0.12
+    else:  # summen: Sigma, wie eine Fliege am Glas
+        f = 210 + 25 * np.sin(2*np.pi*7*tt) + 15 * rng.standard_normal(n).cumsum() / np.sqrt(n)
+        ph = 2 * np.pi * np.cumsum(f) / SR; saw = 2 * ((ph / (2*np.pi)) % 1) - 1
+        env = 0.5 + 0.5 * np.abs(np.sin(2*np.pi*0.9*tt + 0.5)); env *= np.minimum(1, np.minimum(tt, sec - tt) / 0.25)
+        a = 0.05 * saw * env
+        a = np.convolve(a, np.ones(6) / 6, mode="same")
+    a = np.clip(a, -0.95, 0.95)
+    rms = float(np.sqrt(np.mean(a ** 2))) or 1.0
+    target = {"labor": 0.045, "neon": 0.05, "summen": 0.03}.get(kind, 0.04)
+    return (a * (target / rms)).astype(np.float32)
+
 t0 = time.time(); pieces = []; meta = []; t = 0.0; chars = 0; idx = 0
 def add(a):
     global t
@@ -87,13 +138,15 @@ for ch in chapters:
     if ch["tag"] == "song":
         meta.append({"type": "song", "title": "Musik", "start": round(t, 2)})
         add(np.zeros(int(SR * 1.0), np.float32)); continue
-    blocks = [[b[0], clean(b[1])] for b in ch["blocks"] if b and clean(b[1])]
+    blocks = [[b[0], clean(b[1]) if b[0] != "klang" else b[1].strip()] for b in ch["blocks"] if b and b[1].strip()]
     if not blocks: continue
-    speakers = sorted(set(b[0] for b in blocks))
+    speakers = sorted(set(b[0] for b in blocks if b[0] != "klang"))
     meta.append({"type": "talk", "voice": "+".join(speakers), "title": ch["title"], "start": round(t, 2),
                  "words": sum(len(b[1].split()) for b in blocks)})
     prev = None
     for sp, text in blocks:
+        if sp == "klang":
+            add(soundscape(text)); prev = None; continue
         if prev is not None: add(np.zeros(int(SR * (0.25 if sp != prev else 0.45)), np.float32))
         mp3, n = tts(sp, text, idx); idx += 1; chars += n
         add(to_wav(mp3, SIGMA_FX if sp == "sigma" else None, SPEEDS[sp])); prev = sp

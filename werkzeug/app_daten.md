@@ -1,5 +1,7 @@
 # Inka-App: Wochendaten (Klartext-Format für app_daten.py)
 
+Show-Text: Aufbau, Figuren und Klänge stehen verbindlich in `werkzeug/show_struktur.md` (seit 1.11.2026 immer so).
+
 Der Lauf schreibt eine Datei `app.json` im Klartext (nur im Arbeitsordner, nie ins Repo) und ruft
 `python3 -I werkzeug/app_daten.py app.json <schlüsseldatei> <repo>` auf. Ins Repo kommt nur `d/app.json` verschlüsselt.
 

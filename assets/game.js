@@ -282,6 +282,12 @@
   function norm0(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
   function norm(l){ var o = norm0(l); if (o && typeof o.text === 'string' && o.text.indexOf('{') >= 0){ var c = {}; for (var k in o) c[k] = o[k]; c.raw = o.text; c.text = ph(o.text); o = c; } if (o && o.ask && o.ask.some(function(a){ return /\{\w+\}/.test(a.t || ''); })){ var c2 = {}; for (var k2 in o) c2[k2] = o[k2]; c2.ask = o.ask.map(function(a){ var b = {}; for (var k3 in a) b[k3] = a[k3]; b.t = ph(a.t); return b; }); o = c2; } return o; }
   var lastDlg = 0, injectFn = null;
+  /* Sprites: veröffentlichte Extras (px/manifest.json) und lokale Dev-Sprites (window.JK_DEVSPR, nur mit ?dev) */
+  var MANI = {};
+  function SPRHAS(p){ return !!(window.JK_DEVSPR && window.JK_DEVSPR[p]); }
+  function SPR(p){ return SPRHAS(p) ? window.JK_DEVSPR[p] : '../assets/game/' + p; }
+  function ANIM(k){ var d = window.JK_DEVANIM && window.JK_DEVANIM[k]; return d || (MANI.anim || {})[k] || null; }
+  try { fetch('../assets/game/px/manifest.json').then(function(r){ return r.ok ? r.json() : {}; }).then(function(m){ MANI = m || {}; }).catch(function(){}); } catch(e){}
   function devKey(t){ t = String(t || '').replace(/\[[^\]]*\]|\*/g, '').replace(/\s+/g, ' ').trim().slice(0, 80); var h = 0; for (var i = 0; i < t.length; i++){ h = (h * 31 + t.charCodeAt(i)) | 0; } return (h >>> 0).toString(36); }   /* Dev Tools: Statistik je Zeile */
   var MMNAME = {inka:'Inka', wagner:'Wagner', xae:'X', sigma:'Sigma', gojira:'Gojira', polizei:'Nil-Polizei', nole:'Nole', grind:'Grind', griffith:'Griffith', libido:'Libido', kalmar:'Kalmar', haendler:'Gestalt'};
   var MMCOL = {inka:'#5FB8DA', wagner:'#FF5446', xae:'#FFFFFF', sigma:'#2BD27A', gojira:'#2BD27A', polizei:'#B4B4B4', nole:'#D2AA64', grind:'#D2AA64', griffith:'#7C98F0', libido:'#B49BE6', kalmar:'#5FB8DA', haendler:'#D2A05A'};   /* Figurenfarben, auf dunklem Grund lesbar */
@@ -294,8 +300,17 @@
     /* Josef, 29.10., 13:34: "Psst" in ungefragten Fenstern (keine ungefragten Fenster mehr bis zum nächsten Besuch), "Nicht jetzt" im ersten Fenster (wie im Modem) */
     if (opt.psst){ var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'psst'; pb.textContent = 'Psst'; pb.title = 'Keine ungefragten Fenster mehr bis zum nächsten Besuch'; pb.addEventListener('click', function(e){ e.stopPropagation(); S.psst = S.visits || 1; save(); H('onPsst'); cursorSnd('ok'); close(false); }); win.appendChild(pb); }
     if (opt.notnow){ var nb = document.createElement('button'); nb.type = 'button'; nb.className = 'psst notnow'; nb.textContent = 'Nicht jetzt'; nb.addEventListener('click', function(e){ e.stopPropagation(); close(false); notNow(); }); win.appendChild(nb); }
-    function portrait(w, mood){ if (!/^(inka|wagner|xae|sigma|gojira)$/.test(w)){ img.removeAttribute('src'); img.style.visibility = 'hidden'; dlg.classList.add('noimg'); return; }   /* Gäste ohne Porträt: keine 404-Anfragen */
-      dlg.classList.remove('noimg'); img.style.visibility = ''; img.onerror = function(){ img.onerror = function(){ img.onerror = null; img.style.visibility = 'hidden'; if (dlg) dlg.classList.add('noimg'); }; img.src = '../assets/game/px/char-' + w + '.png'; }; img.src = '../assets/game/px/char-' + w + '-' + (mood || 'neutral') + '.png'; }
+    var pAnim = null, pBase = '', blinkAt = 0;
+    function portrait(w, mood){ var mo2 = mood || 'neutral', main = /^(inka|wagner|xae|sigma|gojira)$/.test(w), gm = (MANI.guests || {})[w];
+      if (!main && !gm && !SPRHAS('px/char-' + w + '-neutral.png')){ img.removeAttribute('src'); img.style.visibility = 'hidden'; dlg.classList.add('noimg'); pAnim = null; return; }   /* Gäste ohne Porträt: keine 404-Anfragen */
+      if (!main && gm && gm.indexOf(mo2) < 0 && !SPRHAS('px/char-' + w + '-' + mo2 + '.png')) mo2 = 'neutral';
+      dlg.classList.remove('noimg'); img.style.visibility = ''; img.onerror = function(){ img.onerror = function(){ img.onerror = null; img.style.visibility = 'hidden'; if (dlg) dlg.classList.add('noimg'); }; img.src = SPR('px/char-' + w + '.png'); };
+      pBase = 'px/char-' + w + '-' + mo2; img.src = SPR(pBase + '.png'); pAnim = ANIM(w + '-' + mo2); blinkAt = Date.now() + 2500 + Math.random() * 3000; }
+    /* Sprechen und Blinzeln (Josef, 1.11., T8): Bilder px/char-<figur>-<stimmung>-t1.png ... -b1.png, Anzahl in px/manifest.json */
+    var animT = setInterval(function(){ if (!dlg){ clearInterval(animT); return; } if (!pAnim || document.hidden) return; var now = Date.now();
+      if (typing && pAnim.talk){ var f = Math.floor(now / 120) % (pAnim.talk + 1); img.src = SPR(pBase + (f ? '-t' + f : '') + '.png'); return; }
+      if (pAnim.blink && now >= blinkAt){ var bf = Math.floor((now - blinkAt) / 90) + 1; if (bf <= pAnim.blink){ img.src = SPR(pBase + '-b' + bf + '.png'); return; } blinkAt = now + 2500 + Math.random() * 3500; }
+      var base = SPR(pBase + '.png'); if (img.getAttribute('src') !== base) img.src = base; }, 60);
     function setMood(m){ curMood = m; MOODS.forEach(function(x){ dlg.classList.remove('m-' + x); }); dlg.classList.add('m-' + m); portrait(lines[k].who, m); }
     function startLine(){ var L = lines[k]; cur = CH[L.who] || CH.inka; var pw = k > 0 && lines[k - 1] ? lines[k - 1].who : null; if (pw && pw !== L.who) side = side === 'r' ? 'l' : 'r'; dlg.className = 'sbdlg mm c-' + L.who + (Date.now() - t0 < 300 ? ' opening' : ''); dlg.setAttribute('aria-label', cur.name); who.textContent = cur.name; dlg.style.setProperty('--c', cur.col); dlg.style.setProperty('--c2', MMCOL[L.who] || cur.col); placeDlg(); if (DEV){ window.__jkCurLine = {who:L.who, text:L.raw || L.text, mood:L.mood || ''}; try { var sk = 'jk_dev_seen', sn = JSON.parse(localStorage.getItem(sk) || '{}'), hk = devKey(L.raw || L.text); sn[hk] = (sn[hk] || 0) + 1; localStorage.setItem(sk, JSON.stringify(sn)); } catch(e){} }
       var m0 = L.mood || baseMood(L.who); if (L.who === 'gojira') m0 = 'neutral'; setMood(m0);
@@ -394,7 +409,7 @@
   var mo = null;
   function modemScene(done){ if (mo) return; var lines = MODEM[(S.visits || 1) % MODEM.length];
     mo = document.createElement('div'); mo.className = 'modem on sbmodem'; mo.setAttribute('role', 'dialog'); mo.setAttribute('aria-label', 'Einwahl');
-    mo.innerHTML = '<div class="box"><div class="mava" aria-hidden="true"><img src="../assets/game/char-inka.png" alt=""><img class="g2" src="../assets/game/char-inka.png" alt=""><i></i></div><div class="mterm"><pre aria-live="polite"></pre><div class="bar"><i></i></div><button type="button" class="mskip">Überspringen</button><button type="button" class="notnow">Nicht jetzt</button></div></div>';   /* Josef, 1.11., 10:19: kein Hinweistext mehr, stattdessen Inkas Avatar verzerrt und flimmernd */
+    mo.innerHTML = '<div class="box"><div class="mava" aria-hidden="true"><img src="' + SPR('char-inka.png') + '" alt=""><img class="g2" src="' + SPR('char-inka.png') + '" alt=""><i></i></div><div class="mterm"><pre aria-live="polite"></pre><div class="bar"><i></i></div><button type="button" class="mskip">Überspringen</button><button type="button" class="notnow">Nicht jetzt</button></div></div>';   /* Josef, 1.11., 10:19: kein Hinweistext mehr, stattdessen Inkas Avatar verzerrt und flimmernd */
     document.body.appendChild(mo); var pre = mo.querySelector('pre'), bar = mo.querySelector('.bar i'); var fin = false, li = 0, timer = null;
     var dur = (window.JK_DIALUP && !LHG.now) ? (window.JK_DIALUP(function(){}, {fail:true}) || 7000) : 7000; dur = dur * CF('fx.modemlen', 1);
     var start = Date.now(); var tick = setInterval(function(){ var p = Math.min(100, (Date.now() - start) / dur * 100); bar.style.width = p + '%'; if (p >= 100) clearInterval(tick); }, 100);
@@ -428,7 +443,7 @@
   var btn = null, num = null, fab = null, menu = null, panel = null;
   function counter(){ if (document.querySelector('.sbfab')) return;
     fab = document.createElement('div'); fab.className = 'sbfab';
-    fab.innerHTML = '<button type="button" class="sbfabbtn" aria-haspopup="true" aria-expanded="false" aria-controls="sbmenu" aria-label="Suchbild: Inka, Inventar, Logbuch" title="Suchbild"><img src="../assets/game/char-inka.png" alt=""><b class="sbnum">' + count() + '</b></button>' +
+    fab.innerHTML = '<button type="button" class="sbfabbtn" aria-haspopup="true" aria-expanded="false" aria-controls="sbmenu" aria-label="Suchbild: Inka, Inventar, Logbuch" title="Suchbild"><img src="' + SPR('char-inka.png') + '" alt=""><b class="sbnum">' + count() + '</b></button>' +
       '<div class="sbmenu" id="sbmenu" hidden><button type="button" class="sbcall">Inka rufen</button><button type="button" class="sbcount">Inventar <span>' + count() + '/' + N + '</span></button><button type="button" class="sblogbtn">Logbuch</button><button type="button" class="sbrestart">Neu starten</button></div>';
     document.body.appendChild(fab); btn = fab.querySelector('.sbfabbtn'); num = fab.querySelector('.sbnum'); menu = fab.querySelector('.sbmenu');
     function openMenu(o){ menu.hidden = !o; btn.setAttribute('aria-expanded', o ? 'true' : 'false'); if (o){ cursorSnd('mv'); menu.querySelector('button').focus(); } }
@@ -451,7 +466,7 @@
     document.body.appendChild(panel); panel.querySelector('.x').addEventListener('click', closePanel); panel.addEventListener('click', function(e){ if (e.target === panel) closePanel(); });
     document.addEventListener('keydown', panelKey); cursorSnd('ok'); var f = panel.querySelector('.sbpin button:not(.x), .sbpin input, .sbpin a'); (f || panel.querySelector('.x')).focus(); return panel; }
   /* Inventar */
-  function inventory(refreshOnly){ S.used = S.used || {}; var items = PLACES.map(function(p){ var f = !!S.found[p.id], u = !!S.used[p.id], T = TOOLS[p.id]; return '<li class="' + (f ? (u ? 'got used' : 'got tool') : 'open') + '"><button type="button" data-id="' + p.id + '"' + (u ? ' disabled' : '') + ' aria-label="' + (f ? (u ? NAMES[p.id] + ', als Werkzeug benutzt' : NAMES[p.id] + ' als Werkzeug: ' + (T ? T.n : '')) : NAMES[p.id] + ' noch gesucht. Hinweis kostet ' + CF('game.hint', HINT_COST) + ' Punkte') + '"><img src="../assets/game/' + p.id + '.png" alt=""><span>' + (f ? NAMES[p.id] : '?') + '</span>' + (f && !u && T ? '<small>' + T.n + '</small>' : (u ? '<small>benutzt</small>' : '')) + '</button></li>'; }).join('');
+  function inventory(refreshOnly){ S.used = S.used || {}; var items = PLACES.map(function(p){ var f = !!S.found[p.id], u = !!S.used[p.id], T = TOOLS[p.id]; return '<li class="' + (f ? (u ? 'got used' : 'got tool') : 'open') + '"><button type="button" data-id="' + p.id + '"' + (u ? ' disabled' : '') + ' aria-label="' + (f ? (u ? NAMES[p.id] + ', als Werkzeug benutzt' : NAMES[p.id] + ' als Werkzeug: ' + (T ? T.n : '')) : NAMES[p.id] + ' noch gesucht. Hinweis kostet ' + CF('game.hint', HINT_COST) + ' Punkte') + '"><img src="' + SPR(p.id + '.png') + '" alt=""><span>' + (f ? NAMES[p.id] : '?') + '</span>' + (f && !u && T ? '<small>' + T.n + '</small>' : (u ? '<small>benutzt</small>' : '')) + '</button></li>'; }).join('');
     var html = '<p class="sbpnote">' + count() + ' von ' + N + ' gefunden, ' + points() + ' Punkte. ' + (S.done ? 'Alles da. ' : 'Klick auf eine Silhouette: Inka sagt, wo sie eins gesehen hat (kostet ' + CF('game.hint', HINT_COST) + ' Punkte). ') + (count() ? 'Gefundene Dinge sind Werkzeuge: anklicken, dann auf eines von Josefs Werken klicken. Jedes einmal.' : '') + '</p><ul class="sbinvgrid">' + items + '</ul>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + (H('inventoryExtra') || '');
     if (refreshOnly && panel){ panel.querySelector('.sbpin').innerHTML = '<button type="button" class="x" aria-label="Schließen">×</button><h2>Inventar</h2>' + html; panel.querySelector('.x').addEventListener('click', closePanel); }
     else openPanel('sbinv', 'Inventar', html);
@@ -753,7 +768,7 @@
   var TOOLACT = null, toolLab = null;
   function startTool(id){ if (!S.found[id] || (S.used && S.used[id]) || !TOOLS[id]) return; TOOLACT = id; H('onTool', id); document.documentElement.classList.add('sbtoolon');
     if (!toolLab){ toolLab = document.createElement('div'); toolLab.className = 'sbtoollab'; toolLab.setAttribute('role', 'status'); document.body.appendChild(toolLab); }
-    toolLab.innerHTML = '<img src="../assets/game/' + id + '.png" alt=""><span><b>' + NAMES[id] + '</b> (' + TOOLS[id].n + '): Klick auf eines von Josefs Werken. <kbd>Esc</kbd> bricht ab.</span><button type="button" class="x" aria-label="Abbrechen">×</button>'; toolLab.classList.add('on');
+    toolLab.innerHTML = '<img src="' + SPR(id + '.png') + '" alt=""><span><b>' + NAMES[id] + '</b> (' + TOOLS[id].n + '): Klick auf eines von Josefs Werken. <kbd>Esc</kbd> bricht ab.</span><button type="button" class="x" aria-label="Abbrechen">×</button>'; toolLab.classList.add('on');
     toolLab.querySelector('.x').addEventListener('click', stopTool); cursorSnd('ok'); }
   function stopTool(){ TOOLACT = null; document.documentElement.classList.remove('sbtoolon'); if (toolLab) toolLab.classList.remove('on'); }
   function ruinable(f){ return albumOk(f) && !(S.ruins && S.ruins[f.id.slice(2)]); }
@@ -808,7 +823,7 @@
   function lbClear(){ if (lbObj){ lbObj.remove(); lbObj = null; } clearInterval(lbWatch); }
   window.addEventListener('jk:lb', function(e){ lbClear(); var a = e.detail && e.detail.a; if (!a || optedOut()) return; var lb = document.querySelector('.lb2'), im = lb && lb.querySelector('img.main'); if (!im) return;
     LBP.forEach(function(p){ if (S.found[p.id] || lbObj) return; var t = document.querySelector(p.sel.slice(4)); if (t !== a) return;
-      var o = document.createElement('img'); o.src = '../assets/game/' + p.id + '.png'; o.alt = ''; o.className = 'sbobj sblb d' + p.d; o.draggable = false; var sz = SIZE[p.d]; o.style.width = sz + 'px'; o._p = p; lbObj = o;
+      var o = document.createElement('img'); o.src = SPR(p.id + '.png'); o.alt = ''; o.className = 'sbobj sblb d' + p.d; o.draggable = false; var sz = SIZE[p.d]; o.style.width = sz + 'px'; o._p = p; lbObj = o;
       var hit = function(ev){ ev.preventDefault(); ev.stopPropagation(); if (S.found[p.id]) return; found(p, o, ev); setTimeout(lbClear, 700); }; o.addEventListener('pointerdown', hit, true); o.addEventListener('click', function(ev){ ev.preventDefault(); ev.stopPropagation(); }, true);   /* pointerdown: die Großansicht fängt Zeiger für Ziehen und Zoomen ab */
       function put(){ if (!lbObj || !im.naturalWidth) return; var r = im.getBoundingClientRect(), k = Math.min(r.width / im.naturalWidth, r.height / im.naturalHeight), w = im.naturalWidth * k, h = im.naturalHeight * k, x0 = r.left + (r.width - w) / 2, y0 = r.top + (r.height - h) / 2;
         o.style.left = Math.round(x0 + Math.min(w - sz - 6, Math.max(6, w * p.x / 100 - sz / 2))) + 'px'; o.style.top = Math.round(y0 + Math.min(h - sz - 6, Math.max(6, h * p.y / 100 - sz / 2))) + 'px'; o.style.visibility = (im.style.transform || '').indexOf('scale(1)') >= 0 || !im.style.transform ? '' : 'hidden'; }
@@ -818,7 +833,7 @@
       if (getComputedStyle(a).position === 'static') a.style.position = 'relative';
       /* Anker mit Objekt liegt über seinen Nachbarn (gedrehte Figuren im wilden Raster bilden eigene Stapelkontexte, Test 28.10., 08:15: Betonmischer unter dem Nachbarbild) */
       if (!a.style.zIndex) a.style.zIndex = String(29 - ZI++);   /* jeder Anker liegt über seinen Nachbarn (Test 29.10., 09:20: Sonne im Startseitenfuß unter der folgenden Zeile); bleibt unter Unternavigation (45) und Kopf (50) */
-      var img = document.createElement('img'); img.src = '../assets/game/' + p.id + '.png'; img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false; img.setAttribute('data-id', p.id);
+      var img = document.createElement('img'); img.src = SPR(p.id + '.png'); img.alt = ''; img.className = 'sbobj d' + p.d + (S.found[p.id] ? ' found' : ''); img.draggable = false; img.setAttribute('data-id', p.id);
       var sz = SIZE[p.d]; img.style.width = sz + 'px'; var IN = 10; img.style.left = 'clamp(' + IN + 'px, calc(' + p.x + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))'; img.style.top = 'clamp(' + IN + 'px, calc(' + p.y + '% - ' + (sz / 2) + 'px), calc(100% - ' + (sz + IN) + 'px))';   /* 10 px Abstand zum Ankerrand: gedrehte Nachbarbilder überlappen die Ecken um einige Pixel (Test 29.10., 09:00) */   /* nie über den Anker hinaus */
       img._p = p; a11yObj(img, p); img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); img.addEventListener('load', function(){ clearTimeout(window.__jkUn); window.__jkUn = setTimeout(unstack, 60); });
       if (/^(UL|OL)$/.test(a.tagName)){ var li = document.createElement('li'); li.setAttribute('aria-hidden', 'true'); li.className = 'sbli'; li.appendChild(img); a.appendChild(li); } else a.appendChild(img); });   /* Listen dürfen nur li enthalten (axe, 29.10.) */

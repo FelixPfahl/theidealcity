@@ -247,8 +247,13 @@
     scene:function(k){ if (T && T.scenes && T.scenes[k]){ dl('szene', k + ' (dev)'); X.dialog(T.scenes[k]); } },
     convo:function(id){ var c = T && T.convos.filter(function(x){ return x.id === id; })[0]; if (c){ dl('gespräch', id + ' (dev)'); X.dialog(c.lines); } },
     beh:function(key, st, i, who){ var B = T && T.beh[key]; if (!B) return; var arr = B.stages[st] || []; var v = arr[i]; var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka; if (v){ dl('verhalten', key + ' Stufe ' + (st + 1) + ' Variante ' + (i + 1) + ' (dev)'); X.dialog([{who:X.CH[w] ? w : 'inka', text:v}]); } },
-    police:function(lv){ pendingPolice = lv; delete W.sc['polizei_kontrolle_' + lv + ':' + X.V()]; police(); }, eye:function(){ eye(true); }, ambient:function(){ lastAmb = 0; ambient(); }, worldEvent:function(){ return worldEvent(); } };
-  function boot(data){ T = data || {}; T.convos = T.convos || []; ready = true; visitPatterns(); setTimeout(eye, 60000 + Math.random() * 240000); setInterval(ambient, 5000); achievements(); }
+    police:function(lv){ pendingPolice = lv; delete W.sc['polizei_kontrolle_' + lv + ':' + X.V()]; police(); }, eye:function(){ eye(true); }, ambient:function(){ lastAmb = 0; ambient(); }, worldEvent:function(){ return worldEvent(); }, applyDev:function(){ devApply(T); }, orig:null };
+  /* Dev Tools Etappe 2: bearbeitete Texte (localStorage jk_dev_text) wirken sofort im eigenen Browser */
+  function devApply(D){ if (!window.JK_DEV_ON || !D) return D; var O = null; try { O = JSON.parse(localStorage.getItem('jk_dev_text') || 'null'); } catch(e){} if (!O) return D; D.convos = D.convos || []; D.scenes = D.scenes || {}; D.beh = D.beh || {};
+    Object.keys(O.convos || {}).forEach(function(id){ var v = O.convos[id], i = -1; D.convos.forEach(function(c, j){ if (c.id === id) i = j; }); if (v === null){ if (i >= 0) D.convos.splice(i, 1); } else if (i >= 0) D.convos[i] = v; else D.convos.push(v); });
+    Object.keys(O.scenes || {}).forEach(function(k){ if (O.scenes[k] === null) delete D.scenes[k]; else D.scenes[k] = O.scenes[k]; });
+    Object.keys(O.beh || {}).forEach(function(k){ if (O.beh[k] === null) delete D.beh[k]; else D.beh[k] = O.beh[k]; }); return D; }
+  function boot(data){ T = devApply(data || {}); T.convos = T.convos || []; ready = true; visitPatterns(); setTimeout(eye, 60000 + Math.random() * 240000); setInterval(ambient, 5000); achievements(); }
   var src = (document.currentScript && document.currentScript.src) || ''; var v = (src.match(/[?&]v=([^&]+)/) || [])[1] || '';
-  fetch('../assets/game/talk.json' + (v ? '?v=' + v : '')).then(function(r){ return r.json(); }).then(boot).catch(function(){ boot({}); });
+  fetch('../assets/game/talk.json' + (v ? '?v=' + v : '')).then(function(r){ return r.json(); }).then(function(d){ if (window.JK_DEV_ON) try { X.wdev.orig = JSON.parse(JSON.stringify(d)); } catch(e){} boot(d); }).catch(function(){ boot({}); });
 })();

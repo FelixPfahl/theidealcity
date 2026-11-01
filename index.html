@@ -127,7 +127,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 12:00 (Tempo-Regler im Player)";
+const APPV="1.11. 12:20 (Songs leise unter der Ansage)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -284,6 +284,11 @@ function prevCh(){const k=chAt(AUD.currentTime);const c=chapters();for(let i=k-(
 AUD.addEventListener("timeupdate",()=>{
   const t=AUD.currentTime,k=chAt(t),c=chapters()[k];
   if(c&&c.type==="song"&&!S.songDone[k]&&!SONG.on&&!AUD.paused){S.songDone[k]=true;SONG.start(k);}
+  /* Radio-Übergang (Josef 1.11.2026: "Songs können schon leise eingespielt werden, während sie anmoderiert werden, wie im Radio").
+     Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
+  const nx=chapters()[k+1];
+  if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&!document.hidden&&SP.player&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
+  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;AUD.pause();RADIO.ramp(1,2600);diag("radio-voll",{});}
   if(k!==S.ch){S.ch=k;meta();renderShow();}
   bar();
 });
@@ -303,12 +308,19 @@ try{if("mediaSession" in navigator){
 /* ---------- Songs: Seite pausiert, Spotify spielt, danach weiter mit Inka ---------- */
 /* Fehlersuche: kurze Zustandsmeldungen verschluesselt ans Sekretariat (nur Technik, keine Inhalte) */
 function diag(ev,d){try{const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);sendSek("diag",m).catch(()=>{});}catch(_){}}
-const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:""};
-SONG.start=async function(k){
+const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:"",pre:false};
+const RADIO={pre:6.5,low:0.22,cur:1,iv:null};
+RADIO.set=v=>{RADIO.cur=v;try{if(SP.player)SP.player.setVolume(Math.max(0,Math.min(1,v))).catch(()=>{});}catch(_){}};
+RADIO.ramp=function(to,ms){clearInterval(RADIO.iv);const from=RADIO.cur,n=Math.max(1,Math.round(ms/100));let i=0;
+  RADIO.iv=setInterval(()=>{i++;const x=i/n;RADIO.set(from+(to-from)*(x*x*(3-2*x)));if(i>=n)clearInterval(RADIO.iv);},100);};
+SONG.start=async function(k,pre){
   const list=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];const tr=list[songIndex(k)];
   if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
-  SONG.on=true;AUD.pause();SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
-  try{SONG.via=await SP.play(tr.uri);diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
+  SONG.on=true;SONG.pre=!!pre;if(!pre)AUD.pause();SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
+  clearInterval(RADIO.iv);RADIO.set(pre?0:1);
+  try{SONG.via=await SP.play(tr.uri);
+    if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
+      if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){diag("song-fehler",{e:String(e&&e.message||e)});toast("Song ging nicht: "+String(e&&e.message||e).slice(0,70)+". Inka macht weiter.");SONG.on=false;SONG.track=null;AUD.play().catch(()=>{});render();return;}
   const ms=Math.min(tr.ms||210000,6*60000);
   clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),ms+800);
@@ -332,7 +344,9 @@ SONG.check=async function(){
 };
 SONG.finish=async function(why,stay){
   if(!SONG.on)return;diag("song-ende",{why,vis:document.visibilityState});SONG.on=false;SONG.pausedN=0;clearTimeout(SONG.timer);clearInterval(SONG.poll);
-  SP.pause();SONG.track=null;
+  SP.pause();SONG.track=null;clearInterval(RADIO.iv);setTimeout(()=>RADIO.set(1),400);
+  const wasPre=SONG.pre;SONG.pre=false;
+  if(wasPre){S.songDone[SONG.k]=why==="weiter";if(why==="weiter"){const c0=chapters()[SONG.k];if(c0)AUD.currentTime=c0.start+1.02;}render();meta();return;}
   const c=chapters()[SONG.k];if(c&&AUD.currentTime<c.start+1)AUD.currentTime=c.start+1.02;
   render();meta();
   if(!stay)resume();
@@ -342,7 +356,8 @@ let needResume=false;
 async function resume(){try{await AUD.play();needResume=false;diag("inka-weiter",{});}catch(e){diag("inka-blockiert",{e:String(e&&e.name||e)});needResume=true;toast("Weiter mit Inka: einmal auf Play tippen.",10000);render();}}
 /* Bildschirm geht aus, waehrend die Seite selbst spielt: an derselben Stelle an die Spotify-App uebergeben */
 SONG.handoff=async function(){
-  if(!MOBILE||!SONG.on||SONG.via!=="seite"||!SP.player||SONG.handing)return;SONG.handing=true;
+  if(!MOBILE||!SONG.on||SONG.via!=="seite"||!SP.player||SONG.handing)return;
+  if(SONG.pre){SONG.pre=false;AUD.pause();}SONG.handing=true;RADIO.set(1);
   try{const app=await SP.findApp();if(!app){diag("keine-app",{});SONG.handing=false;return;}
     const st=await SP.player.getCurrentState();const pos=st?st.position:(SONG.lastPos||0);
     await SP.player.pause().catch(()=>{});

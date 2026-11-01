@@ -52,3 +52,15 @@ Songs: nie zweimal derselbe Song in den Shows von 7 Tagen (rollend, Josef 1.11.2
 - `KLANG: summen <Sek.>`: Sigma summt wie eine Fliege am Glas
 - `KLANG: stille <Sek.>`: Pause
 Tempo: Inka 1,15, Wagner 1,25, Sigma 1,15 (Voreinstellung im Skript). Alle Stimmen gleich laut, leiser Laborhintergrund unter der ganzen Show.
+
+## Sprechregie: Stimmung, Pausen, Unterbrechungen (Regel, Josef 1.11.2026)
+"Die Stimmung der Stimmen an das anpassen, was sie sagen, nur einen Tick, aber doch spürbar", "Pausen einbauen, etwa betroffenes Schweigen, oder eine Figur spricht über die andere, um sie zu unterbrechen", "so organisch wie möglich".
+Jede Show bekommt Regie in Klammern hinter dem Sprecher, mehrere mit Komma: `WAGNER (scharf, unterbricht): …`, `SIGMA (traurig, pause 1.8): …`, `INKA (warm): …`.
+- Stimmung (eine je Zeile): ruhig, warm, leise, traurig, staunen, froh, aufgeregt, spott, kalt, scharf, pathos. Bei etwa 40 bis 55 Prozent der Zeilen, abwechslungsreich; Nachrichten meist neutral.
+- `pause <Sek.>` (1 bis 3): Schweigen vor der Zeile, z. B. betroffenes Schweigen nach einem harten Satz von Wagner. Etwa alle 2 bis 3 Minuten Sprechzeit einmal.
+- `unterbricht`: die Zeile fällt der vorigen Figur ins Wort (Stimmen überlappen kurz, die vorige wird leiser). Nur nach einer anderen Figur, nie nach KLANG oder am Kapitelanfang. Etwa so oft wie die Pausen, besonders in Ertappt-Szenen.
+- `zoegernd`: kurzes Zögern davor (z. B. Sigma vor einer verletzlichen Frage).
+Das Skript (`show_tts.py`) setzt das um, ohne den Text zu verändern (Tempo, Tonhöhe, Lautstärke, Raumklang); dazu leicht schwankende Lücken je nach Satzende. Der Text der Zeile bleibt gleich, deshalb bleiben auch gecachte Clips gültig.
+
+## Radio-Übergang zu den Songs (Josef 1.11.2026)
+Die App spielt jeden Song schon in den letzten etwa 6 Sekunden der Anmoderation leise ein und blendet ihn hoch, sobald die Sprache endet. Deshalb endet jede Anmoderation mit einem Satz, unter dem Musik liegen darf (Titel und Künstler nicht erst im allerletzten Wort, lieber davor; der letzte Satz eine Haltung oder ein Bild).

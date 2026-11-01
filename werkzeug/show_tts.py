@@ -29,6 +29,36 @@ SETTINGS = {"inka": {"stability": 0.5, "similarity_boost": 0.8, "style": 0.35},
             "sigma": {"stability": 0.6, "similarity_boost": 0.7, "style": 0.2},
             "xae": {"stability": 0.4, "similarity_boost": 0.8, "style": 0.55}}
 XAE_FX = "highpass=f=300,lowpass=f=3400,acompressor=threshold=0.2:ratio=4"  # Telefonstimme
+# Stimmungen (Josef 1.11.2026: "die Stimmung der Stimmen an das anpassen, was sie sagen, nur einen Tick, aber spuerbar"; Regel fuer alle Shows).
+# Zeile "INKA (warm): ..." | "WAGNER (kalt): ..." | "SIGMA (leise): ...". Nur Nachbearbeitung, der Text und der Cache bleiben gleich.
+MOODS = {
+    "ruhig":     {"speed": 0.95, "pitch": -0.3, "gain": -1.0, "pause": 0.15},
+    "warm":      {"speed": 0.96, "pitch": -0.25, "gain": 0.0, "fx": "bass=g=2.5:f=180"},
+    "leise":     {"speed": 0.95, "pitch": 0.0, "gain": -4.0, "fx": "lowpass=f=7000", "pause": 0.15},
+    "traurig":   {"speed": 0.91, "pitch": -0.6, "gain": -2.0, "fx": "lowpass=f=6500", "pause": 0.35},
+    "staunen":   {"speed": 0.94, "pitch": 0.45, "gain": -1.0, "pause": 0.2},
+    "froh":      {"speed": 1.05, "pitch": 0.4, "gain": 1.0},
+    "aufgeregt": {"speed": 1.08, "pitch": 0.7, "gain": 1.5},
+    "spott":     {"speed": 1.03, "pitch": 0.2, "gain": 0.0},
+    "kalt":      {"speed": 0.96, "pitch": -0.45, "gain": 0.0, "fx": "acompressor=threshold=0.1:ratio=3,aecho=0.8:0.7:45:0.16"},
+    "scharf":    {"speed": 1.04, "pitch": -0.2, "gain": 2.0, "fx": "acompressor=threshold=0.08:ratio=4"},
+    "pathos":    {"speed": 0.92, "pitch": -0.5, "gain": 0.5, "fx": "aecho=0.8:0.8:80|140:0.22|0.12", "pause": 0.35},
+}
+# Regie in Klammern, mehrere mit Komma: Stimmung, "pause 2" (Schweigen davor, Sekunden), "unterbricht" (fällt der vorigen
+# Figur ins Wort, die Stimmen überlappen kurz, die vorige wird leiser), "zoegernd" (etwas längere Pause davor).
+def parse_tags(raw):
+    tg = {"mood": "", "pause": None, "cut": False, "hes": False}
+    for x in [y.strip().lower() for y in raw.split(",") if y.strip()]:
+        x = x.replace("ö", "oe").replace("ä", "ae").replace("ü", "ue")
+        if x in MOODS: tg["mood"] = x
+        elif x.startswith("pause"):
+            try: tg["pause"] = max(0.3, min(6.0, float((x[5:].strip() or "1.5").replace(",", "."))))
+            except ValueError: tg["pause"] = 1.5
+        elif x in ("unterbricht", "ins wort", "dazwischen"): tg["cut"] = True
+        elif x in ("zoegernd", "zoegert"): tg["hes"] = True
+        else: print("unbekannte Regie:", x, file=sys.stderr)
+    return tg
+
 SIGMA_FX = "asetrate=44100*1.12,aresample=44100,atempo=0.93,aecho=0.8:0.6:28:0.25,chorus=0.6:0.8:40:0.3:0.25:2,highpass=f=180"
 KEY = open(keyfile).read().strip()
 SR = 24000
@@ -51,14 +81,14 @@ for line in open(src, encoding="utf-8").read().splitlines():
     if cur is None or not line.strip():
         if cur is not None: cur["blocks"].append(None)  # Absatzgrenze
         continue
-    sm = re.match(r"^\s*(INKA|WAGNER|SIGMA|XAE|KLANG)\s*:\s*(.*)$", line, re.I)
+    sm = re.match(r"^\s*(INKA|WAGNER|SIGMA|XAE|KLANG)\s*(?:\(\s*([^)]*?)\s*\))?\s*:\s*(.*)$", line, re.I)
     if sm:
-        cur["blocks"].append([sm.group(1).lower(), sm.group(2)])
+        cur["blocks"].append([sm.group(1).lower(), sm.group(3), parse_tags(sm.group(2) or "")])
     else:
         sp = cur["tag"] if cur["tag"] in VOICES else (cur["blocks"][-1][0] if cur["blocks"] and cur["blocks"][-1] else "inka")
         last = cur["blocks"][-1] if cur["blocks"] else None
         if last and last[0] == sp: last[1] += " " + line
-        else: cur["blocks"].append([sp, line])
+        else: cur["blocks"].append([sp, line, {}])
 if not chapters: sys.exit("Kein Text")
 
 def tts(speaker, text, idx):
@@ -79,11 +109,20 @@ def tts(speaker, text, idx):
         time.sleep(3)
     raise RuntimeError("ElevenLabs fehlgeschlagen (%s): %s %s" % (speaker, r.stdout, open(mp3, errors="ignore").read()[:200]))
 
-def to_wav(path, fx=None, speed=1.0):
+def to_wav(path, fx=None, speed=1.0, mood=""):
     wav = tempfile.mktemp(suffix=".wav")
     cmd = [ff, "-y", "-loglevel", "error", "-i", path]
-    # jede Stimme einzeln auf gleiche Lautheit (Josef 1.11.2026: Inka, Wagner, Sigma immer gleich laut)
-    cmd += ["-af", (fx + "," if fx else "") + ("atempo=%.3f," % speed if abs(speed - 1) > 0.01 else "") + "loudnorm=I=-20:TP=-2:LRA=7"]
+    md = MOODS.get(mood) or {}
+    r = 2 ** (md.get("pitch", 0) / 12.0)          # Tonhoehe in Halbtoenen, Tempo bleibt durch atempo erhalten
+    chain = [fx] if fx else []
+    if abs(r - 1) > 0.001: chain.append("asetrate=44100*%.5f,aresample=44100" % r)
+    if md.get("fx"): chain.append(md["fx"])
+    sp = speed * md.get("speed", 1.0) / r
+    if abs(sp - 1) > 0.01: chain.append("atempo=%.3f" % sp)
+    # jede Stimme einzeln auf gleiche Lautheit (Josef 1.11.2026: Inka, Wagner, Sigma immer gleich laut), danach Stimmungs-Lautstaerke
+    chain.append("loudnorm=I=-20:TP=-2:LRA=7")
+    if md.get("gain"): chain.append("volume=%.1fdB" % md["gain"])
+    cmd += ["-af", ",".join(chain)]
     subprocess.run(cmd + ["-ac", "1", "-ar", str(SR), wav], check=True)
     a, _ = sf.read(wav, dtype="float32"); os.remove(wav); return a
 
@@ -187,18 +226,37 @@ for ch in chapters:
     if ch["tag"] == "song":
         meta.append({"type": "song", "title": "Musik", "start": round(t, 2)})
         add(np.zeros(int(SR * 1.0), np.float32)); continue
-    blocks = [[b[0], clean(b[1]) if b[0] != "klang" else b[1].strip()] for b in ch["blocks"] if b and b[1].strip()]
+    blocks = [[b[0], clean(b[1]) if b[0] != "klang" else b[1].strip(), b[2] if len(b) > 2 and b[2] else parse_tags("")] for b in ch["blocks"] if b and b[1].strip()]
     if not blocks: continue
     speakers = sorted(set(b[0] for b in blocks if b[0] != "klang"))
     meta.append({"type": "talk", "voice": "+".join(speakers), "title": ch["title"], "start": round(t, 2),
                  "words": sum(len(b[1].split()) for b in blocks)})
     prev = None
-    for sp, text in blocks:
+    prev_text = ""
+    for sp, text, tg in blocks:
         if sp == "klang":
-            add(soundscape(text)); prev = None; continue
-        if prev is not None: add(np.zeros(int(SR * (0.25 if sp != prev else 0.45)), np.float32))
+            add(soundscape(text)); prev = None; prev_text = ""; continue
+        mood = tg["mood"]
+        # organischer Rhythmus (Josef 1.11.2026): Lücken leicht schwankend, je nach Satzende, reproduzierbar je Text
+        rnd = np.random.default_rng(int(hashlib.sha1(text.encode()).hexdigest()[:8], 16))
         mp3, n = tts(sp, text, idx); idx += 1; chars += n
-        add(to_wav(mp3, SIGMA_FX if sp == "sigma" else (XAE_FX if sp == "xae" else None), SPEEDS[sp])); prev = sp
+        jitter = 1.0 + rnd.uniform(-0.015, 0.015)   # winzige Tempo-Schwankung je Zeile
+        clip = to_wav(mp3, SIGMA_FX if sp == "sigma" else (XAE_FX if sp == "xae" else None), SPEEDS[sp] * jitter, mood)
+        if prev is not None and tg["cut"] and pieces and len(pieces[-1]) > SR:
+            # ins Wort fallen: Überlappung 0,5 bis 0,9 s, die vorige Stimme wird dabei auf etwa ein Drittel abgesenkt
+            ov = min(int(SR * rnd.uniform(0.5, 0.9)), len(pieces[-1]) // 3, len(clip) // 3)
+            last = pieces[-1].copy(); fade = np.linspace(1.0, 0.3, ov).astype(np.float32)
+            last[-ov:] = last[-ov:] * fade + clip[:ov]
+            pieces[-1] = last; add(clip[ov:]); prev = sp; prev_text = text; continue
+        if prev is not None:
+            gap = 0.25 if sp != prev else 0.45
+            if prev_text.rstrip().endswith("?"): gap -= 0.08              # Antwort kommt schneller
+            elif prev_text.rstrip().endswith(("…", "...")): gap += 0.3     # Satz verklingt
+            gap += rnd.uniform(-0.07, 0.12) + MOODS.get(mood, {}).get("pause", 0)
+            if tg["hes"]: gap += rnd.uniform(0.5, 0.9)
+            if tg["pause"]: gap = tg["pause"]                                # betroffenes Schweigen
+            add(np.zeros(int(SR * max(0.08, gap)), np.float32))
+        add(clip); prev = sp; prev_text = text
     add(np.zeros(int(SR * 0.9), np.float32))
 
 audio = np.concatenate(pieces)

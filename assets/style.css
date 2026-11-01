@@ -1392,3 +1392,6 @@ html.lh-hc .sbdlg .who,html.lh-hc .sbrels b,html.lh-hc .sbalbum small,html.lh-hc
 /* Startseite: sachlicher Absatz, kopierbar (Josef, 31.10., SEO) */
 .landing-intro{max-width:64ch;margin:8px 0 28px;padding:0;font-size:17px;line-height:1.5;text-align:left}.landing-intro p{margin:0}
 .mbcite{user-select:all;-webkit-user-select:all;border-bottom:1px dotted var(--hair)}
+.work picture,.figs picture{display:block}
+/* Fußnote: Trefferfläche immer mindestens 24 px breit (axe target-size, seit die Textebene markierbar ist) */
+sup.fn{min-width:10px;text-align:right;display:inline-block}

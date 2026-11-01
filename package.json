@@ -25,7 +25,8 @@
       "main.js",
       "preload.js",
       "start.html",
-      "icon.png"
+      "icon.png",
+      "ppt.ps1"
     ],
     "win": {
       "target": [

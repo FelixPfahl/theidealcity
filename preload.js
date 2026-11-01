@@ -7,5 +7,12 @@ contextBridge.exposeInMainWorld("atelierDesktop", {
   openPath: p => ipcRenderer.invoke("openPath", p),
   info: () => ipcRenderer.invoke("info"),
   notizen: list => ipcRenderer.invoke("notizen", list),
-  pdf: muster => ipcRenderer.invoke("pdf", muster)
+  pdf: muster => ipcRenderer.invoke("pdf", muster),
+  /* PowerPoint: Datei suchen, als Ebene vorführen, blättern, beenden */
+  pptFind: muster => ipcRenderer.invoke("pptFind", muster),
+  pptStart: (id, file) => ipcRenderer.invoke("pptStart", { id, path: file }),
+  pptOpen: () => ipcRenderer.invoke("pptOpen"),
+  ppt: (cmd, folie) => ipcRenderer.invoke("ppt", cmd, folie),
+  pptEnd: pdfStatt => ipcRenderer.invoke("pptEnd", pdfStatt || ""),
+  maus: durch => ipcRenderer.invoke("maus", durch)
 });

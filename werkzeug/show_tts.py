@@ -33,17 +33,19 @@ XAE_FX = "highpass=f=300,lowpass=f=3400,acompressor=threshold=0.2:ratio=4"  # Te
 # Zeile "INKA (warm): ..." | "WAGNER (kalt): ..." | "SIGMA (leise): ...". Nur Nachbearbeitung, der Text und der Cache bleiben gleich.
 MOODS = {
     "ruhig":     {"speed": 0.95, "pitch": -0.3, "gain": -1.0, "pause": 0.15},
-    "warm":      {"speed": 0.96, "pitch": -0.25, "gain": 0.0, "fx": "bass=g=2.5:f=180"},
+    "warm":      {"speed": 0.96, "pitch": -0.25, "gain": 0.0},
     "leise":     {"speed": 0.95, "pitch": 0.0, "gain": -4.0, "fx": "lowpass=f=7000", "pause": 0.15},
     "traurig":   {"speed": 0.91, "pitch": -0.6, "gain": -2.0, "fx": "lowpass=f=6500", "pause": 0.35},
     "staunen":   {"speed": 0.94, "pitch": 0.45, "gain": -1.0, "pause": 0.2},
     "froh":      {"speed": 1.05, "pitch": 0.4, "gain": 1.0},
     "aufgeregt": {"speed": 1.08, "pitch": 0.7, "gain": 1.5},
     "spott":     {"speed": 1.03, "pitch": 0.2, "gain": 0.0},
-    "kalt":      {"speed": 0.96, "pitch": -0.45, "gain": 0.0, "fx": "acompressor=threshold=0.1:ratio=3,aecho=0.8:0.7:45:0.16"},
-    "scharf":    {"speed": 1.04, "pitch": -0.2, "gain": 2.0, "fx": "acompressor=threshold=0.08:ratio=4"},
-    "pathos":    {"speed": 0.92, "pitch": -0.5, "gain": 0.5, "fx": "aecho=0.8:0.8:80|140:0.22|0.12", "pause": 0.35},
+    "kalt":      {"speed": 0.96, "pitch": -0.45, "gain": 0.0, "fx": "aecho=0.8:0.7:45:0.08"},
+    "scharf":    {"speed": 1.04, "pitch": -0.2, "gain": 2.0, },
+    "pathos":    {"speed": 0.92, "pitch": -0.5, "gain": 0.5, "fx": "aecho=0.8:0.8:80|140:0.1|0.05", "pause": 0.35},
 }
+MOOD_SCALE = float(os.environ.get("MOOD_SCALE", "0.5"))
+BASS_CUT = "highpass=f=130:poles=2,bass=g=-7:f=230:w=0.7"   # Josef 1.11.2026: "Der Bass muss überall stark minimiert werden"
 # Regie in Klammern, mehrere mit Komma: Stimmung, "pause 2" (Schweigen davor, Sekunden), "unterbricht" (fällt der vorigen
 # Figur ins Wort, die Stimmen überlappen kurz, die vorige wird leiser), "zoegernd" (etwas längere Pause davor).
 def parse_tags(raw):
@@ -113,10 +115,15 @@ def to_wav(path, fx=None, speed=1.0, mood=""):
     wav = tempfile.mktemp(suffix=".wav")
     cmd = [ff, "-y", "-loglevel", "error", "-i", path]
     md = MOODS.get(mood) or {}
+    # Josef 1.11.2026 12:23: "Stimmmanipulationen minimaler". Abweichungen nur zur Hälfte (MOOD_SCALE), Bass überall stark abgesenkt.
+    k = MOOD_SCALE
+    md = {"speed": 1 + (md.get("speed", 1.0) - 1) * k, "pitch": md.get("pitch", 0) * k, "gain": md.get("gain", 0) * k,
+          "fx": md.get("fx"), "pause": md.get("pause", 0)}
     r = 2 ** (md.get("pitch", 0) / 12.0)          # Tonhoehe in Halbtoenen, Tempo bleibt durch atempo erhalten
     chain = [fx] if fx else []
     if abs(r - 1) > 0.001: chain.append("asetrate=44100*%.5f,aresample=44100" % r)
     if md.get("fx"): chain.append(md["fx"])
+    chain.append(BASS_CUT)
     sp = speed * md.get("speed", 1.0) / r
     if abs(sp - 1) > 0.01: chain.append("atempo=%.3f" % sp)
     # jede Stimme einzeln auf gleiche Lautheit (Josef 1.11.2026: Inka, Wagner, Sigma immer gleich laut), danach Stimmungs-Lautstaerke
@@ -156,7 +163,7 @@ def soundscape(spec):
             if j + L < n: x = np.arange(L) / SR; beep[j:j+L] = np.sin(2*np.pi*1760*x) * np.minimum(1, (L - np.arange(L)) / (SR * 0.02))
         drip = np.zeros(n); j = int(SR * sec * 0.3); L = int(SR * 0.05)
         if j + L < n: x = np.arange(L) / SR; drip[j:j+L] = np.sin(2*np.pi*(1400 - 9000*x)*x) * np.exp(-x*70)
-        a = 0.10 * hum + 0.06 * vent + 0.30 * bub + 0.16 * beep + 0.35 * drip
+        a = 0.02 * hum + 0.03 * vent + 0.30 * bub + 0.16 * beep + 0.35 * drip
         a *= np.minimum(1, (n - np.arange(n)) / (SR * 0.6)) * 0.6 + 0.4  # leicht abklingen, bleibt unter der Stimme
     elif kind == "neon":
         a = np.zeros(n)
@@ -278,13 +285,13 @@ def lab_ambience(n, sr, seed=7):
         if i + L >= n: break
         x = np.arange(L) / sr; beep[i:i + L] += 0.6 * np.sin(2 * np.pi * 1760 * x) * np.minimum(1, (L - np.arange(L)) / (sr * 0.02))
         i += int(sr * rng.uniform(18, 40))
-    amb = 0.012 * hum + 0.010 * vent + 0.030 * bub + 0.020 * beep
+    amb = 0.003 * hum + 0.006 * vent + 0.030 * bub + 0.020 * beep
     return amb.astype(np.float32)
 if os.environ.get("SHOW_AMBIENCE", "lab") == "lab":
     audio = audio + lab_ambience(len(audio), SR)
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
-subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "loudnorm=I=-20:TP=-2:LRA=11",
+subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "highpass=f=120:poles=2,bass=g=-5:f=200:w=0.7,loudnorm=I=-20:TP=-2:LRA=11",
                 "-c:a", "aac", "-b:a", os.environ.get("SHOW_BITRATE", "64k"), "-movflags", "+faststart", mp4], check=True)
 os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],

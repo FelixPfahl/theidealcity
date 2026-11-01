@@ -253,10 +253,11 @@ SP.sdk=function(){
   SP.sdkP=new Promise((res,rej)=>{
     const go=()=>{try{
       const pl=new Spotify.Player({name:"Inka",getOAuthToken:cb=>SP.token().then(cb).catch(()=>cb("")),volume:1});
-      pl.addListener("ready",({device_id})=>{SP.deviceId=device_id;SP.player=pl;SP.sdkState="Seite spielt selbst";render();res(pl);});
+      pl.addListener("ready",({device_id})=>{SP.deviceId=device_id;SP.player=pl;SP.sdkState="Seite spielt selbst";diag("sdk-bereit",{});render();res(pl);});
+      pl.addListener("autoplay_failed",()=>diag("sdk-autoplay-blockiert",{}));
       pl.addListener("not_ready",()=>{SP.deviceId="";});
-      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
-      pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";}});
+      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{diag("sdk-"+ev,{e:String(e&&e.message||"")});SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
+      pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";diag("sdk-status",{paused:st.paused,pos:st.position,load:!!(st.loading)});}});
       pl.connect();setTimeout(()=>{if(!SP.player){SP.sdkState="Spotify-App wird ferngesteuert";rej(new Error("Gerät meldet sich nicht"));}},10000);
     }catch(e){rej(e);}};
     if(window.Spotify&&window.Spotify.Player)return go();
@@ -266,14 +267,14 @@ SP.sdk=function(){
   return SP.sdkP;
 };
 SP.unlock=function(){try{if(SP.player&&SP.player.activateElement)SP.player.activateElement();}catch(_){}};
-SP.warm=function(){if(!MOBILE&&SP.ready()&&!SP.player&&!SP.sdkP)SP.sdk().catch(()=>{});};
+SP.warm=function(){if(!store.get("noSdk",false)&&SP.ready()&&!SP.player&&!SP.sdkP)SP.sdk().catch(()=>{});};
 SP.play=async function(uri){
   /* Handy: die Spotify-App fernsteuern (die Seite als Spotify-Geraet bricht auf Android nach Sekunden ab) */
-  if(!MOBILE){try{await SP.sdk();SP.unlock();await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(SP.deviceId),{uris:[uri]});return "seite";}catch(e){diag("sdk-fehler",{e:String(e&&e.message||e)});}}
+  if(!store.get("noSdk",false)){try{await SP.sdk();SP.unlock();await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(SP.deviceId),{uris:[uri]});return "seite";}catch(e){diag("sdk-fehler",{e:String(e&&e.message||e)});}}
   const dv=await SP.api("GET","/me/player/devices");const ds=((dv&&dv.devices)||[]).filter(d=>d.id!==SP.deviceId);
   diag("geraete",{ds:ds.map(d=>d.type+":"+d.name+(d.is_active?"*":"")+(d.is_restricted?"!":""))});
-  const dev=ds.find(d=>/smartphone/i.test(d.type)&&d.is_active)||ds.find(d=>/smartphone/i.test(d.type))||ds.find(d=>d.is_active)||ds[0];
-  if(!dev)throw new Error("kein Spotify-Gerät. Spotify-App einmal öffnen, dann hier weiter");
+  const dev=ds.find(d=>/smartphone/i.test(d.type)&&d.is_active)||ds.find(d=>/smartphone/i.test(d.type))||(MOBILE?null:(ds.find(d=>d.is_active)||ds[0]));
+  if(!dev)throw new Error("Spotify auf dem Handy nicht erreichbar");
   SONG.dev=dev.id;
   await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(dev.id),{uris:[uri],position_ms:0});
   try{await SP.api("PUT","/me/player/repeat?state=off&device_id="+encodeURIComponent(dev.id));}catch(_){}

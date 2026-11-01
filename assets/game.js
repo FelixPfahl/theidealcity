@@ -65,7 +65,7 @@
   function V(){ return S.visits || 1; }
   function quiet(){ var q = false; try { q = !!sessionStorage.getItem('jk_sb_quiet'); } catch(e){} return q || optedOut() || (!!S.psst && S.psst === V()); }   /* Psst: keine ungefragten Fenster bis zum nächsten Besuch; jk_sb_quiet: Prüfläufe ohne Reaktionen */
   function load(){ try { var s = JSON.parse(localStorage.getItem('jk_sb') || 'null'); if (s && s.found) return s; } catch(e){} return {found:{}, start:0, hints:0, done:0, seed:(Math.random() * 4294967295) >>> 0}; }
-  function save(){ try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
+  function save(){ if (window.__jkWipe) return; try { localStorage.setItem('jk_sb', JSON.stringify(S)); } catch(e){} }
   function count(){ return Object.keys(S.found).length; }
   function secs(){ var end = S.done || Date.now(); return S.start ? Math.round((end - S.start) / 1000) : 0; }
   function points(){ return Math.max(0, count() * CF('game.pts', 100) + (S.visitBonus || 0) + (S.questBonus || 0) + (H('bonus') || 0) - S.hints * CF('game.hint', HINT_COST)); }   /* plus Besuchsbonus (29.10., 13:14) */   /* kein Zeitabzug (Josef, 29.10., 13:14) */
@@ -241,6 +241,7 @@
           if ((m = /^m:(\w+)$/.exec(tag)) && MOOD[m[1]]){ out.push({ev:'mood', v:m[1]}); i = j + 1; continue; }
           if ((m = /^p:([\d.]+)$/.exec(tag))){ out.push({ev:'pause', v:parseFloat(m[1])}); i = j + 1; continue; }
           if (tag === 'cut'){ out.push({ev:'cut'}); i = j + 1; continue; }
+          if (tag === '/'){ out.push({ev:'brk'}); i = j + 1; continue; }
           if ((m = /^w:(?:(\w+):)?([\w-]+)\|([^\]]+)$/.exec(tag))){ var lk = {id:m[2], page:m[1] || ''}; Array.prototype.forEach.call(m[3], function(c){ out.push({ch:c, emph:true, link:lk}); }); i = j + 1; continue; } } }
       if (ch === '*' && !(i > 0 && /[A-Za-zÄÖÜäöüß]/.test(text[i - 1]) && /[a-zäöüß]/.test(text[i + 1] || ''))){ emph = !emph; i++; continue; }
       out.push({ch:ch, emph:emph}); i++; }
@@ -249,12 +250,22 @@
   function paginate(items, cols, rows){ var pages = [], page = [], line = 0, col = 0, k = 0;
     function wordLen(from){ var n = 0; for (var q = from; q < items.length && items[q].ch !== undefined && items[q].ch !== ' '; q++) n++; return n; }
     while (k < items.length){ var it = items[k];
+      if (it.ev === 'brk'){ k++; if (page.length){ pages.push(page); page = []; line = 0; col = 0; } while (k < items.length && items[k].ch === ' ') k++; continue; }   /* dramatischer Umbruch (Josef, 1.11., 10:33) */
       if (it.ev){ page.push(it); k++; continue; }
       if (it.ch === ' '){ if (col === 0){ var lp = null; for (var q = page.length - 1; q >= 0; q--){ if (!page[q].ev){ lp = page[q]; break; } } if (lp && lp.ch !== ' ') page.push(it); k++; continue; } var wl = wordLen(k + 1); if (col + 1 + wl > cols){ line++; col = 0; k++; if (line >= rows){ pages.push(page); page = []; line = 0; } else page.push(it); continue; } }   /* Josef, 1.11.: Leerzeichen am Zeilenumbruch bleiben (der Browser bricht selbst um; sonst kleben Wörter zusammen) */
       if (col === 0 && line === 0 && page.length === 0 && it.ch === ' '){ k++; continue; }
       page.push(it); col++; k++;
       if (col >= cols){ line++; col = 0; if (line >= rows){ pages.push(page); page = []; line = 0; } } }
-    if (page.length) pages.push(page); return pages; }
+    if (page.length) pages.push(page); return rebalance(pages, cols, rows); }
+  /* Seitenwechsel an Satzgrenzen: endet eine Seite mitten im Satz und liegt das letzte Satzende in der zweiten Hälfte der Seite, wandert der angefangene Satz ins nächste Fenster */
+  function rebalance(pages, cols, rows){ if (pages.length < 2 || rows < 2) return pages; var out = []; var carry = [];
+    for (var i = 0; i < pages.length; i++){ var pg = carry.concat(pages[i]); carry = [];
+      if (i < pages.length - 1){ var chars = pg.filter(function(x){ return x.ch !== undefined; }); var last = chars[chars.length - 1];
+        if (last && !/[.!?…:]/.test(last.ch)){ var cut = -1; for (var q = pg.length - 2; q > 0; q--){ var c = pg[q]; if (c.ch !== undefined && /[.!?…]/.test(c.ch) && pg[q + 1] && pg[q + 1].ch === ' '){ cut = q; break; } }
+          var nChar = 0; for (var r = 0; r <= cut; r++) if (pg[r].ch !== undefined) nChar++;
+          var restChars = chars.length - nChar; if (cut > 0 && nChar >= cols * rows * .45 && restChars + pages[i + 1].filter(function(x){ return x.ch !== undefined; }).length <= cols * rows * 1.02){ carry = pg.slice(cut + 2); pg = pg.slice(0, cut + 1); } } }
+      out.push(pg); }
+    if (carry.length) out.push(carry); return out; }
   function ph(t){ return typeof t === 'string' ? t.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph ? X.hooks.ph(k) : (k === 'n' ? String(count()) : k === 'pts' ? String(points()) : k === 'rest' ? String(N - count()) : null); return v === null || v === undefined ? m : v; }) : t; }
   function norm0(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
   function norm(l){ var o = norm0(l); if (o && typeof o.text === 'string' && o.text.indexOf('{') >= 0){ var c = {}; for (var k in o) c[k] = o[k]; c.text = ph(o.text); o = c; } if (o && o.ask && o.ask.some(function(a){ return /\{\w+\}/.test(a.t || ''); })){ var c2 = {}; for (var k2 in o) c2[k2] = o[k2]; c2.ask = o.ask.map(function(a){ var b = {}; for (var k3 in a) b[k3] = a[k3]; b.t = ph(a.t); return b; }); o = c2; } return o; }
@@ -330,6 +341,9 @@
         if (e.key === 'Escape'){ close(); } return; }
       if (e.key === 'Escape') close(); else if (e.key === ' ' || e.key === 'Enter') next(e); }
     dlg.addEventListener('click', function(e){ if (e.target.closest('.answers')) return; next(e); }); document.addEventListener('keydown', onkey);
+    /* Josef, 1.11., 10:33: ein Klick irgendwo auf der Seite lässt den Dialog voranschreiten (nicht bei Antwortauswahl, Panels, Großansicht, Urkunde) */
+    function docClick(e){ if (!dlg || dlg.classList.contains('off')) return; if (e.target.closest && e.target.closest('.sbdlg, .sbpanel, .modem, .sbcert, .lb2, .sbmenu, .sbfab')) return; if (pending) return; e.preventDefault(); e.stopPropagation(); next(e); }
+    var t1 = Date.now(); document.addEventListener('click', function dc(e){ if (!dlg){ document.removeEventListener('click', dc, true); return; } if (Date.now() - t1 < 250) return; docClick(e); }, true);
     document.addEventListener('visibilitychange', function vis(){ if (!dlg){ document.removeEventListener('visibilitychange', vis); return; } });
     startLine(); }
   var dq = [];
@@ -388,7 +402,7 @@
   function counter(){ if (document.querySelector('.sbfab')) return;
     fab = document.createElement('div'); fab.className = 'sbfab';
     fab.innerHTML = '<button type="button" class="sbfabbtn" aria-haspopup="true" aria-expanded="false" aria-controls="sbmenu" aria-label="Suchbild: Inka, Inventar, Logbuch" title="Suchbild"><img src="../assets/game/char-inka.png" alt=""><b class="sbnum">' + count() + '</b></button>' +
-      '<div class="sbmenu" id="sbmenu" hidden><button type="button" class="sbcall">Inka rufen</button><button type="button" class="sbcount">Inventar <span>' + count() + '/' + N + '</span></button><button type="button" class="sblogbtn">Logbuch</button></div>';
+      '<div class="sbmenu" id="sbmenu" hidden><button type="button" class="sbcall">Inka rufen</button><button type="button" class="sbcount">Inventar <span>' + count() + '/' + N + '</span></button><button type="button" class="sblogbtn">Logbuch</button><button type="button" class="sbrestart">Neu starten</button></div>';
     document.body.appendChild(fab); btn = fab.querySelector('.sbfabbtn'); num = fab.querySelector('.sbnum'); menu = fab.querySelector('.sbmenu');
     function openMenu(o){ menu.hidden = !o; btn.setAttribute('aria-expanded', o ? 'true' : 'false'); if (o){ cursorSnd('mv'); menu.querySelector('button').focus(); } }
     btn.addEventListener('click', function(e){ e.stopPropagation(); openMenu(menu.hidden); });
@@ -397,7 +411,10 @@
     /* Josef, 28.10., 01:10: "Inka rufen" startet oder setzt fort; nach "Nicht jetzt" legt es die Dinge wieder aus */
     fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), function(nat){ if (S.done) cert(); else if (!newChapter(nat) && nat) offerQuest(); }); });
     fab.querySelector('.sbcount').addEventListener('click', function(){ openMenu(false); inventory(); });
-    fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); }); }
+    fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); });
+    /* Josef, 1.11., 10:32: Spiel neu starten; vorher fragen, ob wirklich alle Daten gelöscht werden; danach Startseite */
+    fab.querySelector('.sbrestart').addEventListener('click', function(){ openMenu(false); if (dlg) return; dialog([{who:'inka', mood:'ueberrascht', text:'Neu anfangen? Dann vergesse ich alles: Funde, Punkte, Antworten, Abzeichen, Begegnungen, deine Einstellungen. *Wirklich alle Daten löschen?*', ask:[{s:'a', t:'Ja, wirklich alle Daten löschen', fn:wipeAll, re:[['inka', '[m:traurig]Gut. [p:.4]Bis gleich, wer auch immer du dann bist.']]}, {s:'v', t:'Nein, lieber nicht', re:[['inka', '[m:froh]Dachte ich mir. Alles bleibt, wie es ist.']]}]}], function(){ if (window.__jkWipe) location.href = 'index.html'; }); }); }
+  function wipeAll(){ try { Object.keys(localStorage).forEach(function(k){ if (/^jk_/.test(k)) localStorage.removeItem(k); }); Object.keys(sessionStorage).forEach(function(k){ if (/^jk_/.test(k)) sessionStorage.removeItem(k); }); } catch(e){} window.__jkWipe = 1; }
   function refresh(){ if (num) num.textContent = count(); var c = fab && fab.querySelector('.sbcount span'); if (c) c.textContent = count() + '/' + N; if (panel && panel.classList.contains('sbinv')) inventory(true); }
   function closePanel(){ if (!panel) return; document.removeEventListener('keydown', panelKey); var pn = panel; panel = null; pn.classList.add('off'); setTimeout(function(){ pn.remove(); }, 250); if (btn) btn.focus(); }
   function panelKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); closePanel(); } }

@@ -131,7 +131,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 16:10 (Android- und Windows-App, Mitlesen, Klangregler)";
+const APPV="1.11. 16:15 (Schlüssel einfügen und kopieren)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -683,7 +683,13 @@ async function permCheck(){try{if(navigator.permissions){const m=await navigator
   const g=await navigator.permissions.query({name:"geolocation"});PERM.geo=g.state;g.onchange=()=>{PERM.geo=g.state;render();};}}catch(_){}}
 function renderSetup(){
   const el=$("#setup");
-  if(!KEY.raw){el.innerHTML='<div class="card blue"><div class="k">Einrichtung</div><div class="now">Schlüssel fehlt</div><p>Öffne einmal den Link aus dem Sekretär-Chat (er endet mit #k=…). Danach merkt sich diese Seite den Schlüssel.</p></div>';return;}
+  if(!KEY.raw){el.innerHTML='<div class="card blue"><div class="k">Einrichtung</div><div class="now">Schlüssel fehlt</div><p>Öffne einmal den Link aus dem Sekretär-Chat (er endet mit #k=…). Danach merkt sich diese Seite den Schlüssel.</p>'+
+    '<p class="small">Oder hier einfügen: Auf dem Handy in Inka unter Überblick „Schlüssel-Link kopieren“ tippen und den Link hierher schicken.</p>'+
+    '<input id="keyin" type="text" placeholder="Link mit #k=… einfügen" style="width:100%;box-sizing:border-box;font-size:16px;padding:10px;border:2px solid var(--blue);border-radius:10px">'+
+    '<div class="row" style="margin-top:8px"><button class="pri" id="keygo">Übernehmen</button></div></div>';
+    $("#keygo").onclick=()=>{const v=($("#keyin").value||"").trim();const m=/(?:[#&?]k=)?([A-Za-z0-9_\-]{40,})/.exec(v);
+      if(!m){toast("Das sieht nicht nach einem Inka-Schlüssel aus.");return;}store.set("key",m[1]);location.replace(location.pathname+"?v="+Date.now());};
+    return;}
   const spOk=SP.ready(),micOk=PERM.mic==="granted",geoOk=PERM.geo==="granted";
   if(spOk&&micOk&&geoOk&&!store.get("showSetup",false)){el.innerHTML="";return;}
   const it=(name,ok,btn,id,hint)=>'<div class="si"><div><span>'+name+'</span><div class="small">'+hint+'</div></div>'+(ok?'<span class="ok">✓</span>':'<button class="pri" id="'+id+'">'+btn+'</button>')+'</div>';
@@ -946,6 +952,7 @@ function renderUeberblick(){
     '<div class="si"><span>Gespräch nach der Show</span><button id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</button></div>'+
     '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
     '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
+    '<div class="si"><span>Schlüssel-Link für ein anderes Gerät (geheim halten)</span><button id="fkey">kopieren</button></div>'+
     '<div class="si"><span>Neue Show erstellen</span><button class="pri" id="fnew">bestellen</button></div>'+
     '<div class="si"><span>App aktualisieren (neueste Fassung)</span><button class="pri" id="fupd">aktualisieren</button></div>'+
     '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
@@ -961,6 +968,9 @@ function renderUeberblick(){
     const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();toast("Lade Shows vor …");}catch(_){}};}
   {const a=$("#plsync");if(a)a.onclick=async()=>{toast("Aktualisiere Playlist …");if(!(await syncPlaylist(true)))toast("Playlist ging nicht, siehe Protokoll.");};
    const b=$("#plcon");if(b)b.onclick=()=>SP.connect();}
+  {const k=$("#fkey");if(k)k.onclick=async()=>{const link="https://raw.githack.com/FelixPfahl/theidealcity/inka/index.html#k="+KEY.raw;
+    try{await navigator.clipboard.writeText(link);toast("Schlüssel-Link kopiert. Nur an dich selbst schicken.");}
+    catch(_){prompt("Schlüssel-Link (kopieren):",link);}};}
   $("#fupd").onclick=()=>{toast("Lade neueste Fassung …");setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
 }
 

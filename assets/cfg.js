@@ -85,6 +85,15 @@
     ['game.reactgap', 'Spiel', 'Welt', 'Abstand Reaktions-Boxen', 'Sekunden zwischen zwei kurzen Reaktionen auf das Verhalten (nie während ein Gespräch läuft).', 90, 10, 900, 5, 's'],
     ['game.ambskip', 'Spiel', 'Welt', 'Ruhe-Anteil', 'Anteil der Gelegenheiten, bei denen trotzdem kein ungefragtes Gespräch kommt.', .35, 0, 1, .05],
     ['game.behcool', 'Spiel', 'Welt', 'Abkühlung je Verhalten', 'Sekunden, bevor dasselbe Verhalten wieder zählt.', 45, 0, 600, 5, 's'],
+    /* Dialogbox-Gestaltung (Josef, 1.11., T31) */
+    ['dlg.font', 'Dialoge', 'Box', 'Schrift', '0 Pixelify Sans, 1 Relief (Fließtext), 2 Systemschrift.', 0, 0, 2, 1],
+    ['dlg.fs', 'Dialoge', 'Box', 'Schriftgröße', 'Schriftgröße am Desktop (Handy 16 px).', 20, 10, 40, 1, 'px', '--mmfs'],
+    ['dlg.lh', 'Dialoge', 'Box', 'Zeilenhöhe', 'Zeilenhöhe am Desktop; drei Zeilen ergeben die Porträthöhe.', 32, 14, 60, 1, 'px', '--mmlh'],
+    ['dlg.pt', 'Dialoge', 'Box', 'Porträtgröße', 'Kantenlänge des Porträts am Desktop.', 96, 32, 200, 2, 'px', '--mmpt'],
+    ['dlg.bg', 'Dialoge', 'Box', 'Hintergrund', 'Farbe der Box.', '#0A0A18', 0, 0, 0, 'color', '--mmbg'],
+    ['dlg.fg', 'Dialoge', 'Box', 'Schriftfarbe', 'Farbe des Texts in der Box.', '#F4F4F4', 0, 0, 0, 'color', '--mmfg'],
+    ['dlg.hi', 'Dialoge', 'Box', 'Betonung', 'Farbe für Betonungen, Links, Cursor und Dreieck.', '#F8E038', 0, 0, 0, 'color', '--mmhi'],
+    ['dlg.open', 'Dialoge', 'Box', 'Öffnen und Schließen', 'Dauer der Linien-Animation.', 240, 0, 1500, 10, 'ms', '--mmopen'],
     ['dlg.autominms', 'Dialoge', 'Fenster', 'Weiter nach mindestens', 'Millisekunden, bevor eine fertige Seite von allein weiterblättert.', 2000, 500, 10000, 100, 'ms'],
     ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Zusätzliche Millisekunden je Zeichen der Seite.', 45, 0, 200, 1, 'ms'],
     ['dlg.askwait', 'Dialoge', 'Fenster', 'Warten auf Antwort', 'Sekunden, bevor eine unbeantwortete Frage das Fenster schließt.', 25, 5, 120, 1, 's'],
@@ -120,7 +129,7 @@
   var PUB = {};   /* veröffentlichte Werte: hier trägt Claude nach Josefs Übernahme ein (Schlüssel, @d, @m) */
   var ON = false, LOC = {};
   /* Dev Tools (Josef, 1.11.2026, T1: geheimer Link ?dev, ?dev=aus meldet ab); schalten auch die Regler frei. Zeit-Simulation: Date läuft mit Versatz */
-  var DEVON = false; try { if (/[?&]dev=aus\b/.test(location.search)){ localStorage.removeItem('jk_dev_on'); localStorage.removeItem('jk_regler_on'); } else if (/[?&]dev\b/.test(location.search)) localStorage.setItem('jk_dev_on', '1'); DEVON = localStorage.getItem('jk_dev_on') === '1'; } catch(e){}
+  var DEVON = false; try { if (/[?&]dev=aus\b/.test(location.search)){ localStorage.removeItem('jk_dev_on'); localStorage.removeItem('jk_regler_on'); } else if (/[?&]dev\b/.test(location.search)) localStorage.setItem('jk_dev_on', '1'); DEVON = localStorage.getItem('jk_dev_on') === '1'; } catch(e){} var FRAME = /[?&]devframe\b/.test(location.search); if (FRAME) DEVON = false;   /* Geräte-Vorschau: Seite wie für Besucher*innen */
   if (DEVON){ window.JK_DEV_ON = true; window.__jkdevbuf = []; window.__jkdeverr = []; window.JK_DEVLOG = function(k, m){ var b = window.__jkdevbuf; b.push({t:Date.now(), k:k, m:String(m)}); if (b.length > 600) b.splice(0, b.length - 600); if (window.JK_DEVLOG_ON) try { window.JK_DEVLOG_ON(b[b.length - 1]); } catch(e){} };
     window.addEventListener('error', function(e){ var t = e.target; var m = t && t !== window && (t.src || t.href) ? 'Datei fehlt: ' + (t.src || t.href) : (e.message || 'Fehler') + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''); window.__jkdeverr.push({t:Date.now(), m:m}); }, true);
     window.addEventListener('unhandledrejection', function(e){ window.__jkdeverr.push({t:Date.now(), m:'Promise: ' + (e.reason && e.reason.message || e.reason)}); });
@@ -142,5 +151,6 @@
     sub:function(f){ subs.push(f); }, css:css};
   css();
   if (DEVON){ var ds = document.createElement('script'); ds.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'devtools.js') + '?t=' + Math.floor(Date.now() / 60000); ds.defer = true; document.head.appendChild(ds); }
+  if (FRAME) ON = false;   /* Regler-Werte gelten, die Leiste nicht */
   if (ON){ document.documentElement.classList.add('regler'); var s = document.createElement('script'); s.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'regler.js') + '?t=' + Math.floor(Date.now() / 60000); s.defer = true; document.head.appendChild(s); }
 })();

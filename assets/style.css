@@ -1508,14 +1508,15 @@ body.sbdlgon .sbfab{opacity:.55;pointer-events:auto}
 /* ---------- Dialoge wie Mega Man X (Josef, 1.11.2026, 16:00, D1 bis D30): Pixelify Sans, dunkle Box, einheitlicher Rahmen in der Figurenfarbe ---------- */
 @font-face{font-family:"Pixelify";src:url(fonts/PixelifySans-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
 @font-face{font-family:"Pixelify";src:url(fonts/PixelifySans-Bold.woff2) format("woff2");font-weight:700;font-display:swap}
-html body .sbdlg.mm{--pf:"Pixelify","Courier New",monospace;--fs:20px;--lh:32px;--pt:96px;--bg:#0A0A18;--fg:#F4F4F4;--hi:#F8E038;animation:none;padding:0 16px var(--dlgb,18px);align-items:center;-webkit-font-smoothing:none;font-smooth:never;text-rendering:optimizeSpeed}
+html body .sbdlg.mm{--pf:"Pixelify","Courier New",monospace;--fs:var(--mmfs,20px);--lh:var(--mmlh,32px);--pt:var(--mmpt,96px);--bg:var(--mmbg,#0A0A18);--fg:var(--mmfg,#F4F4F4);--hi:var(--mmhi,#F8E038);animation:none;padding:0 16px var(--dlgb,18px);align-items:center;-webkit-font-smoothing:none;font-smooth:never;text-rendering:optimizeSpeed}
 html body .sbdlg.mm.sd-r,html body .sbdlg.mm.gut{align-items:flex-end}
 html body .sbdlg.mm.sd-l{align-items:flex-start}
 html body .sbdlg.mm.off{opacity:1;transform:none;transition:none}
 html body .sbdlg.mm[class] .win{width:auto;max-width:100%;min-height:0;display:flex;flex-direction:row-reverse;gap:14px;align-items:flex-start;background:var(--bg);background-image:none;color:var(--fg);border:4px solid var(--c2,#fff);border-radius:0;box-shadow:0 0 0 3px #000,inset 0 0 0 2px #000;filter:none;padding:12px 14px;font-family:var(--pf);transform-origin:center}
 html body .sbdlg.mm.sd-l[class] .win{flex-direction:row}
-html body .sbdlg.mm.opening .win{animation:mmopen .24s linear both}
-html body .sbdlg.mm.off .win,html body .sbdlg.mm.off .answers{animation:mmclose .22s linear forwards}
+html body .sbdlg.mm.opening .win{animation:mmopen var(--mmopen,240ms) linear both}
+html body .sbdlg.mm.off .win,html body .sbdlg.mm.off .answers{animation:mmclose calc(var(--mmopen,240ms) * .9) linear forwards}
+html body .sbdlg.mm.f1{--pf:var(--body)}html body .sbdlg.mm.f2{--pf:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:auto}
 @keyframes mmopen{0%{transform:scale(.02,.05)}50%{transform:scale(1,.05)}100%{transform:none}}
 @keyframes mmclose{0%{transform:none}50%{transform:scale(1,.05)}100%{transform:scale(0,.05)}}
 html body .sbdlg.mm .who{display:none}

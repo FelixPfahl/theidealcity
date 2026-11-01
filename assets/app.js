@@ -1147,7 +1147,7 @@
     /* Josef, 29.10., 14:12: der Plotter schreibt die ganze Seite. Neben dem Sichtbaren arbeitet ein Hintergrund-Stift (BG) Absatz für Absatz: erst oberhalb, dann unterhalb des Fensters.
        Er beginnt, sobald der erste sichtbare Absatz fertig ist. Ganz fertige Seiten bleiben im selben Besuch fertig (sessionStorage jk_plotdone). */
     var PKEY = 'jk_plotdone', PAGEK = location.pathname.split('/').pop() || 'index.html';
-    function pageDone(){ try { return JSON.parse(sessionStorage.getItem(PKEY) || '[]').indexOf(PAGEK) >= 0; } catch(e){ return false; } }
+    function pageDone(){ try { var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0]; if (!nav || nav.type !== 'back_forward') return false; return JSON.parse(sessionStorage.getItem(PKEY) || '[]').indexOf(PAGEK) >= 0; } catch(e){ return false; } }   /* Josef, 1.11., 11:39: nur beim Zurückgehen steht der Text schon da; bei Neuladen und neuem Aufruf zeichnet der Plotter wieder */
     function markDone(){ try { var a = JSON.parse(sessionStorage.getItem(PKEY) || '[]'); if (a.indexOf(PAGEK) < 0){ a.push(PAGEK); sessionStorage.setItem(PKEY, JSON.stringify(a)); } } catch(e){} }
     var DONE0 = pageDone(), pageFin = DONE0, BG = null, bgArmed = false, T0 = performance.now(), firstBuild = true;
     window.JK_PLOT_BG = function(){ return BG ? BG.el : null; };

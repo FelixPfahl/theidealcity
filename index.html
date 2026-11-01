@@ -127,7 +127,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 12:20 (Songs leise unter der Ansage)";
+const APPV="1.11. 12:30 (Show wartet auf den Song)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -270,6 +270,7 @@ setInterval(()=>{if(document.hidden)return;if(WL.playing()){WL.on();if(Date.now(
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&WL.playing())WL.on();});
 async function playShow(){
   SP.unlock();KEEP.on();WL.touch=Date.now();WL.on();
+  if(S.waitSong!=null&&!SONG.on){const k=S.waitSong;S.waitSong=null;diag("song-nach-warten",{k,via:"play"});SONG.start(k);return;}
   if(!(await ensureAudio()))return;
   if(SONG.on){await SONG.finish("weiter");return;}
   if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};}
@@ -321,7 +322,17 @@ SONG.start=async function(k,pre){
   try{SONG.via=await SP.play(tr.uri);
     if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
       if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
-  catch(e){diag("song-fehler",{e:String(e&&e.message||e)});toast("Song ging nicht: "+String(e&&e.message||e).slice(0,70)+". Inka macht weiter.");SONG.on=false;SONG.track=null;AUD.play().catch(()=>{});render();return;}
+  catch(e){const em=String(e&&e.message||e);diag("song-fehler",{e:em,vis:document.visibilityState,pre:!!pre,try:SONG.tries||0});
+    SONG.on=false;SONG.track=null;RADIO.set(1);
+    if(pre){SONG.pre=false;S.songDone[k]=false;render();return;}   // normaler Start am Kapitelanfang
+    /* Josef 1.11.2026: "Die Musik kommt wieder nicht". Im Hintergrund lässt Android Chrome oft kein Netz durch.
+       Dann wartet die Show und startet den Song, sobald Chrome wieder vorne ist. Kurze Netzfehler: zweimal neu versuchen. */
+    const net=/fetch|network|netz|load failed/i.test(em);
+    if(net&&(SONG.tries||0)<2){SONG.tries=(SONG.tries||0)+1;setTimeout(()=>{if(!SONG.on&&AUD.paused)SONG.start(k);},3500);render();return;}
+    SONG.tries=0;
+    if(net&&document.hidden){S.waitSong=k;diag("song-wartet",{k});toast("Kein Netz im Hintergrund. Die Show wartet: Inka-App öffnen, dann kommt der Song.",15000);render();return;}
+    toast("Song ging nicht: "+em.slice(0,70)+". Inka macht weiter.");AUD.play().catch(()=>{});render();return;}
+  SONG.tries=0;
   const ms=Math.min(tr.ms||210000,6*60000);
   clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),ms+800);
   clearInterval(SONG.poll);SONG.pausedN=0;SONG.poll=setInterval(()=>SONG.check(),4000);
@@ -367,7 +378,8 @@ SONG.handoff=async function(){
   }catch(e){diag("uebergabe-fehler",{e:String(e&&e.message||e)});try{await SP.player.resume();}catch(_){}}
   SONG.handing=false;
 };
-document.addEventListener("visibilitychange",()=>{if(document.hidden)SONG.handoff();});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)SONG.handoff();
+  else if(S.waitSong!=null&&!SONG.on){const k=S.waitSong;S.waitSong=null;diag("song-nach-warten",{k});SONG.start(k);}});
 document.addEventListener("visibilitychange",()=>{diag("sicht",{vis:document.visibilityState,song:SONG.on,aud:AUD.paused?"pause":"spielt",ac:KEEP.ctx?KEEP.ctx.state:"-"});if(!document.hidden&&needResume)resume();});
 document.addEventListener("click",()=>{if(needResume&&AUD.paused)resume();},true);
 

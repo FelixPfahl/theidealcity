@@ -192,15 +192,26 @@ function chAt(t){const c=chapters();let k=-1;for(let i=0;i<c.length;i++)if(t>=c[
 function songIndex(k){let n=0;const c=chapters();for(let i=0;i<k;i++)if(c[i].type==="song")n++;return n;}
 
 /* ---------- Abspielen ---------- */
+/* Wachhalter (Josef 1.11.2026: Songs brachen bei ausgeschaltetem Bildschirm nach gut einer Minute ab).
+   Die Seite gibt waehrend der Show ein unhoerbar leises Rauschen aus; so gilt sie fuer Android als "spielt Ton" und wird nicht gedrosselt. */
+const KEEP={ctx:null,src:null};
+KEEP.on=function(){try{
+  if(!KEEP.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;KEEP.ctx=new C();}
+  if(KEEP.ctx.state!=="running")KEEP.ctx.resume().catch(()=>{});
+  if(KEEP.src)return;const sr=KEEP.ctx.sampleRate,b=KEEP.ctx.createBuffer(1,sr*2,sr),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.0012;
+  const src=KEEP.ctx.createBufferSource();src.buffer=b;src.loop=true;src.connect(KEEP.ctx.destination);src.start();KEEP.src=src;
+}catch(e){diag("wach-fehler",{e:String(e&&e.message||e)});}};
+KEEP.off=function(){try{if(KEEP.src){KEEP.src.stop();KEEP.src.disconnect();KEEP.src=null;}}catch(_){}};
 async function playShow(){
-  SP.unlock();
+  SP.unlock();KEEP.on();
   if(!(await ensureAudio()))return;
   if(SONG.on){await SONG.finish("weiter");return;}
   if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};}
   try{await AUD.play();}catch(e){toast("Noch einmal auf Play tippen.");}
   SP.warm();
 }
-function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();}
+function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();KEEP.off();}
 function seekCh(k){const c=chapters()[k];if(!c)return;if(SONG.on)SONG.finish("sprung",true);
   ensureAudio().then(ok=>{if(!ok)return;S.songDone={};for(let i=0;i<k;i++)S.songDone[i]=true;AUD.currentTime=c.type==="song"?c.start+1.02:c.start;AUD.play().catch(()=>{});});}
 function nextCh(){const k=SONG.on?SONG.k:chAt(AUD.currentTime);if(SONG.on){SONG.finish("weiter");return;}const c=chapters();for(let i=k+1;i<c.length;i++){if(c[i].type==="talk"){seekCh(i);return;}}AUD.currentTime=Math.max(0,(AUD.duration||1)-0.5);}
@@ -211,9 +222,10 @@ AUD.addEventListener("timeupdate",()=>{
   if(k!==S.ch){S.ch=k;meta();renderShow();}
   bar();
 });
-AUD.addEventListener("play",()=>{render();meta();});
-AUD.addEventListener("pause",()=>render());
-AUD.addEventListener("ended",()=>{S.ended=true;render();if(store.get("autochat",true))setTimeout(()=>VC.start(true),900);});
+AUD.addEventListener("play",()=>{KEEP.on();render();meta();});
+AUD.addEventListener("pause",()=>{render();if(!SONG.on&&document.hidden&&!AUD.ended)diag("inka-angehalten",{t:Math.round(AUD.currentTime),vis:document.visibilityState});});
+["stalled","waiting","error","suspend"].forEach(ev=>AUD.addEventListener(ev,()=>{if(!AUD.paused&&ev!=="suspend"||ev==="error")diag("inka-"+ev,{t:Math.round(AUD.currentTime),vis:document.visibilityState,rs:AUD.readyState});}));
+AUD.addEventListener("ended",()=>{KEEP.off();S.ended=true;render();if(store.get("autochat",true))setTimeout(()=>VC.start(true),900);});
 function meta(){try{if(!("mediaSession" in navigator))return;const c=chapters()[S.ch];
   navigator.mediaSession.metadata=new MediaMetadata({title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Morning-Show"),artist:SONG.on&&SONG.track?SONG.track.artist:"Inka",album:"Morning-Show "+(S.doc?S.doc.day:"")});}catch(_){}}
 try{if("mediaSession" in navigator){
@@ -229,8 +241,8 @@ function diag(ev,d){try{const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",s:
 const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:""};
 SONG.start=async function(k){
   const list=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];const tr=list[songIndex(k)];
-  if(!tr||!SP.ready()){if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
-  AUD.pause();SONG.on=true;SONG.k=k;SONG.track=tr;SONG.started=Date.now();render();meta();
+  if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
+  AUD.pause();SONG.on=true;SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
   try{SONG.via=await SP.play(tr.uri);diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){diag("song-fehler",{e:String(e&&e.message||e)});toast("Song ging nicht: "+String(e&&e.message||e).slice(0,70)+". Inka macht weiter.");SONG.on=false;SONG.track=null;AUD.play().catch(()=>{});render();return;}
   const ms=Math.min(tr.ms||210000,6*60000);
@@ -239,13 +251,16 @@ SONG.start=async function(k){
 };
 SONG.check=async function(){
   if(!SONG.on)return;const el=Date.now()-SONG.started;if(el<12000)return;
+  if(SONG.broken&&Date.now()-SONG.broken<30000)return;
   const sdk=SONG.via==="seite"&&SP.player;
   try{const st=sdk?await SP.player.getCurrentState():await SP.api("GET","/me/player");
     if(!st){diag("kein-status",{el});if(el>20000)SONG.finish("kein Status");return;}
     const pos=sdk?st.position:st.progress_ms,dur=sdk?(st.duration||0):((st.item&&st.item.duration_ms)||0),paused=sdk?st.paused:!st.is_playing;
     SONG.last=(paused?"pausiert ":"spielt ")+Math.round((pos||0)/1000)+" s";renderShow();
     if(el<40000||paused)diag("status",{el,pos,paused,dev:sdk?"seite":(st.device&&(st.device.type+":"+st.device.name)),vis:document.visibilityState});
+    if(!paused&&pos>0)SONG.lastPos=pos;if(dur)SONG.dur=dur;
     if(dur&&pos>=dur-2500){SONG.finish("ende");return;}
+    if(SONG.broken&&Date.now()-SONG.broken<30000)return;
     if(paused){SONG.pausedN=(SONG.pausedN||0)+1;if(SONG.pausedN>=3)SONG.finish("steht");}else SONG.pausedN=0;
   }catch(_){}
 };
@@ -302,11 +317,11 @@ SP.sdk=function(){
   if(SP.player)return Promise.resolve(SP.player);if(SP.sdkP)return SP.sdkP;
   SP.sdkP=new Promise((res,rej)=>{
     const go=()=>{try{
-      const pl=new Spotify.Player({name:"Inka",getOAuthToken:cb=>SP.token().then(cb).catch(()=>cb("")),volume:1});
+      const pl=new Spotify.Player({name:"Inka",getOAuthToken:cb=>SP.token().then(t=>{if(SONG.on)diag("sdk-token",{rest:Math.round(((SP.cfg.exp||0)-Date.now())/1000),vis:document.visibilityState});cb(t);}).catch(e=>{diag("sdk-token-fehler",{e:String(e&&e.message||e)});cb("");}),volume:1});
       pl.addListener("ready",({device_id})=>{SP.deviceId=device_id;SP.player=pl;SP.sdkState="Seite spielt selbst";diag("sdk-bereit",{});render();res(pl);});
       pl.addListener("autoplay_failed",()=>diag("sdk-autoplay-blockiert",{}));
       pl.addListener("not_ready",()=>{SP.deviceId="";});
-      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{diag("sdk-"+ev,{e:String(e&&e.message||"")});SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
+      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{diag("sdk-"+ev,{e:String(e&&e.message||""),tok:Math.round(((SP.cfg.exp||0)-Date.now())/1000)});if(SONG.on&&SONG.via==="seite"&&!SONG.broken&&(SONG.retries||0)<2){SONG.broken=Date.now();setTimeout(()=>SONG.recover(),2500);}SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
       pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";}});
       pl.connect();setTimeout(()=>{if(!SP.player){SP.sdkState="Spotify-App wird ferngesteuert";rej(new Error("Gerät meldet sich nicht"));}},10000);
     }catch(e){rej(e);}};
@@ -315,6 +330,17 @@ SP.sdk=function(){
     const sc=document.createElement("script");sc.src="https://sdk.scdn.co/spotify-player.js";sc.onerror=()=>rej(new Error("SDK lädt nicht"));document.head.appendChild(sc);
   }).catch(e=>{SP.sdkP=null;throw e;});
   return SP.sdkP;
+};
+/* Song nach Abbruch an derselben Stelle fortsetzen (hoechstens zweimal), sonst weiter mit Inka */
+SONG.recover=async function(){
+  if(!SONG.on||!SONG.track)return;SONG.retries=(SONG.retries||0)+1;const pos=Math.max(0,(SONG.lastPos||0)-1500);
+  try{SP.cfg.exp=0;await SP.token();
+    if(!SP.deviceId){try{await SP.player.connect();}catch(_){}for(let i=0;i<20&&!SP.deviceId;i++)await new Promise(r=>setTimeout(r,500));}
+    if(!SP.deviceId)throw new Error("Gerät weg");
+    await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(SP.deviceId),{uris:[SONG.track.uri],position_ms:pos});
+    diag("song-wieder",{pos,n:SONG.retries});SONG.broken=0;SONG.pausedN=0;
+    const rest=(SONG.dur||SONG.track.ms||210000)-pos;clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),rest+800);
+  }catch(e){diag("song-wieder-fehler",{e:String(e&&e.message||e),n:SONG.retries});SONG.broken=0;SONG.finish("abbruch");}
 };
 SP.unlock=function(){try{if(SP.player&&SP.player.activateElement)SP.player.activateElement();}catch(_){}};
 SP.warm=function(){if(!store.get("noSdk",false)&&SP.ready()&&!SP.player&&!SP.sdkP)SP.sdk().catch(()=>{});};

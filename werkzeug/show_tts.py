@@ -16,7 +16,8 @@ import soundfile as sf
 src, out, keyfile = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
 MODEL = os.environ.get("EL_MODEL", "eleven_v3")
-SPEED = float(os.environ.get("SHOW_SPEED", "1.25"))  # Josef 1.11.2026: insgesamt schneller
+# Tempo je Stimme (Josef 1.11.2026: schneller, Inka etwas langsamer als Wagner)
+SPEEDS = {"inka": float(os.environ.get("SPEED_INKA", "1.1")), "wagner": float(os.environ.get("SPEED_WAGNER", "1.25")), "sigma": float(os.environ.get("SPEED_SIGMA", "1.15"))}
 VOICES = {"inka": os.environ.get("EL_VOICE_INKA", "S87WJpstXs0Ge2ukRiXJ"),
           "wagner": os.environ.get("EL_VOICE_WAGNER", "qsEcR8IqZUmxT1rxm9G9"),
           "sigma": os.environ.get("EL_VOICE_SIGMA", "JudZUClAOU1jP3wA2eDG")}
@@ -70,11 +71,11 @@ def tts(speaker, text, idx):
         time.sleep(3)
     raise RuntimeError("ElevenLabs fehlgeschlagen (%s): %s %s" % (speaker, r.stdout, open(mp3, errors="ignore").read()[:200]))
 
-def to_wav(path, fx=None):
+def to_wav(path, fx=None, speed=1.0):
     wav = tempfile.mktemp(suffix=".wav")
     cmd = [ff, "-y", "-loglevel", "error", "-i", path]
     # jede Stimme einzeln auf gleiche Lautheit (Josef 1.11.2026: Inka, Wagner, Sigma immer gleich laut)
-    cmd += ["-af", (fx + "," if fx else "") + "loudnorm=I=-20:TP=-2:LRA=7"]
+    cmd += ["-af", (fx + "," if fx else "") + ("atempo=%.3f," % speed if abs(speed - 1) > 0.01 else "") + "loudnorm=I=-20:TP=-2:LRA=7"]
     subprocess.run(cmd + ["-ac", "1", "-ar", str(SR), wav], check=True)
     a, _ = sf.read(wav, dtype="float32"); os.remove(wav); return a
 
@@ -95,7 +96,7 @@ for ch in chapters:
     for sp, text in blocks:
         if prev is not None: add(np.zeros(int(SR * (0.25 if sp != prev else 0.45)), np.float32))
         mp3, n = tts(sp, text, idx); idx += 1; chars += n
-        add(to_wav(mp3, SIGMA_FX if sp == "sigma" else None)); prev = sp
+        add(to_wav(mp3, SIGMA_FX if sp == "sigma" else None, SPEEDS[sp])); prev = sp
     add(np.zeros(int(SR * 0.9), np.float32))
 
 audio = np.concatenate(pieces)
@@ -123,13 +124,11 @@ if os.environ.get("SHOW_AMBIENCE", "lab") == "lab":
     audio = audio + lab_ambience(len(audio), SR)
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
-subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "atempo=%.3f,loudnorm=I=-20:TP=-2:LRA=11" % SPEED,
+subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "loudnorm=I=-20:TP=-2:LRA=11",
                 "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart", mp4], check=True)
 os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],
                            capture_output=True, text=True).stdout.strip() or t)
-for m in meta: m["start"] = round(m["start"] / SPEED, 2)
-t = t / SPEED
 if abs(dur - t) > 3: sys.exit("Audiolänge passt nicht: %.1f statt %.1f" % (dur, t))
 info = {"duration": round(t, 1), "chapters": meta, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
         "elevenChars": chars, "songs": sum(1 for m in meta if m["type"] == "song")}

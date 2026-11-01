@@ -33,7 +33,7 @@
     /* ---------- Ton ---------- */
     ['snd.master', 'Ton', 'Lautstärken', 'Gesamt', 'Gesamtlautstärke in Prozent (Stand 28.10.: 50).', 50, 0, 100, 1, '%'],
     ['snd.tools', 'Ton', 'Lautstärken', 'Werkzeuge', 'Plotter, Feder, Zirkel, Papier.', .9, 0, 2, .05],
-    ['snd.ui', 'Ton', 'Lautstärken', 'Oberfläche', 'Menü, Knöpfe, Blättern.', .55, 0, 2, .05],
+    ['snd.ui', 'Ton', 'Lautstärken', 'Oberfläche', 'Menü, Knöpfe, Blättern (Josef, 1.11.: ein Drittel).', .18, 0, 2, .05],
     ['snd.atmos', 'Ton', 'Lautstärken', 'Atmosphäre', 'Klänge der Serien und Trenner.', .5, 0, 2, .05],
     ['snd.game', 'Ton', 'Lautstärken', 'Spiel', 'Funde, Dialoge, Urkunde.', 1, 0, 2, .05],
     ['snd.loop', 'Ton', 'Lautstärken', 'Plotter-Schleife', 'Lautstärke des laufenden Plotters.', .27, 0, 1, .01],
@@ -48,7 +48,7 @@
     ['dlg.pitch.xae', 'Ton', 'Dialogstimmen', 'Tonhöhe X Æ A-13', 'Verschiebung der Stimme in Halbtönen.', 0, -12, 12, .5, 'HT'],
     ['dlg.pitch.sigma', 'Ton', 'Dialogstimmen', 'Tonhöhe Sigma', 'Verschiebung der Stimme in Halbtönen.', 0, -12, 12, .5, 'HT'],
     ['dlg.pitch.gojira', 'Ton', 'Dialogstimmen', 'Tonhöhe Gojira', 'Verschiebung der Stimme in Halbtönen.', 0, -12, 12, .5, 'HT'],
-    ['dlg.blipvol', 'Ton', 'Dialogstimmen', 'Lautstärke Blips', 'Faktor für alle Dialogstimmen.', 1, 0, 3, .05],
+    ['dlg.blipvol', 'Ton', 'Dialogstimmen', 'Lautstärke Blips', 'Faktor für alle Dialogstimmen (Josef, 1.11.: ein Drittel lauter).', 1.33, 0, 3, .05],
     ['dlg.blipevery', 'Ton', 'Dialogstimmen', 'Blip-Dichte', 'Blip auf jedem n-ten Buchstaben.', 2, 1, 5, 1],
     ['gsnd.find', 'Ton', 'Spielklänge', 'Fund', 'Lautstärke beim Finden.', 1, 0, 3, .05],
     ['gsnd.stamp', 'Ton', 'Spielklänge', 'Stempel', 'Lautstärke des Stempels auf der Urkunde.', 1, 0, 3, .05],

@@ -978,11 +978,14 @@
     var img = lb.querySelector('img.main'), cap = lb.querySelector('.cap'), cnt = lb.querySelector('.cnt'), lens = lb.querySelector('.lens'), stage = lb.querySelector('.stage');
     var group = [], idx = 0, z = 1, px = 0, py = 0, drag = null, pinch = null, lensOn = false, spotBox = null, playBtn = null;
     function groupOf(a){ var f = a.closest('[data-group]'); var g = f ? f.getAttribute('data-group') : ''; return links.filter(function(l){ var ff = l.closest('[data-group]'); return (ff ? ff.getAttribute('data-group') : '') === g; }); }
+    function esc2(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
     function resetZoom(){ z = 1; px = 0; py = 0; applyZoom(); }
     function applyZoom(){ img.style.transform = 'translate(' + px + 'px,' + py + 'px) scale(' + z + ')'; img.style.transformOrigin = '0 0'; }
     function show(i){ idx = (i + group.length) % group.length; var a = group[idx]; var f = a.closest('figure') || a.parentNode;
       img.src = a.getAttribute('data-full') || a.getAttribute('href'); img.alt = a.getAttribute('data-alt') || '';
-      var fc = f.querySelector('figcaption'); cap.innerHTML = fc ? fc.innerHTML : ''; cap.classList.remove('plotted'); cap.style.minHeight = ''; cnt.textContent = group.length > 1 ? (idx + 1) + ' / ' + group.length : '';
+      var fc = f.querySelector('figcaption'); cap.innerHTML = fc ? fc.innerHTML : '';
+      if (a.classList.contains('reflink')){ var al = a.getAttribute('data-alt') || '', who = (al.split(':')[0] || '').trim(), yr = (al.match(/\b(1[0-9]{3}|20[0-9]{2})\b/) || [])[1] || '', qs = fc && fc.querySelector('a.src'); cap.innerHTML = esc2(who + (yr ? ', ' + yr : '')) + (qs ? ' <a class="src" href="' + qs.getAttribute('href') + '" target="_blank" rel="noopener">Quelle</a>' : ''); }   /* Josef, 1.11., 10:45: bei Referenzen nur ein paar Worte, der Rest steht schon unter dem Bild */
+      cap.classList.remove('plotted'); cap.style.minHeight = ''; cnt.textContent = group.length > 1 ? (idx + 1) + ' / ' + group.length : '';
       if (window.JK_PLOT_ONCE) setTimeout(function(){ window.JK_PLOT_ONCE(cap, 900); }, 30);
       lb.querySelector('.p').style.display = lb.querySelector('.nx').style.display = group.length > 1 ? '' : 'none';
       /* Suchbilder mit Löchern: kleiner Link "vollständig" zeigt das Original, nochmal klicken zeigt wieder den Spielstand (Josef, 29.10.) */
@@ -1004,7 +1007,9 @@
     lb.querySelector('.x').addEventListener('click', close);
     lb.querySelector('.p').addEventListener('click', function(e){ e.stopPropagation(); show(idx - 1); softPlay('pageturn', .4); });
     lb.querySelector('.nx').addEventListener('click', function(e){ e.stopPropagation(); show(idx + 1); softPlay('pageturn', .4); });
-    stage.addEventListener('click', function(e){ if (e.target === stage && !drag) close(); });
+    /* Josef, 1.11., 10:43: Klick neben das Bild schließt; das Bild füllt die Bühne mit object-fit, darum zählt die tatsächlich sichtbare Bildfläche */
+    function onPic(e){ if (!img.naturalWidth) return false; var r = img.getBoundingClientRect(); var s = Math.min(r.width / img.naturalWidth, r.height / img.naturalHeight); var w = img.naturalWidth * s, h = img.naturalHeight * s, x0 = r.left + (r.width - w) / 2, y0 = r.top + (r.height - h) / 2; return e.clientX >= x0 && e.clientX <= x0 + w && e.clientY >= y0 && e.clientY <= y0 + h; }
+    lb.addEventListener('click', function(e){ if (drag) return; var t = e.target; if (t.closest('button, a, .cap, .spot, iframe, .playbig')) return; if (t === img ? (z === 1 && !onPic(e)) : true) close(); });
     document.addEventListener('keydown', function(e){ if (!lb.classList.contains('on')) return; if (e.key === 'Escape') close(); else if (e.key === 'ArrowRight') show(idx + 1); else if (e.key === 'ArrowLeft') show(idx - 1); });
     /* Zoom mit Mausrad, Verschieben mit Ziehen, Pinch mit zwei Fingern, Wischen mit einem */
     lb.addEventListener('wheel', function(e){ e.preventDefault(); var r = img.getBoundingClientRect(); var ox = e.clientX - r.left, oy = e.clientY - r.top; var nz = Math.min(8, Math.max(1, z * (e.deltaY < 0 ? 1.18 : 1/1.18)));

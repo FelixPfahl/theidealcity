@@ -259,7 +259,7 @@
     if (page.length) pages.push(page); return rebalance(pages, cols, rows); }
   /* Seitenwechsel an Satzgrenzen: endet eine Seite mitten im Satz und liegt das letzte Satzende in der zweiten Hälfte der Seite, wandert der angefangene Satz ins nächste Fenster */
   function rebalance(pages, cols, rows){ if (pages.length < 2 || rows < 2) return pages; var out = []; var carry = [];
-    for (var i = 0; i < pages.length; i++){ var pg = carry.concat(pages[i]); carry = [];
+    for (var i = 0; i < pages.length; i++){ var lastC = carry.filter(function(x){ return x.ch !== undefined; }).pop(), firstP = pages[i].filter(function(x){ return x.ch !== undefined; })[0]; var pg = carry.concat(lastC && lastC.ch !== ' ' && firstP && firstP.ch !== ' ' ? [{ch:' ', emph:false}] : [], pages[i]); carry = [];   /* am alten Seitenwechsel fehlte das Leerzeichen (Josef, 10:42) */
       if (i < pages.length - 1){ var chars = pg.filter(function(x){ return x.ch !== undefined; }); var last = chars[chars.length - 1];
         if (last && !/[.!?…:]/.test(last.ch)){ var cut = -1; for (var q = pg.length - 2; q > 0; q--){ var c = pg[q]; if (c.ch !== undefined && /[.!?…]/.test(c.ch) && pg[q + 1] && pg[q + 1].ch === ' '){ cut = q; break; } }
           var nChar = 0; for (var r = 0; r <= cut; r++) if (pg[r].ch !== undefined) nChar++;
@@ -309,7 +309,7 @@
       var hidden = document.hidden;
       function finish(){ if (fin) return; fin = true; typing = false; spans.forEach(function(s){ s.style.visibility = ''; }); if (!dlg) return;
         var txt = items.map(function(x){ return x.ch || ''; }).join(''); if (pageIdx === pages.length - 1) endSyl(L.who, curMood, txt);
-        if (pageIdx === pages.length - 1 && L.ask && answered < 2 && !pending) askAnswers(L); else more.style.visibility = 'visible'; }
+        if (pageIdx === pages.length - 1 && L.ask && answered < 2 && !pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } else { more.style.visibility = 'visible'; var nch = items.filter(function(x){ return x.ch !== undefined; }).length; autoArm(Math.max(CF('dlg.autominms', 2600), nch * CF('dlg.automs', 55))); } }
       function step(now){ if (fin || !dlg) return; if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
         if (now < due){ raf = requestAnimationFrame(step); return; }
         while (i < items.length && items[i].ev){ var ev = items[i++]; if (ev.ev === 'mood') setMood(ev.v); else if (ev.ev === 'pause') due = now + ev.v * 1000 * tspeed(); else if (ev.ev === 'cut'){ dlg.classList.add('cut'); i = items.length; } }
@@ -327,23 +327,22 @@
     function choose(a){ if (!pending) return; var L = pending; pending = null; answered++; cursorSnd('ok'); relAdd(L.who, a.s); H('onAnswer', a, L.who); if (a.fn) try { a.fn(); } catch(x){} var box = dlg.querySelector('.answers'); if (box) box.remove();
       var re = (a.re || []).map(norm); if (!re.length) re = [{who:L.who, text:'...'}];
       lines.splice(k + 1, 0, ...re); next(); }
-    function next(e){ if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
+    var autoT = null; function autoArm(ms, isAsk){ clearTimeout(autoT); autoT = setTimeout(function(){ if (!dlg) return; if (isAsk){ if (pending){ pending = null; close(false); } return; } if (!document.hidden) next(); else autoArm(1500); }, ms); }
+    function next(e){ clearTimeout(autoT); if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
       if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ askAnswers(L); return; } more.style.visibility = 'visible'; cursorSnd('mv'); return; }
       if (pageIdx < pages.length - 1){ pageIdx++; advSnd('next'); showPage(); return; }
       k++; advSnd(k >= lines.length && !dq.length ? 'end' : 'next'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(true); return; } startLine(); }
-    function close(nat){ if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(nat === true); }
+    function close(nat){ clearTimeout(autoT); if (!dlg) return; if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; setTimeout(function(){ d.remove(); }, 350); if (done) done(nat === true); }
     function onkey(e){ if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
       if (pending){ var bs = [].slice.call(dlg.querySelectorAll('.ans')); var cur_ = bs.indexOf(document.activeElement);
         if (/^[1-6]$/.test(e.key) && bs[+e.key - 1]){ e.preventDefault(); bs[+e.key - 1].click(); return; }
         if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); bs[(cur_ + 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
         if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); bs[(cur_ - 1 + bs.length) % bs.length].focus(); cursorSnd('mv'); return; }
         if (e.key === 'Escape'){ close(); } return; }
-      if (e.key === 'Escape') close(); else if (e.key === ' ' || e.key === 'Enter') next(e); }
+      if (e.key === 'Escape') close(); else if ((e.key === ' ' || e.key === 'Enter') && dlg && dlg.contains(document.activeElement)) next(e); }
     dlg.addEventListener('click', function(e){ if (e.target.closest('.answers')) return; next(e); }); document.addEventListener('keydown', onkey);
-    /* Josef, 1.11., 10:33: ein Klick irgendwo auf der Seite lässt den Dialog voranschreiten (nicht bei Antwortauswahl, Panels, Großansicht, Urkunde) */
-    function docClick(e){ if (!dlg || dlg.classList.contains('off')) return; if (e.target.closest && e.target.closest('.sbdlg, .sbpanel, .modem, .sbcert, .lb2, .sbmenu, .sbfab')) return; if (pending) return; e.preventDefault(); e.stopPropagation(); next(e); }
-    var t1 = Date.now(); document.addEventListener('click', function dc(e){ if (!dlg){ document.removeEventListener('click', dc, true); return; } if (Date.now() - t1 < 250) return; docClick(e); }, true);
+    /* Josef, 1.11., 10:50: Dialoge blockieren die Seite nicht; ohne Klick geht es von allein weiter, am Ende verschwindet das Fenster von selbst */
     document.addEventListener('visibilitychange', function vis(){ if (!dlg){ document.removeEventListener('visibilitychange', vis); return; } });
     startLine(); }
   var dq = [];

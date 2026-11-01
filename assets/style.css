@@ -1404,7 +1404,7 @@ sup.fn.plotsup{padding-left:20px!important;margin-left:-20px!important}   /* nur
 .plotted .plotsrc.mapped *{font-family:inherit!important;font-weight:400!important;font-style:normal!important;letter-spacing:0!important;word-spacing:0!important;text-transform:none!important;font-size:inherit!important;line-height:inherit!important;padding:0!important;margin:0!important;border:0!important;vertical-align:baseline}
 .plotted .plotsrc.mapped .kw,.plotted .plotsrc.mapped .kw *,.plotted .plotsrc.mapped a,.plotted .plotsrc.mapped a *{font-family:"JKPlotHand","JKPlotRelief"!important}
 /* Fußnoten bleiben im Satz und sind sichtbar; sie verändern die Zeilenhöhe nicht */
-.plotted .plotsrc.mapped sup.fn{font-family:"JKPlotRelief"!important;font-size:.62em!important;line-height:0!important;position:relative;top:-.55em;vertical-align:baseline!important;color:var(--ink,#000)!important;-webkit-text-fill-color:currentColor!important;padding:6px 1px 6px 14px!important;margin:0 0 0 -12px!important;z-index:7}
+.plotted .plotsrc.mapped sup.fn{font-family:"JKPlotRelief"!important;font-size:.62em!important;line-height:0!important;position:relative;top:-.55em;vertical-align:baseline!important;color:var(--red,#E2231A)!important;-webkit-text-fill-color:currentColor!important;padding:6px 1px 6px 14px!important;margin:0 0 0 -12px!important;z-index:7}
 .plotted .plotsrc.mapped sup.fn:hover,.plotted .plotsrc.mapped sup.fn.on{color:var(--red,#E2231A)!important}
 /* Zeichenfläche mit negativem Rand darf nicht durch den Absatz durchschlagen (Josef, 1.11.: Textebene versetzt, Fußnoten flatterten) */
 .plotted:not(span){display:flow-root}
@@ -1468,3 +1468,15 @@ html.calm .sbeye{display:none}
 .modem.nc .mava{border-color:#060}
 html.calm .modem .mava img,html.calm .modem .mava i{animation:none}
 @media (max-width:600px){.modem .box{flex-direction:column;gap:12px}.modem .mava{width:84px}}
+
+/* Josef, 1.11., 10:42: Dialogtexte bei 2560 x 1440 zu groß */
+.sbdlg .txt{font-size:14px}
+.sbdlg .ans{font-size:13.5px}
+.sbdlg .who{font-size:12px}
+@media (max-width:600px){.sbdlg .txt{font-size:14px}}
+/* Serienauftakt: Bild anklickbar (Josef, 10:41) */
+.opener a.openlink{position:absolute;inset:0;display:block;cursor:zoom-in;z-index:0}
+.opener a.openlink img{position:absolute;inset:0}
+
+/* Kontrastmodus von Windows: die unsichtbare Textebene bleibt unsichtbar */
+@media (forced-colors:active){.plotted .plotsrc.vh,.plotted .plotsrc.vh *{forced-color-adjust:none;color:transparent!important;-webkit-text-fill-color:transparent!important}}

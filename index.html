@@ -182,24 +182,30 @@ SONG.start=async function(k){
   catch(e){toast("Song ging nicht: "+String(e&&e.message||e).slice(0,70)+". Inka macht weiter.");SONG.on=false;SONG.track=null;AUD.play().catch(()=>{});render();return;}
   const ms=Math.min(tr.ms||210000,6*60000);
   clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),ms+800);
-  clearInterval(SONG.poll);SONG.poll=setInterval(()=>SONG.check(),4000);
+  clearInterval(SONG.poll);SONG.pausedN=0;SONG.poll=setInterval(()=>SONG.check(),4000);
 };
 SONG.check=async function(){
-  if(!SONG.on)return;if(Date.now()-SONG.started<6000)return;
+  if(!SONG.on)return;const el=Date.now()-SONG.started;if(el<12000)return;
   try{const st=SP.player?await SP.player.getCurrentState():await SP.api("GET","/me/player");
-    if(!st)return;
+    if(!st){if(el>20000)SONG.finish("kein Status");return;}
     const pos=SP.player?st.position:st.progress_ms,dur=SP.player?(st.duration||0):((st.item&&st.item.duration_ms)||0),paused=SP.player?st.paused:!st.is_playing;
-    const uri=SP.player?(st.track_window&&st.track_window.current_track&&st.track_window.current_track.uri):(st.item&&st.item.uri);
-    if((paused&&pos===0)||(uri&&SONG.track&&uri!==SONG.track.uri)||(dur&&pos>=dur-1800))SONG.finish("ende");
+    SONG.last=(paused?"pausiert ":"spielt ")+Math.round((pos||0)/1000)+" s";
+    if(dur&&pos>=dur-2500){SONG.finish("ende");return;}
+    if(paused){SONG.pausedN=(SONG.pausedN||0)+1;if(SONG.pausedN>=3)SONG.finish("steht");}else SONG.pausedN=0;
   }catch(_){}
 };
 SONG.finish=async function(why,stay){
-  if(!SONG.on)return;SONG.on=false;clearTimeout(SONG.timer);clearInterval(SONG.poll);
-  await SP.pause();SONG.track=null;
+  if(!SONG.on)return;SONG.on=false;SONG.pausedN=0;clearTimeout(SONG.timer);clearInterval(SONG.poll);
+  SP.pause();SONG.track=null;
   const c=chapters()[SONG.k];if(c&&AUD.currentTime<c.start+1)AUD.currentTime=c.start+1.02;
   render();meta();
-  if(!stay){try{await AUD.play();}catch(_){toast("Weiter mit Inka: Play drücken.",8000);}}
+  if(!stay)resume();
 };
+/* Weiter mit Inka nach dem Song; klappt das im Hintergrund nicht, beim naechsten Antippen oder Zurueckkehren */
+let needResume=false;
+async function resume(){try{await AUD.play();needResume=false;}catch(_){needResume=true;toast("Weiter mit Inka: einmal auf Play tippen.",10000);render();}}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&needResume)resume();});
+document.addEventListener("click",()=>{if(needResume&&AUD.paused)resume();},true);
 
 /* ---------- Spotify (eigene Anmeldung dieser Seite, Code-Austausch hier im Browser) ---------- */
 const SP={cfg:store.get("spot",{}),player:null,deviceId:"",sdkState:"",sdkP:null};
@@ -245,7 +251,7 @@ SP.sdk=function(){
       pl.addListener("ready",({device_id})=>{SP.deviceId=device_id;SP.player=pl;SP.sdkState="Seite spielt selbst";render();res(pl);});
       pl.addListener("not_ready",()=>{SP.deviceId="";});
       ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
-      pl.addListener("player_state_changed",()=>SONG.check());
+      pl.addListener("player_state_changed",st=>{if(st&&SONG.on){SONG.last=(st.paused?"pausiert ":"spielt ")+Math.round(st.position/1000)+" s";}});
       pl.connect();setTimeout(()=>{if(!SP.player){SP.sdkState="Spotify-App wird ferngesteuert";rej(new Error("Gerät meldet sich nicht"));}},10000);
     }catch(e){rej(e);}};
     if(window.Spotify&&window.Spotify.Player)return go();
@@ -471,7 +477,7 @@ function renderShow(){
   $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round((d.duration||0)/60)+" Min Inka, "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");
   const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
-  let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
+  let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
     '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>';
   h+='<div class="chs">'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</div>';
   h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button></div>';

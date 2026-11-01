@@ -99,6 +99,28 @@ for ch in chapters:
     add(np.zeros(int(SR * 0.9), np.float32))
 
 audio = np.concatenate(pieces)
+
+def lab_ambience(n, sr, seed=7):
+    """Wagners Labor (Josef 1.11.2026): Brummen, Lueftung, Blubbern, seltene Pieptoene. Leise unter der Sprache."""
+    rng = np.random.default_rng(seed); tt = np.arange(n) / sr
+    hum = 0.5 * np.sin(2 * np.pi * 50 * tt) + 0.25 * np.sin(2 * np.pi * 100 * tt) + 0.1 * np.sin(2 * np.pi * 150 * tt)
+    noise = rng.standard_normal(n); k = int(sr * 0.004); vent = np.convolve(noise, np.ones(k) / k, mode="same") * 3.0
+    bub = np.zeros(n); i = 0
+    while i < n:
+        i += int(sr * rng.uniform(0.25, 1.3)); L = int(sr * rng.uniform(0.03, 0.08))
+        if i + L >= n: break
+        f = rng.uniform(250, 700); x = np.arange(L) / sr
+        bub[i:i + L] += np.sin(2 * np.pi * (f + 900 * x) * x) * np.exp(-x * 45) * rng.uniform(0.4, 1.0)
+    beep = np.zeros(n); i = int(sr * rng.uniform(8, 20))
+    while i < n:
+        L = int(sr * 0.11)
+        if i + L >= n: break
+        x = np.arange(L) / sr; beep[i:i + L] += 0.6 * np.sin(2 * np.pi * 1760 * x) * np.minimum(1, (L - np.arange(L)) / (sr * 0.02))
+        i += int(sr * rng.uniform(18, 40))
+    amb = 0.012 * hum + 0.010 * vent + 0.030 * bub + 0.020 * beep
+    return amb.astype(np.float32)
+if os.environ.get("SHOW_AMBIENCE", "lab") == "lab":
+    audio = audio + lab_ambience(len(audio), SR)
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
 subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "atempo=%.3f,loudnorm=I=-20:TP=-2:LRA=11" % SPEED,

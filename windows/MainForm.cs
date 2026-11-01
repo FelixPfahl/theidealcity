@@ -98,7 +98,9 @@ public class MainForm : Form
         cw.NewWindowRequested += (_, e) => { e.Handled = true; Open(e.Uri); };
         cw.PermissionRequested += (_, e) =>
         {
-            if (e.PermissionKind == CoreWebView2PermissionKind.Microphone || e.PermissionKind == CoreWebView2PermissionKind.Autoplay)
+            // Mikrofon (Gespräch mit Inka), Standort (Unterwegs), automatisches Abspielen und Zwischenablage (Schlüssel kopieren)
+            if (e.PermissionKind == CoreWebView2PermissionKind.Microphone || e.PermissionKind == CoreWebView2PermissionKind.Autoplay ||
+                e.PermissionKind == CoreWebView2PermissionKind.Geolocation || e.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
                 e.State = CoreWebView2PermissionState.Allow;
         };
         cw.NavigationCompleted += (_, _) => ReportUpdate(Updater.LastState);

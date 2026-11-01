@@ -135,7 +135,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 17:10 (Spotify-Anmeldung am PC im Browser)";
+const APPV="1.11. 17:15 (Spotify am PC zuverlässig starten)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -493,8 +493,17 @@ SP.play=async function(uri){
     const d2=ds2.find(d=>/computer/i.test(d.type))||ds2[0];if(d2){SONG.dev=d2.id;await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(d2.id),{uris:[uri],position_ms:0});return "app";}}
   if(!dev)throw new Error("Spotify auf dem Handy nicht erreichbar");
   SONG.dev=dev.id;
+  /* Desktop-App (Josef 1.11.2026: Spotify am PC nahm den Befehl an, blieb aber bei 0 s stehen):
+     erst die Wiedergabe auf das Gerät holen, dann abspielen, Start prüfen und einmal nachfassen */
+  if(!dev.is_active){try{await SP.api("PUT","/me/player",{device_ids:[dev.id],play:false});await new Promise(r=>setTimeout(r,1500));}catch(e){diag("uebertragen-fehler",{e:String(e&&e.message||e)});}}
   await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(dev.id),{uris:[uri],position_ms:0});
   try{await SP.api("PUT","/me/player/repeat?state=off&device_id="+encodeURIComponent(dev.id));}catch(_){}
+  for(let i=0;i<2;i++){await new Promise(r=>setTimeout(r,2500));
+    let st=null;try{st=await SP.api("GET","/me/player");}catch(_){}
+    const ok=st&&st.is_playing&&st.item&&st.item.uri===uri;diag("start-pruefung",{i,ok:!!ok,dev:st&&st.device&&st.device.name,playing:!!(st&&st.is_playing)});
+    if(ok)break;
+    try{await SP.api("PUT","/me/player",{device_ids:[dev.id],play:true});await new Promise(r=>setTimeout(r,1200));
+        await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(dev.id),{uris:[uri],position_ms:0});}catch(e){diag("nachfassen-fehler",{e:String(e&&e.message||e)});}}
   return "app";
 };
 SP.pause=async function(){try{if(SONG.via==="seite"&&SP.player)await SP.player.pause();else await SP.api("PUT","/me/player/pause"+(SONG.dev?"?device_id="+encodeURIComponent(SONG.dev):""));}catch(e){diag("pause-fehler",{e:String(e&&e.message||e)});try{await SP.api("PUT","/me/player/pause");}catch(__){}}};

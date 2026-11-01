@@ -75,6 +75,7 @@ h2{font-size:24px;margin:10px 0 10px}h3{font-size:21px;margin:6px 0}
 .it.k-fix .kd,.wl.k-fix b{color:var(--ink)}.it.done .ti,.tk.done .tt>div:first-child{text-decoration:line-through;color:var(--mut)}
 .de{font-size:14px;color:var(--mut)}
 .wbox{border:2px solid var(--blue);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:16px}
+.okb{font-size:13px;color:var(--blue);font-weight:700}.nob{font-size:13px;color:var(--red);font-weight:700}
 .wait{font-size:12px;background:var(--blue);color:#fff;border-radius:8px;padding:1px 6px;font-weight:700;vertical-align:middle}
 .stand{font-weight:400;letter-spacing:0;text-transform:none}
 .tk{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
@@ -345,10 +346,12 @@ const YES_RX=/\b(ja|jo|jep|ok|okay|passt|genau|mach das|mach es|los|klar|einvers
 const NO_RX=/\b(nein|nee|nicht|stopp|stop|warte|halt|abbrechen)\b/i;
 const VC={conv:null,state:"",lastUser:"",log:[],starting:false,summary:"",changes:[]};
 VC.lib=()=>window.ElevenLabsClient&&window.ElevenLabsClient.Conversation;
-VC.ok=p=>p&&p.bestaetigt===true&&YES_RX.test(VC.lastUser)&&!NO_RX.test(VC.lastUser);
+VC.users=[];
+VC.ok=p=>{if(!p||p.bestaetigt!==true)return false;const rec=VC.users.filter(u=>Date.now()-u.t<25000).map(u=>u.x);const last=rec[rec.length-1]||VC.lastUser||"";
+  return YES_RX.test(last)||(rec.some(x=>YES_RX.test(x))&&!/\b(nein|nee|stopp|abbrechen)\b/i.test(last));};
 const entries=()=>(S.doc&&Array.isArray(S.doc.entries))?S.doc.entries:[];
 const findE=k=>{const e=findAny(k);if(!e)return null;return Object.assign({},e,{kind:(k.startsWith("t|")?"task":e.kind)});};
-VC.prompt=function(){return ["Du bist Inka, Josefs persönliche Sekretärin und Moderatorin seiner Morning-Show. Du sprichst Deutsch, duzt Josef, bist sachlich, warm, knapp und mit trockenem Humor. Josef hört dich meist unterwegs über Kopfhörer: kurze Sätze, keine Listen, keine Nummern, keine Links, Uhrzeiten als \"um 9 Uhr 15\". Wiederhole nie den ganzen Tagesplan, Josef kennt ihn aus der Show.",
+VC.prompt=function(){return ["Du bist Inka Schalter, 25, Kunst- und Soziologiestudentin aus Josefs Comic \"The Ideal City\", aufgewachsen in Kothen an der hessischen Grenze, auf der Suche nach Sinn, neugierig, scharfzüngig. Hier bist du Josefs persönliche Sekretärin und moderierst mit dem Professor Wagner Rohrschach seine Morning-Show. Du sprichst Deutsch, duzt Josef, bist sachlich, warm, knapp und mit trockenem Humor. Josef hört dich meist unterwegs über Kopfhörer: kurze Sätze, keine Listen, keine Nummern, keine Links, Uhrzeiten als \"um 9 Uhr 15\". Wiederhole nie den ganzen Tagesplan, Josef kennt ihn aus der Show.",
 "","DEINE AUFGABE IM GESPRÄCH",
 "1. Nach der Show eröffnest du mit der ersten offenen Frage (OFFENE PUNKTE). Ruft Josef dich tagsüber an, fragst du, was er braucht, und beantwortest Fragen zu Tag, Woche, Aufgaben und Fristen aus dem Kontext. Eine Frage pro Redebeitrag.",
 "2. Du klärst, was Josef entscheidet, fasst die Entscheidung in einem Satz zusammen und fragst: Soll ich das so machen? Erst nach einem klaren Ja rufst du das passende Werkzeug mit bestaetigt=true auf. Ohne Ja kein Werkzeug.",
@@ -376,7 +379,7 @@ VC.context=function(){
     "\n\nOFFENE PUNKTE (in dieser Reihenfolge fragen):\n"+(q.map((x,i)=>(i+1)+". "+x).join("\n")||"- keine, frag Josef, ob er etwas ändern möchte");
 };
 const NOTYET="Noch nicht bestätigt. Erst Josef fragen und sein Ja abwarten.";
-async function aktion(tool,args,text){try{await sendSek("aktion",{tool,args,text});VC.changes.push(text);return "Ans Sekretariat gegeben: "+text+". Wird beim nächsten Stundencheck eingetragen.";}catch(e){return "Senden ging nicht ("+String(e&&e.message||e)+"). Sag Josef, er soll es im Sekretär-Chat sagen.";}}
+async function aktion(tool,args,text){try{const id=await sendSek("aktion",{tool,args,text});const l=pendList();l.push({id,t:Date.now(),key:args&&args.key||"",tool,args,text,via:"Inka"});store.set("pend",l.slice(-80));VC.changes.push(text);return "Ans Sekretariat gegeben: "+text+". Wird beim nächsten Stundencheck eingetragen.";}catch(e){return "Senden ging nicht ("+String(e&&e.message||e)+"). Sag Josef, er soll es im Sekretär-Chat sagen.";}}
 VC.tools={
   verschieben:async p=>{const en=findE(String(p.key||""));if(!en)return "Eintrag nicht gefunden.";if(!VC.ok(p))return NOTYET;
     if(!["plan","task"].includes(en.kind))return "Das ist ein fester Eintrag und wird nicht verschoben.";
@@ -394,7 +397,7 @@ VC.start=async function(auto){
   if(!VC.lib()){toast("Sprachchat-Skript nicht geladen. Seite neu laden.");return;}
   if(!S.doc&&!APP.data){toast("Erst müssen die Daten geladen sein.");return;}
   if(SONG.on)await SONG.finish("chat",true);
-  VC.starting=true;VC.state="Verbindet";VC.lastUser="";VC.log=[];VC.changes=[];VC.summary="";VC.ui(true);
+  VC.started=Date.now();VC.starting=true;VC.state="Verbindet";VC.lastUser="";VC.log=[];VC.changes=[];VC.summary="";VC.ui(true);
   try{
     try{const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});st.getTracks().forEach(t=>t.stop());}catch(e){throw {code:"mic",e};}
     if(!AUD.paused)AUD.pause();
@@ -407,7 +410,7 @@ VC.start=async function(auto){
       onDisconnect:()=>{VC.conv=null;VC.state="";VC.ui();VC.after();},
       onError:m=>{VC.state="Fehler";toast("Sprachchat: "+String((m&&m.message)||m).slice(0,90));VC.ui();},
       onModeChange:m=>{VC.state=(m&&m.mode==="speaking")?"Inka spricht":"Inka hört zu";VC.ui();},
-      onMessage:m=>{if(!m)return;const txt=String(m.message||"");if(m.source==="user"){VC.lastUser=txt;
+      onMessage:m=>{if(!m)return;const txt=String(m.message||"");if(m.source==="user"){VC.lastUser=txt;VC.users.push({t:Date.now(),x:txt});VC.users=VC.users.slice(-6);
           if(/\b(das ist alles|das war'?s|das wars|tschüss|auflegen)\b/i.test(txt)){clearTimeout(VC.byeT);VC.byeT=setTimeout(()=>{if(VC.conv)VC.stop();},25000);}}
         VC.log.push((m.source==="user"?"Du: ":"Inka: ")+txt);VC.log=VC.log.slice(-80);VC.ui();}
     });
@@ -427,7 +430,9 @@ VC.ui=function(open){
   const box=$("#vtl");if(box)box.scrollTop=box.scrollHeight;
 };
 VC.after=function(){if(VC.afterDone)return;VC.afterDone=true;setTimeout(()=>{VC.afterDone=false;},1500);
-  if(VC.summary)toast("Inka: "+VC.summary.slice(0,140),7000);
+  if(VC.log.length>1){const ch=pendList().filter(p=>p.via==="Inka"&&p.t>(VC.started||0));
+    openSheet('<h3>Gesprächsprotokoll</h3>'+(VC.summary?'<p>'+esc(VC.summary)+'</p>':"")+'<div class="k">Aufträge</div>'+(ch.length?ch.map(p=>'<div class="li">'+esc(p.text)+'<br>'+pStatus(p)+'</div>').join(""):'<div class="small">Keine Aufträge.</div>')+
+      '<details><summary class="small">Ganzes Gespräch</summary>'+VC.log.map(l=>'<div class="de">'+esc(l)+'</div>').join("")+'</details><div class="small">Die Bestätigung (✓) kommt nach dem nächsten Stundencheck, du siehst sie auf „Jetzt“ im Protokoll.</div>');}
   if(VC.log.length)sendSek("gespraech",{summary:VC.summary||"",log:VC.log.slice(-80),changes:VC.changes}).catch(()=>{});
   render();};
 
@@ -557,9 +562,10 @@ function renderShow(){
   $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};
   el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
 }
+function protoHtml(hours){const all=pendList().filter(x=>x.t>Date.now()-hours*3600e3).sort((a,b)=>b.t-a.t);
+  return all.length?'<div class="card"><div class="k">Protokoll · ans Sekretariat</div>'+all.map(x=>'<div class="li"><span class="small">'+hm(new Date(x.t))+(x.via?" · "+esc(x.via):"")+'</span><div>'+esc(x.text)+'</div>'+pStatus(x)+(QUIT[x.id]&&QUIT[x.id].text&&QUIT[x.id].ok?'<div class="de">'+esc(QUIT[x.id].text)+'</div>':"")+'</div>').join("")+'<div class="small">Eingetragen wird beim Stundencheck (:23), dann erscheint hier ✓.</div></div>':"";}
 function renderSent(){
-  const el=$("#sent");const all=pendList().filter(x=>x.t>Date.now()-24*3600e3);
-  el.innerHTML=all.length?'<div class="card"><div class="k">Ans Sekretariat gegeben</div>'+all.map(x=>'<div class="dep" style="padding:6px 0"><span class="small" style="min-width:46px">'+hm(new Date(x.t))+'</span><span>'+esc(x.text)+' <span class="wait">wartet</span></span></div>').join("")+'<div class="small">Wird beim nächsten Stundencheck eingetragen.</div></div>':"";
+  const el=$("#sent");el.innerHTML=protoHtml(24);
 }
 /* ================= App: Daten fuer 7 Tage, Reiter, Aktionen ================= */
 const APP={data:null,err:"",loading:false};
@@ -603,10 +609,22 @@ function findAny(key){return (APP.data&&APP.data.entries||[]).find(e=>e.key===ke
 
 /* Auftraege ans Sekretariat, mit "wartet"-Markierung bis zur naechsten Datenlieferung */
 function pendList(){return store.get("pend",[]);}
-function prunePend(){const made=(APP.data&&APP.data.made)||0;store.set("pend",pendList().filter(p=>p.t>made-60000&&Date.now()-p.t<36*3600e3));}
-function pendFor(key){return pendList().filter(p=>p.key===key);}
+function prunePend(){store.set("pend",pendList().filter(p=>Date.now()-p.t<36*3600e3));}
+function pendFor(key){const made=(APP.data&&APP.data.made)||0;return pendList().filter(p=>p.key===key&&!(QUIT[p.id]&&QUIT[p.id].ok&&made>p.t));}
+/* Quittungen des Sekretariats (verschluesselt ueber denselben Kanal) */
+const QUIT=store.get("quit",{});
+async function loadQuit(){const tp=topic();if(!tp)return;
+  try{const r=await fetch("https://ntfy.sh/"+tp+"/json?poll=1&since=36h");const txt=await r.text();let ch=false;
+    for(const line of txt.split("\n")){if(!line.trim())continue;let m;try{m=JSON.parse(line);}catch(_){continue;}if(m.event!=="message")continue;
+      let body=m.message;if(m.attachment&&m.attachment.url){try{body=await (await fetch(m.attachment.url)).text();}catch(_){continue;}}
+      let env;try{env=JSON.parse(body);}catch(_){continue;}if(!env.ct)continue;
+      let d;try{d=await openEnv(env);}catch(_){continue;}
+      if(d.from==="sekretariat"&&d.kind==="quittung"&&d.re&&!QUIT[d.re]){QUIT[d.re]={ok:d.ok!==false,text:d.text||"",t:d.t||Date.now()};ch=true;}}
+    if(ch){store.set("quit",QUIT);render();}
+  }catch(_){}}
+function pStatus(p){const q=QUIT[p.id];return q?(q.ok?'<span class="okb">✓ eingetragen</span>':'<span class="nob">✗ '+esc(q.text||"nicht möglich")+'</span>'):'<span class="wait">wartet</span>';}
 async function auftrag(tool,args,text,key){
-  try{await sendSek("aktion",{tool,args,text});const l=pendList();l.push({t:Date.now(),key:key||"",tool,args,text});store.set("pend",l.slice(-60));toast("Ans Sekretariat: "+text+". Wird beim nächsten Stundencheck eingetragen.",5000);closeSheet();render();return true;}
+  try{const id=await sendSek("aktion",{tool,args,text});const l=pendList();l.push({id,t:Date.now(),key:key||"",tool,args,text,via:"App"});store.set("pend",l.slice(-80));toast("Ans Sekretariat: "+text+". Wird beim nächsten Stundencheck eingetragen.",5000);closeSheet();render();return true;}
   catch(e){toast("Senden ging nicht: "+String(e&&e.message||e).slice(0,60),7000);return false;}
 }
 const addDays=(day,n)=>ymd(addD(dOf(day),n));
@@ -807,11 +825,11 @@ $("#hinka").onclick=()=>VC.start();
 $("#mic").onclick=()=>sheetDiktat();
 
 /* ---------- Start ---------- */
-(async()=>{await SP.handle();await permCheck();render();await Promise.all([loadShow(),loadApp()]);
+(async()=>{await SP.handle();await permCheck();render();await Promise.all([loadShow(),loadApp()]);loadQuit();setInterval(()=>{if(!document.hidden)loadQuit();},180000);
   if(D.tripNow()){D.open=true;D.locate();render();}
   document.addEventListener("visibilitychange",()=>{if(document.hidden||SONG.on||VC.conv)return;
     if(AUD.paused){const day=ymd(new Date());if(!S.doc||S.doc.day<day||new Date().getHours()>=17)loadShow();}
-    if(!APP.data||Date.now()-(APP.lastLoad||0)>20*60000)loadApp();});
+    if(!APP.data||Date.now()-(APP.lastLoad||0)>20*60000){loadApp();loadQuit();}});
   setInterval(()=>{if(!document.hidden)renderJetztLight();},30000);
 })();
 </script>

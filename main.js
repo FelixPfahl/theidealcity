@@ -27,6 +27,22 @@ function driveFolders() {
   driveCache = out; driveAt = Date.now();
   return out;
 }
+/* 00_Schule_heute (füllt der Morgenlauf): die Ordner <Klasse>\heute und der Ordner selbst */
+function heuteFolders() {
+  const out = [];
+  for (const d of driveFolders()) {
+    const h = path.join(path.dirname(d), "00_Schule_heute");
+    try {
+      if (!fs.existsSync(h)) continue;
+      for (const k of fs.readdirSync(h)) {
+        const sub = path.join(h, k, "heute");
+        try { if (fs.statSync(sub).isDirectory()) out.push(sub); } catch (e) {}
+      }
+      out.push(h);
+    } catch (e) {}
+  }
+  return out;
+}
 /* Folien-Datei des Tages kommt von selbst: GitHub (Zweig pult, folien/Atelier_Folien_aktuell.html), beim Start und dann stündlich geprüft */
 const FOLIEN_URL = "https://raw.githubusercontent.com/FelixPfahl/theidealcity/pult/folien/Atelier_Folien_aktuell.html";
 function autoDir() { const d = path.join(app.getPath("userData"), "folien"); try { fs.mkdirSync(d, { recursive: true }); } catch (e) {} return d; }
@@ -230,12 +246,14 @@ ipcMain.handle("notizen", (e, list) => {
 ipcMain.handle("pdf", (e, muster) => {
   try {
     const re = new RegExp(String(muster).slice(0, 200), "i");
-    /* Reihenfolge: Schultagsordner (füllt der Morgenlauf), dann die Klassenordner in Schule_Material, dann Downloads, Desktop, Dokumente */
-    const dirs = driveFolders().slice();
+    /* Reihenfolge (Josef, 01.11.2026): 00_Schule_heute (Klasse\heute), dann die Klassenordner in Schule_Material,
+       dann 00_dateien_für_den_schultag, dann Downloads, Desktop, Dokumente */
+    const dirs = heuteFolders();
     for (const d of driveFolders()) {
       const root = path.dirname(d);
       try { for (const n of fs.readdirSync(root)) { const f = path.join(root, n); if (!/^(00_|_alt|Tagesmemos)/i.test(n) && !/_alt/i.test(n) && fs.statSync(f).isDirectory()) dirs.push(f); } } catch (err) {}
     }
+    for (const d of driveFolders()) if (!dirs.includes(d)) dirs.push(d);
     for (const d of folders()) if (!dirs.includes(d)) dirs.push(d);
     let best = null;
     for (const d of dirs) {

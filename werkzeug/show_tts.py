@@ -19,13 +19,16 @@ src, out, keyfile = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
 MODEL = os.environ.get("EL_MODEL", "eleven_v3")
 # Tempo je Stimme (Josef 1.11.2026: schneller, Inka etwas langsamer als Wagner)
-SPEEDS = {"inka": float(os.environ.get("SPEED_INKA", "1.15")), "wagner": float(os.environ.get("SPEED_WAGNER", "1.25")), "sigma": float(os.environ.get("SPEED_SIGMA", "1.15"))}
+SPEEDS = {"inka": float(os.environ.get("SPEED_INKA", "1.15")), "wagner": float(os.environ.get("SPEED_WAGNER", "1.25")), "sigma": float(os.environ.get("SPEED_SIGMA", "1.15")), "xae": float(os.environ.get("SPEED_XAE", "1.2"))}
 VOICES = {"inka": os.environ.get("EL_VOICE_INKA", "S87WJpstXs0Ge2ukRiXJ"),
           "wagner": os.environ.get("EL_VOICE_WAGNER", "qsEcR8IqZUmxT1rxm9G9"),
-          "sigma": os.environ.get("EL_VOICE_SIGMA", "JudZUClAOU1jP3wA2eDG")}
+          "sigma": os.environ.get("EL_VOICE_SIGMA", "JudZUClAOU1jP3wA2eDG"),
+          "xae": os.environ.get("EL_VOICE_XAE", "7bAxGs7snwywohl5VytO")}  # X Æ A-13: jung, glatt, ueberheblich (Josef 1.11.2026)
 SETTINGS = {"inka": {"stability": 0.5, "similarity_boost": 0.8, "style": 0.35},
             "wagner": {"stability": 0.45, "similarity_boost": 0.8, "style": 0.45},
-            "sigma": {"stability": 0.6, "similarity_boost": 0.7, "style": 0.2}}
+            "sigma": {"stability": 0.6, "similarity_boost": 0.7, "style": 0.2},
+            "xae": {"stability": 0.4, "similarity_boost": 0.8, "style": 0.55}}
+XAE_FX = "highpass=f=300,lowpass=f=3400,acompressor=threshold=0.2:ratio=4"  # Telefonstimme
 SIGMA_FX = "asetrate=44100*1.12,aresample=44100,atempo=0.93,aecho=0.8:0.6:28:0.25,chorus=0.6:0.8:40:0.3:0.25:2,highpass=f=180"
 KEY = open(keyfile).read().strip()
 SR = 24000
@@ -48,7 +51,7 @@ for line in open(src, encoding="utf-8").read().splitlines():
     if cur is None or not line.strip():
         if cur is not None: cur["blocks"].append(None)  # Absatzgrenze
         continue
-    sm = re.match(r"^\s*(INKA|WAGNER|SIGMA|KLANG)\s*:\s*(.*)$", line, re.I)
+    sm = re.match(r"^\s*(INKA|WAGNER|SIGMA|XAE|KLANG)\s*:\s*(.*)$", line, re.I)
     if sm:
         cur["blocks"].append([sm.group(1).lower(), sm.group(2)])
     else:
@@ -87,9 +90,16 @@ def to_wav(path, fx=None, speed=1.0):
 # Klaenge (Josef 1.11.2026: kleine Soundscape zum Einstieg). Zeile "KLANG: labor 6" | "KLANG: neon" | "KLANG: summen 2" | "KLANG: stille 1"
 def soundscape(spec):
     parts = spec.lower().split(); kind = parts[0] if parts else "labor"
-    sec = float(parts[1]) if len(parts) > 1 else {"labor": 6, "neon": 2.6, "summen": 2.0, "stille": 1.0}.get(kind, 3)
+    sec = float(parts[1]) if len(parts) > 1 else {"labor": 6, "neon": 2.6, "summen": 2.0, "stille": 1.0, "gojira": 7, "wind": 5, "kraehen": 4, "zug": 6}.get(kind, 3)
     n = int(SR * sec); tt = np.arange(n) / SR; rng = np.random.default_rng(len(spec) * 31 + n)
     if kind == "stille": return np.zeros(n, np.float32)
+    if kind == "telefon":  # zweimal Klingeln
+        a = np.zeros(n)
+        for st in (0.2, 1.8):
+            m = (tt >= st) & (tt < st + 0.9)
+            a[m] = (np.sin(2 * np.pi * 440 * tt[m]) + np.sin(2 * np.pi * 480 * tt[m])) * 0.5 * (np.sin(2 * np.pi * 20 * tt[m]) > 0)
+        rms = float(np.sqrt(np.mean(a ** 2))) or 1.0
+        return (a * (0.035 / rms)).astype(np.float32)
     if kind == "labor":
         fade = np.minimum(1, tt / (sec * 0.6))
         hum = (0.5 * np.sin(2*np.pi*50*tt) + 0.3 * np.sin(2*np.pi*100*tt) + 0.12 * np.sin(2*np.pi*150*tt)) * fade
@@ -119,6 +129,45 @@ def soundscape(spec):
         buzz(int(SR*0.15), int(SR*0.07), 0.5); buzz(int(SR*0.55), int(SR*0.14), 0.55); buzz(int(SR*1.05), n, 0.35)
         a *= np.where(tt > 1.05, np.maximum(0.35, 1 - (tt - 1.05) / 1.2), 1)
         a *= 0.12
+    elif kind == "gojira":  # fernes, riesiges Wesen: tiefes Grollen, langsamer Ruf, Erde
+        env = np.minimum(1, tt / 1.5) * np.minimum(1, (sec - tt) / 1.5)
+        k = int(SR * 0.02); rum = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same") * 4
+        f0 = 38 + 6 * np.sin(2 * np.pi * 0.11 * tt); ph = 2 * np.pi * np.cumsum(f0) / SR
+        call = np.zeros(n); c0 = int(SR * sec * 0.35); L = min(n - c0, int(SR * min(3.5, sec * 0.5)))
+        if L > 0:
+            x = np.arange(L) / SR; fc = 70 + 25 * np.sin(np.pi * x / (L / SR)) ** 2
+            pc = 2 * np.pi * np.cumsum(fc) / SR
+            call[c0:c0 + L] = (np.sin(pc) + 0.5 * np.sin(2 * pc) + 0.25 * np.sin(3.01 * pc)) * np.sin(np.pi * x / (L / SR)) ** 1.5
+        a = env * (0.6 * rum + 0.5 * np.sin(ph)) + 0.9 * call
+        a = np.convolve(a, np.ones(40) / 40, mode="same")
+    elif kind == "wind":
+        k = int(SR * 0.003); w = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same")
+        g = 0.6 + 0.4 * np.sin(2 * np.pi * 0.17 * tt + 1) * np.sin(2 * np.pi * 0.05 * tt)
+        a = w * g * np.minimum(1, np.minimum(tt, sec - tt) / 1.0)
+    elif kind == "kraehen":
+        a = np.zeros(n); i = int(SR * 0.3)
+        while i < n:
+            L = int(SR * rng.uniform(0.22, 0.38))
+            if i + L >= n: break
+            x = np.arange(L) / SR; f = rng.uniform(520, 760) * (1 - 0.25 * x / (L / SR))
+            ph = 2 * np.pi * np.cumsum(f) / SR
+            tone = sum(np.sin(h * ph) / h for h in (1, 2, 3, 4, 5)) + 0.8 * rng.standard_normal(L)
+            tone = np.convolve(tone, np.ones(3) / 3, mode="same")
+            a[i:i + L] += tone * np.sin(np.pi * x / (L / SR)) ** 0.6 * rng.uniform(0.4, 1.0)
+            i += L + int(SR * rng.uniform(0.15, 0.9))
+        k = int(SR * 0.004); a += 0.08 * np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same")
+    elif kind == "zug":  # gleichmaessiges Schienenrattern, leises Rauschen
+        k = int(SR * 0.006); hiss = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same")
+        clk = np.zeros(n); beat = 0.0
+        while True:
+            for off in (0.0, 0.11):
+                j = int(SR * (beat + off)); L = int(SR * 0.05)
+                if j + L >= n: break
+                x = np.arange(L) / SR; clk[j:j + L] += np.sin(2 * np.pi * 90 * x) * np.exp(-x * 60) + 0.3 * rng.standard_normal(L) * np.exp(-x * 90)
+            beat += 0.85
+            if int(SR * beat) >= n: break
+        a = 0.5 * hiss + clk
+        a *= np.minimum(1, np.minimum(tt, sec - tt) / 1.0)
     else:  # summen: Sigma, wie eine Fliege am Glas
         f = 210 + 25 * np.sin(2*np.pi*7*tt) + 15 * rng.standard_normal(n).cumsum() / np.sqrt(n)
         ph = 2 * np.pi * np.cumsum(f) / SR; saw = 2 * ((ph / (2*np.pi)) % 1) - 1
@@ -127,7 +176,7 @@ def soundscape(spec):
         a = np.convolve(a, np.ones(6) / 6, mode="same")
     a = np.clip(a, -0.95, 0.95)
     rms = float(np.sqrt(np.mean(a ** 2))) or 1.0
-    target = {"labor": 0.045, "neon": 0.05, "summen": 0.03}.get(kind, 0.04)
+    target = {"labor": 0.045, "neon": 0.05, "summen": 0.03, "gojira": 0.06, "wind": 0.035, "kraehen": 0.035, "zug": 0.04}.get(kind, 0.04)
     return (a * (target / rms)).astype(np.float32)
 
 t0 = time.time(); pieces = []; meta = []; t = 0.0; chars = 0; idx = 0
@@ -149,7 +198,7 @@ for ch in chapters:
             add(soundscape(text)); prev = None; continue
         if prev is not None: add(np.zeros(int(SR * (0.25 if sp != prev else 0.45)), np.float32))
         mp3, n = tts(sp, text, idx); idx += 1; chars += n
-        add(to_wav(mp3, SIGMA_FX if sp == "sigma" else None, SPEEDS[sp])); prev = sp
+        add(to_wav(mp3, SIGMA_FX if sp == "sigma" else (XAE_FX if sp == "xae" else None), SPEEDS[sp])); prev = sp
     add(np.zeros(int(SR * 0.9), np.float32))
 
 audio = np.concatenate(pieces)
@@ -178,13 +227,13 @@ if os.environ.get("SHOW_AMBIENCE", "lab") == "lab":
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
 subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "loudnorm=I=-20:TP=-2:LRA=11",
-                "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart", mp4], check=True)
+                "-c:a", "aac", "-b:a", os.environ.get("SHOW_BITRATE", "64k"), "-movflags", "+faststart", mp4], check=True)
 os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],
                            capture_output=True, text=True).stdout.strip() or t)
 if abs(dur - t) > 3: sys.exit("Audiolänge passt nicht: %.1f statt %.1f" % (dur, t))
 info = {"duration": round(t, 1), "chapters": meta, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
         "elevenChars": chars, "songs": sum(1 for m in meta if m["type"] == "song")}
-if info["sizeBytes"] > 15 * 1024 * 1024: sys.exit("Datei über 15 MB")
+if info["sizeBytes"] > int(os.environ.get("SHOW_MAXMB", "15")) * 1024 * 1024: sys.exit("Datei zu groß")
 json.dump(info, open(os.path.join(out, "show.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 print(json.dumps(info, ensure_ascii=False))

@@ -127,7 +127,7 @@ input[type=range]{border:0;padding:0;accent-color:var(--blue)}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 08:45 (Bildschirm bleibt an, Spotify-App bei dunklem Bildschirm)";
+const APPV="1.11. 10:00 (Show-Auswahl, Neue Show erstellen)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -167,17 +167,25 @@ async function fetchDoc(day){
   if(r.status===404)return null;if(!r.ok)throw new Error("Daten "+r.status);
   return await openEnv(await r.json());
 }
+/* Mehrere Shows an einem Tag (Josef 1.11.2026: Fruehstuecksshow und Fahrt-Show waehlbar). Index d/shows.json */
+S.shows=[];S.dayShows=[];
+async function loadIndex(){try{const r=await fetch(RAW+"d/shows.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)return [];const j=await openEnv(await r.json());return Array.isArray(j.shows)?j.shows:[];}catch(_){return [];}}
+const showName=x=>x.title||(x.slot?x.slot.charAt(0).toUpperCase()+x.slot.slice(1):"Morning-Show");
 async function loadShow(){
   if(!KEY.raw){S.err="";render();return;}
   const now=new Date(),today=ymd(now),tom=ymd(addD(now,1));
   const order=now.getHours()>=17?[tom,today]:[today];
   S.loading="Show wird geladen";render();
   try{
-    let doc=null;
-    for(const d of order){doc=await fetchDoc(d);if(doc)break;}
+    let doc=null;S.shows=await loadIndex();
+    for(const d of order){
+      const list=S.shows.filter(x=>x.day===d);S.dayShows=list;
+      if(list.length){const want=store.get("showsel:"+d,"");const pick=list.find(x=>x.id===want)||list[0];doc=await fetchDoc(pick.id);if(doc){doc.id=doc.id||pick.id;break;}}
+      doc=await fetchDoc(d);if(doc){doc.id=doc.id||d;S.dayShows=[];break;}
+    }
     S.loading="";
     if(!doc){S.doc=null;S.err="Für heute liegt noch keine Show hier. Der Morgenlauf legt sie gegen 4:30 Uhr ab.";render();return;}
-    if(!S.doc||S.doc.day!==doc.day||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
+    if(!S.doc||S.doc.day!==doc.day||S.doc.id!==doc.id||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
     S.err="";render();
   }catch(e){S.loading="";S.err=String(e&&e.message||e)==="kein Schlüssel"?"":"Laden ging nicht: "+String(e&&e.message||e).slice(0,80)+". Schlüssel-Link noch einmal öffnen?";render();}
 }
@@ -185,7 +193,7 @@ async function ensureAudio(){
   if(S.audioUrl)return true;if(!S.doc||!S.doc.audio)return false;
   S.loading="Audio wird geladen";render();
   try{
-    const r=await fetch(RAW+"d/"+S.doc.day+".bin?t="+(S.doc.published||0));if(!r.ok)throw new Error("Audio "+r.status);
+    const r=await fetch(RAW+"d/"+(S.doc.id||S.doc.day)+".bin?t="+(S.doc.published||0));if(!r.ok)throw new Error("Audio "+r.status);
     const buf=new Uint8Array(await r.arrayBuffer());const k=await cryptoKey();
     const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:buf.slice(0,12)},k,buf.slice(12));
     S.audioUrl=URL.createObjectURL(new Blob([pt],{type:"audio/mp4"}));AUD.src=S.audioUrl;S.loading="";render();return true;
@@ -239,7 +247,7 @@ AUD.addEventListener("timeupdate",()=>{
 AUD.addEventListener("play",()=>{KEEP.on();render();meta();});
 AUD.addEventListener("pause",()=>{render();if(!SONG.on&&document.hidden&&!AUD.ended)diag("inka-angehalten",{t:Math.round(AUD.currentTime),vis:document.visibilityState});});
 ["stalled","waiting","error","suspend"].forEach(ev=>AUD.addEventListener(ev,()=>{if(!AUD.paused&&ev!=="suspend"||ev==="error")diag("inka-"+ev,{t:Math.round(AUD.currentTime),vis:document.visibilityState,rs:AUD.readyState});}));
-AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;render();if(store.get("autochat",true))setTimeout(()=>VC.start(true),900);});
+AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;render();if(store.get("autochat",true)&&!(S.doc&&S.doc.nochat))setTimeout(()=>VC.start(true),900);});
 function meta(){try{if(!("mediaSession" in navigator))return;const c=chapters()[S.ch];
   navigator.mediaSession.metadata=new MediaMetadata({title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Morning-Show"),artist:SONG.on&&SONG.track?SONG.track.artist:"Inka",album:"Morning-Show "+(S.doc?S.doc.day:"")});}catch(_){}}
 try{if("mediaSession" in navigator){
@@ -619,24 +627,27 @@ setInterval(()=>{if(SONG.on)bar();},1000);
 function renderShow(){
   const el=$("#show");
   if(!KEY.raw){el.innerHTML="";return;}
-  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Morning-Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button></div></div>';$("#reload").onclick=()=>loadShow();return;}
+  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Morning-Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button><button id="pnew">Neue Show erstellen</button></div></div>';$("#reload").onclick=()=>loadShow();$("#pnew").onclick=()=>sheetShowOrder();return;}
   const d=S.doc,dd=new Date(d.day+"T12:00:00"),isTom=d.day!==ymd(new Date());
   $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
   $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round(totalSec()/60)+" Min, davon "+((d.songs||[]).length)+" Songs"+(d.made?" · Fassung "+hm(new Date(d.made)):"")+(d.weather&&d.weather.short?" · "+d.weather.short:"");
   const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
-  let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
+  let h='';
+  if(S.dayShows.length>1)h+='<div class="chips" style="margin-bottom:8px">'+S.dayShows.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-showsel="'+esc(x.id)+'">'+esc(showName(x))+(x.duration?' · '+Math.round(x.duration/60)+' Min':'')+'</button>').join("")+'</div>';
+  h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
     '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>';
   h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
-  h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button></div>';
+  h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button><button id="pnew">Neue Show erstellen</button></div>';
   if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
   el.innerHTML=h;bar();
   $("#chdet").addEventListener("toggle",e=>{S.chOpen=e.target.open;});
   $("#pp").onclick=()=>{if(!AUD.paused||SONG.on)pauseShow();else playShow();};
-  $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();
+  $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();$("#pnew").onclick=()=>sheetShowOrder();
   $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};
   el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
+  el.querySelectorAll("[data-showsel]").forEach(n=>n.onclick=()=>{if(n.dataset.showsel===d.id)return;pauseShow();store.set("showsel:"+d.day,n.dataset.showsel);S.doc=null;if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";}AUD.removeAttribute("src");loadShow();});
 }
 function protoHtml(hours){const all=pendList().filter(x=>x.t>Date.now()-hours*3600e3).sort((a,b)=>b.t-a.t);
   return all.length?'<div class="card"><div class="k">Protokoll · ans Sekretariat</div>'+all.map(x=>'<div class="li"><span class="small">'+hm(new Date(x.t))+(x.via?" · "+esc(x.via):"")+'</span><div>'+esc(x.text)+'</div>'+pStatus(x)+(QUIT[x.id]&&QUIT[x.id].text&&QUIT[x.id].ok?'<div class="de">'+esc(QUIT[x.id].text)+'</div>':"")+'</div>').join("")+'<div class="small">Eingetragen wird beim Stundencheck (:23), dann erscheint hier ✓.</div></div>':"";}
@@ -831,6 +842,7 @@ function renderUeberblick(){
     '<div class="si"><span>Gespräch nach der Show</span><button id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</button></div>'+
     '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
     '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
+    '<div class="si"><span>Neue Show erstellen</span><button class="pri" id="fnew">bestellen</button></div>'+
     '<div class="si"><span>App aktualisieren (neueste Fassung)</span><button class="pri" id="fupd">aktualisieren</button></div>'+
     '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
   h+='<div class="small" style="margin:8px 0 20px">App-Stand: '+esc(APPV)+'</div>';
@@ -839,6 +851,7 @@ function renderUeberblick(){
   $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",true));render();};
   $("#fset").onclick=()=>{store.set("showSetup",true);setTab("jetzt");};
   $("#frel").onclick=()=>{loadApp();loadShow();toast("Lade neu …");};
+  $("#fnew").onclick=()=>sheetShowOrder();
   $("#fupd").onclick=()=>{toast("Lade neueste Fassung …");setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
 }
 
@@ -876,6 +889,49 @@ function sheetDiktat(){
     '<div class="row"><button id="dkmic">● Aufnahme</button><button class="pri" id="dkgo">Senden</button></div><div class="small" id="dkst"></div>');
   $("#dkgo").onclick=()=>{const tx=$("#dk").value.trim();if(!tx){toast("Noch kein Text.");return;}auftrag("notiz",{text:tx,tag:DIK.tag},"Notiz ("+DIK.tag+"): "+tx.slice(0,60),"");};
   $("#dkmic").onclick=()=>dikStart();dikStart();
+}
+/* ---------- Neue Show bestellen (Josef 1.11.2026): Fragen zum Antippen, Empfehlung vorausgewaehlt ---------- */
+const BO_Q=[
+  {k:"anlass",q:"Wofür ist die Show?",o:["Morning-Show","Fahrt","Lauf","Abend","Wochenende","Anderes"]},
+  {k:"datum",q:"Für welchen Tag?",o:["Heute","Morgen","Übermorgen","Datum wählen"]},
+  {k:"laenge",q:"Wie lang insgesamt, mit Songs?",o:["30 Min","15 Min","60 Min","90 Min","120 Min"]},
+  {k:"thema",q:"Durchgehendes Thema?",o:["Der Tag und die Termine","Die Reise","Die Ideale Stadt","Gojira-Saga","Kunstgeschichte","Kein festes Thema"]},
+  {k:"geschichte",q:"Eine Geschichte?",o:["Fortsetzungsgeschichte in Folgen","Eine einzelne Geschichte","Keine Geschichte"]},
+  {k:"figuren",q:"Wer ist dabei? (mehrere möglich)",o:["Inka","Wagner","Sigma","X Æ A-13","Gojira (Geräusche)"],multi:true,def:["Inka","Wagner","Sigma"]},
+  {k:"songs",q:"Wie viel Musik?",o:["Halb-halb","Mehr Musik","Mehr Sprache","Keine Songs"]},
+  {k:"ton",q:"Ton?",o:["Wie im Comic","Heiterer","Ernster"]},
+  {k:"tiefe",q:"Wie philosophisch?",o:["Anspruchsvoll, aber hörbar","Richtig tief","Leicht"]},
+  {k:"ertappt",q:"Ertappt-Szenen von Sigma und Wagner?",o:["Nach jedem 2. Song","Nach fast jedem Song","Selten","Keine"]},
+  {k:"klaenge",q:"Klänge und Atmosphäre?",o:["Viel","Normal","Wenig"]},
+  {k:"nachrichten",q:"Perlentaucher?",o:["Kurz","Ausführlich","Weglassen"]},
+  {k:"kunst",q:"Kunst-Rubrik?",o:["Ja","Comic-Rubrik dazu","Nein"]},
+  {k:"aufgaben",q:"Zeichenaufgaben?",o:["Nein","Ja"]}
+];
+const BO={a:{}};
+function boDefaults(){BO.a={};BO_Q.forEach(x=>{BO.a[x.k]=x.multi?(x.def||[x.o[0]]).slice():x.o[0];});BO.a.datum=new Date().getHours()>=12?"Morgen":"Heute";BO.a.datumWert="";BO.a.start="";}
+function boHtml(){
+  return '<h3>Neue Show erstellen</h3><div class="small">Antippen, die Empfehlung ist schon gewählt. Fertig meist 30 bis 60 Minuten nach dem Absenden, du bekommst eine Nachricht.</div>'+
+    BO_Q.map(x=>'<div class="k" style="margin-top:14px">'+esc(x.q)+'</div><div class="chips">'+x.o.map(o=>{const on=x.multi?BO.a[x.k].includes(o):BO.a[x.k]===o;return '<button class="chip'+(on?' on':'')+'" data-bo="'+esc(x.k)+'|'+esc(o)+'">'+esc(o)+'</button>';}).join("")+'</div>'+
+      (x.k==="datum"&&BO.a.datum==="Datum wählen"?'<input type="date" id="bodate" value="'+esc(BO.a.datumWert)+'">':"")+
+      (x.k==="datum"?'<label class="sl">Startzeit (optional)</label><input type="time" id="botime" value="'+esc(BO.a.start)+'">':"")).join("")+
+    '<div class="k" style="margin-top:14px">Freitext und Diktat</div><textarea id="dk" rows="4" placeholder="Wünsche, Gäste, Orte, was vorkommen soll …"></textarea>'+
+    '<div class="row"><button id="dkmic">● Diktat</button><button class="pri" id="bogo">Show bestellen</button></div><div class="small" id="dkst"></div>';
+}
+function sheetShowOrder(){
+  if(!BO.a.anlass)boDefaults();
+  const keep=()=>{const t=$("#dk");BO.txt=t?t.value:BO.txt;const d=$("#bodate");if(d)BO.a.datumWert=d.value;const tm=$("#botime");if(tm)BO.a.start=tm.value;};
+  const draw=()=>{openSheet(boHtml());const t=$("#dk");if(t&&BO.txt)t.value=BO.txt;
+    document.querySelectorAll("[data-bo]").forEach(b=>b.onclick=()=>{keep();const [k,o]=b.dataset.bo.split("|");const q=BO_Q.find(x=>x.k===k);
+      if(q.multi){const a=BO.a[k];const i=a.indexOf(o);if(i>=0)a.splice(i,1);else a.push(o);}else BO.a[k]=o;draw();});
+    $("#dkmic").onclick=()=>dikStart();
+    $("#bogo").onclick=async()=>{keep();const a=Object.assign({},BO.a);
+      const day=a.datum==="Heute"?ymd(new Date()):a.datum==="Morgen"?ymd(addD(new Date(),1)):a.datum==="Übermorgen"?ymd(addD(new Date(),2)):(a.datumWert||"");
+      if(!day){toast("Bitte ein Datum wählen.");return;}
+      const args={anlass:a.anlass,datum:day,start:a.start||"",laenge_min:parseInt(a.laenge,10)||30,thema:a.thema,geschichte:a.geschichte,figuren:a.figuren,songs:a.songs,ton:a.ton,tiefe:a.tiefe,ertappt:a.ertappt,klaenge:a.klaenge,nachrichten:a.nachrichten,kunst:a.kunst,aufgaben:a.aufgaben,freitext:(BO.txt||"").trim()};
+      const ok=await auftrag("show_bestellen",args,"Show bestellt: "+a.anlass+", "+dlabel(day)+(a.start?" "+a.start:"")+", "+args.laenge_min+" Min","");
+      if(ok){BO.a={};BO.txt="";}};
+  };
+  draw();
 }
 function dikStart(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const st=$("#dkst");

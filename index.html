@@ -552,11 +552,12 @@ function renderShow(){
   const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
   let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
     '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>';
-  h+='<details class="chs"><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
+  h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
   h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button></div>';
   if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
   el.innerHTML=h;bar();
+  $("#chdet").addEventListener("toggle",e=>{S.chOpen=e.target.open;});
   $("#pp").onclick=()=>{if(!AUD.paused||SONG.on)pauseShow();else playShow();};
   $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();
   $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};

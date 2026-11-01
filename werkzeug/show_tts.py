@@ -141,7 +141,7 @@ def to_wav(path, fx=None, speed=1.0, mood=""):
 # Klaenge (Josef 1.11.2026: kleine Soundscape zum Einstieg). Zeile "KLANG: labor 6" | "KLANG: neon" | "KLANG: summen 2" | "KLANG: stille 1"
 def soundscape(spec):
     parts = spec.lower().split(); kind = parts[0] if parts else "labor"
-    sec = float(parts[1]) if len(parts) > 1 else {"labor": 6, "neon": 2.6, "summen": 2.0, "stille": 1.0, "gojira": 7, "wind": 5, "kraehen": 4, "zug": 6}.get(kind, 3)
+    sec = float(parts[1]) if len(parts) > 1 else {"labor": 6, "neon": 2.6, "summen": 2.0, "stille": 1.0, "gojira": 7, "wind": 5, "kraehen": 4, "zug": 6, "rauschen": 1.5, "stoersender": 2.5}.get(kind, 3)
     n = int(SR * sec); tt = np.arange(n) / SR; rng = np.random.default_rng(len(spec) * 31 + n)
     if kind == "stille": return np.zeros(n, np.float32)
     if kind == "telefon":  # zweimal Klingeln
@@ -219,6 +219,15 @@ def soundscape(spec):
             if int(SR * beat) >= n: break
         a = 0.5 * hiss + clk
         a *= np.minimum(1, np.minimum(tt, sec - tt) / 1.0)
+    elif kind == "rauschen":  # Raster FM (Josef 1.11.2026): kurzes Funkrauschen zwischen Kapiteln, wie ein Sendersuchlauf
+        k = int(SR * 0.0008); hiss = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same")
+        sweep = np.sin(2 * np.pi * np.cumsum(900 + 700 * np.sin(2 * np.pi * 0.7 * tt)) / SR) * 0.25 * (np.sin(2 * np.pi * 1.3 * tt) > 0.6)
+        a = (hiss + sweep) * np.minimum(1, np.minimum(tt, sec - tt) / 0.15)
+    elif kind == "stoersender":  # Nil-Stoersender: pulsierender Ton mit Rauschen
+        k = int(SR * 0.0008); hiss = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same")
+        tone = np.sign(np.sin(2 * np.pi * 620 * tt)) * (np.sin(2 * np.pi * 6 * tt) > 0)
+        a = (0.6 * tone + 0.8 * hiss) * np.minimum(1, np.minimum(tt, sec - tt) / 0.1)
+        a = np.convolve(a, np.ones(4) / 4, mode="same")
     else:  # summen: Sigma, wie eine Fliege am Glas
         f = 210 + 25 * np.sin(2*np.pi*7*tt) + 15 * rng.standard_normal(n).cumsum() / np.sqrt(n)
         ph = 2 * np.pi * np.cumsum(f) / SR; saw = 2 * ((ph / (2*np.pi)) % 1) - 1
@@ -227,7 +236,7 @@ def soundscape(spec):
         a = np.convolve(a, np.ones(6) / 6, mode="same")
     a = np.clip(a, -0.95, 0.95)
     rms = float(np.sqrt(np.mean(a ** 2))) or 1.0
-    target = {"labor": 0.045, "neon": 0.05, "summen": 0.03, "gojira": 0.06, "wind": 0.035, "kraehen": 0.035, "zug": 0.04}.get(kind, 0.04)
+    target = {"labor": 0.045, "neon": 0.05, "summen": 0.03, "gojira": 0.06, "wind": 0.035, "kraehen": 0.035, "zug": 0.04, "rauschen": 0.03, "stoersender": 0.035}.get(kind, 0.04)
     return (a * (target / rms)).astype(np.float32)
 
 t0 = time.time(); pieces = []; meta = []; lines = []; t = 0.0; chars = 0; idx = 0

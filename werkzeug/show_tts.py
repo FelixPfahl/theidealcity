@@ -16,6 +16,7 @@ import soundfile as sf
 src, out, keyfile = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
 MODEL = os.environ.get("EL_MODEL", "eleven_v3")
+SPEED = float(os.environ.get("SHOW_SPEED", "1.25"))  # Josef 1.11.2026: insgesamt schneller
 VOICES = {"inka": os.environ.get("EL_VOICE_INKA", "S87WJpstXs0Ge2ukRiXJ"),
           "wagner": os.environ.get("EL_VOICE_WAGNER", "qsEcR8IqZUmxT1rxm9G9"),
           "sigma": os.environ.get("EL_VOICE_SIGMA", "JudZUClAOU1jP3wA2eDG")}
@@ -72,7 +73,8 @@ def tts(speaker, text, idx):
 def to_wav(path, fx=None):
     wav = tempfile.mktemp(suffix=".wav")
     cmd = [ff, "-y", "-loglevel", "error", "-i", path]
-    if fx: cmd += ["-af", fx]
+    # jede Stimme einzeln auf gleiche Lautheit (Josef 1.11.2026: Inka, Wagner, Sigma immer gleich laut)
+    cmd += ["-af", (fx + "," if fx else "") + "loudnorm=I=-20:TP=-2:LRA=7"]
     subprocess.run(cmd + ["-ac", "1", "-ar", str(SR), wav], check=True)
     a, _ = sf.read(wav, dtype="float32"); os.remove(wav); return a
 
@@ -99,11 +101,13 @@ for ch in chapters:
 audio = np.concatenate(pieces)
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
-subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "loudnorm=I=-20:TP=-2:LRA=11",
+subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "atempo=%.3f,loudnorm=I=-20:TP=-2:LRA=11" % SPEED,
                 "-c:a", "aac", "-b:a", "64k", "-movflags", "+faststart", mp4], check=True)
 os.remove(wav)
 dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mp4],
                            capture_output=True, text=True).stdout.strip() or t)
+for m in meta: m["start"] = round(m["start"] / SPEED, 2)
+t = t / SPEED
 if abs(dur - t) > 3: sys.exit("Audiolänge passt nicht: %.1f statt %.1f" % (dur, t))
 info = {"duration": round(t, 1), "chapters": meta, "sizeBytes": os.path.getsize(mp4), "renderSeconds": round(time.time() - t0, 1),
         "elevenChars": chars, "songs": sum(1 for m in meta if m["type"] == "song")}

@@ -1480,3 +1480,6 @@ html.calm .modem .mava img,html.calm .modem .mava i{animation:none}
 
 /* Kontrastmodus von Windows: die unsichtbare Textebene bleibt unsichtbar */
 @media (forced-colors:active){.plotted .plotsrc.vh,.plotted .plotsrc.vh *{forced-color-adjust:none;color:transparent!important;-webkit-text-fill-color:transparent!important}}
+
+.lb2 img.sbobj.sblb{position:fixed;z-index:5;cursor:pointer;opacity:.7}
+.lb2 img.sbobj.sblb.found{opacity:0;transition:opacity .5s}

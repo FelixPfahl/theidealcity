@@ -1,1 +1,501 @@
-<!doctype html><meta charset=utf-8><title>Inka</title><p>Begleit-Seite wird gebaut.</p>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0028FF">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<title>Inka</title>
+<script src="https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/dist/lib.iife.js"></script>
+<style>
+:root{--blue:#0028FF;--ink:#111;--mut:#5a5a5a;--line:#d8d8d8;--bg:#fff;--soft:#f3f5ff;--red:#c4001a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Futura","Century Gothic","Avenir Next",system-ui,sans-serif;font-size:18px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+main{max-width:560px;margin:0 auto;padding:16px 16px 120px}
+h1{font-size:26px;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:15px;margin-bottom:14px}
+button{font:inherit;color:inherit;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:12px 14px;cursor:pointer}
+button.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+button:disabled{opacity:.45}
+a{color:var(--blue)}
+.card{border:2px solid var(--ink);border-radius:16px;padding:16px;margin:0 0 14px}
+.card.blue{border-color:var(--blue)}
+.k{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;font-weight:700}
+.play{display:flex;align-items:center;gap:16px}
+.pbtn{width:84px;height:84px;border-radius:50%;background:var(--blue);border:0;color:#fff;font-size:34px;flex:none;display:flex;align-items:center;justify-content:center}
+.now{font-weight:700;font-size:20px}
+.time{color:var(--mut);font-size:15px}
+.bar{height:8px;background:var(--line);border-radius:4px;margin:14px 0 8px;overflow:hidden;cursor:pointer}
+.bar i{display:block;height:100%;background:var(--blue);width:0}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.chs{margin-top:10px;font-size:16px}
+.ch{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
+.ch b{color:var(--blue);min-width:46px;font-variant-numeric:tabular-nums}
+.ch.cur{font-weight:700}
+.ch.done{color:var(--mut)}
+.set{display:grid;gap:10px}
+.si{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.si span{font-weight:700}
+.ok{color:var(--blue);font-weight:700}
+.bad{color:var(--red);font-weight:700}
+.dep{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
+.dep .m{font-size:24px;font-weight:700;color:var(--blue);min-width:68px}
+.dep .l{font-weight:700}
+.dep .s{font-size:14px;color:var(--mut)}
+.late{color:var(--red);font-style:normal;font-weight:700}
+.stops .st{padding:6px 0;border-top:1px solid var(--line);display:flex;gap:10px}
+.stops .st.past{color:var(--mut)}.stops .st.now{font-weight:700;color:var(--blue)}
+#toast{position:fixed;left:16px;right:16px;bottom:24px;background:var(--ink);color:#fff;padding:14px 16px;border-radius:12px;font-size:16px;display:none;z-index:9;max-width:528px;margin:0 auto}
+#vc{position:fixed;inset:0;background:#fff;z-index:8;display:none;flex-direction:column;padding:16px}
+#vc .vs{font-size:22px;font-weight:700;color:var(--blue);margin:8px 0}
+#vc .vt{flex:1;overflow:auto;font-size:18px}
+#vc .vl{padding:8px 0;border-top:1px solid var(--line)}
+#vc .vl.u{color:var(--mut)}
+#vc .hang{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;font-size:20px;padding:18px;margin-top:10px}
+.small{font-size:14px;color:var(--mut)}
+.err{color:var(--red)}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title">Inka</h1>
+  <div class="sub" id="subt">Morning-Show, Gespräch und Abfahrten</div>
+  <div id="setup"></div>
+  <div id="show"></div>
+  <div id="deps"></div>
+  <div id="sent"></div>
+  <div class="small" id="foot"></div>
+</main>
+<div id="vc"></div>
+<div id="toast"></div>
+<audio id="aud" preload="auto"></audio>
+<script>
+"use strict";
+/* ---------- Grundlagen ---------- */
+const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
+const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
+const AGENT_DEFAULT="agent_0201m64fk5bkfstr5gkhm6rat739";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad2=n=>String(n).padStart(2,"0");
+const hm=d=>d?pad2(d.getHours())+":"+pad2(d.getMinutes()):"";
+const ymd=d=>d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+const mmss=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+":"+pad2(s%60);};
+const WD=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const store={get(k,d){try{const v=localStorage.getItem("inka:"+k);return v==null?d:JSON.parse(v);}catch(_){return d;}},set(k,v){try{localStorage.setItem("inka:"+k,JSON.stringify(v));}catch(_){}}};
+let toastT=null;
+function toast(m,ms){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
+const AUD=$("#aud");
+
+/* ---------- Schluessel (kommt einmal ueber den Link #k=..., bleibt im Handy) ---------- */
+const KEY={raw:"",key:null};
+(function(){
+  const m=/[#&]k=([A-Za-z0-9_\-]{40,})/.exec(location.hash||"");
+  if(m){store.set("key",m[1]);try{history.replaceState(null,"",location.pathname+location.search);}catch(_){}}
+  KEY.raw=store.get("key","");
+})();
+const b64u=s=>{s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return Uint8Array.from(atob(s),c=>c.charCodeAt(0));};
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const tob64=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s);};
+async function cryptoKey(){if(KEY.key)return KEY.key;if(!KEY.raw)throw new Error("kein Schlüssel");KEY.key=await crypto.subtle.importKey("raw",b64u(KEY.raw),"AES-GCM",false,["encrypt","decrypt"]);return KEY.key;}
+async function openEnv(env){const k=await cryptoKey();const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64(env.iv)},k,b64(env.ct));return JSON.parse(new TextDecoder().decode(pt));}
+async function sealEnv(obj){const k=await cryptoKey();const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},k,new TextEncoder().encode(JSON.stringify(obj)));return {v:1,iv:tob64(iv),ct:tob64(ct)};}
+
+/* ---------- Show laden ---------- */
+const S={doc:null,day:"",err:"",loading:"",audioUrl:"",ch:-1,songDone:{},ended:false};
+async function fetchDoc(day){
+  const r=await fetch(RAW+"d/"+day+".json?t="+Date.now(),{cache:"no-store"});
+  if(r.status===404)return null;if(!r.ok)throw new Error("Daten "+r.status);
+  return await openEnv(await r.json());
+}
+async function loadShow(){
+  if(!KEY.raw){S.err="";render();return;}
+  const now=new Date(),today=ymd(now),tom=ymd(addD(now,1));
+  const order=now.getHours()>=17?[tom,today]:[today];
+  S.loading="Show wird geladen";render();
+  try{
+    let doc=null;
+    for(const d of order){doc=await fetchDoc(d);if(doc)break;}
+    S.loading="";
+    if(!doc){S.doc=null;S.err="Für heute liegt noch keine Show hier. Der Morgenlauf legt sie gegen 4:30 Uhr ab.";render();return;}
+    if(!S.doc||S.doc.day!==doc.day||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
+    S.err="";render();
+  }catch(e){S.loading="";S.err=String(e&&e.message||e)==="kein Schlüssel"?"":"Laden ging nicht: "+String(e&&e.message||e).slice(0,80)+". Schlüssel-Link noch einmal öffnen?";render();}
+}
+async function ensureAudio(){
+  if(S.audioUrl)return true;if(!S.doc||!S.doc.audio)return false;
+  S.loading="Audio wird geladen";render();
+  try{
+    const r=await fetch(RAW+"d/"+S.doc.day+".bin?t="+(S.doc.published||0));if(!r.ok)throw new Error("Audio "+r.status);
+    const buf=new Uint8Array(await r.arrayBuffer());const k=await cryptoKey();
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:buf.slice(0,12)},k,buf.slice(12));
+    S.audioUrl=URL.createObjectURL(new Blob([pt],{type:"audio/mp4"}));AUD.src=S.audioUrl;S.loading="";render();return true;
+  }catch(e){S.loading="";S.err="Audio ging nicht: "+String(e&&e.message||e).slice(0,80);render();return false;}
+}
+const chapters=()=>(S.doc&&Array.isArray(S.doc.chapters))?S.doc.chapters:[];
+function chAt(t){const c=chapters();let k=-1;for(let i=0;i<c.length;i++)if(t>=c[i].start-0.05)k=i;return k;}
+function songIndex(k){let n=0;const c=chapters();for(let i=0;i<k;i++)if(c[i].type==="song")n++;return n;}
+
+/* ---------- Abspielen ---------- */
+async function playShow(){
+  SP.unlock();
+  if(!(await ensureAudio()))return;
+  if(SONG.on){await SONG.finish("weiter");return;}
+  if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};}
+  try{await AUD.play();}catch(e){toast("Noch einmal auf Play tippen.");}
+  SP.warm();
+}
+function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();}
+function seekCh(k){const c=chapters()[k];if(!c)return;if(SONG.on)SONG.finish("sprung",true);
+  ensureAudio().then(ok=>{if(!ok)return;S.songDone={};for(let i=0;i<k;i++)S.songDone[i]=true;AUD.currentTime=c.type==="song"?c.start+1.02:c.start;AUD.play().catch(()=>{});});}
+function nextCh(){const k=SONG.on?SONG.k:chAt(AUD.currentTime);if(SONG.on){SONG.finish("weiter");return;}const c=chapters();for(let i=k+1;i<c.length;i++){if(c[i].type==="talk"){seekCh(i);return;}}AUD.currentTime=Math.max(0,(AUD.duration||1)-0.5);}
+function prevCh(){const k=chAt(AUD.currentTime);const c=chapters();for(let i=k-(AUD.currentTime-(c[k]?c[k].start:0)<4?1:0);i>=0;i--){if(c[i].type==="talk"){seekCh(i);return;}}}
+AUD.addEventListener("timeupdate",()=>{
+  const t=AUD.currentTime,k=chAt(t),c=chapters()[k];
+  if(c&&c.type==="song"&&!S.songDone[k]&&!SONG.on&&!AUD.paused){S.songDone[k]=true;SONG.start(k);}
+  if(k!==S.ch){S.ch=k;meta();}
+  bar();
+});
+AUD.addEventListener("play",()=>{render();meta();});
+AUD.addEventListener("pause",()=>render());
+AUD.addEventListener("ended",()=>{S.ended=true;render();if(store.get("autochat",true))setTimeout(()=>VC.start(true),900);});
+function meta(){try{if(!("mediaSession" in navigator))return;const c=chapters()[S.ch];
+  navigator.mediaSession.metadata=new MediaMetadata({title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Morning-Show"),artist:SONG.on&&SONG.track?SONG.track.artist:"Inka",album:"Morning-Show "+(S.doc?S.doc.day:"")});}catch(_){}}
+try{if("mediaSession" in navigator){
+  navigator.mediaSession.setActionHandler("play",()=>playShow());
+  navigator.mediaSession.setActionHandler("pause",()=>pauseShow());
+  navigator.mediaSession.setActionHandler("nexttrack",()=>nextCh());
+  navigator.mediaSession.setActionHandler("previoustrack",()=>prevCh());
+}}catch(_){}
+
+/* ---------- Songs: Seite pausiert, Spotify spielt, danach weiter mit Inka ---------- */
+const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:""};
+SONG.start=async function(k){
+  const list=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];const tr=list[songIndex(k)];
+  if(!tr||!SP.ready()){if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
+  AUD.pause();SONG.on=true;SONG.k=k;SONG.track=tr;SONG.started=Date.now();render();meta();
+  try{SONG.via=await SP.play(tr.uri);toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
+  catch(e){toast("Song ging nicht: "+String(e&&e.message||e).slice(0,70)+". Inka macht weiter.");SONG.on=false;SONG.track=null;AUD.play().catch(()=>{});render();return;}
+  const ms=Math.min(tr.ms||210000,6*60000);
+  clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),ms+800);
+  clearInterval(SONG.poll);SONG.poll=setInterval(()=>SONG.check(),4000);
+};
+SONG.check=async function(){
+  if(!SONG.on)return;if(Date.now()-SONG.started<6000)return;
+  try{const st=SP.player?await SP.player.getCurrentState():await SP.api("GET","/me/player");
+    if(!st)return;
+    const pos=SP.player?st.position:st.progress_ms,dur=SP.player?(st.duration||0):((st.item&&st.item.duration_ms)||0),paused=SP.player?st.paused:!st.is_playing;
+    const uri=SP.player?(st.track_window&&st.track_window.current_track&&st.track_window.current_track.uri):(st.item&&st.item.uri);
+    if((paused&&pos===0)||(uri&&SONG.track&&uri!==SONG.track.uri)||(dur&&pos>=dur-1800))SONG.finish("ende");
+  }catch(_){}
+};
+SONG.finish=async function(why,stay){
+  if(!SONG.on)return;SONG.on=false;clearTimeout(SONG.timer);clearInterval(SONG.poll);
+  await SP.pause();SONG.track=null;
+  const c=chapters()[SONG.k];if(c&&AUD.currentTime<c.start+1)AUD.currentTime=c.start+1.02;
+  render();meta();
+  if(!stay){try{await AUD.play();}catch(_){toast("Weiter mit Inka: Play drücken.",8000);}}
+};
+
+/* ---------- Spotify (eigene Anmeldung dieser Seite, Code-Austausch hier im Browser) ---------- */
+const SP={cfg:store.get("spot",{}),player:null,deviceId:"",sdkState:"",sdkP:null};
+SP.save=()=>store.set("spot",SP.cfg);
+SP.ready=()=>!!SP.cfg.refresh;
+SP.redirect=()=>location.origin+location.pathname;
+async function sha256u(s){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return tob64(d).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
+SP.connect=async function(){
+  const v=Array.from(crypto.getRandomValues(new Uint8Array(48)),b=>"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[b%62]).join("");
+  SP.cfg.verifier=v;SP.save();
+  location.href="https://accounts.spotify.com/authorize?"+new URLSearchParams({client_id:SP_CLIENT,response_type:"code",redirect_uri:SP.redirect(),
+    scope:"streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state user-top-read",code_challenge_method:"S256",code_challenge:await sha256u(v)}).toString();
+};
+SP.handle=async function(){
+  const u=new URL(location.href);const code=u.searchParams.get("code"),er=u.searchParams.get("error");
+  if(!code&&!er)return;
+  try{history.replaceState(null,"",location.pathname);}catch(_){}
+  if(er){toast("Spotify: "+er);return;}
+  try{const r=await fetch("https://accounts.spotify.com/api/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body:new URLSearchParams({client_id:SP_CLIENT,grant_type:"authorization_code",code,redirect_uri:SP.redirect(),code_verifier:SP.cfg.verifier||""})});
+    const j=await r.json();if(!j.access_token)throw new Error(j.error_description||j.error||"kein Token");
+    SP.cfg={access:j.access_token,refresh:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000-60000,scopes:j.scope||""};SP.save();toast("Spotify verbunden.");
+  }catch(e){toast("Spotify-Anmeldung ging nicht: "+String(e&&e.message||e).slice(0,80),8000);}
+  render();
+};
+SP.token=async function(){
+  if(SP.cfg.access&&Date.now()<(SP.cfg.exp||0))return SP.cfg.access;
+  const r=await fetch("https://accounts.spotify.com/api/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({client_id:SP_CLIENT,grant_type:"refresh_token",refresh_token:SP.cfg.refresh})});
+  const j=await r.json();if(!j.access_token){if(j.error==="invalid_grant"){SP.cfg={};SP.save();render();}throw new Error("Spotify neu verbinden");}
+  SP.cfg.access=j.access_token;if(j.refresh_token)SP.cfg.refresh=j.refresh_token;SP.cfg.exp=Date.now()+(j.expires_in||3600)*1000-60000;SP.save();return j.access_token;
+};
+SP.api=async function(method,path,body){
+  const t=await SP.token();const r=await fetch("https://api.spotify.com/v1"+path,{method,headers:Object.assign({Authorization:"Bearer "+t},body?{"Content-Type":"application/json"}:{}),body:body?JSON.stringify(body):undefined});
+  if(r.status===204||r.status===202)return null;const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null;}catch(_){}
+  if(!r.ok)throw Object.assign(new Error((j&&j.error&&j.error.message)||("Spotify "+r.status)),{status:r.status});return j;
+};
+/* Die Seite als Spotify-Geraet; klappt das auf dem Handy nicht, wird die Spotify-App ferngesteuert */
+SP.sdk=function(){
+  if(SP.player)return Promise.resolve(SP.player);if(SP.sdkP)return SP.sdkP;
+  SP.sdkP=new Promise((res,rej)=>{
+    const go=()=>{try{
+      const pl=new Spotify.Player({name:"Inka",getOAuthToken:cb=>SP.token().then(cb).catch(()=>cb("")),volume:1});
+      pl.addListener("ready",({device_id})=>{SP.deviceId=device_id;SP.player=pl;SP.sdkState="Seite spielt selbst";render();res(pl);});
+      pl.addListener("not_ready",()=>{SP.deviceId="";});
+      ["initialization_error","authentication_error","account_error","playback_error"].forEach(ev=>pl.addListener(ev,e=>{SP.sdkState="Spotify-App wird ferngesteuert";if(!SP.player)rej(new Error(ev));}));
+      pl.addListener("player_state_changed",()=>SONG.check());
+      pl.connect();setTimeout(()=>{if(!SP.player){SP.sdkState="Spotify-App wird ferngesteuert";rej(new Error("Gerät meldet sich nicht"));}},10000);
+    }catch(e){rej(e);}};
+    if(window.Spotify&&window.Spotify.Player)return go();
+    window.onSpotifyWebPlaybackSDKReady=go;
+    const sc=document.createElement("script");sc.src="https://sdk.scdn.co/spotify-player.js";sc.onerror=()=>rej(new Error("SDK lädt nicht"));document.head.appendChild(sc);
+  }).catch(e=>{SP.sdkP=null;throw e;});
+  return SP.sdkP;
+};
+SP.unlock=function(){try{if(SP.player&&SP.player.activateElement)SP.player.activateElement();}catch(_){}};
+SP.warm=function(){if(SP.ready()&&!SP.player&&!SP.sdkP)SP.sdk().catch(()=>{});};
+SP.play=async function(uri){
+  try{await SP.sdk();SP.unlock();await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(SP.deviceId),{uris:[uri]});return "seite";}
+  catch(e){}
+  const dv=await SP.api("GET","/me/player/devices");const ds=(dv&&dv.devices)||[];
+  const dev=ds.find(d=>d.is_active)||ds.find(d=>/smartphone/i.test(d.type))||ds[0];
+  if(!dev)throw new Error("kein Spotify-Gerät, Spotify-App einmal öffnen");
+  await SP.api("PUT","/me/player/play?device_id="+encodeURIComponent(dev.id),{uris:[uri]});return "app";
+};
+SP.pause=async function(){try{if(SP.player)await SP.player.pause();else await SP.api("PUT","/me/player/pause");}catch(_){try{await SP.api("PUT","/me/player/pause");}catch(__){}}};
+SP.test=async function(){const tr=(S.doc&&S.doc.songs&&S.doc.songs[0])||{uri:"spotify:track:3kPWyMLOMqigwl4p4aJZWa",name:"System",artist:"Prewn"};
+  try{const via=await SP.play(tr.uri);toast("Läuft über "+(via==="seite"?"diese Seite":"die Spotify-App")+". Stoppt in 10 Sekunden.");setTimeout(()=>SP.pause(),10000);}catch(e){toast("Test ging nicht: "+String(e&&e.message||e).slice(0,90),8000);}};
+
+/* ---------- Nachrichten an das Sekretariat (verschluesselt ueber ntfy, der Stundencheck traegt ein) ---------- */
+async function sendSek(kind,data){
+  if(!S.doc||!S.doc.topic)throw new Error("kein Kanal");
+  const msg=Object.assign({v:1,from:"inka",id:"i-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),t:Date.now(),day:S.doc.day,kind},data);
+  const r=await fetch("https://ntfy.sh/"+S.doc.topic,{method:"POST",body:JSON.stringify(await sealEnv(msg))});
+  if(!r.ok)throw new Error("ntfy "+r.status);
+  if(kind==="aktion"){const all=store.get("sent",[]);all.push({t:msg.t,day:msg.day,text:data.text});store.set("sent",all.slice(-40));renderSent();}
+  return msg.id;
+}
+
+/* ---------- Gespraech mit Inka (ElevenLabs Agent) ---------- */
+const YES_RX=/\b(ja|jo|jep|ok|okay|passt|genau|mach das|mach es|los|klar|einverstanden|gerne|stimmt|richtig)\b/i;
+const NO_RX=/\b(nein|nee|nicht|stopp|stop|warte|halt|abbrechen)\b/i;
+const VC={conv:null,state:"",lastUser:"",log:[],starting:false,summary:"",changes:[]};
+VC.lib=()=>window.ElevenLabsClient&&window.ElevenLabsClient.Conversation;
+VC.ok=p=>p&&p.bestaetigt===true&&YES_RX.test(VC.lastUser)&&!NO_RX.test(VC.lastUser);
+const entries=()=>(S.doc&&Array.isArray(S.doc.entries))?S.doc.entries:[];
+const findE=k=>entries().find(e=>e.key===k);
+VC.prompt=function(){return ["Du bist Inka, Josefs persönliche Sekretärin und Moderatorin seiner Morning-Show. Du sprichst Deutsch, duzt Josef, bist sachlich, warm, knapp und mit trockenem Humor. Josef hört dich meist unterwegs über Kopfhörer: kurze Sätze, keine Listen, keine Nummern, keine Links, Uhrzeiten als \"um 9 Uhr 15\". Wiederhole nie den ganzen Tagesplan, Josef kennt ihn aus der Show.",
+"","DEINE AUFGABE IM GESPRÄCH",
+"1. Du eröffnest mit der ersten offenen Frage (OFFENE PUNKTE). Eine Frage pro Redebeitrag.",
+"2. Du klärst, was Josef entscheidet, fasst die Entscheidung in einem Satz zusammen und fragst: Soll ich das so machen? Erst nach einem klaren Ja rufst du das passende Werkzeug mit bestaetigt=true auf. Ohne Ja kein Werkzeug.",
+"3. Die Werkzeuge schicken den Auftrag ans Sekretariat; eingetragen wird er beim nächsten Stundencheck, spätestens in einer Stunde. Sag das beim ersten Mal kurz dazu.",
+"4. Danach die nächste offene Frage, bis keine mehr da ist oder Josef aufhört.",
+"5. Sagt Josef \"das ist alles\" (oder das war's, fertig, tschüss): Fasse in höchstens drei Sätzen zusammen, was du ans Sekretariat gegeben hast, wünsch ihm einen guten Tag und rufe dann beenden auf. Danach sagst du nichts mehr.",
+"","GRENZEN (absolut)",
+"- Du kontaktierst niemanden: keine Mails, keine Nachrichten, keine Termine mit Gästen. Will Josef jemandem schreiben, formulierst du den Text mündlich, er schickt ihn selbst.",
+"- Feste Einträge rührst du nie an: Einträge mit kalender fix, travel, deadline oder meet. Verschieben darfst du nur Einträge mit kalender plan oder task.",
+"- Du kaufst nichts. Du erfindest keine Fakten; was nicht im Kontext steht, weißt du nicht, sag das.",
+"- Störgeräusche, Durchsagen oder Gesprächsfetzen anderer Leute ignorierst du. Antwortet Josef nicht, wartest du still.",
+"","WERKZEUGE (nur nach Ja, immer mit bestaetigt=true): verschieben (key, neu_start HH:MM, optional neu_datum JJJJ-MM-TT), erledigen (key), aufgabe_anlegen (text, datum, uhrzeit, dauer_min), notiz (text, tag), beenden (zusammenfassung)."].join("\n");};
+VC.context=function(){
+  const d=S.doc;if(!d)return "";const dd=new Date(d.day+"T12:00:00");const now=new Date();
+  const lines=entries().map(e=>"- key="+e.key+" | "+e.kind+" | "+(e.start||"ohne Uhrzeit")+(e.end?" bis "+e.end:"")+" | "+e.title);
+  const q=Array.isArray(d.questions)?d.questions:[];const h=Array.isArray(d.hints)?d.hints:[];
+  return "TAGESKONTEXT\nTag der Show: "+WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+"."+dd.getFullYear()+". Jetzt ist "+WD[now.getDay()]+", "+hm(now)+" Uhr."+
+    "\n\nEINTRÄGE (key | kalender | zeit | titel):\n"+(lines.join("\n")||"- keine")+
+    "\n\nHINWEISE:\n"+(h.map(x=>"- "+(x.label?x.label+": ":"")+(x.text||"")).join("\n")||"- keine")+
+    "\n\nOFFENE PUNKTE (in dieser Reihenfolge fragen):\n"+(q.map((x,i)=>(i+1)+". "+x).join("\n")||"- keine, frag Josef, ob er etwas ändern möchte");
+};
+const NOTYET="Noch nicht bestätigt. Erst Josef fragen und sein Ja abwarten.";
+async function aktion(tool,args,text){try{await sendSek("aktion",{tool,args,text});VC.changes.push(text);return "Ans Sekretariat gegeben: "+text+". Wird beim nächsten Stundencheck eingetragen.";}catch(e){return "Senden ging nicht ("+String(e&&e.message||e)+"). Sag Josef, er soll es im Sekretär-Chat sagen.";}}
+VC.tools={
+  verschieben:async p=>{const en=findE(String(p.key||""));if(!en)return "Eintrag nicht gefunden.";if(!VC.ok(p))return NOTYET;
+    if(!["plan","task"].includes(en.kind))return "Das ist ein fester Eintrag und wird nicht verschoben.";
+    if(!/^\d{1,2}:\d{2}$/.test(String(p.neu_start||"")))return "Neue Uhrzeit fehlt (HH:MM).";
+    return aktion("verschieben",{key:en.key,neu_start:p.neu_start,neu_datum:p.neu_datum||S.doc.day},"verschieben: "+en.title+" auf "+(p.neu_datum||S.doc.day)+" "+p.neu_start);},
+  erledigen:async p=>{const en=findE(String(p.key||""));if(!en)return "Eintrag nicht gefunden.";if(!VC.ok(p))return NOTYET;
+    if(en.kind!=="task")return "Dazu gibt es keine Aufgabe zum Abhaken.";return aktion("erledigen",{key:en.key},"erledigt: "+en.title);},
+  aufgabe_anlegen:async p=>{if(!VC.ok(p))return NOTYET;if(!p.text)return "Text fehlt.";
+    return aktion("aufgabe_anlegen",{text:String(p.text),datum:p.datum||S.doc.day,uhrzeit:p.uhrzeit||"",dauer_min:p.dauer_min||null},"anlegen: "+p.text+" am "+(p.datum||S.doc.day)+(p.uhrzeit?" um "+p.uhrzeit:""));},
+  notiz:async p=>aktion("notiz",{text:String(p.text||""),tag:String(p.tag||"Sekretariat")},"Notiz ("+(p.tag||"Sekretariat")+"): "+String(p.text||"").slice(0,80)),
+  beenden:async p=>{VC.summary=String(p&&p.zusammenfassung||"");setTimeout(()=>VC.stop(),3500);return "ok";}
+};
+VC.start=async function(auto){
+  if(VC.conv||VC.starting)return;
+  if(!VC.lib()){toast("Sprachchat-Skript nicht geladen. Seite neu laden.");return;}
+  if(!S.doc){toast("Erst muss die Show geladen sein.");return;}
+  if(SONG.on)await SONG.finish("chat",true);
+  VC.starting=true;VC.state="Verbindet";VC.lastUser="";VC.log=[];VC.changes=[];VC.summary="";VC.ui(true);
+  try{
+    try{const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});st.getTracks().forEach(t=>t.stop());}catch(e){throw {code:"mic",e};}
+    if(!AUD.paused)AUD.pause();
+    const q=(Array.isArray(S.doc.questions)&&S.doc.questions[0])||"";
+    const first=q?"Hallo Josef, hier Inka. Eine Frage zum Tag: "+q:"Hallo Josef, hier Inka. Soll ich etwas für dich ändern oder notieren?";
+    VC.conv=await VC.lib().startSession({agentId:S.doc.agentId||AGENT_DEFAULT,connectionType:"websocket",
+      overrides:{agent:{prompt:{prompt:VC.prompt()+"\n\n"+VC.context()},firstMessage:first}},
+      clientTools:VC.tools,
+      onConnect:()=>{VC.state="Inka hört zu";VC.ui();},
+      onDisconnect:()=>{VC.conv=null;VC.state="";VC.ui();VC.after();},
+      onError:m=>{VC.state="Fehler";toast("Sprachchat: "+String((m&&m.message)||m).slice(0,90));VC.ui();},
+      onModeChange:m=>{VC.state=(m&&m.mode==="speaking")?"Inka spricht":"Inka hört zu";VC.ui();},
+      onMessage:m=>{if(!m)return;const txt=String(m.message||"");if(m.source==="user"){VC.lastUser=txt;
+          if(/\b(das ist alles|das war'?s|das wars|tschüss|auflegen)\b/i.test(txt)){clearTimeout(VC.byeT);VC.byeT=setTimeout(()=>{if(VC.conv)VC.stop();},25000);}}
+        VC.log.push((m.source==="user"?"Du: ":"Inka: ")+txt);VC.log=VC.log.slice(-80);VC.ui();}
+    });
+  }catch(e){VC.conv=null;const n=e&&e.e&&e.e.name;
+    toast(e&&e.code==="mic"?(n==="NotFoundError"?"Kein Mikrofon gefunden.":"Mikrofon gesperrt: auf das Schloss links in der Adresszeile tippen, Mikrofon erlauben."):"Sprachchat startet nicht: "+String((e&&e.message)||e).slice(0,90),9000);
+    VC.ui(false);}
+  VC.starting=false;
+};
+VC.stop=async function(){const c=VC.conv;clearTimeout(VC.byeT);if(!c){VC.ui(false);return;}VC.conv=null;try{await c.endSession();}catch(_){}VC.state="";VC.ui();VC.after();};
+VC.ui=function(open){
+  const el=$("#vc");if(open===true)el.style.display="flex";if(open===false){el.style.display="none";return;}if(el.style.display!=="flex")return;
+  const lines=VC.log.slice(-40).map(l=>'<div class="vl '+(l.startsWith("Du: ")?"u":"a")+'">'+esc(l.replace(/^(Du|Inka): /,""))+"</div>").join("");
+  el.innerHTML='<div class="k">Gespräch mit Inka</div><div class="vs">'+esc(VC.state||(VC.conv?"verbunden":"beendet"))+'</div><div class="vt" id="vtl">'+(lines||'<div class="vl">Inka meldet sich gleich. Sprich normal.</div>')+'</div>'+
+    (VC.conv||VC.starting?'<button class="hang" id="hang">Auflegen</button>':'<div class="row" style="margin-top:10px"><button class="pri" id="again">Noch einmal anrufen</button><button id="vclose">Schließen</button></div>')+
+    '<div class="small" style="margin-top:8px">Schluss mit „das ist alles“. Sie gibt nur nach deinem Ja etwas ans Sekretariat.</div>';
+  const h=$("#hang");if(h)h.onclick=()=>VC.stop();const a=$("#again");if(a)a.onclick=()=>VC.start();const c=$("#vclose");if(c)c.onclick=()=>VC.ui(false);
+  const box=$("#vtl");if(box)box.scrollTop=box.scrollHeight;
+};
+VC.after=function(){if(VC.afterDone)return;VC.afterDone=true;setTimeout(()=>{VC.afterDone=false;},1500);
+  if(VC.summary)toast("Inka: "+VC.summary.slice(0,140),7000);
+  if(VC.log.length)sendSek("gespraech",{summary:VC.summary||"",log:VC.log.slice(-80),changes:VC.changes}).catch(()=>{});
+  render();};
+
+/* ---------- Abfahrten (MVG live, ab Standort) ---------- */
+const MVG="https://www.mvg.de/api/bgw-pt/v3";
+const HOME={lat:48.15582,lon:11.56154};
+const D={pos:null,src:"",watch:null,near:[],trip:null,routes:[],err:"",at:0,timer:null,open:false,ride:false,chosen:null,dest:null};
+const dist=(a,b)=>{const R=6371000,r=x=>x*Math.PI/180;const dl=r(b.lat-a.lat),dn=r(b.lon-a.lon);const h=Math.sin(dl/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));};
+D.locate=function(){
+  if(D.watch!=null)return;if(!navigator.geolocation){D.pos=HOME;D.src="zu Hause (kein Standort)";D.refresh();return;}
+  D.watch=navigator.geolocation.watchPosition(p=>{const first=!D.pos||D.src!=="Standort";D.pos={lat:p.coords.latitude,lon:p.coords.longitude};D.src="Standort";if(first)D.refresh();else D.detect();},
+    e=>{if(!D.pos||D.src!=="Standort"){D.pos=HOME;D.src="zu Hause (Standort nicht erlaubt)";D.refresh();}},{enableHighAccuracy:true,maximumAge:15000,timeout:20000});
+};
+D.stop=function(){if(D.watch!=null){try{navigator.geolocation.clearWatch(D.watch);}catch(_){}D.watch=null;}clearTimeout(D.timer);D.open=false;D.ride=false;D.chosen=null;render();};
+D.tripNow=function(){
+  const d=S.doc;if(!d||d.day!==ymd(new Date())||!Array.isArray(d.trips))return null;const now=Date.now();
+  const list=d.trips.map(t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(t.leave||""));if(!m)return null;const s=new Date();s.setHours(+m[1],+m[2],0,0);return {to:t.to||"",dest:t.dest||t.to||"",start:s,end:new Date(s.getTime()+(parseInt(t.minutes,10)||30)*60000)};}).filter(Boolean);
+  return list.find(t=>now>=t.start-45*60000&&now<=t.end.getTime()+20*60000)||null;
+};
+D.refresh=async function(){
+  clearTimeout(D.timer);if(!D.pos)return;
+  try{
+    const nb=await (await fetch(MVG+"/stations/nearby?latitude="+D.pos.lat+"&longitude="+D.pos.lon)).json();
+    const st=(Array.isArray(nb)?nb:[]).filter(s=>(s.distanceInMeters||0)<=500).slice(0,5);
+    const all=[];
+    await Promise.all(st.map(async s=>{try{const r=await fetch(MVG+"/departures?globalId="+encodeURIComponent(s.globalId)+"&limit=6&transportTypes=UBAHN,TRAM,BUS,SBAHN");const j=await r.json();
+      (Array.isArray(j)?j:[]).forEach(x=>all.push({station:s.name,m:s.distanceInMeters,label:x.label,dest:x.destination,type:x.transportType,plan:x.plannedDepartureTime,real:x.realtimeDepartureTime||x.plannedDepartureTime,delay:x.delayInMinutes||0,cancel:!!x.cancelled,rt:!!x.realtime}));}catch(_){}}));
+    const now=Date.now();const walk=x=>Math.round((x.m||0)/80)*60000;
+    D.near=all.filter(x=>x.real-now>walk(x)-60000&&!x.cancel).sort((a,b)=>a.real-b.real).filter((x,i,arr)=>arr.findIndex(y=>y.label===x.label&&y.dest===x.dest)===i).slice(0,3);
+    D.trip=D.tripNow();D.routes=[];
+    if(D.trip){if(!D.dest||D.dest.q!==D.trip.dest){const lj=await (await fetch(MVG+"/locations?query="+encodeURIComponent(D.trip.dest))).json();const hit=(lj||[]).find(x=>x.latitude)||null;D.dest=hit?{q:D.trip.dest,lat:hit.latitude,lon:hit.longitude}:null;}
+      if(D.dest){const u=MVG+"/routes?"+new URLSearchParams({originLatitude:D.pos.lat,originLongitude:D.pos.lon,destinationLatitude:D.dest.lat,destinationLongitude:D.dest.lon,routingDateTime:new Date().toISOString(),routingDateTimeIsArrival:"false",transportTypes:"UBAHN,TRAM,BUS,SBAHN,BAHN"});
+        const rj=await (await fetch(u)).json();D.routes=(Array.isArray(rj)?rj:[]).map(normRoute).filter(r=>r.veh).slice(0,3);}}
+    D.err="";D.at=Date.now();
+  }catch(e){D.err=String(e&&e.message||e).slice(0,80);}
+  D.detect();renderDeps();
+  const first=D.near[0]?(D.near[0].real-Date.now())/60000:99;
+  D.timer=setTimeout(()=>D.refresh(),D.ride?20000:first<=3?10000:first<=5?20000:60000);
+};
+function normRoute(r){
+  const pT=s=>s?new Date(s):null;
+  const parts=(r.parts||[]).map(p=>({walk:!p.line||p.line.transportType==="PEDESTRIAN",label:p.line?p.line.label:"",dir:p.line?p.line.destination:"",from:p.from.name,fromLat:p.from.latitude,fromLon:p.from.longitude,
+    dep:pT(p.from.plannedDeparture),delay:p.from.departureDelayInMinutes||0,to:p.to.name,toLat:p.to.latitude,toLon:p.to.longitude,arr:pT(p.to.plannedDeparture),
+    stops:(p.intermediateStops||[]).map(s=>({name:s.name,lat:s.latitude,lon:s.longitude,at:pT(s.plannedDeparture)}))}));
+  const veh=parts.find(p=>!p.walk);return {parts,veh,arr:parts.length?parts[parts.length-1].arr:null,changes:Math.max(0,parts.filter(p=>!p.walk).length-1)};
+}
+D.detect=function(){
+  if(!D.pos||!D.routes.length)return;const now=Date.now();
+  if(!D.ride){const b=D.chosen||D.routes[0];if(b&&b.veh.dep&&now>b.veh.dep.getTime()+(b.veh.delay||0)*60000+30000&&dist(D.pos,{lat:b.veh.fromLat,lon:b.veh.fromLon})>150){D.ride=true;D.chosen=b;toast("Unterwegs: "+b.veh.label+" Richtung "+b.veh.dir);}}
+  if(D.ride&&D.dest&&dist(D.pos,D.dest)<150){toast("Angekommen.");D.ride=false;D.chosen=null;}
+};
+function rideInfo(){
+  const r=D.chosen||D.routes[0];if(!r)return null;const now=Date.now();
+  const cur=r.parts.find(p=>!p.walk&&p.dep&&p.arr&&now>=p.dep.getTime()-30000&&now<=p.arr.getTime()+60000)||r.veh;
+  const stops=[{name:cur.from,lat:cur.fromLat,lon:cur.fromLon,at:cur.dep}].concat(cur.stops,[{name:cur.to,lat:cur.toLat,lon:cur.toLon,at:cur.arr}]);
+  let k=0,best=1e9;stops.forEach((s,i)=>{if(s.lat&&D.pos){const d=dist(D.pos,s);if(d<best){best=d;k=i;}}});
+  if(best>400){k=0;stops.forEach((s,i)=>{if(s.at&&s.at.getTime()<=now)k=i;});}
+  return {r,cur,stops,k};
+}
+function renderDeps(){
+  const el=$("#deps");
+  if(!D.open){el.innerHTML='<div class="card"><div class="k">Abfahrten</div><button class="pri" style="width:100%" id="dopen">Abfahrten in der Nähe</button></div>';$("#dopen").onclick=()=>{D.open=true;D.locate();renderDeps();};return;}
+  const now=Date.now();let h='<div class="card blue"><div class="k">Abfahrten · '+esc(D.src||"Standort wird gesucht")+(D.at?" · Stand "+hm(new Date(D.at)):"")+'</div>';
+  if(D.err)h+='<div class="err">MVG: '+esc(D.err)+'</div>';
+  if(D.trip&&D.routes.length){
+    if(D.ride){const ri=rideInfo();h+='<div class="now">'+esc(ri.cur.label)+' Richtung '+esc(ri.cur.dir)+'</div><div class="small">noch '+(ri.stops.length-1-ri.k)+' Stationen bis '+esc(ri.cur.to)+', an '+hm(ri.r.arr)+'</div><div class="stops">'+
+      ri.stops.map((s,i)=>'<div class="st'+(i<ri.k?" past":i===ri.k?" now":"")+'"><b>'+hm(s.at)+'</b><span>'+esc(s.name)+'</span></div>').join("")+'</div>';}
+    else{h+='<div class="now" style="margin-bottom:4px">Nach '+esc(D.trip.to)+'</div>'+D.routes.map(r=>{const dep=r.veh.dep?new Date(r.veh.dep.getTime()+(r.veh.delay||0)*60000):null;const m=dep?Math.round((dep-now)/60000):null;
+        return '<div class="dep"><span class="m">'+(m!=null?Math.max(0,m)+"′":"")+'</span><div><div class="l">'+esc(r.veh.label)+' ab '+esc(r.veh.from)+' '+hm(r.veh.dep)+(r.veh.delay?' <i class="late">+'+r.veh.delay+'</i>':"")+'</div><div class="s">an '+hm(r.arr)+(r.changes?" · "+r.changes+"× umsteigen":" · direkt")+'</div></div></div>';}).join("");
+      const w=D.routes[0].parts[0];if(w&&w.walk)h+='<div class="small" style="margin:6px 0 10px">Fußweg zu '+esc(w.to)+' · <a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(w.to+", München")+'&travelmode=walking">Navigieren</a></div>';}
+  }
+  h+='<div class="small" style="margin-top:6px">In der Nähe (bis 500 m)</div>';
+  if(!D.near.length)h+='<div class="small">'+(D.pos?"Gerade nichts gefunden.":"Standort wird gesucht.")+'</div>';
+  h+=D.near.map(x=>{const m=Math.round((x.real-now)/60000);return '<div class="dep"><span class="m">'+Math.max(0,m)+'′</span><div><div class="l">'+esc(x.label)+' '+esc(x.dest)+(x.delay?' <i class="late">+'+x.delay+'</i>':"")+'</div><div class="s">'+esc(x.station)+' · '+x.m+' m · '+hm(new Date(x.real))+(x.rt?"":" (Plan)")+'</div></div></div>';}).join("");
+  h+='<div class="row" style="margin-top:10px"><button id="dref">Aktualisieren</button><button id="dclose">Ausblenden</button></div></div>';
+  el.innerHTML=h;$("#dref").onclick=()=>D.refresh();$("#dclose").onclick=()=>D.stop();
+}
+setInterval(()=>{if(D.open)renderDeps();},15000);
+
+/* ---------- Anzeige ---------- */
+const PERM={mic:"",geo:""};
+async function permCheck(){try{if(navigator.permissions){const m=await navigator.permissions.query({name:"microphone"});PERM.mic=m.state;m.onchange=()=>{PERM.mic=m.state;render();};
+  const g=await navigator.permissions.query({name:"geolocation"});PERM.geo=g.state;g.onchange=()=>{PERM.geo=g.state;render();};}}catch(_){}}
+function renderSetup(){
+  const el=$("#setup");
+  if(!KEY.raw){el.innerHTML='<div class="card blue"><div class="k">Einrichtung</div><div class="now">Schlüssel fehlt</div><p>Öffne einmal den Link aus dem Sekretär-Chat (er endet mit #k=…). Danach merkt sich diese Seite den Schlüssel.</p></div>';return;}
+  const spOk=SP.ready(),micOk=PERM.mic==="granted",geoOk=PERM.geo==="granted";
+  if(spOk&&micOk&&geoOk&&!store.get("showSetup",false)){el.innerHTML="";return;}
+  const it=(name,ok,btn,id,hint)=>'<div class="si"><div><span>'+name+'</span><div class="small">'+hint+'</div></div>'+(ok?'<span class="ok">✓</span>':'<button class="pri" id="'+id+'">'+btn+'</button>')+'</div>';
+  el.innerHTML='<div class="card blue"><div class="k">Einmal einrichten</div><div class="set">'+
+    it("Spotify",spOk,"Verbinden","bsp",spOk?esc(SP.sdkState||"verbunden"):"für die Songs zwischen den Kapiteln")+
+    it("Mikrofon",micOk,"Erlauben","bmic","damit Inka nach der Show zuhört")+
+    it("Standort",geoOk,"Erlauben","bgeo","für Abfahrten in der Nähe")+
+    (spOk?'<button id="bsptest">Spotify testen (10 Sekunden)</button>':"")+
+    '</div><div class="small" style="margin-top:8px">Tipp: Chrome-Menü ⋮ > „Zum Startbildschirm hinzufügen“, dann ist Inka eine App.</div></div>';
+  const on=(id,f)=>{const b=$("#"+id);if(b)b.onclick=f;};
+  on("bsp",()=>SP.connect());on("bsptest",()=>SP.test());
+  on("bmic",async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());PERM.mic="granted";toast("Mikrofon erlaubt.");}catch(e){toast("Mikrofon gesperrt: Schloss in der Adresszeile > Berechtigungen > Mikrofon.",8000);}render();});
+  on("bgeo",()=>{navigator.geolocation.getCurrentPosition(()=>{PERM.geo="granted";toast("Standort erlaubt.");render();},()=>toast("Standort gesperrt: Schloss in der Adresszeile > Berechtigungen.",8000));});
+}
+function bar(){const i=$("#pbar");if(!i)return;const d=AUD.duration||(S.doc&&S.doc.duration)||1;i.style.width=Math.min(100,AUD.currentTime/d*100)+"%";const t=$("#ptime");if(t)t.textContent=mmss(AUD.currentTime)+" / "+mmss(d);}
+function renderShow(){
+  const el=$("#show");
+  if(!KEY.raw){el.innerHTML="";return;}
+  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Morning-Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button></div></div>';$("#reload").onclick=()=>loadShow();return;}
+  const d=S.doc,dd=new Date(d.day+"T12:00:00"),isTom=d.day!==ymd(new Date());
+  $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
+  $("#subt").textContent=(isTom?"Show für morgen · ":"")+Math.round((d.duration||0)/60)+" Min Inka, "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");
+  const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
+  const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
+  let h='<div class="card blue"><div class="k">Morning-Show mit Inka</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div><div class="time" id="ptime"></div>'+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
+    '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>';
+  h+='<div class="chs">'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</div>';
+  h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button></div>';
+  if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
+  h+='</div>';
+  el.innerHTML=h;bar();
+  $("#pp").onclick=()=>{if(!AUD.paused||SONG.on)pauseShow();else playShow();};
+  $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();
+  $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};
+  el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
+}
+function renderSent(){
+  const el=$("#sent");const all=store.get("sent",[]).filter(x=>x.day===ymd(new Date())||(S.doc&&x.day===S.doc.day));
+  el.innerHTML=all.length?'<div class="card"><div class="k">Ans Sekretariat gegeben</div>'+all.map(x=>'<div class="dep" style="padding:6px 0"><span class="small" style="min-width:46px">'+hm(new Date(x.t))+'</span><span>'+esc(x.text)+'</span></div>').join("")+'<div class="small">Wird beim nächsten Stundencheck eingetragen.</div></div>':"";
+}
+function render(){renderSetup();renderShow();renderDeps();renderSent();
+  $("#foot").innerHTML=KEY.raw?'<a href="#" id="fset">Einrichtung zeigen</a> · Autostart Gespräch: <a href="#" id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</a>':"";
+  const fs=$("#fset");if(fs)fs.onclick=e=>{e.preventDefault();store.set("showSetup",!store.get("showSetup",false));render();};
+  const fa=$("#fauto");if(fa)fa.onclick=e=>{e.preventDefault();store.set("autochat",!store.get("autochat",true));render();};}
+
+/* ---------- Start ---------- */
+(async()=>{await SP.handle();await permCheck();render();await loadShow();
+  if(D.tripNow()){D.open=true;D.locate();renderDeps();}
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&AUD.paused&&!SONG.on&&!VC.conv){const day=ymd(new Date());if(!S.doc||S.doc.day<day||new Date().getHours()>=17)loadShow();}});
+})();
+</script>
+</body>
+</html>

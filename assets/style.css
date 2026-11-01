@@ -1396,4 +1396,19 @@ html.lh-hc .sbdlg .who,html.lh-hc .sbrels b,html.lh-hc .sbalbum small,html.lh-hc
 /* Fußnote: Trefferfläche immer mindestens 24 px breit (axe target-size, seit die Textebene markierbar ist) */
 .plotted .plotsrc.vh a,.plotted .plotsrc.vh button{pointer-events:none}   /* Links der Textebene sind nur Text; geklickt wird über die Flächen (.plotlink); sonst zählt axe doppelte Ziele neben den Fußnoten */
 .plotted sup.plotsup{z-index:7}
-sup.fn.plotsup,sup.fn{padding-left:20px!important;margin-left:-20px!important}
+sup.fn.plotsup{padding-left:20px!important;margin-left:-20px!important}   /* nur Fußnoten im Plotter (Josef, 1.11.: Fußnoten flatterten) */
+/* Ein Satz für alles (Josef, 1.11., 08:10): echte Schriften aus den Plotter-Glyphen, gleiche Breiten wie der Plotter (src/build_plotfonts.py) */
+@font-face{font-family:"JKPlotRelief";src:url(fonts/JKPlotRelief.woff2) format("woff2");font-weight:400;font-display:block}
+@font-face{font-family:"JKPlotHand";src:url(fonts/JKPlotHand.woff2) format("woff2");font-weight:400;font-display:block}
+.plotted .plotsrc.mapped{font-family:"JKPlotRelief"!important;font-weight:400!important;font-style:normal!important;letter-spacing:0!important;word-spacing:0!important;font-kerning:none;font-variant-ligatures:none;text-transform:none!important;text-align:left!important;white-space:normal!important;overflow-wrap:normal;hyphens:none;text-indent:0}
+.plotted .plotsrc.mapped *{font-family:inherit!important;font-weight:400!important;font-style:normal!important;letter-spacing:0!important;word-spacing:0!important;text-transform:none!important;font-size:inherit!important;line-height:inherit!important;padding:0!important;margin:0!important;border:0!important;vertical-align:baseline}
+.plotted .plotsrc.mapped .kw,.plotted .plotsrc.mapped .kw *,.plotted .plotsrc.mapped a,.plotted .plotsrc.mapped a *{font-family:"JKPlotHand","JKPlotRelief"!important}
+/* Fußnoten bleiben im Satz und sind sichtbar; sie verändern die Zeilenhöhe nicht */
+.plotted .plotsrc.mapped sup.fn{font-family:"JKPlotRelief"!important;font-size:.62em!important;line-height:0!important;position:relative;top:-.55em;vertical-align:baseline!important;color:var(--ink,#000)!important;-webkit-text-fill-color:currentColor!important;padding:6px 1px 6px 14px!important;margin:0 0 0 -12px!important;z-index:7}
+.plotted .plotsrc.mapped sup.fn:hover,.plotted .plotsrc.mapped sup.fn.on{color:var(--red,#E2231A)!important}
+/* Zeichenfläche mit negativem Rand darf nicht durch den Absatz durchschlagen (Josef, 1.11.: Textebene versetzt, Fußnoten flatterten) */
+.plotted:not(span){display:flow-root}
+span.plotted{display:inline-block;vertical-align:top}
+
+/* Josef, 1.11.: Leerzeichen in Dialogen nie als inline-block (sonst Breite 0 bei Sigma und Zittern) */
+.sbdlg .ch.sp,.sbdlg.c-sigma .ch.sp,.sbdlg .ch.sp.shk.live{display:inline!important;animation:none!important}

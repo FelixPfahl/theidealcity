@@ -218,7 +218,7 @@
     function wordLen(from){ var n = 0; for (var q = from; q < items.length && items[q].ch !== undefined && items[q].ch !== ' '; q++) n++; return n; }
     while (k < items.length){ var it = items[k];
       if (it.ev){ page.push(it); k++; continue; }
-      if (it.ch === ' '){ if (col === 0){ k++; continue; } var wl = wordLen(k + 1); if (col + 1 + wl > cols){ line++; col = 0; k++; if (line >= rows){ pages.push(page); page = []; line = 0; } continue; } }
+      if (it.ch === ' '){ if (col === 0){ var lp = null; for (var q = page.length - 1; q >= 0; q--){ if (!page[q].ev){ lp = page[q]; break; } } if (lp && lp.ch !== ' ') page.push(it); k++; continue; } var wl = wordLen(k + 1); if (col + 1 + wl > cols){ line++; col = 0; k++; if (line >= rows){ pages.push(page); page = []; line = 0; } else page.push(it); continue; } }   /* Josef, 1.11.: Leerzeichen am Zeilenumbruch bleiben (der Browser bricht selbst um; sonst kleben Wörter zusammen) */
       if (col === 0 && line === 0 && page.length === 0 && it.ch === ' '){ k++; continue; }
       page.push(it); col++; k++;
       if (col >= cols){ line++; col = 0; if (line >= rows){ pages.push(page); page = []; line = 0; } } }
@@ -254,7 +254,7 @@
       var spans = [], curLink = null, linkEl = null; items.forEach(function(it){ if (it.ev) return; var el;
         if (it.link){ if (!linkEl || curLink !== it.link){ linkEl = document.createElement('a'); linkEl.className = 'wl'; linkEl.href = (document.getElementById('w-' + it.link.id) ? '' : (it.link.page || 'kunst') + '.html') + '#w-' + it.link.id; linkEl.addEventListener('click', function(e){ e.stopPropagation(); }); p.appendChild(linkEl); curLink = it.link; } el = document.createElement('span'); linkEl.appendChild(el); }
         else { curLink = null; el = document.createElement('span'); p.appendChild(el); }
-        el.textContent = it.ch; el.className = 'ch' + (it.emph ? ' emph' : '') + ((MOOD[curMood] || {}).fx ? ' ' + MOOD[curMood].fx : '') + (lines[k].who === 'sigma' ? ' wav' : ''); el.style.visibility = 'hidden'; el.style.animationDelay = (spans.length * 37 % 400) + 'ms'; spans.push(el); });
+        el.textContent = it.ch; el.className = 'ch' + (it.ch === ' ' ? ' sp' : '') + (it.emph ? ' emph' : '') + ((MOOD[curMood] || {}).fx ? ' ' + MOOD[curMood].fx : '') + (lines[k].who === 'sigma' ? ' wav' : ''); el.style.visibility = 'hidden'; el.style.animationDelay = (spans.length * 37 % 400) + 'ms'; spans.push(el); });
       var L = lines[k], i = 0, si = 0, due = performance.now(), fin = false, nvis = 0;
       var hidden = document.hidden;
       function finish(){ if (fin) return; fin = true; typing = false; spans.forEach(function(s){ s.style.visibility = ''; }); if (!dlg) return;

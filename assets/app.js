@@ -1159,8 +1159,35 @@
         GH[key] = gh; return gh; }
       var g = GL[ch]; if (g) return g; var d = F.g[ch] || F.g['?'] || {d:'',a:280}; if (!d.d){ g = {p:null, a:d.a}; GL[ch] = g; return g; }
       g = mk(d.d, d.a); GL[ch] = g; return g; }
-    Promise.all([fetch('../assets/relief-lines.json').then(function(r){ return r.json(); }), fetch('../assets/duerer-hand.json').then(function(r){ return r.json(); }).catch(function(){ return null; })])
+    var plotFontsP = (document.fonts && document.fonts.load) ? Promise.all([document.fonts.load('16px JKPlotRelief'), document.fonts.load('16px JKPlotHand')]).catch(function(){}) : Promise.resolve();   /* echte Schriften aus den Plotter-Glyphen (src/build_plotfonts.py) */
+    Promise.all([fetch('../assets/relief-lines.json').then(function(r){ return r.json(); }), fetch('../assets/duerer-hand.json').then(function(r){ return r.json(); }).catch(function(){ return null; }), plotFontsP])
       .then(function(fs){ F = fs[0]; FH = fs[1]; window.JK_PLOT_F = true; buildAll(); }).catch(function(e){ window.JK_PLOT_ERR = String(e && e.message || e); });
+    function plotStyle(c, st){ var s2 = {acc:st.acc, bold:st.bold, it:st.it, href:st.href, pf:st.pf}; var tag = c.tagName.toLowerCase(), cl = c.className || '';
+      if (/\bkw\b/.test(cl)) s2.acc = true; if (/\bname\b/.test(cl)) s2.bold = true;
+      if (tag === 'i' || tag === 'em' || tag === 'cite') s2.it = true; if (tag === 'b' || tag === 'strong') s2.bold = true;
+      if (tag === 'a'){ s2.href = c.getAttribute('href'); s2.acc = true; }
+      if (/\bpfahl\b/.test(cl)) s2.pf = true; return s2; }
+    /* Lage jedes Worts aus dem Browser-Satz: ein Range je Wort, Buchstaben nach ihren Breiten verteilt; Zeile auf das Raster lh gerundet */
+    function measureWords(keep, sc, fs, lh, TILT){ var kr = keep.getBoundingClientRect(), rng = document.createRange(), words = [], cur = null, space = true;
+      function addTok(tn, i0, tok, st){
+        rng.setStart(tn, i0); rng.setEnd(tn, i0 + tok.length); var rs = rng.getClientRects(); if (!rs.length) return;
+        var r = rs[0]; if (rs.length > 1){ var wsum = 0; for (var q = 0; q < rs.length; q++) wsum += rs[q].width; if (rs[rs.length - 1].top - rs[0].top > 2) r = rs[0]; else r = {left:rs[0].left, top:rs[0].top, width:wsum, height:rs[0].height}; }
+        var li = Math.max(0, Math.round((r.top - kr.top - (lh - r.height) / 2) / lh)), y = li * lh, x0 = r.left - kr.left;
+        var its = [], tot = 0;
+        for (var i = 0; i < tok.length; i++){ var ch = tok[i], hand = !!st.acc; var g = glyph(ch, hand); var kk = g.hand ? R(.95, 1.05) : 1; var s1 = (g.hand ? sc * CF('hand.size', 1.6) : sc) * kk;
+          var adv = g.a * s1; its.push({ch:ch, g:g, adv:adv, s:st, sc:s1, rot:g.hand ? R(-TILT, TILT) : 0}); tot += adv; }
+        var f = tot > 0 ? r.width / tot : 1, xx = x0; its.forEach(function(it){ it.adv *= f; it.px = xx; xx += it.adv; });
+        if (!space && cur && cur.y === y){ cur.items = cur.items.concat(its); cur.w = xx - cur.x0; }
+        else { cur = {items:its, x0:x0, y:y, w:xx - x0}; words.push(cur); }
+        space = false; }
+      (function walk(node, st){ Array.prototype.forEach.call(node.childNodes, function(c){
+        if (c.nodeType === 3){ var t = c.nodeValue || '', re = /\S+/g, m, last = 0;
+          while ((m = re.exec(t))){ if (m.index > last) space = true; addTok(c, m.index, m[0], st); last = m.index + m[0].length; }
+          if (last < t.length) space = true; return; }
+        if (c.nodeType !== 1) return; var tag = c.tagName.toLowerCase();
+        if (tag === 'br'){ space = true; return; } if (tag === 'sup') return;
+        walk(c, plotStyle(c, st)); }); })(keep, {});
+      return words; }
     function runsOf(node, st, out){
       Array.prototype.forEach.call(node.childNodes, function(c){
         if (c.nodeType === 3){ if (c.nodeValue) out.push({t:c.nodeValue, s:st}); return; }
@@ -1184,8 +1211,18 @@
       var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize), lh = hero ? fs * .9 : (parseFloat(cs.lineHeight) || fs * 1.42);
       var W = el.clientWidth; if (!W || W < 40) return;
       var sc = fs / F.upm, b_sc = sc, sw = hero ? Math.max(3, fs * .022) : CF('plot.stroke', 1.2);
-      var runs = hero ? [] : runsOf(el, {}, []);
-      var words = [], cur = null;
+      /* Ein Satz für alles (Josef, 1.11., 08:10): der Quelltext steht in echten Schriften aus den Plotter-Glyphen (JKPlotRelief, JKPlotHand, gleiche Breiten) unsichtbar im Absatz;
+         der Browser setzt ihn, der Plotter liest die Lage jedes Worts aus diesem Satz und zeichnet genau dort. Kopieren, Suchen, Fußnoten und Links sitzen damit von selbst richtig. */
+      var keep = null, words = [], cur = null;
+      if (!hero && document.fonts && document.fonts.check('16px JKPlotRelief')){
+        keep = document.createElement('span'); keep.className = 'vh plotsrc mapped'; keep.style.width = W + 'px';
+        var sbk0 = [].slice.call(el.children).filter(function(c){ return c.classList && (c.classList.contains('sbobj') || c.classList.contains('sbli')); });
+        sbk0.forEach(function(c){ c.remove(); });
+        while (el.firstChild) keep.appendChild(el.firstChild);
+        el.appendChild(keep); sbk0.forEach(function(c){ el.appendChild(c); }); el.classList.add('plotted');   /* Klasse vor dem Messen, sonst gilt der Satz ohne Umbruch (.vh) */
+        words = measureWords(keep, sc, fs, lh, TILT);
+      }
+      var runs = (hero || keep) ? [] : runsOf(el, {}, []);
       runs.forEach(function(r){
         if (r.sup){ if (!cur){ cur = {items:[], w:0}; words.push(cur); } cur.items.push({sup:r.sup}); return; }
         var txt = r.t.replace(/\s+/g, function(m){ return m.indexOf('\n') >= 0 ? '\n' : ' '; });
@@ -1245,6 +1282,15 @@
         lines = 1; }
       /* Josef, 28.10., 01:41: rot kam zu spät. Die Handschrift wird jetzt am Ende jeder Zeile nachgetragen (Federwechsel), nicht erst am Absatzende */
       function flushHand(){ if (!hitems.length) return; items.push({gap:true, len:600, snd:'feder', at:prev ? prev.end : [0, 0], cum:cum}); cum += 600; var off = cum; hitems.forEach(function(h){ h.cum += off; items.push(h); }); cum += hcum; hitems = []; hcum = 0; prevH = null; }
+      if (keep){ var lastY = null;
+        words.forEach(function(w){ if (lastY !== null && w.y !== lastY) flushHand(); lastY = w.y;
+          w.items.forEach(function(it){ add(it, it.px, w.y + base); });
+          var fi = w.items[0];
+          if (fi && (fi.s.href || fi.s.pf)) overlays.push({x:w.x0, y:w.y, w:w.w, h:lh, href:fi.s.href, pf:fi.s.pf});
+          if (fi && fi.g && fi.g.hand) hwords.push({x:w.x0, y:w.y, w:w.w, h:lh, txt:w.items.map(function(i){ return i.ch; }).join(''), base:base});
+          if (prev) prev.wordEnd = true; if (prevH) prevH.wordEnd = true; });
+        lines = words.length ? Math.round(words[words.length - 1].y / lh) : 0;
+      } else
       words.forEach(function(w){
         if (w.br){ flushHand(); x = 0; lines++; lineOff = R(0, 1); return; }
         if (x > 0 && x + w.w > W){ flushHand(); x = 0; lines++; lineOff = R(0, 1); }
@@ -1268,11 +1314,12 @@
       var HC = H + 2 * PAD;
       var cv = document.createElement('canvas'); cv.className = 'plot' + (hero ? ' plothero' : ''); cv.style.width = W + 'px'; cv.style.height = HC + 'px'; cv.style.marginTop = (-PAD) + 'px'; cv.style.marginBottom = (-PAD) + 'px'; cv.width = 0; cv.height = 0;
       var lv = document.createElement('canvas'); lv.className = 'plot live'; lv.style.width = W + 'px'; lv.style.height = HC + 'px'; lv.style.top = (-PAD) + 'px'; lv.width = 0; lv.height = 0;
-      var keep = document.createElement('span'); keep.className = 'vh plotsrc';
+      if (!keep){ keep = document.createElement('span'); keep.className = 'vh plotsrc';
       var sbk = [].slice.call(el.children).filter(function(c){ return c.classList && (c.classList.contains('sbobj') || c.classList.contains('sbli')); });   /* versteckte Dinge des Suchbilds bleiben direkt im Absatz, nicht in der Textebene (Test 1.11., 07:50) */
       sbk.forEach(function(c){ c.remove(); });
       while (el.firstChild) keep.appendChild(el.firstChild);
-      el.appendChild(keep); el.appendChild(cv); el.appendChild(lv); sbk.forEach(function(c){ el.appendChild(c); }); el.classList.add('plotted'); el.style.minHeight = H + 'px';
+      el.appendChild(keep); sbk.forEach(function(c){ el.appendChild(c); }); }
+      el.insertBefore(cv, keep.nextSibling); el.insertBefore(lv, cv.nextSibling); el.classList.add('plotted'); el.style.minHeight = H + 'px';
       sups.forEach(function(s){ s.el.classList.add('plotsup'); s.el.style.left = s.x + 'px'; s.el.style.top = s.y + 'px'; el.appendChild(s.el); });
       /* Links und Felix Pfahl als unsichtbare Flächen über dem Canvas */
       overlays.forEach(function(o){ var a = document.createElement(o.href ? 'a' : 'span'); a.className = 'plotlink' + (o.pf ? ' pfahl2' : ''); if (o.href){ a.href = o.href; a.setAttribute('tabindex', '-1'); } a.setAttribute('aria-hidden', 'true');   /* Barrierefreiheit: die echten Links stehen im Quelltext (.plotsrc), Flächen nur für die Maus */

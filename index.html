@@ -813,7 +813,8 @@ function render(){
   document.querySelectorAll("section").forEach(x=>x.classList.toggle("on",x.id==="t-"+TAB.cur));
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===TAB.cur));
   if(!KEY.raw){TAB.cur="jetzt";document.querySelectorAll("section").forEach(x=>x.classList.toggle("on",x.id==="t-jetzt"));renderSetup();return;}
-  try{if(TAB.cur==="jetzt"){renderSetup();renderJetzt();renderShow();renderSent();}
+  try{if(TAB.cur==="jetzt"){renderSetup();renderJetzt();renderShow();renderSent();
+    const sec=$("#t-jetzt"),sh=$("#show"),morning=new Date().getHours()<12&&S.doc&&!S.ended;if(morning&&sec.children[1]!==sh)sec.insertBefore(sh,$("#fristen"));if(!morning&&sh.nextElementSibling!==$("#overdue"))sec.insertBefore(sh,$("#overdue"));}
   else if(TAB.cur==="woche")renderWoche();
   else if(TAB.cur==="aufgaben")renderAufgaben();
   else if(TAB.cur==="unterwegs")renderDeps();

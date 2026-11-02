@@ -33,7 +33,9 @@ class MainActivity : AppCompatActivity() {
         WebView.setWebContentsDebuggingEnabled(true)
         web = WebView(this)
         setContentView(web)
-        Hub.web = web; Hub.activity = this
+        Hub.web = web; Hub.activity = this; Hub.ctx = applicationContext; Hub.version = versionName()
+        // Die Seite bleibt auch bei ausgeschaltetem Bildschirm "wichtig", damit Android sie während eines Songs nicht einfriert
+        if (android.os.Build.VERSION.SDK_INT >= 26) try { web.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false) } catch (_: Exception) {}
         with(web.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -127,6 +129,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun isApp() = true
         @JavascriptInterface fun version() = versionName()
         @JavascriptInterface fun setKey(k: String) { Prefs.setKey(c, k) }
+        @JavascriptInterface fun setTopic(t: String) { Prefs.setTopic(c, t) }
         @JavascriptInterface fun setClientId(id: String) { Prefs.setClientId(c, id) }
         @JavascriptInterface fun clientId(): String = Prefs.clientId(c)
         @JavascriptInterface fun spotifyInstalled(): Boolean = com.spotify.android.appremote.api.SpotifyAppRemote.isSpotifyInstalled(c)

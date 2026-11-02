@@ -561,7 +561,7 @@ SP.test=async function(){const tr=(S.doc&&S.doc.songs&&S.doc.songs[0])||{uri:"sp
 
 /* ---------- Nachrichten an das Sekretariat (verschluesselt ueber ntfy, der Stundencheck traegt ein) ---------- */
 async function sendSek(kind,data){
-  const tp=topic();if(!tp)throw new Error("kein Kanal");
+  const tp=topic();if(!tp)throw new Error("kein Kanal");if(NAT&&typeof NAT.setTopic==="function"&&S.natTopic!==tp){try{NAT.setTopic(tp);S.natTopic=tp;}catch(_){}}
   const msg=Object.assign({v:1,from:"inka",id:"i-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),t:Date.now(),day:ymd(new Date()),kind},data);
   const r=await fetch("https://ntfy.sh/"+tp,{method:"POST",body:JSON.stringify(await sealEnv(msg))});
   if(!r.ok)throw new Error("ntfy "+r.status);
@@ -1242,7 +1242,8 @@ if(NAT){
 window.__inkaNative=function(o){try{
   if(!o||!o.type)return;
   if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){
-      if(o.ev==="gesperrt"){diag("song-fremder-titel",{want:SONG.track.uri,got:o.uri||"",name:o.name||""});toast("Spotify spielte etwas anderes als „"+SONG.track.name+"“. Weiter ohne diesen Song.",9000);SONG.finish("nicht-verfuegbar");}
+      if(o.ended&&o.want&&o.want===SONG.track.uri&&!SONG.pre){SONG.finish("ende");}
+      else if(o.ev==="gesperrt"){diag("song-fremder-titel",{want:SONG.track.uri,got:o.uri||"",name:o.name||""});toast("Spotify spielte etwas anderes als „"+SONG.track.name+"“. Weiter ohne diesen Song.",9000);SONG.finish("nicht-verfuegbar");}
       else if(o.ev==="pausiert"){SONG.held=true;clearTimeout(SONG.timer);diag("pause",{why:"spotify"});render();meta();}
       else if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
   if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)toast("Kein Netz. Inka spricht weiter, Songs warten.",6000);renderShow();return;}

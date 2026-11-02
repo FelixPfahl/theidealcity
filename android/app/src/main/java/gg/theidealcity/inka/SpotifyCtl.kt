@@ -26,6 +26,8 @@ object SpotifyCtl {
     @Volatile private var ended = false
     @Volatile private var wantDur = 0L
     @Volatile private var wrongN = 0
+    @Volatile private var sawWant = false
+    private var guardOn = false
     private var backoff = 2000L
     private var appCtx: Context? = null
     private var watching = false
@@ -101,6 +103,7 @@ object SpotifyCtl {
         val was = connected
         connected = false; remote?.let { try { SpotifyAppRemote.disconnect(it) } catch (_: Exception) {} }; remote = null
         if (lostSince == 0L) lostSince = System.currentTimeMillis()
+        if (was && wantPlaying) Hub.diag("n-verloren", JSONObject().put("err", lastErr))
         emit(if (was) "verloren" else "fehler")
     }
 
@@ -128,22 +131,29 @@ object SpotifyCtl {
         if (duckWanted && !Duck.active && ps.track?.uri == wantUri && !ps.isPaused) Duck.on(appCtx)
         val uri = ps.track?.uri
         if (uri != null && uri == wantUri) {
+            if (!ps.isPaused) sawWant = true
             if (!ps.isPaused && ps.playbackPosition > 3000) wrongN = 0
             maxPosOfWant = maxOf(maxPosOfWant, ps.playbackPosition)
             val dur = ps.track?.duration ?: 0L
             if (dur > 0) wantDur = dur
-            if (dur > 0 && ps.playbackPosition >= dur - 2500) ended = true
-        } else if (wantUri != null && uri != null && maxPosOfWant > 0 && (wantDur <= 0 || maxPosOfWant >= wantDur - 15000)) {
-            ended = true   // Spotify ist nach dem Ende von selbst zum nächsten Titel gesprungen (Autoplay): sofort anhalten, auch wenn die Seite schläft
+            if (dur > 0 && ps.playbackPosition >= dur - 1000 && !ended) { ended = true; endWhy = "ende" }
+        } else if (wantUri != null && uri != null && !ended && (sawWant || (maxPosOfWant > 0 && wantDur > 0 && maxPosOfWant >= wantDur - 15000))) {
+            // Josef 2.11.2026 ("Sag mir wo die Blumen sind" nach Wand'rin' Star): Lief der Show-Song schon und kommt jetzt ein anderer Titel,
+            // ist der Song vorbei (Spotify-Autoplay) oder wurde in Spotify weitergeschaltet. Sofort anhalten, ohne auf die Seite zu warten.
+            ended = true; endWhy = "fremder Titel nach Song: " + (ps.track?.name ?: "")
         }
-        if (ended && wantPlaying) { wantPlaying = false; try { remote?.playerApi?.pause() } catch (_: Exception) {} }
+        if (ended && wantPlaying) {
+            wantPlaying = false; try { remote?.playerApi?.pause() } catch (_: Exception) {}
+            Hub.diag("n-song-ende", JSONObject().put("why", endWhy).put("pos", maxPosOfWant / 1000).put("dur", wantDur / 1000))
+        }
         emit("status")
     }
 
     fun play(ctx: Context, uri: String, pos: Long) {
         appCtx = ctx.applicationContext
-        wantUri = uri; wantPos = pos; wantPlaying = true; ended = false; maxPosOfWant = 0L; wantDur = 0L; wrongN = 0
-        startWatch()
+        wantUri = uri; wantPos = pos; wantPlaying = true; ended = false; maxPosOfWant = 0L; wantDur = 0L; wrongN = 0; sawWant = false; endWhy = ""
+        startWatch(); startGuard()
+        Hub.diag("n-play", JSONObject().put("uri", uri).put("verbunden", connected))
         if (!connected) { connect(ctx); return }
         doPlay(uri, pos)
     }
@@ -225,6 +235,7 @@ object SpotifyCtl {
                         wrongN++
                         if (wrongN >= 3) {
                             Hub.log("Fremder Titel statt Show-Song: Spotify angehalten")
+                            Hub.diag("n-fremder-titel", JSONObject().put("want", wantUri).put("got", l?.track?.uri ?: "").put("name", l?.track?.name ?: ""))
                             wantPlaying = false; lastErr = "fremder Titel"; try { r.playerApi.pause() } catch (_: Exception) {}
                             emit("gesperrt"); watching = false; return
                         }
@@ -235,6 +246,31 @@ object SpotifyCtl {
             }
         }
         Hub.main.postDelayed(tick, 4000)
+    }
+
+    @Volatile private var endWhy = ""
+
+    /** Endwächter: fragt Spotify kurz vor Songende alle 0,5 s ab, damit Autoplay keine Chance hat, auch ohne Statusmeldungen. */
+    private fun startGuard() {
+        if (guardOn) return; guardOn = true
+        val g = object : Runnable {
+            override fun run() {
+                if (!wantPlaying || wantUri == null) { guardOn = false; return }
+                val r = remote; val l = last; var delay = 2000L
+                if (r != null && r.isConnected) {
+                    if (l != null && l.track?.uri == wantUri && !l.isPaused && wantDur > 0) {
+                        val left = wantDur - (l.playbackPosition + (System.currentTimeMillis() - lastAt))
+                        if (left < 6000) { poll(r); delay = 500L } else delay = (left - 5500).coerceIn(500L, 4000L)
+                    } else if (sawWant) { poll(r); delay = 1000L }
+                }
+                Hub.main.postDelayed(this, delay)
+            }
+        }
+        Hub.main.post(g)
+    }
+
+    private fun poll(r: SpotifyAppRemote) {
+        try { r.playerApi.playerState.setResultCallback { if (remote === r) onState(it) } } catch (_: Exception) {}
     }
 
     fun onNetwork(online: Boolean) {

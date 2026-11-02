@@ -277,11 +277,13 @@ KEEP.off=function(){try{if(KEEP.src){KEEP.src.stop();KEEP.src.disconnect();KEEP.
    Waehrend der Show haelt die Seite den Bildschirm wach; nach 20 s ohne Beruehrung legt sich ein Schwarzbild darueber. */
 const WL={lock:null,touch:Date.now()};
 WL.playing=()=>!!(SONG.on||(!AUD.paused&&!AUD.ended));
-WL.on=async function(){try{if(!("wakeLock" in navigator)||WL.lock||document.hidden)return;WL.lock=await navigator.wakeLock.request("screen");
+WL.on=async function(){try{if(NAT||WIN||!("wakeLock" in navigator)||WL.lock||document.hidden)return;WL.lock=await navigator.wakeLock.request("screen");
   WL.lock.addEventListener("release",()=>{WL.lock=null;});if(!WL.logged){WL.logged=1;diag("wach",{});}}catch(e){if(!WL.errLogged){WL.errLogged=1;diag("wach-fehler",{e:String(e&&e.name||e)});}}};
 WL.off=function(){try{if(WL.lock)WL.lock.release();}catch(_){}WL.lock=null;$("#dim").classList.remove("on");};
 ["pointerdown","keydown","touchstart"].forEach(ev=>document.addEventListener(ev,()=>{WL.touch=Date.now();$("#dim").classList.remove("on");},true));
-setInterval(()=>{if(document.hidden)return;if(WL.playing()){WL.on();if(Date.now()-WL.touch>20000&&!VC.conv&&!$("#sheet").classList.contains("on")&&$("#sheet").style.display!=="block")$("#dim").classList.add("on");}else{if(WL.lock&&!SONG.on)WL.off();$("#dim").classList.remove("on");}},2000);
+/* Josef 2.11.2026: Schwarzbild und Bildschirm-wach-Halten raus. In den Apps läuft die Show bei ausgeschaltetem Bildschirm weiter;
+   nur im normalen Browser bleibt der Bildschirm während der Show an (ohne Schwarzbild), weil Chrome sonst die Seite anhält. */
+setInterval(()=>{if(document.hidden)return;$("#dim").classList.remove("on");if(NAT||WIN){if(WL.lock)WL.off();return;}if(WL.playing())WL.on();else if(WL.lock&&!SONG.on)WL.off();},2000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&WL.playing())WL.on();});
 async function playShow(){
   SP.unlock();KEEP.on();WL.touch=Date.now();WL.on();

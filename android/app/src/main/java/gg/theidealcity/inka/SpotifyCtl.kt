@@ -135,9 +135,14 @@ object SpotifyCtl {
 
     private fun doPlay(uri: String, pos: Long) {
         val api = remote?.playerApi ?: return
+        // Josef 2.11.2026: Einblenden wie im Radio. Spotify hat keine eigene Lautstärke für fremde Apps,
+        // deshalb wird die Medienlautstärke kurz abgesenkt und in 4 s auf den alten Wert zurückgeführt (Inka schweigt in dem Moment).
+        val fade = pos <= 1500
+        if (fade) Fade.down(appCtx)
         api.play(uri).setResultCallback {
             if (pos > 1500) api.seekTo(pos)
-        }.setErrorCallback { t -> lastErr = "play: " + t.javaClass.simpleName; emit("fehler") }
+            if (fade) Fade.up(appCtx)
+        }.setErrorCallback { t -> if (fade) Fade.restore(appCtx); lastErr = "play: " + t.javaClass.simpleName; emit("fehler") }
     }
 
     private fun ensurePlaying(why: String) {
@@ -224,4 +229,50 @@ object SpotifyCtl {
     }
 
     private fun emit(ev: String) { Hub.emit(stateJson().put("ev", ev)) }
+}
+
+
+/** Einblenden über die Medienlautstärke (Josef 2.11.2026). Stellt immer den Ausgangswert wieder her;
+ *  dreht der Nutzer selbst am Lautstärkeregler, bricht das Einblenden ab und lässt seinen Wert stehen. */
+object Fade {
+    private var target = -1
+    private var setTo = -1
+    private var gen = 0
+
+    private fun am(c: Context?) = c?.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
+
+    fun down(c: Context?) {
+        val a = am(c) ?: return
+        val cur = a.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+        if (target < 0) target = cur
+        if (target <= 1) return
+        setTo = maxOf(1, (target * 0.3).toInt())
+        try { a.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, setTo, 0) } catch (_: Exception) {}
+        val my = ++gen
+        Hub.main.postDelayed({ if (gen == my && target >= 0) up(c) }, 8000)   // Sicherheitsnetz, falls Spotify nicht antwortet
+    }
+
+    fun up(c: Context?) {
+        val a = am(c) ?: return
+        if (target < 0) return
+        val t = target; val start = setTo.coerceAtLeast(1); val my = ++gen
+        val steps = 16
+        for (i in 1..steps) {
+            Hub.main.postDelayed({
+                if (gen != my) return@postDelayed
+                val now = a.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+                if (setTo >= 0 && now != setTo) { target = -1; setTo = -1; return@postDelayed }   // Nutzer hat selbst geregelt
+                val v = start + ((t - start) * i) / steps
+                try { a.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, v, 0) } catch (_: Exception) {}
+                setTo = v
+                if (i == steps) { target = -1; setTo = -1 }
+            }, (i * 250).toLong())
+        }
+    }
+
+    fun restore(c: Context?) {
+        val a = am(c) ?: return
+        if (target >= 0) try { a.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, target, 0) } catch (_: Exception) {}
+        target = -1; setTo = -1; gen++
+    }
 }

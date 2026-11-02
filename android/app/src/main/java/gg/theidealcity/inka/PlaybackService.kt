@@ -164,7 +164,7 @@ class PlaybackService : Service() {
             .build()
     }
 
-    override fun onTaskRemoved(rootIntent: Intent?) { SpotifyCtl.keepAlive(this, false); SpotifyCtl.stop(); stopSelf() }
+    override fun onTaskRemoved(rootIntent: Intent?) { Fade.restore(this); SpotifyCtl.keepAlive(this, false); SpotifyCtl.stop(); stopSelf() }
 
     override fun onDestroy() {
         running = null

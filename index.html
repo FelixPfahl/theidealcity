@@ -1163,7 +1163,9 @@ $("#mic").onclick=()=>sheetDiktat();
 function armSong(st){if(!SONG.on||!SONG.track)return;clearTimeout(SONG.timer);const dur=(st&&st.dur)||SONG.dur||SONG.track.ms||210000,pos=(st&&st.pos)||SONG.lastPos||0;SONG.timer=setTimeout(()=>SONG.finish("zeit"),Math.max(3000,dur-pos)+2500);}
 function appLost(st){if(SONG.lost)return;SONG.lost=true;clearTimeout(SONG.timer);diag("spotify-verloren",{err:st&&st.err,pos:st&&st.pos});
   /* Josef 2.11.2026: "bau das wirklich stabil". Die App hält Spotify selbst wach (ab Android-App 1.1.4). Kommt die Verbindung binnen 60 s nicht, geht die Show ohne diesen Song weiter. */
-  toast("Spotify antwortet gerade nicht. Ich versuche es weiter, nach einer Minute geht es ohne diesen Song weiter.",9000);
+  /* Hat am 2.11. im Zug geholfen: Spotify einmal nach vorne holen, wenn Inka gerade sichtbar ist (danach verbindet Inka neu). */
+  if(NAT&&typeof NAT.openSpotify==="function"&&SONG.woke!==SONG.k&&document.visibilityState==="visible"){SONG.woke=SONG.k;setTimeout(()=>{try{NAT.openSpotify();diag("spotify-wecken",{});}catch(_){}},1500);toast("Spotify antwortet nicht, ich wecke es kurz. Danach zurück zu Inka.",9000);}
+  else toast("Spotify antwortet gerade nicht. Ich versuche es weiter, nach einer Minute geht es ohne diesen Song weiter.",9000);
   meta();renderShow();}
 if(NAT){
   try{NAT.setClientId(SP_CLIENT);if(KEY.raw)NAT.setKey(KEY.raw);}catch(_){}

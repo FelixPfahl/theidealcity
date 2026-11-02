@@ -243,7 +243,7 @@ async function loadShow(){
     S.dayShows=S.shows.filter(x=>x.day===today||x.day===tom);
     S.loading="";
     if(!doc){S.doc=null;S.err="Für heute liegt noch keine Show hier. Der Morgenlauf legt sie gegen 4:30 Uhr ab.";render();return;}
-    if(!S.doc||S.doc.day!==doc.day||S.doc.id!==doc.id||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
+    if(!S.doc||S.doc.day!==doc.day||S.doc.id!==doc.id||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;S.resume=POS.load(doc);if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
     S.err="";render();
   }catch(e){S.loading="";S.err=String(e&&e.message||e)==="kein Schlüssel"?"":"Laden ging nicht: "+String(e&&e.message||e).slice(0,80)+". Schlüssel-Link noch einmal öffnen?";render();}
 }
@@ -290,10 +290,36 @@ async function playShow(){
   if(S.waitSong!=null&&!SONG.on){const k=S.waitSong;S.waitSong=null;diag("song-nach-warten",{k,via:"play"});SONG.start(k);return;}
   if(!(await ensureAudio()))return;
   if(SONG.on){await SONG.finish("weiter");return;}
-  if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};}
+  if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};POS.clear();}
+  if(S.resume&&!SONG.on&&AUD.currentTime<1){const r=S.resume;S.resume=null;const c=chapters();(r.done||[]).forEach(k=>{S.songDone[k]=true;});
+    SP.warm();
+    if(r.song>=0&&c[r.song]&&c[r.song].type==="song"){diag("weiter-wo",{song:r.song,s:Math.round((r.spos||0)/1000)});toast("Weiter, wo du warst.");jumpSong(r.song,(r.spos||0)/1000);return;}
+    AUD.currentTime=Math.max(0,(r.t||0)-2);diag("weiter-wo",{t:Math.round(r.t||0)});toast("Weiter, wo du warst.");}
   try{await AUD.play();}catch(e){toast("Noch einmal auf Play tippen.");}
   SP.warm();
 }
+/* Josef 2.11.2026: "Die App soll sich merken, bis wohin ich gehört habe, wenn ich sie schließe oder andere Sachen dazwischenkommen."
+   Stand je Show: Sprechstelle, laufender Song mit Position, schon gespielte Songs. Gespeichert alle 5 s beim Hören, bei Pause, beim Wegwechseln. */
+const POS={key:d=>"pos:"+(d.id||d.day),
+  load(d){const r=store.get(POS.key(d),null);if(!r||Date.now()-(r.at||0)>4*86400000)return null;if(!(r.t>3||r.song>=0))return null;return r;},
+  save(){try{if(!S.doc||S.ended)return;const c=chapters();let t=AUD.currentTime||0,song=-1,spos=0;
+    if(SONG.on&&SONG.track&&!SONG.pre){song=SONG.k;spos=Math.max(SONG.lastPos||0,Math.min(Date.now()-SONG.started,(SONG.track.ms||0)));t=c[SONG.k]?c[SONG.k].start:t;}
+    if(t<3&&song<0)return;const done=Object.keys(S.songDone).filter(k=>S.songDone[k]).map(Number);
+    store.set(POS.key(S.doc),{t,song,spos,done,at:Date.now(),pub:S.doc.published||0});}catch(_){}},
+  clear(){try{if(S.doc)localStorage.removeItem("inka:"+POS.key(S.doc));}catch(_){}}};
+setInterval(()=>{if(SONG.on||!AUD.paused)POS.save();},5000);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)POS.save();});
+window.addEventListener("pagehide",()=>POS.save());
+AUD.addEventListener("pause",()=>POS.save());
+/* Josef 2.11.2026: "Die App bricht wieder ab, wenn sie im Hintergrund läuft" (Inkas Text, nicht der Song).
+   Hält Android Inkas Stimme an, ohne dass du Pause gedrückt hast (z. B. weil eine andere App kurz Ton braucht), spielt Inka von selbst weiter. */
+S.selfPause=0;
+{const _ps=pauseShow;pauseShow=function(){S.selfPause=Date.now();return _ps.apply(this,arguments);};}
+AUD.addEventListener("pause",()=>{if(SONG.on||S.ended||AUD.ended||VC.conv||VC.starting||Date.now()-S.selfPause<1500||S.drag!=null)return;
+  if(Date.now()-(S.songEndAt||0)<1500)return;
+  diag("inka-fremdpause",{vis:document.visibilityState,t:Math.round(AUD.currentTime)});
+  let n=0;const again=()=>{if(!AUD.paused||SONG.on||VC.conv||Date.now()-S.selfPause<1500)return;AUD.play().then(()=>diag("inka-fremdpause-weiter",{n})).catch(()=>{if(++n<20)setTimeout(again,3000);});};
+  setTimeout(again,1200);});
 function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();KEEP.off();WL.off();}
 function seekCh(k){const c=chapters()[k];if(!c)return;if(SONG.on)SONG.finish("sprung",true);
   ensureAudio().then(ok=>{if(!ok)return;S.songDone={};for(let i=0;i<k;i++)S.songDone[i]=true;AUD.currentTime=c.type==="song"?c.start+1.02:c.start;AUD.play().catch(()=>{});});}
@@ -305,7 +331,7 @@ AUD.addEventListener("timeupdate",()=>{
   /* Radio-Übergang (Josef 1.11.2026: "Songs können schon leise eingespielt werden, während sie anmoderiert werden, wie im Radio").
      Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
   const nx=chapters()[k+1];
-  const natDuck=!!(NAT&&typeof NAT.spotifyDuck==="function");
+  const natDuck=false; /* 2.11.2026: in der App hält Android Inkas Stimme an, sobald Spotify unter ihr startet. Vorlauf dort aus. */
   if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
   if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
   if(k!==S.ch){S.ch=k;meta();renderShow();}
@@ -314,7 +340,7 @@ AUD.addEventListener("timeupdate",()=>{
 AUD.addEventListener("play",()=>{KEEP.on();render();meta();});
 AUD.addEventListener("pause",()=>{render();if(!SONG.on&&document.hidden&&!AUD.ended)diag("inka-angehalten",{t:Math.round(AUD.currentTime),vis:document.visibilityState});});
 ["stalled","waiting","error","suspend"].forEach(ev=>AUD.addEventListener(ev,()=>{if(!AUD.paused&&ev!=="suspend"||ev==="error")diag("inka-"+ev,{t:Math.round(AUD.currentTime),vis:document.visibilityState,rs:AUD.readyState});}));
-AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;render();if(store.get("autochat",true)&&!(S.doc&&S.doc.nochat))setTimeout(()=>VC.start(true),900);});
+AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;POS.clear();render();if(store.get("autochat",true)&&!(S.doc&&S.doc.nochat))setTimeout(()=>VC.start(true),900);});
 function meta(){try{if(!("mediaSession" in navigator))return;const c=chapters()[S.ch];
   navigator.mediaSession.metadata=new MediaMetadata({title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Morning-Show"),artist:SONG.on&&SONG.track?SONG.track.artist:"Inka",album:"Morning-Show "+(S.doc?S.doc.day:"")});}catch(_){}}
 try{if("mediaSession" in navigator){
@@ -751,7 +777,7 @@ function renderShow(){
   $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
   $("#subt").textContent=(isTom?"Show für morgen · ":isOld?"Aus dem Archiv · ":"")+Math.round(totalSec()/60)+" Min, davon "+((d.songs||[]).length)+" Songs"+(d.made?" · Fassung "+hm(new Date(d.made)):"")+(d.weather&&d.weather.short?" · "+d.weather.short:"");
   const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
-  const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:(cur>=0&&c[cur]?c[cur].title:"Bereit");
+  const rs=S.resume&&!playing?S.resume:null;const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:rs?("Weiter bei: "+(rs.song>=0&&((d.songs||[])[songIndex(rs.song)])?"♪ "+(d.songs||[])[songIndex(rs.song)].name:(c[chAt(rs.t||0)]||{}).title||mmss(rs.t||0))):(cur>=0&&c[cur]?c[cur].title:"Bereit");
   let h='';
   h+='<div class="chips" style="margin-bottom:8px">'+S.dayShows.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-showsel="'+esc(x.id)+'">'+esc(showLabel(x))+'</button>').join("")+'<button class="chip" id="parch">Alle Shows'+(S.shows.length?' ('+S.shows.length+')':'')+'</button></div>';
   h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div>'+(SONG.on&&SONG.track&&SONG.track.uri?'<a class="small" style="color:var(--blue)" href="https://open.spotify.com/track/'+esc(SONG.track.uri.split(":").pop())+'" target="_blank" rel="noopener">Lyrics in Spotify</a>'+(SONG.lost?' <span class="small err">· Spotify verbindet neu …</span>':SONG.held?' <span class="small">· angehalten</span>':''):'')+'<div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+

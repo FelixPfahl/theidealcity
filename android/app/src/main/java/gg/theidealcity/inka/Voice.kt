@@ -225,9 +225,9 @@ object Voice {
                 val c = ctx ?: return
                 try { mp?.pause() } catch (_: Exception) {}
                 stopTick()
-                seek(s.t + 1020)
-                val wasPre = pre && activeK == s.k
+                val wasPre = pre && activeK == s.k   // vor dem Sprung bestimmen: seek() beendet den Vorlauf (2.11.2026: Song lief sonst doppelt)
                 pre = false
+                seek(s.t + 1020)
                 if (wasPre) SpotifyCtl.duck(c, false)
                 else if (spotifyOk()) { activeK = s.k; activeUri = s.uri; activeAt = System.currentTimeMillis(); SpotifyCtl.play(c, s.uri, 0L) }
                 else { emit("song-skip", JSONObject().put("k", s.k)); play(false); return }

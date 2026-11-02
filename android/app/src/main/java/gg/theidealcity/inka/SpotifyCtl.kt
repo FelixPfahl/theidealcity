@@ -167,6 +167,7 @@ object SpotifyCtl {
         if (fade) Fade.down(appCtx)
         api.play(uri).setResultCallback {
             if (pos > 1500) api.seekTo(pos)
+            if (duckWanted && !Duck.active) Duck.on(appCtx)   // so früh wie möglich absenken, nicht erst bei der nächsten Statusmeldung
             if (fade) Fade.up(appCtx)
         }.setErrorCallback { t -> if (fade) Fade.restore(appCtx); lastErr = "play: " + t.javaClass.simpleName; emit("fehler") }
     }
@@ -357,8 +358,10 @@ object Duck {
                 .setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
                 .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
             val r = android.media.AudioFocusRequest.Builder(android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
-                .setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
-            if (a.requestAudioFocus(r) == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { req = r; active = true; Hub.log("Radio: Spotify abgesenkt") }
+                .setAudioAttributes(attrs).setOnAudioFocusChangeListener { f -> if (f == android.media.AudioManager.AUDIOFOCUS_LOSS || f == android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) { active = false; req = null } }.build()
+            val g = a.requestAudioFocus(r)
+            if (g == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { req = r; active = true; Hub.log("Radio: Spotify abgesenkt") }
+            Hub.diag("n-absenken", JSONObject().put("ok", g == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED).put("antwort", g))
         } catch (e: Exception) { Hub.log("Absenken nicht möglich: " + e.javaClass.simpleName) }
         // Sicherheitsnetz: nie länger als 20 s absenken
         Hub.main.postDelayed({ if (active) { SpotifyCtl.duckWanted = false; off(c) } }, 20000)

@@ -1189,6 +1189,8 @@ if(NAT){
       if(st.connecting&&el<20000&&!SONG.lost){renderShow();return;}
       if(el>60000){diag("song-ohne-spotify",{err:st.err||"",online:navigator.onLine});toast(navigator.onLine?"Spotify nicht erreichbar, weiter ohne diesen Song.":"Kein Netz und keine Verbindung zu Spotify, weiter ohne diesen Song. Tipp für den Zug: in Spotify den Offlinemodus einschalten.",10000);SONG.finish("spotify-fehler");return;}
       appLost(st);return;}
+    /* Josef 2.11.2026: gesperrter Song (in Deutschland nicht verfügbar), Spotify spielte stattdessen alte Titel. Läuft nach 12 s ein anderer Titel als bestellt, Song überspringen. */
+    if(st.uri&&st.uri!==SONG.track.uri&&!SONG.pre&&el>12000&&!SONG.lost){diag("song-nicht-verfuegbar",{want:SONG.track.uri,got:st.uri});toast("„"+SONG.track.name+"“ ist bei Spotify gerade nicht abspielbar, weiter ohne ihn.",9000);SONG.finish("nicht-verfuegbar");return;}
     if(st.uri===SONG.track.uri){if(st.pos>0)SONG.lastPos=st.pos;if(st.dur)SONG.dur=st.dur;}
     if(SONG.lost&&st.uri===SONG.track.uri&&!st.paused){SONG.lost=false;diag("spotify-wieder",{pos:st.pos});toast("Spotify wieder da, weiter geht's.");armSong(st);meta();}
     if(st.ended||(st.uri===SONG.track.uri&&st.dur&&st.pos>=st.dur-2500)){SONG.finish("ende");return;}

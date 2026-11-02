@@ -17,3 +17,6 @@ Der Stundencheck führt den Auftrag sofort aus (eigener Tokenrahmen bis 300.000)
 8. Ablegen: doc.json mit `day`, `title` (z. B. "Die lange Fahrt", "Abendshow"), `kind "bestellt"`, `duration`, `chapters`, `voice`, `made`, `text`, `checked`, `weather`, `trips`, `hints`, `questions` (leer, wenn keine Fragen gewünscht), `songs`, `nochat` (true bei Fahrt und Lauf). Dann `python3 -I repo/werkzeug/begleit.py doc.json out/show.mp4 entries.json k/inka/schluessel.json repo <slot>`; Slot = kurzer Name ohne Leerzeichen (fahrt, abend, lauf, extra). Gibt es für den Tag noch keine Show, ohne Slot (dann ist sie die Show des Tages). Commit "Show bestellt <JJJJ-MM-TT> <slot>", push origin inka.
 9. Quittung an die App: `kanal.py quittung <id> 1 "Show '<Titel>' für <TT.MM.> liegt bereit, <Min> Min"` bzw. bei Fehler 0 mit Grund.
 10. Liegt die bestellte Show auf einem Tag, für den noch kein Morgenlauf gelaufen ist, und ist sie die Show des Tages (ohne Slot), lässt der Morgenlauf seine eigene Show weg (Regel im Morgenlauf).
+
+
+Songs prüfen (Pflicht, Josef 2.11.2026): Nach der Songauswahl und vor dem Vertonen `python3 werkzeug/songs_pruefen.py <spotify-token.json> <songs.json>` ausführen. Wurde ein Song entfernt, seine Ansage und Musikmarke aus dem Text nehmen.

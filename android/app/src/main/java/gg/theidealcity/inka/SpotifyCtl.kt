@@ -110,8 +110,21 @@ object SpotifyCtl {
         Hub.main.postDelayed({ if (wantPlaying || keep) appCtx?.let { connect(it) } }, d)
     }
 
+    /** Radio-Übergang (Josef 1.11./2.11.2026): Song startet unter Inkas letzten Worten leise und wird hochgeblendet.
+     *  Inka nimmt dafür den Audiofokus "kurz, darf absenken"; Android senkt Spotify ab. Fokus abgeben = Spotify blendet hoch. */
+    @Volatile var duckWanted = false
+
+    fun duck(ctx: Context, on: Boolean) {
+        appCtx = ctx.applicationContext
+        duckWanted = on
+        if (!on) { Duck.off(appCtx); return }
+        val l = last
+        if (l != null && l.track?.uri == wantUri && !l.isPaused) Duck.on(appCtx)
+    }
+
     private fun onState(ps: PlayerState) {
         last = ps; lastAt = System.currentTimeMillis()
+        if (duckWanted && !Duck.active && ps.track?.uri == wantUri && !ps.isPaused) Duck.on(appCtx)
         val uri = ps.track?.uri
         if (uri != null && uri == wantUri) {
             maxPosOfWant = maxOf(maxPosOfWant, ps.playbackPosition)
@@ -137,7 +150,7 @@ object SpotifyCtl {
         val api = remote?.playerApi ?: return
         // Josef 2.11.2026: Einblenden wie im Radio. Spotify hat keine eigene Lautstärke für fremde Apps,
         // deshalb wird die Medienlautstärke kurz abgesenkt und in 4 s auf den alten Wert zurückgeführt (Inka schweigt in dem Moment).
-        val fade = pos <= 1500
+        val fade = pos <= 1500 && !duckWanted
         if (fade) Fade.down(appCtx)
         api.play(uri).setResultCallback {
             if (pos > 1500) api.seekTo(pos)
@@ -176,9 +189,9 @@ object SpotifyCtl {
         }
     }
 
-    fun pause() { wantPlaying = false; try { remote?.playerApi?.pause() } catch (_: Exception) {} }
+    fun pause() { wantPlaying = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
     fun resume(ctx: Context) { if (wantUri == null) return; wantPlaying = true; startWatch(); if (!connected) connect(ctx) else ensurePlaying("weiter") }
-    fun stop() { wantPlaying = false; wantUri = null; ended = false; try { remote?.playerApi?.pause() } catch (_: Exception) {} }
+    fun stop() { wantPlaying = false; wantUri = null; ended = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
 
     /** Wächter: erkennt stumme Abbrüche (keine Statusmeldungen mehr, Spotify pausiert von selbst, anderer Song). */
     private fun startWatch() {
@@ -274,5 +287,35 @@ object Fade {
         val a = am(c) ?: return
         if (target >= 0) try { a.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, target, 0) } catch (_: Exception) {}
         target = -1; setTo = -1; gen++
+    }
+}
+
+
+/** Audiofokus "kurz, darf absenken": Android senkt dabei andere Musik (Spotify) automatisch ab und blendet sie beim Abgeben wieder hoch. */
+object Duck {
+    @Volatile var active = false; private set
+    private var req: android.media.AudioFocusRequest? = null
+
+    fun on(c: Context?) {
+        val a = c?.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager ?: return
+        if (active) return
+        try {
+            val attrs = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+            val r = android.media.AudioFocusRequest.Builder(android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                .setAudioAttributes(attrs).setOnAudioFocusChangeListener { }.build()
+            if (a.requestAudioFocus(r) == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { req = r; active = true; Hub.log("Radio: Spotify abgesenkt") }
+        } catch (e: Exception) { Hub.log("Absenken nicht möglich: " + e.javaClass.simpleName) }
+        // Sicherheitsnetz: nie länger als 20 s absenken
+        Hub.main.postDelayed({ if (active) off(c) }, 20000)
+    }
+
+    fun off(c: Context?) {
+        val a = c?.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
+        val r = req; req = null
+        if (r != null && a != null) try { a.abandonAudioFocusRequest(r) } catch (_: Exception) {}
+        if (active) Hub.log("Radio: Spotify hochgeblendet")
+        active = false
     }
 }

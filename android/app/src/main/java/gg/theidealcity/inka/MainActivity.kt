@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyStop() { Hub.main.post { SpotifyCtl.stop() } }
         @JavascriptInterface fun spotifyState(): String = SpotifyCtl.stateJson().toString()
         @JavascriptInterface fun spotifyKeep(on: Boolean) { Hub.main.post { SpotifyCtl.keepAlive(c, on) } }
+        @JavascriptInterface fun spotifyDuck(on: Boolean) { Hub.main.post { SpotifyCtl.duck(c, on) } }
         /** uris als JSON-Liste; speichert sie in Spotify "Lieblingssongs" */
         @JavascriptInterface fun saveSongs(json: String) {
             val l = try { val a = JSONArray(json); (0 until a.length()).map { a.getString(it) }.filter { it.startsWith("spotify:track:") } } catch (_: Exception) { emptyList() }

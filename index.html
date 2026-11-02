@@ -305,8 +305,9 @@ AUD.addEventListener("timeupdate",()=>{
   /* Radio-Übergang (Josef 1.11.2026: "Songs können schon leise eingespielt werden, während sie anmoderiert werden, wie im Radio").
      Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
   const nx=chapters()[k+1];
-  if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&!document.hidden&&SP.player&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
-  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;AUD.pause();RADIO.ramp(1,2600);diag("radio-voll",{});}
+  const natDuck=!!(NAT&&typeof NAT.spotifyDuck==="function");
+  if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
+  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
   if(k!==S.ch){S.ch=k;meta();renderShow();}
   bar();
 });
@@ -338,7 +339,8 @@ SONG.start=async function(k,pre){
   clearInterval(RADIO.iv);RADIO.set(pre?0:1);
   const sp0=SONG.seekPos||0;SONG.seekPos=0;if(sp0){SONG.started=Date.now()-sp0;SONG.lastPos=sp0;}
   try{SONG.via=await SP.play(tr.uri,sp0);
-    if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
+    if(pre&&SONG.via==="app-direkt"&&NAT&&typeof NAT.spotifyDuck==="function"){try{NAT.spotifyDuck(true);}catch(_){}diag("radio-vorlauf",{app:true});}
+    else if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
       if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){const em=String(e&&e.message||e);diag("song-fehler",{e:em,vis:document.visibilityState,pre:!!pre,try:SONG.tries||0});
     SONG.on=false;SONG.track=null;RADIO.set(1);

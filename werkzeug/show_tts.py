@@ -18,6 +18,7 @@ import soundfile as sf
 src, out, keyfile = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
 MODEL = os.environ.get("EL_MODEL", "eleven_v3")
+LANG = os.environ.get("EL_LANG", "de")  # Sprache der Show (fr fuer franzoesische Shows, Josef 2.11.2026)
 # Tempo je Stimme (Josef 1.11.2026: schneller, Inka etwas langsamer als Wagner)
 SPEEDS = {"inka": float(os.environ.get("SPEED_INKA", "1.15")), "wagner": float(os.environ.get("SPEED_WAGNER", "1.25")), "sigma": float(os.environ.get("SPEED_SIGMA", "1.15")), "xae": float(os.environ.get("SPEED_XAE", "1.2"))}
 VOICES = {"inka": os.environ.get("EL_VOICE_INKA", "S87WJpstXs0Ge2ukRiXJ"),
@@ -97,7 +98,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from zahlen import sprich  # Zahlen als Woerter (Josef 1.11.2026)
 
 def tts(speaker, text, idx):
-    text = sprich(text)
+    text = sprich(text) if LANG == "de" else text  # zahlen.py kennt nur Deutsch
     vid = VOICES[speaker]
     h = hashlib.sha1((vid + MODEL + speaker + text).encode()).hexdigest()[:12]
     mp3 = os.path.join(out, "el_%03d_%s_%s.mp3" % (idx, speaker, h))
@@ -106,7 +107,7 @@ def tts(speaker, text, idx):
     for old in glob.glob(os.path.join(out, "el_*_%s_%s.mp3" % (speaker, h))):
         if os.path.getsize(old) > 1000: shutil.copyfile(old, mp3); return mp3, 0
     payload = {"text": text, "model_id": MODEL, "voice_settings": SETTINGS[speaker]}
-    if "flash" in MODEL or "turbo" in MODEL: payload["language_code"] = "de"
+    if "flash" in MODEL or "turbo" in MODEL: payload["language_code"] = LANG
     for attempt in range(3):
         r = subprocess.run(["curl", "-sS", "-m", "300", "-o", mp3, "-w", "%{http_code}", "-X", "POST",
                             "-H", "xi-api-key: " + KEY, "-H", "Content-Type: application/json", "-d", json.dumps(payload),

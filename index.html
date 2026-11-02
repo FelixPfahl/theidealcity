@@ -135,7 +135,7 @@ a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="1.11. 17:30 (Show-Songs in Lieblingssongs)";
+const APPV="2.11. 8:30 (keine Lieblingssongs mehr)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -1287,6 +1287,7 @@ function updWire(){const g=$("#updgo");if(g)g.onclick=()=>{if(playingNow()){toas
 
 /* ===== Android-App: Show-Songs in Spotify "Lieblingssongs" (Josef 1.11.2026; Playlists darf die Inka-App bei Spotify nicht mehr anlegen) ===== */
 async function syncLiked(force){
+  return; /* Josef 2.11.2026: Inka legt keine Songs mehr in die Spotify-Lieblingssongs */
   if(!NAT||typeof NAT.saveSongs!=="function")return;
   const t=ymd(new Date()),m=ymd(addD(new Date(),1));
   const ids=(S.shows||[]).filter(x=>x.day===t||x.day===m).map(x=>x.id);

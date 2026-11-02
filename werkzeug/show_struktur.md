@@ -39,7 +39,9 @@ Nach Songs (freier Tag 3 bis 4 Mal, Schultag 4 bis 6 Mal, nie zweimal gleich) be
 - **Übergang**: Inka übernimmt mit einem warmen Satz zu Sigma und leitet ins Kapitel über.
 - Länge 4 bis 8 Zeilen. Ein Thema darf über mehrere Ertappt-Szenen weiterlaufen (Fortsetzung beim nächsten Song).
 
-Songs: nie zweimal derselbe Song in den Shows von 7 Tagen (rollend, Josef 1.11.2026; Werkzeug `songs_woche.py`, Quelle Top-Tracks aller Zeiträume). Schultag 12, freier Tag 6 (doppelt so viele wie früher); bei 12 Songs weitere `## [song]` zwischen kürzeren Kapiteln. Jeder Song wird im Gespräch angesagt (Titel, Künstler, ein Satz Haltung von Wagner oder Inka), nicht als Liste.
+**Songquelle (Josef 2.11.2026, verbindlich):** nur Josefs eigene Spotify-Playlists, keine Top-Tracks, keine fremden Songs: Pretty Little Baby (3loUWnhgawZLkn8nLHEtWy), What's/Eternity/to/tonight (0v7LcbC67INU6PQiK5E6fd), €N€M¥ (17iSBZN9HZ0YfVLiBoKu3t), painterInYouRpocket#########//// (5F6oS2uX37f6msAriB4M0U), [_0\/€ (7mUqn6dfNOCTUaWwmFfeju), THERE/S/N0/ONE////////// (3Dl5XD64pICnJbCiqZArNI), just/a/clown/guest/starring/in/your/life (2yAX1xGZAevuqscgfrJsSf), HowManySHRIMPsDoYouHaveToEatBeforeYouMakeYourSkinTurnPink (1jrZII6Ez4xMO8zH4HYhzm), FALLINFORREAL//// (4LY5sFdKiwX6AUYy9yPLbA), i_don't_kneeEoOOW*mewow (4ZUGJtGSIHhVm1OMceIFGs). Songs holen mit GET /v1/playlists/<id>/items (Feld item bzw. track). Innerhalb der Playlists neuere Songs bevorzugen. **Nie mehr als 2 Songs hintereinander** (also höchstens zwei `## [song]`-Zeilen am Stück, dann wieder Sprache). Keine Songs zu Josefs Lieblingssongs hinzufügen.
+
+Songs: nie zweimal derselbe Song in den Shows von 7 Tagen (rollend, Josef 1.11.2026; Werkzeug `songs_woche.py`). Schultag 12, freier Tag 6 (doppelt so viele wie früher); bei 12 Songs weitere `## [song]` zwischen kürzeren Kapiteln. Jeder Song wird im Gespräch angesagt (Titel, Künstler, ein Satz Haltung von Wagner oder Inka), nicht als Liste.
 
 ## Stil
 - Fließend: Übergänge aus dem Gespräch heraus, Callbacks auf frühere Stellen, keine Aufzählungen.
@@ -65,3 +67,6 @@ Das Skript (`show_tts.py`) setzt das um, ohne den Text zu verändern (Tempo, Ton
 
 ## Radio-Übergang zu den Songs (Josef 1.11.2026)
 Die App spielt jeden Song schon in den letzten etwa 6 Sekunden der Anmoderation leise ein und blendet ihn hoch, sobald die Sprache endet. Deshalb endet jede Anmoderation mit einem Satz, unter dem Musik liegen darf (Titel und Künstler nicht erst im allerletzten Wort, lieber davor; der letzte Satz eine Haltung oder ein Bild).
+
+## Sprache der Show
+Standard Deutsch. Für eine französische Show (wie am 2.11.2026) `EL_LANG=fr` setzen: dann sendet `show_tts.py` language_code fr und lässt `zahlen.py` weg; Zahlen im Skript selbst als französische Wörter schreiben. Sprechregie-Wörter in Klammern bleiben deutsch.

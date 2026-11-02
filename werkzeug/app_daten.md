@@ -54,5 +54,5 @@ Regeln:
 - projects: aus dem Doc "Sekretariat Übersicht" und den Projekt-Memos (Stand, nächster Schritt, Frist, Quelle mit Datum).
 - mails: nur Mails, die eine Antwort von Josef brauchen (Gmail nur lesen).
 - waiting: worauf Josef von wem wartet (aus der Übersicht).
-- news (Reiter Nachrichten): die jeweils neueste 9punkt- und Efeu-Ausgabe, ALLE Beiträge der Rundschau, je Beitrag Rubrik (section: Politikfeld bzw. Kunst, Literatur, Bühne, Film, Musik, Comic …), Zeitung, Autor, Überschrift und eine ausführliche eigene Zusammenfassung in 2 bis 4 Sätzen (keine wörtlichen Übernahmen langer Passagen). Reihenfolge wie im Original. Im Morgenlauf neu holen, bei den Voll-Aktualisierungen 12:23 und 17:23 nur ersetzen, wenn eine neue Ausgabe erschienen ist; sonst unverändert übernehmen.
+- news (Reiter Nachrichten): die jeweils neueste 9punkt- und Efeu-Ausgabe, ALLE Beiträge der Rundschau, je Beitrag Rubrik (section: Politikfeld bzw. Kunst, Literatur, Bühne, Film, Musik, Comic …), Zeitung, Autor, Überschrift und eine ausführliche eigene Zusammenfassung in 2 bis 4 Sätzen (keine wörtlichen Übernahmen langer Passagen). Reihenfolge wie im Original. Im Morgenlauf neu holen, bei den Voll-Aktualisierungen 7:23, 12:23, 17:23 und 21:23 (seit 2.11.2026) nur ersetzen, wenn eine neue Ausgabe erschienen ist; sonst unverändert übernehmen.
 - Keine langen Gedankenstriche in Texten.

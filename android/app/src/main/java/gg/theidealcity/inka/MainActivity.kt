@@ -138,6 +138,8 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyState(): String = SpotifyCtl.stateJson().toString()
         @JavascriptInterface fun spotifyKeep(on: Boolean) { Hub.main.post { SpotifyCtl.keepAlive(c, on) } }
         @JavascriptInterface fun spotifyDuck(on: Boolean) { Hub.main.post { SpotifyCtl.duck(c, on) } }
+        /** Spielt gerade eine andere App Ton (Video, Sprachnachricht)? Dann wartet Inka nach einer fremden Unterbrechung, statt sich vorzudrängen. */
+        @JavascriptInterface fun otherAudio(): Boolean = try { (c.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager).isMusicActive } catch (_: Exception) { false }
         /** uris als JSON-Liste; speichert sie in Spotify "Lieblingssongs" */
         @JavascriptInterface fun saveSongs(json: String) {
             val l = try { val a = JSONArray(json); (0 until a.length()).map { a.getString(it) }.filter { it.startsWith("spotify:track:") } } catch (_: Exception) { emptyList() }

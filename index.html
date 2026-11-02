@@ -244,6 +244,8 @@ async function loadShow(){
     S.loading="";
     if(!doc){S.doc=null;S.err="Für heute liegt noch keine Show hier. Der Morgenlauf legt sie gegen 4:30 Uhr ab.";render();return;}
     if(!S.doc||S.doc.day!==doc.day||S.doc.id!==doc.id||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;S.resume=POS.load(doc);if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
+    /* Songs ausgetauscht (z. B. gesperrter Titel ersetzt), Show sonst gleich: nur die Songliste erneuern, Hörstelle bleibt. */
+    else if(JSON.stringify((S.doc.songs||[]).map(x=>x.uri))!==JSON.stringify((doc.songs||[]).map(x=>x.uri))){S.doc.songs=doc.songs;diag("songs-erneuert",{});}
     S.err="";render();
   }catch(e){S.loading="";S.err=String(e&&e.message||e)==="kein Schlüssel"?"":"Laden ging nicht: "+String(e&&e.message||e).slice(0,80)+". Schlüssel-Link noch einmal öffnen?";render();}
 }
@@ -315,11 +317,22 @@ AUD.addEventListener("pause",()=>POS.save());
    Hält Android Inkas Stimme an, ohne dass du Pause gedrückt hast (z. B. weil eine andere App kurz Ton braucht), spielt Inka von selbst weiter. */
 S.selfPause=0;
 {const _ps=pauseShow;pauseShow=function(){S.selfPause=Date.now();return _ps.apply(this,arguments);};}
-AUD.addEventListener("pause",()=>{if(SONG.on||S.ended||AUD.ended||VC.conv||VC.starting||Date.now()-S.selfPause<1500||S.drag!=null)return;
-  if(Date.now()-(S.songEndAt||0)<1500)return;
-  diag("inka-fremdpause",{vis:document.visibilityState,t:Math.round(AUD.currentTime)});
-  let n=0;const again=()=>{if(!AUD.paused||SONG.on||VC.conv||Date.now()-S.selfPause<1500)return;AUD.play().then(()=>diag("inka-fremdpause-weiter",{n})).catch(()=>{if(++n<20)setTimeout(again,3000);});};
-  setTimeout(again,1200);});
+AUD.addEventListener("pause",()=>{if(S.ended||AUD.ended||VC.conv||VC.starting||Date.now()-S.selfPause<1500||S.drag!=null)return;
+  if(SONG.on&&SONG.pre){ /* Vorlauf: Android hat Inka angehalten, als Spotify loslegte. Song normal weiter, Inka nach dem Song ab Songstelle, künftig ohne Vorlauf. */
+    const c=chapters()[SONG.k];diag("vorlauf-fremdpause",{t:Math.round(AUD.currentTime),k:SONG.k});store.set("noAppPre",Date.now());SONG.pre=false;
+    try{NAT&&NAT.spotifyDuck&&NAT.spotifyDuck(false);}catch(_){}if(c){S.selfPause=Date.now();AUD.currentTime=c.start+0.05;}return;}
+  if(SONG.on)return;
+  const t0=Date.now(),other=NAT&&typeof NAT.otherAudio==="function";
+  diag("inka-fremdpause",{vis:document.visibilityState,t:Math.round(AUD.currentTime),app:!!other});
+  let n=0,quiet=0;
+  const again=()=>{if(!AUD.paused||SONG.on||S.ended||VC.conv||VC.starting||S.selfPause>=t0-1500)return;
+    if(Date.now()-t0>30*60000){diag("inka-fremdpause-aufgegeben",{});return;}
+    if(other){let busy=false;try{busy=!!NAT.otherAudio();}catch(_){}
+      if(busy){quiet=0;setTimeout(again,2000);return;}
+      if(++quiet<2){setTimeout(again,1000);return;}}
+    else if(n>=3)return;
+    AUD.play().then(()=>diag("inka-fremdpause-weiter",{n,s:Math.round((Date.now()-t0)/1000)})).catch(()=>{n++;setTimeout(again,other?3000:10000);});};
+  setTimeout(again,1500);});
 function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();KEEP.off();WL.off();}
 function seekCh(k){const c=chapters()[k];if(!c)return;if(SONG.on)SONG.finish("sprung",true);
   ensureAudio().then(ok=>{if(!ok)return;S.songDone={};for(let i=0;i<k;i++)S.songDone[i]=true;AUD.currentTime=c.type==="song"?c.start+1.02:c.start;AUD.play().catch(()=>{});});}
@@ -331,9 +344,9 @@ AUD.addEventListener("timeupdate",()=>{
   /* Radio-Übergang (Josef 1.11.2026: "Songs können schon leise eingespielt werden, während sie anmoderiert werden, wie im Radio").
      Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
   const nx=chapters()[k+1];
-  const natDuck=false; /* 2.11.2026: in der App hält Android Inkas Stimme an, sobald Spotify unter ihr startet. Vorlauf dort aus. */
+  const natDuck=NAT&&typeof NAT.spotifyDuck==="function"&&!(Date.now()-(+store.get("noAppPre",0)||0)<3*86400000); /* 2.11.2026: Vorlauf in der App. Absenken wird vor dem Start angemeldet, sonst senkte die App die ganze Medienlautstärke und Inkas letzte Worte gingen unter. */
   if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
-  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
+  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;S.selfPause=Date.now();AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
   if(k!==S.ch){S.ch=k;meta();renderShow();}
   bar();
 });
@@ -352,7 +365,7 @@ try{if("mediaSession" in navigator){
 
 /* ---------- Songs: Seite pausiert, Spotify spielt, danach weiter mit Inka ---------- */
 /* Fehlersuche: kurze Zustandsmeldungen verschluesselt ans Sekretariat (nur Technik, keine Inhalte) */
-function diag(ev,d){try{const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",av:(()=>{try{return NAT?"a"+NAT.version():WIN?"w":"web";}catch(_){return "";}})(),s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);sendSek("diag",m).catch(()=>{});}catch(_){}}
+function diag(ev,d){try{if(d&&"t" in d){d=Object.assign({},d);d.pos=d.t;delete d.t;}const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",av:(()=>{try{return NAT?"a"+NAT.version():WIN?"w":"web";}catch(_){return "";}})(),s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);sendSek("diag",m).catch(()=>{});}catch(_){}}
 const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:"",pre:false};
 const RADIO={pre:6.5,low:0.22,cur:1,iv:null};
 RADIO.set=v=>{RADIO.cur=v;try{if(SP.player)SP.player.setVolume(Math.max(0,Math.min(1,v))).catch(()=>{});}catch(_){}};
@@ -361,15 +374,16 @@ RADIO.ramp=function(to,ms){clearInterval(RADIO.iv);const from=RADIO.cur,n=Math.m
 SONG.start=async function(k,pre){
   const list=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];const tr=list[songIndex(k)];
   if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
-  SONG.on=true;SONG.pre=!!pre;if(!pre)AUD.pause();SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
+  SONG.on=true;SONG.pre=!!pre;if(!pre){S.selfPause=Date.now();AUD.pause();}SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
   clearInterval(RADIO.iv);RADIO.set(pre?0:1);
   const sp0=SONG.seekPos||0;SONG.seekPos=0;if(sp0){SONG.started=Date.now()-sp0;SONG.lastPos=sp0;}
+  const duckFirst=pre&&NAT&&typeof NAT.spotifyDuck==="function";if(duckFirst){try{NAT.spotifyDuck(true);}catch(_){}}
   try{SONG.via=await SP.play(tr.uri,sp0);
-    if(pre&&SONG.via==="app-direkt"&&NAT&&typeof NAT.spotifyDuck==="function"){try{NAT.spotifyDuck(true);}catch(_){}diag("radio-vorlauf",{app:true});}
+    if(duckFirst&&SONG.via==="app-direkt"){diag("radio-vorlauf",{app:true});}
     else if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
       if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){const em=String(e&&e.message||e);diag("song-fehler",{e:em,vis:document.visibilityState,pre:!!pre,try:SONG.tries||0});
-    SONG.on=false;SONG.track=null;RADIO.set(1);
+    SONG.on=false;SONG.track=null;RADIO.set(1);if(duckFirst){try{NAT.spotifyDuck(false);}catch(_){}}
     if(pre){SONG.pre=false;S.songDone[k]=false;render();return;}   // normaler Start am Kapitelanfang
     /* Josef 1.11.2026: "Die Musik kommt wieder nicht". Im Hintergrund lässt Android Chrome oft kein Netz durch.
        Dann wartet die Show und startet den Song, sobald Chrome wieder vorne ist. Kurze Netzfehler: zweimal neu versuchen. */
@@ -414,7 +428,7 @@ async function resume(){try{await AUD.play();needResume=false;diag("inka-weiter"
 /* Bildschirm geht aus, waehrend die Seite selbst spielt: an derselben Stelle an die Spotify-App uebergeben */
 SONG.handoff=async function(){
   if(!MOBILE||!SONG.on||SONG.via!=="seite"||!SP.player||SONG.handing)return;
-  if(SONG.pre){SONG.pre=false;AUD.pause();}SONG.handing=true;RADIO.set(1);
+  if(SONG.pre){SONG.pre=false;S.selfPause=Date.now();AUD.pause();}SONG.handing=true;RADIO.set(1);
   try{const app=await SP.findApp();if(!app){diag("keine-app",{});SONG.handing=false;return;}
     const st=await SP.player.getCurrentState();const pos=st?st.position:(SONG.lastPos||0);
     await SP.player.pause().catch(()=>{});
@@ -614,7 +628,7 @@ VC.start=async function(auto){
   VC.started=Date.now();VC.starting=true;VC.state="Verbindet";VC.lastUser="";VC.log=[];VC.changes=[];VC.summary="";VC.ui(true);
   try{
     try{const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});st.getTracks().forEach(t=>t.stop());}catch(e){throw {code:"mic",e};}
-    if(!AUD.paused)AUD.pause();
+    if(!AUD.paused){S.selfPause=Date.now();AUD.pause();}
     const q=(auto===true&&S.doc&&Array.isArray(S.doc.questions)&&S.doc.questions[0])||"";
     const first=q?"Hallo Josef, hier Inka. Eine Frage zum Tag: "+q:"Hallo Josef, hier Inka. Was kann ich für dich tun?";
     VC.conv=await VC.lib().startSession({agentId:(S.doc&&S.doc.agentId)||AGENT_DEFAULT,connectionType:"websocket",
@@ -767,7 +781,8 @@ function seekLabel(T){const r=seekAt(T);const d=totalSec()||1;if(r.talk){const k
 async function seekTotal(T){const r=seekAt(T);if(r.talk){if(SONG.on)await SONG.finish("sprung",true);if(!(await ensureAudio()))return;const c=chapters();AUD.currentTime=r.t;for(const k in S.songDone)if(c[k]&&c[k].start>r.t-0.5)delete S.songDone[k];for(let i=0;i<c.length;i++)if(c[i].type==="song"&&c[i].start<r.t-0.5)S.songDone[i]=true;if(AUD.paused)playShow();bar();return;}
   jumpSong(r.k,r.off>5?r.off:0);}
 async function jumpSong(k,off){if(SONG.on)await SONG.finish("sprung",true);if(!(await ensureAudio()))return;const c=chapters();for(let i=0;i<c.length;i++){if(i<k)S.songDone[i]=true;else delete S.songDone[i];}
-  AUD.pause();AUD.currentTime=c[k].start+0.05;S.ch=k;SONG.seekPos=NAT&&off?Math.round(off*1000):0;S.songDone[k]=true;diag("sprung-song",{k,off:Math.round(off||0)});SONG.start(k);}
+  S.selfPause=Date.now();AUD.pause();AUD.currentTime=c[k].start+0.05;S.ch=k;SONG.seekPos=NAT&&off?Math.round(off*1000):0;S.songDone[k]=true;diag("sprung-song",{k,off:Math.round(off||0)});
+  await SONG.start(k);if(!SONG.on&&!SONG.tries&&S.waitSong==null){AUD.currentTime=c[k].start+1.02;AUD.play().catch(()=>{});}}
 setInterval(()=>{if(SONG.on)bar();},1000);
 function renderShow(){
   const el=$("#show");
@@ -1216,7 +1231,7 @@ if(NAT){
       if(el>60000){diag("song-ohne-spotify",{err:st.err||"",online:navigator.onLine});toast(navigator.onLine?"Spotify nicht erreichbar, weiter ohne diesen Song.":"Kein Netz und keine Verbindung zu Spotify, weiter ohne diesen Song. Tipp für den Zug: in Spotify den Offlinemodus einschalten.",10000);SONG.finish("spotify-fehler");return;}
       appLost(st);return;}
     /* Josef 2.11.2026: gesperrter Song (in Deutschland nicht verfügbar), Spotify spielte stattdessen alte Titel. Läuft nach 12 s ein anderer Titel als bestellt, Song überspringen. */
-    if(st.uri&&st.uri!==SONG.track.uri&&!SONG.pre&&el>12000&&!SONG.lost){diag("song-nicht-verfuegbar",{want:SONG.track.uri,got:st.uri});toast("„"+SONG.track.name+"“ ist bei Spotify gerade nicht abspielbar, weiter ohne ihn.",9000);SONG.finish("nicht-verfuegbar");return;}
+    const nm=x=>String(x||"").toLowerCase().replace(/\s*[-(\[].*$/,"").replace(/[^a-z0-9à-ÿ]/g,"");if(st.uri&&st.uri!==SONG.track.uri&&!SONG.pre&&el>12000&&!SONG.lost&&!(st.name&&nm(st.name)===nm(SONG.track.name))){diag("song-nicht-verfuegbar",{want:SONG.track.uri,got:st.uri});toast("„"+SONG.track.name+"“ ist bei Spotify gerade nicht abspielbar, weiter ohne ihn.",9000);SONG.finish("nicht-verfuegbar");return;}
     if(st.uri===SONG.track.uri){if(st.pos>0)SONG.lastPos=st.pos;if(st.dur)SONG.dur=st.dur;}
     if(SONG.lost&&st.uri===SONG.track.uri&&!st.paused){SONG.lost=false;diag("spotify-wieder",{pos:st.pos});toast("Spotify wieder da, weiter geht's.");armSong(st);meta();}
     if(st.ended||(st.uri===SONG.track.uri&&st.dur&&st.pos>=st.dur-2500)){SONG.finish("ende");return;}
@@ -1227,7 +1242,8 @@ if(NAT){
 window.__inkaNative=function(o){try{
   if(!o||!o.type)return;
   if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){
-      if(o.ev==="pausiert"){SONG.held=true;clearTimeout(SONG.timer);diag("pause",{why:"spotify"});render();meta();}
+      if(o.ev==="gesperrt"){diag("song-fremder-titel",{want:SONG.track.uri,got:o.uri||"",name:o.name||""});toast("Spotify spielte etwas anderes als „"+SONG.track.name+"“. Weiter ohne diesen Song.",9000);SONG.finish("nicht-verfuegbar");}
+      else if(o.ev==="pausiert"){SONG.held=true;clearTimeout(SONG.timer);diag("pause",{why:"spotify"});render();meta();}
       else if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
   if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)toast("Kein Netz. Inka spricht weiter, Songs warten.",6000);renderShow();return;}
   if(o.type==="update"){S.upd=o;if(o.state==="bereit")toast("Inka-Update "+(o.version||"")+" ist bereit.");if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}

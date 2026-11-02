@@ -25,6 +25,7 @@ object SpotifyCtl {
     @Volatile private var maxPosOfWant = 0L
     @Volatile private var ended = false
     @Volatile private var wantDur = 0L
+    @Volatile private var wrongN = 0
     private var backoff = 2000L
     private var appCtx: Context? = null
     private var watching = false
@@ -127,12 +128,13 @@ object SpotifyCtl {
         if (duckWanted && !Duck.active && ps.track?.uri == wantUri && !ps.isPaused) Duck.on(appCtx)
         val uri = ps.track?.uri
         if (uri != null && uri == wantUri) {
+            if (!ps.isPaused && ps.playbackPosition > 3000) wrongN = 0
             maxPosOfWant = maxOf(maxPosOfWant, ps.playbackPosition)
             val dur = ps.track?.duration ?: 0L
             if (dur > 0) wantDur = dur
             if (dur > 0 && ps.playbackPosition >= dur - 2500) ended = true
-        } else if (wantUri != null && uri != null && wantDur > 0 && maxPosOfWant >= wantDur - 15000) {
-            ended = true   // Spotify ist nach dem Ende von selbst zum nächsten Titel gesprungen
+        } else if (wantUri != null && uri != null && maxPosOfWant > 0 && (wantDur <= 0 || maxPosOfWant >= wantDur - 15000)) {
+            ended = true   // Spotify ist nach dem Ende von selbst zum nächsten Titel gesprungen (Autoplay): sofort anhalten, auch wenn die Seite schläft
         }
         if (ended && wantPlaying) { wantPlaying = false; try { remote?.playerApi?.pause() } catch (_: Exception) {} }
         emit("status")
@@ -140,7 +142,7 @@ object SpotifyCtl {
 
     fun play(ctx: Context, uri: String, pos: Long) {
         appCtx = ctx.applicationContext
-        wantUri = uri; wantPos = pos; wantPlaying = true; ended = false; maxPosOfWant = 0L; wantDur = 0L
+        wantUri = uri; wantPos = pos; wantPlaying = true; ended = false; maxPosOfWant = 0L; wantDur = 0L; wrongN = 0
         startWatch()
         if (!connected) { connect(ctx); return }
         doPlay(uri, pos)
@@ -209,13 +211,25 @@ object SpotifyCtl {
                     val l = last
                     val stale = System.currentTimeMillis() - lastAt > 15000
                     val wrong = l?.track?.uri != null && l.track.uri != wantUri && !ended
-                    val userPaused = l != null && l.track?.uri == wantUri && l.isPaused && !ended && System.currentTimeMillis() - lastAt > 3000
+                    // Während Inka Spotify absenkt (Radio-Vorlauf) und kurz danach ist eine Spotify-Pause keine Nutzerpause
+                    val ducking = Duck.active || System.currentTimeMillis() - Duck.offAt < 6000
+                    val userPaused = l != null && l.track?.uri == wantUri && l.isPaused && !ended && !ducking && System.currentTimeMillis() - lastAt > 3000
                     if (stale) { r.playerApi.playerState.setResultCallback { if (remote === r) onState(it) }.setErrorCallback { if (remote === r) markLost() } }
                     if (userPaused) {
                         // Pause über Kopfhörer, Auto oder Spotify selbst: als Nutzerpause werten, nicht eigenmächtig fortsetzen
                         wantPlaying = false; emit("pausiert"); watching = false; return
                     }
-                    if (wrong) ensurePlaying("falscher Titel")
+                    if (wrong) {
+                        // Josef 2.11.2026: fremde Musik statt Show-Song (gesperrter Titel, Spotify-Autoplay). Zweimal neu versuchen,
+                        // dann Spotify selbst anhalten und der Seite "gesperrt" melden; so läuft nie lange fremde Musik, auch wenn die Seite schläft.
+                        wrongN++
+                        if (wrongN >= 3) {
+                            Hub.log("Fremder Titel statt Show-Song: Spotify angehalten")
+                            wantPlaying = false; lastErr = "fremder Titel"; try { r.playerApi.pause() } catch (_: Exception) {}
+                            emit("gesperrt"); watching = false; return
+                        }
+                        ensurePlaying("falscher Titel")
+                    }
                 }
                 Hub.main.postDelayed(this, 4000)
             }
@@ -294,6 +308,7 @@ object Fade {
 /** Audiofokus "kurz, darf absenken": Android senkt dabei andere Musik (Spotify) automatisch ab und blendet sie beim Abgeben wieder hoch. */
 object Duck {
     @Volatile var active = false; private set
+    @Volatile var offAt = 0L; private set
     private var req: android.media.AudioFocusRequest? = null
 
     fun on(c: Context?) {
@@ -308,14 +323,14 @@ object Duck {
             if (a.requestAudioFocus(r) == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { req = r; active = true; Hub.log("Radio: Spotify abgesenkt") }
         } catch (e: Exception) { Hub.log("Absenken nicht möglich: " + e.javaClass.simpleName) }
         // Sicherheitsnetz: nie länger als 20 s absenken
-        Hub.main.postDelayed({ if (active) off(c) }, 20000)
+        Hub.main.postDelayed({ if (active) { SpotifyCtl.duckWanted = false; off(c) } }, 20000)
     }
 
     fun off(c: Context?) {
         val a = c?.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
         val r = req; req = null
         if (r != null && a != null) try { a.abandonAudioFocusRequest(r) } catch (_: Exception) {}
-        if (active) Hub.log("Radio: Spotify hochgeblendet")
+        if (active) { Hub.log("Radio: Spotify hochgeblendet"); offAt = System.currentTimeMillis() }
         active = false
     }
 }

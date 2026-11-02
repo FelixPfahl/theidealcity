@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.media.audiofx.Equalizer
+import android.media.audiofx.LoudnessEnhancer
 import android.os.PowerManager
 import org.json.JSONArray
 import org.json.JSONObject
@@ -29,13 +30,17 @@ object Voice {
     @Volatile var ready = false; private set
     @Volatile private var durMs = 0
     @Volatile private var loadedId = ""
-    private var vol = 0.5f
+    private var vol = 0.4f
+    private var loud: LoudnessEnhancer? = null
+    /** Josef 2.11.2026 18:07/18:08: "Stimmen viel leiser als die Musik, sollte gleich laut sein", Musik kommt lossless (ohne Lautheitsangleich, etwa -9 LUFS).
+     *  Die Sprache liegt bei etwa -20 LUFS. Grundverstärkung +10 dB beim Regler 40 %, der Regler verschiebt das (Begrenzer verhindert Übersteuern). */
+    private const val BASE_DB = 10.0
     private var rate = 1f
     private var eq: Equalizer? = null
     private var eqBass = 0; private var eqTreble = 0
 
     // Songstellen: Zeit in ms, Kapitel, Spotify-URI
-    private data class Stop(val k: Int, val t: Long, val uri: String)
+    private data class Stop(val k: Int, val t: Long, val uri: String, val pre: Long)
     private var stops: List<Stop> = emptyList()
     private var preOn = true
     private const val PRE_MS = 6500L
@@ -115,7 +120,7 @@ object Voice {
             ctx?.let { p.setWakeMode(it, PowerManager.PARTIAL_WAKE_LOCK) }
             p.setDataSource(f.path)
             p.setOnPreparedListener {
-                ready = true; durMs = it.duration; it.setVolume(vol, vol); applyEq()
+                ready = true; durMs = it.duration; applyVolume(); applyEq()
                 emit("ready")
             }
             p.setOnCompletionListener { stopTick(); abandon(); emit("ended") }
@@ -127,6 +132,7 @@ object Voice {
     fun release() {
         stopTick(); abandon()
         try { eq?.release() } catch (_: Exception) {}; eq = null
+        try { loud?.release() } catch (_: Exception) {}; loud = null
         try { mp?.release() } catch (_: Exception) {}
         mp = null; ready = false; durMs = 0; loadedId = ""; pre = false; activeK = -1
     }
@@ -160,7 +166,24 @@ object Voice {
         emit("seek")
     }
 
-    fun setVolume(v: Float) { vol = v.coerceIn(0f, 1f); try { mp?.setVolume(if (ducked) vol * 0.3f else vol, if (ducked) vol * 0.3f else vol) } catch (_: Exception) {} }
+    fun setVolume(v: Float) { vol = v.coerceIn(0f, 1f); applyVolume() }
+
+    private fun applyVolume() {
+        val p = mp ?: return; if (!ready) return
+        val db = if (vol <= 0.001f) -60.0 else (BASE_DB + 20.0 * Math.log10(vol / 0.4)).coerceIn(-40.0, 16.0)
+        val duck = if (ducked) 0.3f else 1f
+        try {
+            if (db > 0) {
+                p.setVolume(duck, duck)
+                val l = loud ?: LoudnessEnhancer(p.audioSessionId).also { loud = it }
+                l.setTargetGain((db * 100).toInt()); l.enabled = true
+            } else {
+                loud?.enabled = false
+                val g = (Math.pow(10.0, db / 20.0)).toFloat() * duck
+                p.setVolume(g, g)
+            }
+        } catch (e: Exception) { Hub.log("Lautstärke: " + e.javaClass.simpleName); try { p.setVolume(duck, duck) } catch (_: Exception) {} }
+    }
 
     fun setRate(r: Float) {
         rate = r.coerceIn(0.5f, 2f)
@@ -189,7 +212,7 @@ object Voice {
     fun setStops(json: String, preOn: Boolean) {
         this.preOn = preOn
         stops = try {
-            val a = JSONArray(json); (0 until a.length()).map { val o = a.getJSONObject(it); Stop(o.getInt("k"), (o.getDouble("t") * 1000).toLong(), o.getString("uri")) }
+            val a = JSONArray(json); (0 until a.length()).map { val o = a.getJSONObject(it); Stop(o.getInt("k"), (o.getDouble("t") * 1000).toLong(), o.getString("uri"), (o.optDouble("pre", 6.5) * 1000).toLong().coerceIn(3000L, 20000L)) }
         } catch (_: Exception) { emptyList() }
     }
 
@@ -212,7 +235,7 @@ object Voice {
         if (now < prev || now - prev > 2500) return   // Sprung, kein Durchlaufen
         for (s in stops) {
             // Vorlauf: Spotify startet leise unter Inkas letzten Worten
-            val pt = s.t - PRE_MS
+            val pt = s.t - s.pre
             if (preOn && spotifyOk() && activeK < 0 && prev < pt && now >= pt) {
                 val c = ctx ?: return
                 pre = true; activeK = s.k; activeUri = s.uri; activeAt = System.currentTimeMillis()
@@ -264,7 +287,7 @@ object Voice {
     private val focusListener = AudioManager.OnAudioFocusChangeListener { f ->
         Hub.main.post {
             when (f) {
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> if (!pre) { ducked = true; setVolume(vol) }
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> if (!pre) { ducked = true; applyVolume() }
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT, AudioManager.AUDIOFOCUS_LOSS -> {
                     if (pre || activeK >= 0) return@post   // Spotify unter Inka (Vorlauf) oder Song läuft: kein Grund anzuhalten
                     if (playing()) {
@@ -276,7 +299,7 @@ object Voice {
                     }
                 }
                 AudioManager.AUDIOFOCUS_GAIN -> {
-                    if (ducked) { ducked = false; setVolume(vol) }
+                    if (ducked) { ducked = false; applyVolume() }
                     if (resumeOnGain) { resumeOnGain = false; play(false); Hub.diag("n-fremdpause-weiter", JSONObject()) }
                 }
             }

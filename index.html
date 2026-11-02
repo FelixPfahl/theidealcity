@@ -302,7 +302,9 @@ async function ensureAudio(){
 const chapters=()=>(S.doc&&Array.isArray(S.doc.chapters))?S.doc.chapters:[];
 function chAt(t){const c=chapters();let k=-1;for(let i=0;i<c.length;i++)if(t>=c[i].start-0.05)k=i;return k;}
 function natStops(){if(!AUD.native||!S.doc)return;try{const c=chapters(),songs=S.doc.songs||[],L=[];let n=0;
-  c.forEach((x,i)=>{if(x.type==="song"){const tr=songs[n];n++;if(tr&&tr.uri)L.push({k:i,t:x.start,uri:tr.uri});}});
+  c.forEach((x,i)=>{if(x.type==="song"){const tr=songs[n];n++;if(tr&&tr.uri){/* Josef 2.11.2026: Übergang so lang wie die Anmoderation: Song startet leise mit dem letzten Satz vor der Songstelle */
+    const ls=(S.doc.lines||[]).filter(l=>l.t<x.start-0.5);const last=ls[ls.length-1];const pre=last?Math.max(3,Math.min(20,x.start-last.t-0.3)):6.5;
+    L.push({k:i,t:x.start,uri:tr.uri,pre});}}});
   NAT.voiceStops(JSON.stringify(L),!!(store.get("radio",true)&&SP.ready()));}catch(_){}}
 /* Songwechsel, die die App selbst gefahren hat, auf der Seite nachziehen */
 function natSongEvent(o){const k=o.k;const tr=((S.doc&&S.doc.songs)||[])[songIndex(k)];

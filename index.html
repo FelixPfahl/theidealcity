@@ -29,6 +29,10 @@ a{color:var(--blue)}
 .now{font-weight:700;font-size:20px}
 .time{color:var(--mut);font-size:15px}
 .bar{height:8px;background:var(--line);border-radius:4px;margin:14px 0 8px;overflow:hidden;cursor:pointer}
+#pb{position:relative;height:16px;border-radius:8px;overflow:visible;touch-action:none}
+#pb i{border-radius:8px}
+#pb s{position:absolute;top:0;bottom:0;background:rgba(0,40,255,.28);border-radius:2px;pointer-events:none}
+#pb b{position:absolute;top:-5px;width:4px;height:26px;margin-left:-2px;background:var(--blue);border-radius:2px;pointer-events:none}
 .bar i{display:block;height:100%;background:var(--blue);width:0}
 .row{display:flex;gap:10px}.row>*{flex:1}
 .chs{margin-top:10px;font-size:16px}
@@ -330,7 +334,8 @@ SONG.start=async function(k,pre){
   if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
   SONG.on=true;SONG.pre=!!pre;if(!pre)AUD.pause();SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
   clearInterval(RADIO.iv);RADIO.set(pre?0:1);
-  try{SONG.via=await SP.play(tr.uri);
+  const sp0=SONG.seekPos||0;SONG.seekPos=0;if(sp0){SONG.started=Date.now()-sp0;SONG.lastPos=sp0;}
+  try{SONG.via=await SP.play(tr.uri,sp0);
     if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
       if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){const em=String(e&&e.message||e);diag("song-fehler",{e:em,vis:document.visibilityState,pre:!!pre,try:SONG.tries||0});
@@ -724,7 +729,15 @@ function renderSetup(){
 function songMs(n){const l=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];return Math.min((l[n]&&l[n].ms)||0,6*60000);}
 function totalSec(){const c=chapters();let n=0,ms=0;c.forEach(x=>{if(x.type==="song"){ms+=songMs(n);n++;}});return ((AUD.duration&&isFinite(AUD.duration))?AUD.duration:((S.doc&&S.doc.duration)||0))+ms/1000;}
 function elapsedSec(){const c=chapters(),t=AUD.currentTime;let n=0,ms=0;c.forEach((x,i)=>{if(x.type==="song"){if(SONG.on&&i===SONG.k)ms+=Math.min(Date.now()-SONG.started,songMs(n));else if(x.start<t-0.5)ms+=songMs(n);n++;}});return t+ms/1000;}
-function bar(){const i=$("#pbar");if(!i)return;const d=totalSec()||1,e=elapsedSec();i.style.width=Math.min(100,e/d*100)+"%";const t=$("#ptime");if(t)t.textContent=mmss(e)+" / "+mmss(d);}
+function bar(){const i=$("#pbar");if(!i)return;const d=totalSec()||1,e=S.drag!=null?S.drag:elapsedSec();i.style.width=Math.min(100,e/d*100)+"%";const k=$("#pknob");if(k)k.style.left=Math.min(100,e/d*100)+"%";const t=$("#ptime");if(t)t.textContent=S.drag!=null?seekLabel(S.drag):mmss(e)+" / "+mmss(d);}
+/* Josef 2.11.2026: Fortschrittsbalken zum Ziehen, nicht nur kapitelweise; auch direkt zu einem Song. */
+function tl(){const c=chapters();const songs=[];let n=0,acc=0;c.forEach((x,i)=>{if(x.type==="song"){const L=songMs(n)/1000;songs.push({k:i,n,s:x.start,c:x.start+acc,L});acc+=L;n++;}});return songs;}
+function seekAt(T){const songs=tl();let before=0;for(const g of songs){if(T<g.c)return{talk:true,t:Math.max(0,T-before)};if(T<g.c+g.L)return{talk:false,k:g.k,n:g.n,off:T-g.c};before+=g.L;}return{talk:true,t:Math.max(0,T-before)};}
+function seekLabel(T){const r=seekAt(T);const d=totalSec()||1;if(r.talk){const k=chAt(r.t),c=chapters()[k];return "→ "+mmss(T)+" / "+mmss(d)+(c?" · "+c.title:"");}const tr=((S.doc&&S.doc.songs)||[])[r.n];return "→ "+mmss(T)+" / "+mmss(d)+(tr?" · ♪ "+tr.name:"");}
+async function seekTotal(T){const r=seekAt(T);if(r.talk){if(SONG.on)await SONG.finish("sprung",true);if(!(await ensureAudio()))return;const c=chapters();AUD.currentTime=r.t;for(const k in S.songDone)if(c[k]&&c[k].start>r.t-0.5)delete S.songDone[k];for(let i=0;i<c.length;i++)if(c[i].type==="song"&&c[i].start<r.t-0.5)S.songDone[i]=true;if(AUD.paused)playShow();bar();return;}
+  jumpSong(r.k,r.off>5?r.off:0);}
+async function jumpSong(k,off){if(SONG.on)await SONG.finish("sprung",true);if(!(await ensureAudio()))return;const c=chapters();for(let i=0;i<c.length;i++){if(i<k)S.songDone[i]=true;else delete S.songDone[i];}
+  AUD.pause();AUD.currentTime=c[k].start+0.05;S.ch=k;SONG.seekPos=NAT&&off?Math.round(off*1000):0;S.songDone[k]=true;diag("sprung-song",{k,off:Math.round(off||0)});SONG.start(k);}
 setInterval(()=>{if(SONG.on)bar();},1000);
 function renderShow(){
   const el=$("#show");
@@ -738,13 +751,13 @@ function renderShow(){
   let h='';
   h+='<div class="chips" style="margin-bottom:8px">'+S.dayShows.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-showsel="'+esc(x.id)+'">'+esc(showLabel(x))+'</button>').join("")+'<button class="chip" id="parch">Alle Shows'+(S.shows.length?' ('+S.shows.length+')':'')+'</button></div>';
   h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div>'+(SONG.on&&SONG.track&&SONG.track.uri?'<a class="small" style="color:var(--blue)" href="https://open.spotify.com/track/'+esc(SONG.track.uri.split(":").pop())+'" target="_blank" rel="noopener">Lyrics in Spotify</a>'+(SONG.lost?' <span class="small err">· Spotify verbindet neu …</span>':SONG.held?' <span class="small">· angehalten</span>':''):'')+'<div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
-    '<div class="bar" id="pb"><i id="pbar"></i></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>'+
+    '<div class="bar" id="pb"><i id="pbar"></i>'+(()=>{const d=totalSec()||1;return tl().map(g=>'<s style="left:'+(g.c/d*100).toFixed(2)+'%;width:'+Math.max(0.3,g.L/d*100).toFixed(2)+'%"></s>').join("");})()+'<b id="pknob"></b></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>'+
     '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="small">Tempo</span><input type="range" id="prate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'" style="flex:1"><b class="small" id="prv" style="min-width:42px;text-align:right">'+Math.round(RATE()*100)+'%</b></div>'+
     '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small" style="min-width:44px">Bass</span><input type="range" id="peqb" min="-15" max="6" step="1" value="'+EQ.val("eqb")+'" style="flex:1"><b class="small" id="peqbv" style="min-width:42px;text-align:right">'+EQ.val("eqb")+' dB</b></div>'+
     '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small" style="min-width:44px">Höhen</span><input type="range" id="peqt" min="-6" max="9" step="1" value="'+EQ.val("eqt")+'" style="flex:1"><b class="small" id="peqtv" style="min-width:42px;text-align:right">'+EQ.val("eqt")+' dB</b></div>';
   h+=quotaHtml();
   h+=trHtml();
-  h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel</summary>'+c.map((x,i)=>x.type==="song"?"":'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
+  h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel und Songs</summary>'+c.map((x,i)=>x.type==="song"?(()=>{const tr=((d.songs||[])[songIndex(i)]);return tr?'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-song="'+i+'"><b>♪</b><span class="small">'+esc(tr.name)+' · '+esc(tr.artist)+'</span></div>':"";})():'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
   h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button><button id="pnew">Neue Show erstellen</button></div>';
   if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
@@ -755,8 +768,13 @@ function renderShow(){
   const prt=$("#prate");prt.oninput=()=>{store.set("rate",+prt.value);applyRate();$("#prv").textContent=Math.round(prt.value*100)+"%";};
   $("#pp").onclick=()=>{if(NAT&&SONG.on){if(SONG.held)appResume();else appPause("knopf");return;}if(!AUD.paused||SONG.on)pauseShow();else playShow();};
   $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();$("#pnew").onclick=()=>sheetShowOrder();
-  $("#pb").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();const f=(e.clientX-r.left)/r.width;ensureAudio().then(ok=>{if(ok){AUD.currentTime=f*(AUD.duration||d.duration);for(const k in S.songDone)if(c[k]&&c[k].start>AUD.currentTime)delete S.songDone[k];}});};
+  {const pb=$("#pb");const at=e=>{const r=pb.getBoundingClientRect();return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*(totalSec()||1);};
+    pb.onpointerdown=e=>{pb.setPointerCapture(e.pointerId);S.drag=at(e);bar();};
+    pb.onpointermove=e=>{if(S.drag!=null){S.drag=at(e);bar();}};
+    pb.onpointerup=e=>{if(S.drag==null)return;const T=at(e);S.drag=null;seekTotal(T);};
+    pb.onpointercancel=()=>{S.drag=null;bar();};}
   el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
+  el.querySelectorAll("[data-song]").forEach(n=>n.onclick=()=>jumpSong(+n.dataset.song,0));
   el.querySelectorAll("[data-showsel]").forEach(n=>n.onclick=()=>pickShow(n.dataset.showsel));
   $("#parch").onclick=()=>sheetArchive();
 }
@@ -1144,18 +1162,16 @@ $("#mic").onclick=()=>sheetDiktat();
 /* ===== Android-App: Spotify direkt, Verbindung verloren und wiederhergestellt (Josef 1.11.2026) ===== */
 function armSong(st){if(!SONG.on||!SONG.track)return;clearTimeout(SONG.timer);const dur=(st&&st.dur)||SONG.dur||SONG.track.ms||210000,pos=(st&&st.pos)||SONG.lastPos||0;SONG.timer=setTimeout(()=>SONG.finish("zeit"),Math.max(3000,dur-pos)+2500);}
 function appLost(st){if(SONG.lost)return;SONG.lost=true;clearTimeout(SONG.timer);diag("spotify-verloren",{err:st&&st.err,pos:st&&st.pos});
-  /* Josef 2.11.2026 im Zug: Verbindung zu Spotify kommt nicht zustande. Dann Spotify einmal nach vorne holen (weckt die App, danach verbindet Inka neu); Song überspringen geht jederzeit mit "weiter". */
-  const wake=NAT&&typeof NAT.openSpotify==="function"&&SONG.woke!==SONG.k;
-  if(wake){SONG.woke=SONG.k;toast("Spotify antwortet nicht. Ich öffne Spotify kurz. Wenn dort Musik läuft, zurück zu Inka. Ohne Netz: „Song überspringen“ tippen.",12000);setTimeout(()=>{try{NAT.openSpotify();diag("spotify-wecken",{});}catch(_){}},1500);}
-  else toast("Spotify-Verbindung weg. Die Show wartet, ich verbinde neu. Mit „Song überspringen“ geht es ohne Song weiter.",9000);
+  /* Josef 2.11.2026: "bau das wirklich stabil". Die App hält Spotify selbst wach (ab Android-App 1.1.4). Kommt die Verbindung binnen 60 s nicht, geht die Show ohne diesen Song weiter. */
+  toast("Spotify antwortet gerade nicht. Ich versuche es weiter, nach einer Minute geht es ohne diesen Song weiter.",9000);
   meta();renderShow();}
 if(NAT){
   try{NAT.setClientId(SP_CLIENT);if(KEY.raw)NAT.setKey(KEY.raw);}catch(_){}
   document.documentElement.classList.add("app");
   SP.ready=()=>{try{return !!NAT.clientId()&&NAT.spotifyInstalled();}catch(_){return false;}};
-  SP.warm=()=>{try{NAT.spotifyConnect();}catch(_){}};
+  SP.warm=()=>{try{if(typeof NAT.spotifyKeep==="function")NAT.spotifyKeep(true);else NAT.spotifyConnect();}catch(_){}};
   SP.unlock=()=>{};
-  SP.play=async function(uri){NAT.spotifyPlay(uri,0);return "app-direkt";};
+  SP.play=async function(uri,pos){NAT.spotifyPlay(uri,pos||0);return "app-direkt";};
   SP.pause=async function(){try{NAT.spotifyStop();}catch(_){}};
   SONG.handoff=async function(){};
   SONG.check=async function(){
@@ -1165,6 +1181,7 @@ if(NAT){
     if(!st.connected){
       if(/Client-ID|Spotify-App fehlt|Authentication|NotLoggedIn|UserNotAuthorized|Unsupported/i.test(st.err||"")&&el>6000){toast("Spotify geht nicht ("+st.err+"). Inka macht ohne Song weiter.",9000);SONG.finish("spotify-fehler");return;}
       if(st.connecting&&el<20000&&!SONG.lost){renderShow();return;}
+      if(el>60000){diag("song-ohne-spotify",{err:st.err||"",online:navigator.onLine});toast(navigator.onLine?"Spotify nicht erreichbar, weiter ohne diesen Song.":"Kein Netz und keine Verbindung zu Spotify, weiter ohne diesen Song. Tipp für den Zug: in Spotify den Offlinemodus einschalten.",10000);SONG.finish("spotify-fehler");return;}
       appLost(st);return;}
     if(st.uri===SONG.track.uri){if(st.pos>0)SONG.lastPos=st.pos;if(st.dur)SONG.dur=st.dur;}
     if(SONG.lost&&st.uri===SONG.track.uri&&!st.paused){SONG.lost=false;diag("spotify-wieder",{pos:st.pos});toast("Spotify wieder da, weiter geht's.");armSong(st);meta();}

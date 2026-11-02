@@ -344,7 +344,7 @@ AUD.addEventListener("timeupdate",()=>{
   /* Radio-Übergang (Josef 1.11.2026: "Songs können schon leise eingespielt werden, während sie anmoderiert werden, wie im Radio").
      Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
   const nx=chapters()[k+1];
-  const natDuck=NAT&&typeof NAT.spotifyDuck==="function"&&!(Date.now()-(+store.get("noAppPre",0)||0)<3*86400000); /* 2.11.2026: Vorlauf in der App. Absenken wird vor dem Start angemeldet, sonst senkte die App die ganze Medienlautstärke und Inkas letzte Worte gingen unter. */
+  const natDuck=NAT&&typeof NAT.spotifyDuck==="function"&&store.get("appPreTest",false); /* 2.11.2026 17:21: Android hält Inkas Stimme an, sobald Spotify loslegt (auch mit Absenken). In der App deshalb kein Vorlauf: Inka spricht zu Ende, dann blendet die App den Song ein. */ /* 2.11.2026: Vorlauf in der App. Absenken wird vor dem Start angemeldet, sonst senkte die App die ganze Medienlautstärke und Inkas letzte Worte gingen unter. */
   if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
   if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;S.selfPause=Date.now();AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
   if(k!==S.ch){S.ch=k;meta();renderShow();}
@@ -365,7 +365,7 @@ try{if("mediaSession" in navigator){
 
 /* ---------- Songs: Seite pausiert, Spotify spielt, danach weiter mit Inka ---------- */
 /* Fehlersuche: kurze Zustandsmeldungen verschluesselt ans Sekretariat (nur Technik, keine Inhalte) */
-function diag(ev,d){try{if(d&&"t" in d){d=Object.assign({},d);d.pos=d.t;delete d.t;}const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",av:(()=>{try{return NAT?"a"+NAT.version():WIN?"w":"web";}catch(_){return "";}})(),s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);sendSek("diag",m).catch(()=>{});}catch(_){}}
+function diag(ev,d){try{if(d&&"t" in d){d=Object.assign({},d);d.pos=d.t;delete d.t;}const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",av:(()=>{try{return NAT?"a"+NAT.version():WIN?"w":"web";}catch(_){return "";}})(),s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);if(NAT&&typeof NAT.diag==="function"&&topic()){try{if(S.natTopic!==topic()&&NAT.setTopic){NAT.setTopic(topic());S.natTopic=topic();}NAT.diag(JSON.stringify(Object.assign({day:ymd(new Date())},m)));return;}catch(_){}}sendSek("diag",m).catch(()=>{});}catch(_){}}
 const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:"",pre:false};
 const RADIO={pre:6.5,low:0.22,cur:1,iv:null};
 RADIO.set=v=>{RADIO.cur=v;try{if(SP.player)SP.player.setVolume(Math.max(0,Math.min(1,v))).catch(()=>{});}catch(_){}};

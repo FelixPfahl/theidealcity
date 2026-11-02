@@ -130,6 +130,8 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun version() = versionName()
         @JavascriptInterface fun setKey(k: String) { Prefs.setKey(c, k) }
         @JavascriptInterface fun setTopic(t: String) { Prefs.setTopic(c, t) }
+        /** Diagnose der Seite über die App senden: im Hintergrund kommt das Netz der WebView oft nicht durch (2.11.2026). */
+        @JavascriptInterface fun diag(json: String) { try { val o = org.json.JSONObject(json); Hub.diag(o.optString("ev", "?"), o, keepAv = true) } catch (_: Exception) {} }
         @JavascriptInterface fun setClientId(id: String) { Prefs.setClientId(c, id) }
         @JavascriptInterface fun clientId(): String = Prefs.clientId(c)
         @JavascriptInterface fun spotifyInstalled(): Boolean = com.spotify.android.appremote.api.SpotifyAppRemote.isSpotifyInstalled(c)

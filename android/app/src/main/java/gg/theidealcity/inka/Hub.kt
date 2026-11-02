@@ -33,7 +33,7 @@ object Hub {
     @Volatile var version = ""
 
     /** Diagnose direkt aus der App an den Kanal (Josef 2.11.2026): läuft auch, wenn die Seite im Hintergrund schläft. */
-    fun diag(ev: String, extra: JSONObject = JSONObject()) {
+    fun diag(ev: String, extra: JSONObject = JSONObject(), keepAv: Boolean = false) {
         val c = ctx ?: return
         val key = Prefs.key(c); val topic = Prefs.topic(c)
         if (key.isBlank() || topic.isBlank()) return
@@ -43,7 +43,8 @@ object Hub {
                 val m = JSONObject(extra.toString())
                 m.put("v", 1).put("from", "inka").put("id", "n-$now-" + (Math.random() * 1e6).toInt()).put("t", now)
                     .put("day", java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date(now)))
-                    .put("kind", "diag").put("ev", ev).put("ua", "mobil").put("av", "n$version").put("s", 0)
+                    .put("kind", "diag").put("ev", ev).put("ua", "mobil")
+                if (!keepAv) m.put("av", "n$version").put("s", 0)
                 val env = Crypt.seal(key, m.toString()) ?: return@Thread
                 val u = java.net.URL("https://ntfy.sh/$topic").openConnection() as java.net.HttpURLConnection
                 u.requestMethod = "POST"; u.doOutput = true; u.connectTimeout = 10000; u.readTimeout = 10000

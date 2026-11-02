@@ -1143,7 +1143,12 @@ $("#mic").onclick=()=>sheetDiktat();
 
 /* ===== Android-App: Spotify direkt, Verbindung verloren und wiederhergestellt (Josef 1.11.2026) ===== */
 function armSong(st){if(!SONG.on||!SONG.track)return;clearTimeout(SONG.timer);const dur=(st&&st.dur)||SONG.dur||SONG.track.ms||210000,pos=(st&&st.pos)||SONG.lastPos||0;SONG.timer=setTimeout(()=>SONG.finish("zeit"),Math.max(3000,dur-pos)+2500);}
-function appLost(st){if(SONG.lost)return;SONG.lost=true;clearTimeout(SONG.timer);diag("spotify-verloren",{err:st&&st.err,pos:st&&st.pos});toast("Spotify-Verbindung weg. Die Show wartet, ich verbinde neu …",8000);meta();renderShow();}
+function appLost(st){if(SONG.lost)return;SONG.lost=true;clearTimeout(SONG.timer);diag("spotify-verloren",{err:st&&st.err,pos:st&&st.pos});
+  /* Josef 2.11.2026 im Zug: Verbindung zu Spotify kommt nicht zustande. Dann Spotify einmal nach vorne holen (weckt die App, danach verbindet Inka neu); Song überspringen geht jederzeit mit "weiter". */
+  const wake=NAT&&typeof NAT.openSpotify==="function"&&SONG.woke!==SONG.k;
+  if(wake){SONG.woke=SONG.k;toast("Spotify antwortet nicht. Ich öffne Spotify kurz. Wenn dort Musik läuft, zurück zu Inka. Ohne Netz: „Song überspringen“ tippen.",12000);setTimeout(()=>{try{NAT.openSpotify();diag("spotify-wecken",{});}catch(_){}},1500);}
+  else toast("Spotify-Verbindung weg. Die Show wartet, ich verbinde neu. Mit „Song überspringen“ geht es ohne Song weiter.",9000);
+  meta();renderShow();}
 if(NAT){
   try{NAT.setClientId(SP_CLIENT);if(KEY.raw)NAT.setKey(KEY.raw);}catch(_){}
   document.documentElement.classList.add("app");

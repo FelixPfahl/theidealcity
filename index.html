@@ -323,7 +323,7 @@ try{if("mediaSession" in navigator){
 
 /* ---------- Songs: Seite pausiert, Spotify spielt, danach weiter mit Inka ---------- */
 /* Fehlersuche: kurze Zustandsmeldungen verschluesselt ans Sekretariat (nur Technik, keine Inhalte) */
-function diag(ev,d){try{const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);sendSek("diag",m).catch(()=>{});}catch(_){}}
+function diag(ev,d){try{const m=Object.assign({ev,ua:MOBILE?"mobil":"desktop",av:(()=>{try{return NAT?"a"+NAT.version():WIN?"w":"web";}catch(_){return "";}})(),s:Math.round((Date.now()-(SONG.started||Date.now()))/1000)},d||{});console.log("[inka]",ev,m);sendSek("diag",m).catch(()=>{});}catch(_){}}
 const SONG={on:false,k:-1,track:null,timer:null,poll:null,started:0,via:"",pre:false};
 const RADIO={pre:6.5,low:0.22,cur:1,iv:null};
 RADIO.set=v=>{RADIO.cur=v;try{if(SP.player)SP.player.setVolume(Math.max(0,Math.min(1,v))).catch(()=>{});}catch(_){}};

@@ -106,7 +106,11 @@ class MainActivity : AppCompatActivity() {
             if (res.firstOrNull() == PackageManager.PERMISSION_GRANTED) p?.grant(p.resources) else p?.deny() }
     }
 
-    override fun onResume() { super.onResume(); Hub.emit(JSONObject().put("type", "app").put("ev", "vorne")) }
+    override fun onResume() {
+        super.onResume(); Hub.emit(JSONObject().put("type", "app").put("ev", "vorne"))
+        // Josef 2.11.2026: Spotify früh verbinden, solange Netz da ist (die Anmeldung bei Spotify braucht Netz, eine bestehende Verbindung nicht)
+        if (Prefs.clientId(this).isNotBlank()) Hub.main.post { SpotifyCtl.connect(this) }
+    }
 
     // Bewusst kein web.onPause(): die Show soll im Hintergrund weiterlaufen.
 
@@ -132,6 +136,7 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyResume() { Hub.main.post { SpotifyCtl.resume(c) } }
         @JavascriptInterface fun spotifyStop() { Hub.main.post { SpotifyCtl.stop() } }
         @JavascriptInterface fun spotifyState(): String = SpotifyCtl.stateJson().toString()
+        @JavascriptInterface fun spotifyKeep(on: Boolean) { Hub.main.post { SpotifyCtl.keepAlive(c, on) } }
         /** uris als JSON-Liste; speichert sie in Spotify "Lieblingssongs" */
         @JavascriptInterface fun saveSongs(json: String) {
             val l = try { val a = JSONArray(json); (0 until a.length()).map { a.getString(it) }.filter { it.startsWith("spotify:track:") } } catch (_: Exception) { emptyList() }

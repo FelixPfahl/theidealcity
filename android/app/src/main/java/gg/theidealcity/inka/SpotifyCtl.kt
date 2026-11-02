@@ -32,6 +32,35 @@ object SpotifyCtl {
     private var nextTry = 0L
     private var attempt = 0
     @Volatile private var pendingSave: List<String> = emptyList()
+    /** Josef 2.11.2026: "Spotify sollte regelmäßig von der App geweckt werden", Bildschirm aus, Handy frei nutzbar.
+     *  Solange eine Show läuft (auch pausiert, auch zwischen den Songs), hält Inka die Verbindung zu Spotify offen
+     *  und baut sie alle 30 s neu auf, wenn sie weg ist. Eine bestehende Verbindung hält den Spotify-Dienst wach. */
+    @Volatile var keep = false; private set
+    private var keeping = false
+
+    fun keepAlive(ctx: Context, on: Boolean) {
+        appCtx = ctx.applicationContext
+        keep = on
+        if (!on) return
+        if (!connected && !connecting && System.currentTimeMillis() >= nextTry) connect(ctx)
+        if (keeping) return; keeping = true
+        val tick = object : Runnable {
+            override fun run() {
+                if (!keep) { keeping = false; return }
+                val c = appCtx
+                val r = remote
+                if (r == null || !r.isConnected) {
+                    if (connected) markLost()
+                    if (c != null && !connecting && System.currentTimeMillis() >= nextTry) connect(c)
+                } else {
+                    // Lebenszeichen: Status abfragen, hält den Kanal offen und erkennt stille Abbrüche
+                    r.playerApi.playerState.setResultCallback { if (remote === r) onState(it) }.setErrorCallback { if (remote === r) markLost() }
+                }
+                Hub.main.postDelayed(this, 30000)
+            }
+        }
+        Hub.main.postDelayed(tick, 30000)
+    }
 
     fun connect(ctx: Context) {
         appCtx = ctx.applicationContext
@@ -41,9 +70,9 @@ object SpotifyCtl {
         if (!SpotifyAppRemote.isSpotifyInstalled(ctx)) { lastErr = "Spotify-App fehlt"; emit("fehler"); return }
         connecting = true
         val my = ++attempt
-        Hub.main.postDelayed({ if (connecting && attempt == my) { connecting = false; lastErr = "Zeitüberschreitung"; markLost(); scheduleReconnect() } }, 20000)
+        Hub.main.postDelayed({ if (connecting && attempt == my) { connecting = false; lastErr = "Zeitüberschreitung"; markLost(); scheduleReconnect() } }, 60000)
         val params = ConnectionParams.Builder(id).setRedirectUri(Hub.REDIRECT).showAuthView(true).build()
-        val c: Context = Hub.activity ?: ctx.applicationContext
+        val c: Context = if (Hub.activity?.hasWindowFocus() == true) Hub.activity!! else ctx.applicationContext
         Hub.main.post {
             try {
                 SpotifyAppRemote.connect(c, params, object : Connector.ConnectionListener {
@@ -75,10 +104,10 @@ object SpotifyCtl {
     }
 
     private fun scheduleReconnect() {
-        if (!wantPlaying) return
+        if (!wantPlaying && !keep) return
         val d = backoff; backoff = (backoff * 2).coerceAtMost(30000L)
         nextTry = System.currentTimeMillis() + d
-        Hub.main.postDelayed({ if (wantPlaying) appCtx?.let { connect(it) } }, d)
+        Hub.main.postDelayed({ if (wantPlaying || keep) appCtx?.let { connect(it) } }, d)
     }
 
     private fun onState(ps: PlayerState) {
@@ -177,7 +206,7 @@ object SpotifyCtl {
     }
 
     fun onNetwork(online: Boolean) {
-        Hub.main.post { if (online && wantPlaying && !connected && !connecting) appCtx?.let { backoff = 2000L; nextTry = 0L; connect(it) } }
+        Hub.main.post { if (online && (wantPlaying || keep) && !connected && !connecting) appCtx?.let { backoff = 2000L; nextTry = 0L; connect(it) } }
     }
 
     fun stateJson(): JSONObject {

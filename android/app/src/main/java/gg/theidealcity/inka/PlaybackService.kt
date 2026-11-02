@@ -38,6 +38,7 @@ class PlaybackService : Service() {
         @Volatile var running: PlaybackService? = null
 
         fun update(c: Context, title: String, sub: String, state: String) {
+            SpotifyCtl.keepAlive(c, state != "stop")
             if (state == "stop") { c.stopService(Intent(c, PlaybackService::class.java)); return }
             // Läuft der Dienst schon, direkt aktualisieren: ein erneuter Start aus dem Hintergrund ist ab Android 12 verboten
             running?.let { it.apply(title, sub, state); return }
@@ -163,7 +164,7 @@ class PlaybackService : Service() {
             .build()
     }
 
-    override fun onTaskRemoved(rootIntent: Intent?) { SpotifyCtl.stop(); stopSelf() }
+    override fun onTaskRemoved(rootIntent: Intent?) { SpotifyCtl.keepAlive(this, false); SpotifyCtl.stop(); stopSelf() }
 
     override fun onDestroy() {
         running = null

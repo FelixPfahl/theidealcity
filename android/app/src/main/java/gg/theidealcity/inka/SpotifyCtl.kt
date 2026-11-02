@@ -145,6 +145,7 @@ object SpotifyCtl {
         if (ended && wantPlaying) {
             wantPlaying = false; try { remote?.playerApi?.pause() } catch (_: Exception) {}
             Hub.diag("n-song-ende", JSONObject().put("why", endWhy).put("pos", maxPosOfWant / 1000).put("dur", wantDur / 1000))
+            Voice.onSongEnded(wantUri, endWhy)
         }
         emit("status")
     }
@@ -203,7 +204,8 @@ object SpotifyCtl {
 
     fun pause() { wantPlaying = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
     fun resume(ctx: Context) { if (wantUri == null) return; wantPlaying = true; startWatch(); if (!connected) connect(ctx) else ensurePlaying("weiter") }
-    fun stop() { wantPlaying = false; wantUri = null; ended = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
+    fun isWantPlaying() = wantPlaying
+    fun stop() { Voice.onSongCleared(); wantPlaying = false; wantUri = null; ended = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
 
     /** Wächter: erkennt stumme Abbrüche (keine Statusmeldungen mehr, Spotify pausiert von selbst, anderer Song). */
     private fun startWatch() {
@@ -237,7 +239,7 @@ object SpotifyCtl {
                             Hub.log("Fremder Titel statt Show-Song: Spotify angehalten")
                             Hub.diag("n-fremder-titel", JSONObject().put("want", wantUri).put("got", l?.track?.uri ?: "").put("name", l?.track?.name ?: ""))
                             wantPlaying = false; lastErr = "fremder Titel"; try { r.playerApi.pause() } catch (_: Exception) {}
-                            emit("gesperrt"); watching = false; return
+                            emit("gesperrt"); Voice.onSongEnded(wantUri, "fremder Titel"); watching = false; return
                         }
                         ensurePlaying("falscher Titel")
                     }

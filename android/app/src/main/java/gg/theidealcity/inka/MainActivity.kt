@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     // Bewusst kein web.onPause(): die Show soll im Hintergrund weiterlaufen.
 
     override fun onDestroy() {
-        if (Hub.web === web) { Hub.web = null; Hub.activity = null; PlaybackService.update(this, "", "", "stop"); SpotifyCtl.stop() }
+        if (Hub.web === web) { Hub.web = null; Hub.activity = null; PlaybackService.update(this, "", "", "stop"); SpotifyCtl.stop(); Voice.release() }
         web.destroy()
         super.onDestroy()
     }
@@ -144,6 +144,19 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyKeep(on: Boolean) { Hub.main.post { SpotifyCtl.keepAlive(c, on) } }
         @JavascriptInterface fun spotifyDuck(on: Boolean) { Hub.main.post { SpotifyCtl.duck(c, on) } }
         /** Spielt gerade eine andere App Ton (Video, Sprachnachricht)? Dann wartet Inka nach einer fremden Unterbrechung, statt sich vorzudrängen. */
+        // Inkas Stimme über den Android-Player (ab 1.2.0)
+        @JavascriptInterface fun voiceLoad(id: String, t: String) { Hub.main.post { Voice.load(c, id, t) } }
+        @JavascriptInterface fun voicePlay() { Hub.main.post { Voice.play(true) } }
+        @JavascriptInterface fun voicePause() { Hub.main.post { Voice.pause(true) } }
+        @JavascriptInterface fun voiceSeek(ms: Double) { Hub.main.post { Voice.seek(ms.toLong()) } }
+        @JavascriptInterface fun voiceState(): String = Voice.state().toString()
+        @JavascriptInterface fun voicePos(): Double = Voice.pos().toDouble()
+        @JavascriptInterface fun voicePlaying(): Boolean = Voice.playing()
+        @JavascriptInterface fun voiceVolume(v: Double) { Hub.main.post { Voice.setVolume(v.toFloat()) } }
+        @JavascriptInterface fun voiceRate(r: Double) { Hub.main.post { Voice.setRate(r.toFloat()) } }
+        @JavascriptInterface fun voiceEq(bass: Double, treble: Double) { Hub.main.post { Voice.setEq(bass.toInt(), treble.toInt()) } }
+        @JavascriptInterface fun voiceStops(json: String, pre: Boolean) { Hub.main.post { Voice.setStops(json, pre) } }
+        @JavascriptInterface fun voiceUnload() { Hub.main.post { Voice.release() } }
         @JavascriptInterface fun otherAudio(): Boolean = try { (c.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager).isMusicActive } catch (_: Exception) { false }
         /** uris als JSON-Liste; speichert sie in Spotify "Lieblingssongs" */
         @JavascriptInterface fun saveSongs(json: String) {

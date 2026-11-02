@@ -158,7 +158,44 @@ const WD=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samst
 const store={get(k,d){try{const v=localStorage.getItem("inka:"+k);return v==null?d:JSON.parse(v);}catch(_){return d;}},set(k,v){try{localStorage.setItem("inka:"+k,JSON.stringify(v));}catch(_){}}};
 let toastT=null;
 function toast(m,ms){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
-const AUD=$("#aud");try{AUD.volume=JSON.parse(localStorage.getItem("inka:vol")||"0.5");}catch(_){AUD.volume=0.5;}
+/* Josef 2.11.2026: echte Überblendung in der Android-App. Inkas Stimme läuft über den Android-Player (ab App 1.2.0),
+   der Inka weitersprechen lässt, während Spotify leise darunter startet, und die Songwechsel auch bei schlafender Seite selbst fährt.
+   Dieses Objekt verhält sich für den Rest der Seite wie das Audio-Element. */
+function makeNativeAudio(N){
+  const et=new EventTarget(),fire=n=>et.dispatchEvent(new Event(n));
+  const A={native:true,_ready:false,_dur:NaN,_vol:0.5,_rate:1,_ended:false,_seekT:null,_seekAt:0,_want:null,_wantAt:0,_load:null,_iv:null,
+    addEventListener:(...a)=>et.addEventListener(...a),removeEventListener:(...a)=>et.removeEventListener(...a),dispatchEvent:e=>et.dispatchEvent(e),
+    setAttribute(){},getAttribute(){return null;},
+    removeAttribute(n){if(n==="src"){A._ready=false;A._dur=NaN;A._ended=false;try{N.voiceUnload();}catch(_){}}},
+    load(){},
+    loadShow(id,t){A._ready=false;A._ended=false;return new Promise((res,rej)=>{const to=setTimeout(()=>{A._load=null;rej(new Error("Stimme lädt nicht"));},180000);
+      A._load={res:v=>{clearTimeout(to);res(v);},rej:e=>{clearTimeout(to);rej(e);}};try{N.voiceLoad(id,String(t));}catch(e){clearTimeout(to);rej(e);}});},
+    play(){A._want="play";A._wantAt=Date.now();A._ended=false;if(!A._ready)return Promise.reject(Object.assign(new Error("nicht geladen"),{name:"NotSupportedError"}));
+      try{N.voicePlay();}catch(e){return Promise.reject(e);}return Promise.resolve();},
+    pause(){const was=!A.paused;A._want="pause";A._wantAt=Date.now();try{N.voicePause();}catch(_){}if(was)setTimeout(()=>{},0);},
+    _ev(o){
+      if(o.ev==="ready"){A._ready=true;A._dur=(o.dur||0)/1000;if(A._load){A._load.res(true);A._load=null;}fire("loadedmetadata");fire("canplay");return;}
+      if(o.ev==="error"){if(A._load){A._load.rej(new Error(o.err||"Stimme"));A._load=null;}diag("stimme-fehler",{err:o.err||""});return;}
+      if(o.ev==="play"){A._want=null;fire("play");fire("playing");clearInterval(A._iv);A._iv=setInterval(()=>{if(!A.paused)fire("timeupdate");},250);return;}
+      if(o.ev==="pause"){A._want=null;clearInterval(A._iv);A._why=o.why||"";fire("timeupdate");fire("pause");return;}
+      if(o.ev==="ended"){A._want=null;clearInterval(A._iv);A._ended=true;fire("timeupdate");fire("pause");fire("ended");return;}
+      if(o.ev==="seek"){fire("timeupdate");return;}
+      natSongEvent(o);}};
+  Object.defineProperties(A,{
+    currentTime:{get(){if(A._seekT!=null&&Date.now()-A._seekAt<600)return A._seekT;A._seekT=null;try{return N.voicePos()/1000;}catch(_){return 0;}},
+      set(v){v=Math.max(0,+v||0);A._ended=false;A._seekT=v;A._seekAt=Date.now();try{N.voiceSeek(v*1000);}catch(_){}setTimeout(()=>fire("timeupdate"),0);}},
+    paused:{get(){if(A._want&&Date.now()-A._wantAt<800)return A._want==="pause";try{return !N.voicePlaying();}catch(_){return true;}}},
+    ended:{get(){return A._ended;}},
+    duration:{get(){return A._dur;}},
+    readyState:{get(){return A._ready?4:0;}},
+    src:{get(){return A._ready?"native":"";},set(_){}},
+    volume:{get(){return A._vol;},set(v){A._vol=Math.max(0,Math.min(1,+v||0));try{N.voiceVolume(A._vol);}catch(_){}}},
+    playbackRate:{get(){return A._rate;},set(v){A._rate=+v||1;try{N.voiceRate(A._rate);}catch(_){}}},
+    defaultPlaybackRate:{get(){return A._rate;},set(_){}},
+    preservesPitch:{get(){return true;},set(_){}}});
+  return A;}
+const NVOICE=!!(window.InkaNative&&typeof window.InkaNative.voiceLoad==="function")&&localStorage.getItem("inka:webVoice")!=="true";
+const AUD=NVOICE?makeNativeAudio(window.InkaNative):$("#aud");try{AUD.volume=JSON.parse(localStorage.getItem("inka:vol")||"0.5");}catch(_){AUD.volume=0.5;}
 /* Josef 1.11.2026 11:02: "alle Stimmen einen Tick leiser, sonst lauter als die Musik". Einmalig 20 Prozent leiser (etwa 2 dB), Regler bleibt frei. */
 /* Josef 1.11.2026 11:19: "die Stimmen sind alle etwas zu schnell". Abspieltempo der Sprache in der App (Tonhöhe bleibt), gilt für alle Shows. */
 const RATE=()=>{const r=+store.get("rate",0.92);return r>=0.7&&r<=1.2?r:0.92;};
@@ -245,13 +282,15 @@ async function loadShow(){
     if(!doc){S.doc=null;S.err="Für heute liegt noch keine Show hier. Der Morgenlauf legt sie gegen 4:30 Uhr ab.";render();return;}
     if(!S.doc||S.doc.day!==doc.day||S.doc.id!==doc.id||S.doc.published!==doc.published){S.doc=doc;S.day=doc.day;S.songDone={};S.ended=false;S.ch=-1;S.resume=POS.load(doc);if(S.audioUrl){URL.revokeObjectURL(S.audioUrl);S.audioUrl="";AUD.removeAttribute("src");}}
     /* Songs ausgetauscht (z. B. gesperrter Titel ersetzt), Show sonst gleich: nur die Songliste erneuern, Hörstelle bleibt. */
-    else if(JSON.stringify((S.doc.songs||[]).map(x=>x.uri))!==JSON.stringify((doc.songs||[]).map(x=>x.uri))){S.doc.songs=doc.songs;diag("songs-erneuert",{});}
+    else if(JSON.stringify((S.doc.songs||[]).map(x=>x.uri))!==JSON.stringify((doc.songs||[]).map(x=>x.uri))){S.doc.songs=doc.songs;natStops();diag("songs-erneuert",{});}
     S.err="";render();
   }catch(e){S.loading="";S.err=String(e&&e.message||e)==="kein Schlüssel"?"":"Laden ging nicht: "+String(e&&e.message||e).slice(0,80)+". Schlüssel-Link noch einmal öffnen?";render();}
 }
 async function ensureAudio(){
   if(S.audioUrl)return true;if(!S.doc||!S.doc.audio)return false;
   S.loading="Audio wird geladen";render();
+  if(AUD.native){try{await AUD.loadShow(S.doc.id||S.doc.day,S.doc.published||0);S.audioUrl="native";natStops();S.loading="";render();return true;}
+    catch(e){S.loading="";S.err="Audio ging nicht: "+String(e&&e.message||e).slice(0,80);render();return false;}}
   try{
     const r=await fetch(RAW+"d/"+(S.doc.id||S.doc.day)+".bin?t="+(S.doc.published||0));if(!r.ok)throw new Error("Audio "+r.status);
     const buf=new Uint8Array(await r.arrayBuffer());const k=await cryptoKey();
@@ -261,6 +300,15 @@ async function ensureAudio(){
 }
 const chapters=()=>(S.doc&&Array.isArray(S.doc.chapters))?S.doc.chapters:[];
 function chAt(t){const c=chapters();let k=-1;for(let i=0;i<c.length;i++)if(t>=c[i].start-0.05)k=i;return k;}
+function natStops(){if(!AUD.native||!S.doc)return;try{const c=chapters(),songs=S.doc.songs||[],L=[];let n=0;
+  c.forEach((x,i)=>{if(x.type==="song"){const tr=songs[n];n++;if(tr&&tr.uri)L.push({k:i,t:x.start,uri:tr.uri});}});
+  NAT.voiceStops(JSON.stringify(L),!!(store.get("radio",true)&&SP.ready()));}catch(_){}}
+/* Songwechsel, die die App selbst gefahren hat, auf der Seite nachziehen */
+function natSongEvent(o){const k=o.k;const tr=((S.doc&&S.doc.songs)||[])[songIndex(k)];
+  if(o.ev==="song-pre"){if(!SONG.on&&tr){S.songDone[k]=true;S.natSong=o.uri;SONG.start(k,true);}return;}
+  if(o.ev==="song-stop"){S.ch=k;if(SONG.on&&SONG.k===k&&SONG.pre){SONG.pre=false;diag("radio-voll",{app:"nativ"});render();meta();}
+    else if(!SONG.on&&tr){S.songDone[k]=true;S.natSong=o.uri;SONG.start(k);}return;}
+  if(o.ev==="song-resume"||o.ev==="song-skip"){S.songDone[k]=true;if(SONG.on&&SONG.k===k)SONG.finish(o.ev==="song-skip"?"spotify-fehlt":"ende");else{render();meta();}return;}}
 function songIndex(k){let n=0;const c=chapters();for(let i=0;i<k;i++)if(c[i].type==="song")n++;return n;}
 
 /* ---------- Abspielen ---------- */
@@ -317,7 +365,7 @@ AUD.addEventListener("pause",()=>POS.save());
    Hält Android Inkas Stimme an, ohne dass du Pause gedrückt hast (z. B. weil eine andere App kurz Ton braucht), spielt Inka von selbst weiter. */
 S.selfPause=0;
 {const _ps=pauseShow;pauseShow=function(){S.selfPause=Date.now();return _ps.apply(this,arguments);};}
-AUD.addEventListener("pause",()=>{if(S.ended||AUD.ended||VC.conv||VC.starting||Date.now()-S.selfPause<1500||S.drag!=null)return;
+AUD.addEventListener("pause",()=>{if(AUD.native)return;if(S.ended||AUD.ended||VC.conv||VC.starting||Date.now()-S.selfPause<1500||S.drag!=null)return;
   if(SONG.on&&SONG.pre){ /* Vorlauf: Android hat Inka angehalten, als Spotify loslegte. Song normal weiter, Inka nach dem Song ab Songstelle, künftig ohne Vorlauf. */
     const c=chapters()[SONG.k];diag("vorlauf-fremdpause",{t:Math.round(AUD.currentTime),k:SONG.k});store.set("noAppPre",Date.now());SONG.pre=false;
     try{NAT&&NAT.spotifyDuck&&NAT.spotifyDuck(false);}catch(_){}if(c){S.selfPause=Date.now();AUD.currentTime=c.start+0.05;}return;}
@@ -340,7 +388,7 @@ function nextCh(){const k=SONG.on?SONG.k:chAt(AUD.currentTime);if(SONG.on){SONG.
 function prevCh(){const k=chAt(AUD.currentTime);const c=chapters();for(let i=k-(AUD.currentTime-(c[k]?c[k].start:0)<4?1:0);i>=0;i--){if(c[i].type==="talk"){seekCh(i);return;}}}
 AUD.addEventListener("timeupdate",()=>{
   const t=AUD.currentTime,k=chAt(t),c=chapters()[k];
-  if(c&&c.type==="song"&&!S.songDone[k]&&!SONG.on&&!AUD.paused){S.songDone[k]=true;SONG.start(k);}
+  if(c&&c.type==="song"&&!S.songDone[k]&&!SONG.on&&!AUD.paused&&(!AUD.native||t>c.start+0.4)){S.songDone[k]=true;SONG.start(k);}
   /* Radio-Übergang (Josef 1.11.2026: "Songs können schon leise eingespielt werden, während sie anmoderiert werden, wie im Radio").
      Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
   const nx=chapters()[k+1];
@@ -377,9 +425,10 @@ SONG.start=async function(k,pre){
   SONG.on=true;SONG.pre=!!pre;if(!pre){S.selfPause=Date.now();AUD.pause();}SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
   clearInterval(RADIO.iv);RADIO.set(pre?0:1);
   const sp0=SONG.seekPos||0;SONG.seekPos=0;if(sp0){SONG.started=Date.now()-sp0;SONG.lastPos=sp0;}
-  const duckFirst=pre&&NAT&&typeof NAT.spotifyDuck==="function";if(duckFirst){try{NAT.spotifyDuck(true);}catch(_){}}
+  const natHandled=!!(S.natSong&&S.natSong===tr.uri);const duckFirst=pre&&NAT&&typeof NAT.spotifyDuck==="function"&&!natHandled;if(duckFirst){try{NAT.spotifyDuck(true);}catch(_){}}
   try{SONG.via=await SP.play(tr.uri,sp0);
     if(duckFirst&&SONG.via==="app-direkt"){diag("radio-vorlauf",{app:true});}
+    else if(pre&&natHandled){diag("radio-vorlauf",{app:"nativ"});}
     else if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
       if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
   catch(e){const em=String(e&&e.message||e);diag("song-fehler",{e:em,vis:document.visibilityState,pre:!!pre,try:SONG.tries||0});
@@ -1218,7 +1267,7 @@ if(NAT){
   SP.ready=()=>{try{return !!NAT.clientId()&&NAT.spotifyInstalled();}catch(_){return false;}};
   SP.warm=()=>{try{if(typeof NAT.spotifyKeep==="function")NAT.spotifyKeep(true);else NAT.spotifyConnect();}catch(_){}};
   SP.unlock=()=>{};
-  SP.play=async function(uri,pos){NAT.spotifyPlay(uri,pos||0);return "app-direkt";};
+  SP.play=async function(uri,pos){if(S.natSong&&S.natSong===uri){S.natSong=null;return "app-direkt";}NAT.spotifyPlay(uri,pos||0);return "app-direkt";};
   SP.pause=async function(){try{NAT.spotifyStop();}catch(_){}};
   SONG.handoff=async function(){};
   SONG.check=async function(){
@@ -1240,6 +1289,7 @@ if(NAT){
 }
 {const _fin=SONG.finish;SONG.finish=async function(w,s){SONG.lost=false;SONG.held=false;return _fin.call(SONG,w,s);};}
 window.__inkaNative=function(o){try{
+  if(o&&o.type==="voice"&&AUD.native){AUD._ev(o);return;}
   if(!o||!o.type)return;
   if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){
       if(o.ended&&o.want&&o.want===SONG.track.uri&&!SONG.pre){SONG.finish("ende");}
@@ -1273,11 +1323,11 @@ AUD.addEventListener("pause",()=>meta());AUD.addEventListener("ended",()=>meta()
 /* ===== Klang: Bass- und Höhenregler für die Stimmen (Josef 1.11.2026) ===== */
 const EQ={ctx:null,b:null,t:null};
 EQ.val=k=>+store.get(k,0);
-EQ.init=function(){if(EQ.ctx||(EQ.val("eqb")===0&&EQ.val("eqt")===0))return;try{const C=window.AudioContext||window.webkitAudioContext;EQ.ctx=new C();
+EQ.init=function(){if(AUD.native){try{NAT.voiceEq(EQ.val("eqb"),EQ.val("eqt"));}catch(_){}return;}if(EQ.ctx||(EQ.val("eqb")===0&&EQ.val("eqt")===0))return;try{const C=window.AudioContext||window.webkitAudioContext;EQ.ctx=new C();
   const src=EQ.ctx.createMediaElementSource(AUD);EQ.b=EQ.ctx.createBiquadFilter();EQ.b.type="lowshelf";EQ.b.frequency.value=260;
   EQ.t=EQ.ctx.createBiquadFilter();EQ.t.type="highshelf";EQ.t.frequency.value=3200;src.connect(EQ.b);EQ.b.connect(EQ.t);EQ.t.connect(EQ.ctx.destination);EQ.set();
   diag("eq-an",{b:EQ.val("eqb"),t:EQ.val("eqt")});}catch(e){diag("eq-fehler",{e:String(e)});}};
-EQ.set=function(){if(!EQ.ctx)return;EQ.b.gain.value=EQ.val("eqb");EQ.t.gain.value=EQ.val("eqt");if(EQ.ctx.state!=="running")EQ.ctx.resume().catch(()=>{});};
+EQ.set=function(){if(AUD.native){try{NAT.voiceEq(EQ.val("eqb"),EQ.val("eqt"));}catch(_){}return;}if(!EQ.ctx)return;EQ.b.gain.value=EQ.val("eqb");EQ.t.gain.value=EQ.val("eqt");if(EQ.ctx.state!=="running")EQ.ctx.resume().catch(()=>{});};
 AUD.addEventListener("play",()=>{EQ.init();if(EQ.ctx&&EQ.ctx.state!=="running")EQ.ctx.resume().catch(()=>{});});
 
 /* ===== Mitlesen: Transkript der Show, aktuelle Zeile hervorgehoben (Josef 1.11.2026) ===== */

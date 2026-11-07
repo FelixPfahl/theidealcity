@@ -358,7 +358,7 @@
       function finish(){ if (fin) return; fin = true; typing = false; spans.forEach(function(s){ s.style.visibility = ''; }); if (!dlg) return;
         var txt = items.map(function(x){ return x.ch || ''; }).join(''); if (pageIdx === pages.length - 1) endSyl(L.who, curMood, txt);
         if (pageIdx === pages.length - 1 && L.ask && answered < 2 && !pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } else { more.style.visibility = 'visible'; autoArm(readMs(items) + (pageIdx === pages.length - 1 && k === lines.length - 1 && !(dq && dq.length) ? CF('dlg.endwait', 1000) : 0)); } }
-      function step(now){ if (fin || !dlg) return; if (window.JK_DEVSPD && window.JK_DEVSPD.pause){ due = Math.max(due, now + 60); raf = requestAnimationFrame(step); return; } if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
+      function step(now){ if (fin || !dlg) return; if ((window.JK_DEVSPD && window.JK_DEVSPD.pause) || window.JK_PAUSE){ due = Math.max(due, now + 60); raf = requestAnimationFrame(step); return; } if (tspeed() === 0 && !/^\s*\.\.\.\s*$/.test(L.text)){ /* sofort: ganze Seite, Schweigen-Seiten behalten ihr Tempo */ while (i < items.length){ var it0 = items[i++]; if (it0.ev && it0.ev === 'mood') setMood(it0.v); } finish(); return; }
         if (now < due){ raf = requestAnimationFrame(step); return; }
         while (i < items.length && (items[i].ev || items[i].nm)){ var ev = items[i++]; if (ev.nm){ si++; continue; } if (ev.ev === 'mood') setMood(ev.v); else if (ev.ev === 'pause') due = now + ev.v * 1000 * tspeed(); else if (ev.ev === 'cut'){ dlg.classList.add('cut'); i = items.length; } }
         if (due > now){ raf = requestAnimationFrame(step); return; }
@@ -378,7 +378,7 @@
     /* Josef, 1.11., 17:49: während geschrieben wird, wird schon gelesen. Lesezeit zählt ab Beginn des Schreibens und ist für alle Figuren gleich (unabhängig vom Schreibtempo); nach dem Schreiben mindestens kurz stehen */
     var pageT0 = 0;
     function readMs(items){ var n = items.filter(function(x){ return x.ch !== undefined && !x.nm; }).length; var d = window.JK_DEVSPD, m = d && d.mult ? Math.min(d.mult, 20) : 1; var left = n * CF('dlg.automs', 60) / m - (performance.now() - pageT0); return Math.max(CF('dlg.autominms', 400) / m, left); }
-    var autoT = null; function autoArm(ms, isAsk){ clearTimeout(autoT); autoT = setTimeout(function(){ if (!dlg) return; if (window.JK_DEVSPD && window.JK_DEVSPD.pause){ autoArm(400, isAsk); return; } if (isAsk){ if (pending){ pending = null; close(false); } return; } if (!document.hidden) next(); else autoArm(1500); }, ms); }
+    var autoT = null; function autoArm(ms, isAsk){ clearTimeout(autoT); autoT = setTimeout(function(){ if (!dlg) return; if ((window.JK_DEVSPD && window.JK_DEVSPD.pause) || window.JK_PAUSE){ autoArm(400, isAsk); return; } if (isAsk){ if (pending){ pending = null; close(false); } return; } if (!document.hidden) next(); else autoArm(1500); }, ms); }
     function next(e){ clearTimeout(autoT); if (e){ e.preventDefault(); e.stopPropagation(); } if (pending) return;
       if (typing){ if (raf) cancelAnimationFrame(raf); typing = false; var items = pages[pageIdx]; items.forEach(function(it){ if (it.ev === 'mood') setMood(it.v); }); p.querySelectorAll('.ch').forEach(function(s){ s.style.visibility = ''; });
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ if (!pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } return; } more.style.visibility = 'visible'; cursorSnd('mv'); autoArm(readMs(items) + (pageIdx === pages.length - 1 && k === lines.length - 1 && !(dq && dq.length) ? CF('dlg.endwait', 1000) : 0)); return; }   /* Josef, 1.11., 16:00: nach dem Überspringen schloss der Dialog nicht mehr von allein */
@@ -463,27 +463,140 @@
     document.addEventListener('click', function(e){ if (!menu.hidden && !e.target.closest('.sbfab')) openMenu(false); });
     document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !menu.hidden){ openMenu(false); btn.focus(); } });
     /* Josef, 28.10., 01:10: "Inka rufen" startet oder setzt fort; nach "Nicht jetzt" legt es die Dinge wieder aus */
-    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), function(nat){ if (S.done) cert(); else if (!newChapter(nat) && nat) offerQuest(); }); });
+    fab.querySelector('.sbcall').addEventListener('click', function(){ openMenu(false); if (dlg) return; if (optedOut()){ S.optout = 0; save(); place(); } sp('g-kraehe', {vol:.5, max:.3}); try { sessionStorage.setItem('jk_sb_seen', '1'); localStorage.setItem('jk_sb_intro', '1'); } catch(e){} dialog(greet(), function(nat){ if (S.done) cert(); else if (!newChapter(nat) && !invCheck(false) && nat) offerQuest(); }); });
     fab.querySelector('.sbcount').addEventListener('click', function(){ openMenu(false); inventory(); });
     fab.querySelector('.sblogbtn').addEventListener('click', function(){ openMenu(false); logbook(); });
     /* Josef, 1.11., 10:32: Spiel neu starten; vorher fragen, ob wirklich alle Daten gelöscht werden; danach Startseite */
     fab.querySelector('.sbrestart').addEventListener('click', function(){ openMenu(false); if (dlg) return; dialog([{who:'inka', mood:'ueberrascht', text:'Neu anfangen? Dann vergesse ich alles: Funde, Punkte, Antworten, Abzeichen, Begegnungen, deine Einstellungen. *Wirklich alle Daten löschen?*', ask:[{s:'a', t:'Ja, wirklich alle Daten löschen', fn:wipeAll, re:[['inka', '[m:traurig]Gut. [p:.4]Bis gleich, wer auch immer du dann bist.']]}, {s:'v', t:'Nein, lieber nicht', re:[['inka', '[m:froh]Dachte ich mir. Alles bleibt, wie es ist.']]}]}], function(){ if (window.__jkWipe) location.href = 'index.html'; }); }); }
   function wipeAll(){ try { Object.keys(localStorage).forEach(function(k){ if (/^jk_/.test(k) && !/^jk_(dev|regler)/.test(k)) localStorage.removeItem(k); }); Object.keys(sessionStorage).forEach(function(k){ if (/^jk_/.test(k)) sessionStorage.removeItem(k); }); } catch(e){} window.__jkWipe = 1; }
   function refresh(){ if (num) num.textContent = count(); var c = fab && fab.querySelector('.sbcount span'); if (c) c.textContent = count() + '/' + N; if (panel && panel.classList.contains('sbinv')) inventory(true); }
-  function closePanel(){ if (!panel) return; document.removeEventListener('keydown', panelKey); var pn = panel; panel = null; pn.classList.add('off'); setTimeout(function(){ pn.remove(); }, 250); if (btn) btn.focus(); }
+  function closePanel(){ if (!panel) return; document.removeEventListener('keydown', panelKey); var pn = panel; panel = null; if (pn.classList.contains('mmenu')){ document.removeEventListener('keydown', mmKey, true); pauseOff(); MMS.comb = null; setTimeout(mmAfter, 50); } pn.classList.add('off'); setTimeout(function(){ pn.remove(); }, 250); if (btn) btn.focus(); }
   function panelKey(e){ if (e.key === 'Escape'){ e.stopPropagation(); closePanel(); } }
   function openPanel(cls, label, html){ if (panel) { var old = panel; panel = null; old.remove(); }
     panel = document.createElement('div'); panel.className = 'sbpanel ' + cls; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', label);
     panel.innerHTML = '<div class="sbpin"><button type="button" class="x" aria-label="Schließen">×</button><h2>' + label + '</h2>' + html + '</div>';
     document.body.appendChild(panel); panel.querySelector('.x').addEventListener('click', closePanel); panel.addEventListener('click', function(e){ if (e.target === panel) closePanel(); });
     document.addEventListener('keydown', panelKey); cursorSnd('ok'); var f = panel.querySelector('.sbpin button:not(.x), .sbpin input, .sbpin a'); (f || panel.querySelector('.x')).focus(); return panel; }
-  /* Inventar */
-  function inventory(refreshOnly){ S.used = S.used || {}; var items = PLACES.map(function(p){ var f = !!S.found[p.id], u = !!S.used[p.id], T = TOOLS[p.id]; return '<li class="' + (f ? (u ? 'got used' : 'got tool') : 'open') + '"><button type="button" data-id="' + p.id + '"' + (u ? ' disabled' : '') + ' aria-label="' + (f ? (u ? NAMES[p.id] + ', als Werkzeug benutzt' : NAMES[p.id] + ' als Werkzeug: ' + (T ? T.n : '')) : NAMES[p.id] + ' noch gesucht. Hinweis kostet ' + CF('game.hint', HINT_COST) + ' Punkte') + '"><img src="' + SPR(p.id + '.png') + '" alt=""><span>' + (f ? NAMES[p.id] : '?') + '</span>' + (f && !u && T ? '<small>' + T.n + '</small>' : (u ? '<small>benutzt</small>' : '')) + '</button></li>'; }).join('');
-    var html = '<p class="sbpnote">' + count() + ' von ' + N + ' gefunden, ' + points() + ' Punkte. ' + (S.done ? 'Alles da. ' : 'Klick auf eine Silhouette: Inka sagt, wo sie eins gesehen hat (kostet ' + CF('game.hint', HINT_COST) + ' Punkte). ') + (count() ? 'Gefundene Dinge sind Werkzeuge: anklicken, dann auf eines von Josefs Werken klicken. Jedes einmal.' : '') + '</p><ul class="sbinvgrid">' + items + '</ul>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + (H('inventoryExtra') || '');
-    if (refreshOnly && panel){ panel.querySelector('.sbpin').innerHTML = '<button type="button" class="x" aria-label="Schließen">×</button><h2>Inventar</h2>' + html; panel.querySelector('.x').addEventListener('click', closePanel); }
-    else openPanel('sbinv', 'Inventar', html);
-    panel.querySelectorAll('.sbinvgrid button:not([disabled])').forEach(function(b){ b.addEventListener('click', function(){ var id = b.getAttribute('data-id'); var p = PLACES.filter(function(q){ return q.id === id; })[0]; closePanel(); if (S.found[id]) startTool(id); else if (p) hintFor(p); }); });
-    var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); }); H('inventoryBind', panel, closePanel); }
+  /* ---------- Inventar als Mega-Man-X-Waffenmenü mit Kombinieren und Wagners Labor (Josef, 1.11.2026, Fragen R1 bis R10 und I1 bis I20) ---------- */
+  var INV = null, INVP = null, RECIPES = {}, ICONC = {};
+  function inventory(refreshOnly){ if (refreshOnly){ if (panel && panel.classList.contains('mmenu')) mmRender(); return; } pmenu('dinge'); }
+  function invLoad(){ if (INVP) return INVP; INVP = fetch('../assets/game/inv.json').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }).then(function(d){ INV = d || {}; invTools(); return INV; }); return INVP; }
+  function invTools(){ RECIPES = INV.recipes || {}; Object.keys(RECIPES).forEach(function(k){ var r = RECIPES[k], ab = k.split('+'); r.a = ab[0]; r.b = ab[1]; NAMES[r.id] = r.name;
+      if (r.kind === 'tool'){ var t1 = TOOLS[ab[0]] || {}, t2 = TOOLS[ab[1]] || {}, tt = (INV.tools || {})[r.id] || {}; TOOLS[r.id] = {n:tt.n || r.name, fx:t1.fx, fx2:t2.fx, big:1, snd:t1.snd || t2.snd, line:tt.line}; } }); }
+  function recipeById(id){ for (var k in RECIPES) if (RECIPES[k].id === id) return RECIPES[k]; return null; }
+  function pairKey(a, b){ return [a, b].sort().join('+'); }
+  function crafted(){ return (S.crafted = S.crafted || {}); }
+  function clean(t){ return String(t || '').replace(/\[[^\]]*\]/g, '').replace(/(^|[^A-Za-zÄÖÜäöüß])\*([^*]+)\*/g, '$1$2').replace(/\s+/g, ' ').trim(); }
+  function fmtT(t){ if (!t || t < 1e11) return ''; var d = new Date(t); return d.getDate() + '.' + (d.getMonth() + 1) + '., ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2) + ' Uhr'; }
+  /* Pixel-Icons: px/obj-<id>.png (src/build_px.py); kombinierte Dinge werden aus beiden Zutaten zusammengesetzt */
+  function icon(id){ var r = recipeById(id); if (!r) return SPR('px/obj-' + id + '.png'); if (ICONC[id]) return ICONC[id]; if (ICONC[id] === '') return '';
+    ICONC[id] = ''; Promise.all([r.a, r.b].map(function(x){ return new Promise(function(res){ var im = new Image(); im.onload = function(){ res(im); }; im.onerror = function(){ res(null); }; im.src = SPR('px/obj-' + x + '.png'); }); })).then(function(ims){ var c = document.createElement('canvas'); c.width = c.height = 32; var g = c.getContext('2d'); g.imageSmoothingEnabled = false; if (ims[0]) g.drawImage(ims[0], 0, 0, 22, 22); if (ims[1]) g.drawImage(ims[1], 10, 10, 22, 22); ICONC[id] = c.toDataURL(); document.querySelectorAll('img[data-icon="' + id + '"]').forEach(function(e){ e.src = ICONC[id]; }); });
+    return ''; }
+  function iconImg(id, cls){ var src = icon(id); return '<img data-icon="' + id + '"' + (src ? ' src="' + src + '"' : '') + ' alt=""' + (cls ? ' class="' + cls + '"' : '') + '>'; }
+  /* Pause: solange das Menü offen ist, stehen Spielzeit, Dialoge, Plotter und Wandern */
+  var pauseT = 0;
+  function pauseOn(){ if (window.JK_PAUSE) return; window.JK_PAUSE = 1; pauseT = Date.now(); document.documentElement.classList.add('sbpaused'); }
+  function pauseOff(){ if (!window.JK_PAUSE) return; window.JK_PAUSE = 0; document.documentElement.classList.remove('sbpaused'); if (S.start && !S.done){ S.start += Date.now() - pauseT; save(); } }
+  var MMTABS = [['dinge', 'DINGE'], ['album', 'ALBUM'], ['abzeichen', 'ABZEICHEN'], ['logbuch', 'LOGBUCH'], ['tausch', 'TAUSCH'], ['labor', 'LABOR']];
+  var MMS = {tab:'dinge', sel:0, comb:null, msg:null, tut:false, after:null};
+  function tabsVisible(){ return MMTABS.filter(function(t){ if (t[0] === 'labor') return !!S.labIntro; if (/^(album|abzeichen|tausch)$/.test(t[0])) return !!S.invIntro; return true; }); }
+  function pmenu(tab, opt){ opt = opt || {}; return invLoad().then(function(){ if (tab) MMS.tab = tab; MMS.comb = null; MMS.msg = null; MMS.tut = !!opt.tut; var tabs = tabsVisible(); if (!tabs.some(function(t){ return t[0] === MMS.tab; })) MMS.tab = tabs[0][0];
+      if (!panel || !panel.classList.contains('mmenu')){ openPanel('mmenu sbinv', 'Inventar', '<nav class="mmtabs" role="tablist" aria-label="Bereiche"></nav><div class="mmbody"></div><div class="mmmsg" aria-live="polite"></div><p class="mmkeys" aria-hidden="true">◀ ▶ Bereich · ▲ ▼ wählen · Enter benutzen · 1 bis 9 · Esc schließen</p>'); pauseOn(); MMS.t0 = Date.now(); document.addEventListener('keydown', mmKey, true); }
+      mmRender(); }); }
+  function mmClose(){ closePanel(); }
+  function mmRender(){ if (!panel || !panel.classList.contains('mmenu')) return; var tabs = tabsVisible(), nav = panel.querySelector('.mmtabs');
+    nav.innerHTML = tabs.map(function(t){ var on = t[0] === MMS.tab; return '<button type="button" role="tab" data-t="' + t[0] + '" aria-selected="' + on + '"' + (on ? ' class="on"' : '') + '>' + t[1] + '</button>'; }).join('');
+    nav.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ mmTab(b.getAttribute('data-t')); }); });
+    var body = panel.querySelector('.mmbody'); body.className = 'mmbody t-' + MMS.tab;
+    if (MMS.tab === 'dinge') mmDinge(body); else if (MMS.tab === 'album') body.innerHTML = '<div class="mmscroll">' + albumHtml() + '</div>'; else if (MMS.tab === 'abzeichen') body.innerHTML = '<div class="mmscroll">' + badgeHtml() + '</div>';
+    else if (MMS.tab === 'logbuch'){ var w = document.createElement('div'); w.className = 'mmscroll'; body.innerHTML = ''; body.appendChild(w); logbookTab(w); }
+    else if (MMS.tab === 'tausch'){ body.innerHTML = '<div class="mmscroll">' + (H('inventoryExtra') || '<p>Niemand da.</p>') + '</div>'; H('inventoryBind', body, mmClose); }
+    else if (MMS.tab === 'labor') mmLabor(body);
+    mmMsg(); }
+  function mmTab(t){ MMS.tab = t; MMS.sel = 0; MMS.comb = null; MMS.msg = null; cursorSnd('mv'); mmRender(); var b = panel && panel.querySelector('.mmtabs .on'); if (b) b.focus(); }
+  function dingeList(){ var L = PLACES.map(function(p){ return {id:p.id, p:p, got:!!S.found[p.id]}; }); var C = crafted(); Object.keys(C).sort(function(a, b){ return C[a] - C[b]; }).forEach(function(id){ var r = recipeById(id); if (r) L.push({id:id, got:true, craft:r}); }); return L; }
+  function comment(id){ var a = ((INV && INV.itemlines) || {})[id]; if (!a || !a.length) return null; var l = a[((S.visits || 1) + new Date().getDate()) % a.length]; return Array.isArray(l) ? {who:l[0], text:l[1]} : l; }
+  function actsFor(x){ var A = []; if (!x) return A; if (!x.got){ A.push(['hint', 'Hinweis kaufen (' + CF('game.hint', HINT_COST) + ' Punkte)']); return A; }
+    var T = TOOLS[x.id], R = x.craft, used = S.used && S.used[x.id], gifted = S.gifted && S.gifted[x.id];
+    if (T && !used && !gifted) A.push(['tool', 'Als Werkzeug benutzen']);
+    if (!R && S.invIntro) A.push(['comb', MMS.comb === x.id ? 'Kombinieren abbrechen' : 'Kombinieren']);
+    if (R && R.kind === 'gift' && !gifted){ var to = ((INV.gifts || {})[x.id] || {}).to || 'inka'; A.push(['gift', 'Verschenken an ' + (MMNAME[to] || to)]); }
+    if (R && R.kind === 'lab' && S.labIntro && !S.lab) A.push(['lab', 'Am Labor benutzen']);
+    return A; }
+  function detail(x){ if (!x) return ''; var h = (S.done ? '<p><button type="button" class="sbcertbtn mmcert">Urkunde ansehen</button></p>' : '') + '<div class="mmbig">' + (x.got ? iconImg(x.id) : '<img src="' + SPR('px/obj-' + x.id + '.png') + '" alt="" class="sil">') + '</div><h3>' + esc(x.got ? (NAMES[x.id] || x.id) : 'Noch nicht gefunden') + '</h3>';
+    if (!x.got) h += '<p>' + esc(String(x.p.k || '').split(',')[0]) + '. ' + ['', 'Offen sichtbar.', 'In Bildern oder Listen.', 'Am Rand, gut versteckt.'][x.p.d] + '</p>';
+    else { var T = TOOLS[x.id], R = x.craft; if (R) h += '<p>' + esc(R.desc || '') + '</p><p class="mmsmall">' + esc(NAMES[R.a] || R.a) + ' + ' + esc(NAMES[R.b] || R.b) + '</p>';
+      if (T) h += '<p><b>Wirkung:</b> ' + esc(T.n) + (S.used && S.used[x.id] ? ' (benutzt)' : '') + '</p>';
+      if (R && R.kind === 'gift') h += '<p><b>Geschenk</b>' + (S.gifted && S.gifted[x.id] ? ' (verschenkt)' : '') + '</p>'; if (R && R.kind === 'lab') h += '<p><b>Schlüssel</b> für Wagners Labor</p>';
+      if (x.p) h += '<p><b>Gefunden:</b> ' + esc(x.p.k || '') + (fmtT(S.found[x.id]) ? ', ' + fmtT(S.found[x.id]) : '') + '</p>'; else if (R) h += '<p><b>Hergestellt:</b> ' + fmtT(crafted()[x.id]) + '</p>';
+      var cm = comment(x.id); if (cm) h += '<p class="mmcom"><b style="color:' + (MMCOL[cm.who] || '#fff') + '">' + esc(MMNAME[cm.who] || cm.who) + ':</b> ' + esc(clean(cm.text)) + '</p>'; }
+    var A = actsFor(x); return h + '<ul class="mmacts">' + A.map(function(a){ return '<li><button type="button" data-a="' + a[0] + '"' + (MMS.tut && a[0] === 'comb' ? ' class="blink"' : '') + '>' + esc(a[1]) + '</button></li>'; }).join('') + '</ul>'; }
+  function mmDinge(body){ var L = dingeList(); if (MMS.sel >= L.length) MMS.sel = 0; var tutPair = MMS.tut ? tutorialPair() : null;
+    body.innerHTML = '<ol class="mmlist" role="listbox" aria-label="Dinge">' + L.map(function(x, i){ var used = S.used && S.used[x.id], gifted = S.gifted && S.gifted[x.id];
+      return (x.craft && (i === 0 || !L[i - 1].craft) ? '<li class="mmsep" aria-hidden="true">KOMBINIERT</li>' : '') + '<li role="option" tabindex="-1" data-i="' + i + '" aria-selected="' + (i === MMS.sel) + '" class="' + [i === MMS.sel ? 'on' : '', x.got ? 'got' : 'open', used || gifted ? 'used' : '', MMS.comb === x.id ? 'comb' : '', tutPair && tutPair.indexOf(x.id) >= 0 ? 'blink' : ''].join(' ') + '">' +
+        (x.got ? iconImg(x.id) : '<img src="' + SPR('px/obj-' + x.id + '.png') + '" alt="" class="sil">') + '<span>' + (i < 9 ? '<small>' + (i + 1) + '</small>' : '') + esc(x.got ? (NAMES[x.id] || x.id) : '???') + '</span>' + (used ? '<em>benutzt</em>' : gifted ? '<em>verschenkt</em>' : '') + '</li>'; }).join('') + '</ol><div class="mmdet">' + detail(L[MMS.sel]) + '</div>';
+    body.querySelectorAll('.mmlist li[data-i]').forEach(function(li){ li.addEventListener('click', function(){ mmPick(+li.getAttribute('data-i')); }); });
+    body.querySelectorAll('.mmacts button').forEach(function(b){ b.addEventListener('click', function(){ mmAct(b.getAttribute('data-a')); }); });
+    var cb = body.querySelector('.mmcert'); if (cb) cb.addEventListener('click', function(){ mmClose(); setTimeout(cert, 260); });
+    var on = body.querySelector('.mmlist li.on'); if (on && on.scrollIntoView) on.scrollIntoView({block:'nearest'}); }
+  function mmPick(i){ var L = dingeList(), x = L[i]; if (!x) return; if (MMS.comb && x.got && !x.craft && x.id !== MMS.comb){ var a = MMS.comb; MMS.sel = i; doCombine(a, x.id); return; } if (MMS.comb && x.id === MMS.comb){ MMS.comb = null; MMS.msg = null; } MMS.sel = i; cursorSnd('mv'); mmRender(); }
+  function mmAct(a){ var L = dingeList(), x = L[MMS.sel]; if (!x) return;
+    if (a === 'hint'){ mmClose(); setTimeout(function(){ hintFor(x.p); }, 260); return; }
+    if (a === 'tool'){ mmClose(); startTool(x.id); return; }
+    if (a === 'comb'){ if (MMS.comb === x.id){ MMS.comb = null; MMS.msg = null; } else { MMS.comb = x.id; MMS.tut = false; MMS.msg = {sys:'Kombinieren: ' + (NAMES[x.id] || x.id) + ' + ? Wähle ein zweites Ding.'}; } cursorSnd('ok'); mmRender(); return; }
+    if (a === 'gift'){ give(x.id); return; }
+    if (a === 'lab'){ labTry(x.id); return; } }
+  function tutorialPair(){ var ks = Object.keys(RECIPES).filter(function(k){ var r = RECIPES[k]; return S.found[r.a] && S.found[r.b] && !crafted()[r.id]; }); ks.sort(function(a, b){ return (RECIPES[a].kind === 'lab') - (RECIPES[b].kind === 'lab'); }); return ks.length ? [RECIPES[ks[0]].a, RECIPES[ks[0]].b] : null; }
+  function fill(t, a, b){ return String(t || '').replace(/\{a\}/g, NAMES[a] || a).replace(/\{b\}/g, NAMES[b] || b); }
+  function mmSay(line, extra){ MMS.msg = {who:line.who || 'inka', text:clean(line.text), extra:extra ? clean(norm0(extra).text || extra) : ''}; try { syl(MMS.msg.who, 'neutral', 'quick'); } catch(e){} mmMsg(); }
+  function mmMsg(){ var m = panel && panel.querySelector('.mmmsg'); if (!m) return; var M = MMS.msg; if (!M){ m.innerHTML = ''; m.classList.remove('on'); return; } m.classList.add('on');
+    m.innerHTML = M.sys ? '<p class="sys">' + esc(M.sys) + '</p>' : '<p><b style="color:' + (MMCOL[M.who] || '#fff') + '">' + esc(MMNAME[M.who] || M.who) + ':</b> ' + esc(M.text) + '</p>' + (M.extra ? '<p class="alarm">' + esc(M.extra) + '</p>' : ''); }
+  function doCombine(a, b){ MMS.comb = null; var k = pairKey(a, b), R = RECIPES[k];
+    if (R){ var C = crafted(); if (C[R.id]){ mmSay({who:'inka', text:'Das hast du schon: ' + R.name + '.'}); mmRender(); return; }
+      C[R.id] = Date.now(); var first = !S.firstCraft; S.firstCraft = S.firstCraft || Date.now(); save(); cursorSnd('ok'); sp('g-fund', {vol:.6, max:.35}); H('onCraft', R);
+      dingeList().forEach(function(x, i){ if (x.id === R.id) MMS.sel = i; }); mmRender(); mmSay({who:R.who || 'inka', text:R.made || (R.name + '.')});
+      if (first && INV.scenes && INV.scenes.inv_firstcraft) MMS.after = INV.scenes.inv_firstcraft; return; }
+    var c = (INV.pairs || {})[k] || {who:'inka', text:'Das passt nicht zusammen.'}; cursorSnd('mv'); mmRender();
+    if (S.labIntro && !S.lab){ S.labFails = (S.labFails || 0) + 1; save(); H('wanted', .5, 'labor'); var al = INV.lab_alarm || []; tick(); mmSay(c, al.length ? al[S.labFails % al.length] : 'Alarm.'); }
+    else mmSay(c); }
+  function give(id){ var g = (INV.gifts || {})[id]; if (!g) return; S.gifted = S.gifted || {}; S.gifted[id] = Date.now(); var R = rel(g.to); R.n = Math.min(5, R.n + 1); save(); H('onGift', id, g.to); mmClose(); setTimeout(function(){ dialog(g.lines || [[g.to, '...']]); }, 300); }
+  function mmLabor(body){ var C = crafted(), keys = Object.keys(C).filter(function(id){ return !!recipeById(id); });
+    body.innerHTML = '<div class="mmlab"><div class="mmdoor' + (S.lab ? ' open' : '') + '" aria-hidden="true"><i></i><b></b></div><div class="mmlabtxt"><h3>' + (S.lab ? 'Wagners Labor ist offen' : 'Wagners Labor') + '</h3><p>' + (S.lab ? 'Sigmas Akte liegt hier. Du kannst sie jederzeit wieder lesen.' : 'Das Schloss nimmt nur ein Ding, das es nicht gibt. Wähle etwas Kombiniertes. Jeder Fehlversuch löst Wagners Alarm aus.') + '</p>' +
+      '<ul class="mmacts">' + (S.lab ? '<li><button type="button" data-a="akte">Sigmas Akte lesen</button></li>' : keys.map(function(id){ return '<li><button type="button" data-a="key" data-id="' + id + '">' + iconImg(id) + ' ' + esc(NAMES[id] || id) + '</button></li>'; }).join('') + '<li><button type="button" data-a="lhint">Hinweis kaufen (' + CF('game.hint', HINT_COST) + ' Punkte)</button></li>') + '</ul>' +
+      (!S.lab && !keys.length ? '<p class="mmsmall">Noch nichts Kombiniertes. Unter DINGE: ein Ding, Kombinieren, ein zweites Ding.</p>' : '') + (S.labFails && !S.lab ? '<p class="mmwarn">Alarm ausgelöst: ' + S.labFails + '-mal</p>' : '') + '</div></div>';
+    body.querySelectorAll('.mmacts button').forEach(function(b){ b.addEventListener('click', function(){ var a = b.getAttribute('data-a'); if (a === 'key') labTry(b.getAttribute('data-id')); else if (a === 'lhint') labHint(); else if (a === 'akte'){ mmClose(); setTimeout(function(){ dialog((INV.scenes || {}).lab_success || []); }, 300); } }); }); }
+  function labTry(id){ var R = recipeById(id); if (R && R.kind === 'lab' && !S.lab){ S.lab = Date.now(); save(); cursorSnd('ok'); H('onLab'); mmClose(); setTimeout(function(){ dialog((INV.scenes || {}).lab_success || []); }, 300); return; }
+    S.labFails = (S.labFails || 0) + 1; save(); H('wanted', .5, 'labor'); tick(); var w = ((INV.scenes || {}).lab_wrongkey || [['wagner', 'Falsch.']])[0], al = INV.lab_alarm || []; mmSay(norm0(w), al.length ? al[S.labFails % al.length] : ''); if (MMS.tab === 'labor') mmLabor(panel.querySelector('.mmbody')); }
+  function labHint(){ var have = Object.keys(crafted()).filter(function(id){ var r = recipeById(id); return r && r.kind === 'lab'; }); S.hints = (S.hints || 0) + 1; save(); refresh(); H('onHint');
+    if (have.length){ mmSay({who:'inka', text:'Du hast schon einen Schlüssel: ' + (NAMES[have[0]] || have[0]) + '. Setz ihn ein.'}); return; }
+    var ks = Object.keys(RECIPES).filter(function(k){ var r = RECIPES[k]; return r.kind === 'lab' && S.found[r.a] && S.found[r.b]; });
+    if (ks.length){ var r = RECIPES[ks[(S.hints || 0) % ks.length]], hs = INV.lab_hint || ['{a} und {b}.']; mmSay({who:'inka', text:fill(hs[(S.hints || 0) % hs.length], r.a, r.b)}); }
+    else { var hn = INV.lab_hint_none || ['Dir fehlt noch etwas. Such weiter.']; mmSay({who:'inka', text:hn[(S.hints || 0) % hn.length]}); } }
+  /* Tastatur: Pfeile, Enter, Zahlen, Esc; Taste I öffnet (verzögert, damit getippte Namen und Cheatcodes weiter gehen) */
+  function mmKey(e){ if (!panel || !panel.classList.contains('mmenu')){ document.removeEventListener('keydown', mmKey, true); return; } var t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) && t.type !== 'checkbox' && t.type !== 'radio') return;
+    var tabs = tabsVisible().map(function(x){ return x[0]; }), ti = tabs.indexOf(MMS.tab), k = e.key;
+    if (k === 'Enter' && Date.now() - (MMS.t0 || 0) < 600){ e.preventDefault(); e.stopPropagation(); return; }   /* Enter aus dem Dialog davor löst nichts aus */
+    if (k === 'Escape'){ e.preventDefault(); e.stopPropagation(); if (MMS.comb){ MMS.comb = null; MMS.msg = null; mmRender(); } else mmClose(); return; }
+    if (k === 'i' || k === 'I'){ e.preventDefault(); e.stopPropagation(); mmClose(); return; }
+    if (k === 'ArrowRight' || k === 'ArrowLeft'){ if (t && t.closest && t.closest('.mmacts') && MMS.tab !== 'dinge') return; e.preventDefault(); e.stopPropagation(); mmTab(tabs[(ti + (k === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length]); return; }
+    if (MMS.tab === 'dinge'){ var L = dingeList();
+      if (k === 'ArrowDown' || k === 'ArrowUp'){ e.preventDefault(); e.stopPropagation(); MMS.sel = (MMS.sel + (k === 'ArrowDown' ? 1 : -1) + L.length) % L.length; cursorSnd('mv'); mmRender(); return; }
+      if (/^[1-9]$/.test(k) && L[+k - 1]){ e.preventDefault(); e.stopPropagation(); mmPick(+k - 1); return; }
+      if (k === 'Enter' && !(t && t.closest && t.closest('.mmacts, .mmtabs'))){ e.preventDefault(); e.stopPropagation(); var x = L[MMS.sel]; if (MMS.comb && x && x.got && !x.craft && x.id !== MMS.comb){ mmPick(MMS.sel); return; } var A = actsFor(x); if (A.length) mmAct(A[0][0]); return; } }
+    else if (k === 'ArrowDown' || k === 'ArrowUp'){ var bs = [].slice.call(panel.querySelectorAll('.mmbody button, .mmbody input, .mmbody a')); if (!bs.length) return; e.preventDefault(); var ci = bs.indexOf(document.activeElement); bs[(ci + (k === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus(); cursorSnd('mv'); } }
+  var iKeyT = null;
+  document.addEventListener('keydown', function(e){ var t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return; if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if ((e.key === 'i' || e.key === 'I') && !(panel && panel.classList.contains('mmenu'))){ clearTimeout(iKeyT); iKeyT = setTimeout(function(){ if (!optedOut() && !ov && !mo) pmenu('dinge'); }, 450); return; }
+    if (e.key.length === 1) clearTimeout(iKeyT); });
+  /* Einführung nach 8 Funden, Labor nach 12 (Josef, I2 und I6): erst wenn nichts anderes offen ist */
+  var invBusy = false;
+  function whenFree(fn){ var n = 0; var iv = setInterval(function(){ if (++n > 240){ clearInterval(iv); return; } if (dlg || panel || ov || mo || document.hidden || window.JK_PAUSE || document.querySelector('.lb2.on')) return; clearInterval(iv); fn(); }, 500); }
+  function invCheck(polite){ if (invBusy || optedOut() || (polite && quiet())) return false; var n = count();
+    if (n >= 8 && !S.invIntro){ invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; S.invIntro = Date.now(); save(); markNew(); dialog(((INV.scenes || {}).inv_intro) || [['inka', 'Dein Inventar ist jetzt mehr als eine Liste. Drück I.']], function(nat){ if (!nat) return; pmenu('dinge', {tut:true}).then(function(){ var tp = tutorialPair(); var ch = INV.craft_hint || []; if (tp){ dingeList().forEach(function(x, i){ if (x.id === tp[0]) MMS.sel = i; }); MMS.comb = tp[0]; mmRender(); mmSay({who:'inka', text:fill(ch[0] || 'Probier {a} mit {b}.', tp[0], tp[1]) + ' (' + (NAMES[tp[0]] || tp[0]) + ' ist schon gewählt.)'}); } }); }); }); }); return true; }
+    if (n >= 12 && S.invIntro && !S.labIntro){ invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; S.labIntro = Date.now(); save(); markNew(); dialog(((INV.scenes || {}).lab_intro) || [['inka', 'Wagners Labor. Im Inventar unter LABOR.']], function(nat){ if (nat) pmenu('labor'); }); }); }); return true; }
+    return false; }
+  /* Nach dem Schließen: aufgeschobene Zeilen (erste Kombination) */
+  function mmAfter(){ if (MMS.after){ var a = MMS.after; MMS.after = null; setTimeout(function(){ dialog(a); }, 350); } }
   /* Logbuch */
   /* ---------- Story-Kapitel (Suchbild 2.0, Etappe 4): zwölf Kapitel aus dem Skript von THE IDEAL CITY, freigeschaltet je Besuch (v) und Fundzahl (f); gelesen wird im Dialogfenster, nachzulesen im Logbuch; W = Wagners Sicht (ab Plus-Stufe 2) ---------- */
   var CHAPTERS = [
@@ -571,8 +684,10 @@
       sigma:[n >= 2 ? 'Sigma klopft manchmal ans Glas, wenn du da bist.' : (n <= -2 ? 'Sigma zieht sich zurück, wenn du laut wirst.' : 'Sigma sieht zu, hinter dem Glas.')],
       gojira:[n >= 2 ? 'Gojira hat ein zweites Quadrat angefangen. Inka meint, es ist für dich.' : 'Gojira gräbt. Inka übersetzt, wenn es sein muss.']};
     return T[who][0]; }
-  function logbook(){ var v = S.visits || 1, n = count();
+  function logbook(){ pmenu('logbuch'); }
+  function logbookTab(box){ var v = S.visits || 1, n = count();
     S.chap = S.chap || {}; var chaps = CHAPTERS.map(function(c, i){ var open = chapOpen(c); return '<li class="' + (open ? 'open' : 'locked') + '">' + (open ? '<button type="button" class="sbchap" data-i="' + i + '">' + (i + 1) + '. ' + esc(c.t) + '</button>' + (S.chap[i] ? '' : ' <small class="sbnewtag">neu</small>') : (i + 1) + '. <span class="sbq">' + esc(c.t).replace(/\S/g, '·') + '</span> <small>' + (v < c.v ? 'ab Besuch ' + c.v : 'ab ' + c.f + ' Funden') + '</small>') + '</li>'; }).join('');
+    if (S.lab) chaps += '<li class="open secret"><button type="button" class="sbakte">✦ Sigmas Akte</button></li>';
     if (S.ending === 'destroy') chaps += '<li class="open secret"><button type="button" class="sbchap" data-i="s">✦ ' + esc(SECRET.t) + '</button>' + (S.chap.s ? '' : ' <small class="sbnewtag">neu</small>') + '</li>';
     var ngTxt = NG ? ' Plus-Stufe ' + NG + (RANKS[NG] ? ', Rang ' + RANKS[NG] : '') + '.' : ''; var ranks = (S.ranks || []).filter(function(r){ return r > 0; }); if (ranks.length) ngTxt += ' Abgeschlossen: ' + ranks.map(function(r){ return RANKS[r]; }).join(', ') + '.';
     var wv = NG >= 2 ? '<p class="sbwview"><label><input type="checkbox" class="sbwv"' + (S.wview ? ' checked' : '') + '> Wagners Sicht</label> <small>Kapitel aus seiner Perspektive, ab Plus-Stufe 2.</small></p>' : '';
@@ -581,20 +696,19 @@
     var sp0 = S.tspeed || 'normal';
     var html = '<div class="sblogcols"><section><h3>Stand</h3><p>' + n + ' von ' + N + ' Dingen, ' + points() + ' Punkte' + (S.visitBonus ? ' (davon ' + S.visitBonus + ' fürs Wiederkommen)' : '') + ', ' + (S.hints || 0) + ' Hinweise. ' + v + (v > 1 ? ' Besuche' : ' Besuch') + '.' + (S.questBonus ? ' ' + S.questBonus + ' Punkte aus Aufträgen.' : '') + ngTxt + '</p><p class="cstamps" aria-label="Stempel je Besuch">' + stamps + '</p>' + (S.done ? '<p><button type="button" class="sbcertbtn">Urkunde</button></p>' : '') + '</section>' +
       '<section><h3>Kapitel</h3><ol class="sbchaps">' + chaps + '</ol>' + wv + '</section>' +
-      '<section class="sbwide"><h3>Sammelalbum</h3>' + albumHtml() + '</section>' +
       '<section><h3>Auftrag</h3>' + questHtml() + '</section>' +
-      '<section class="sbwide"><h3>Abzeichen</h3>' + badgeHtml() + '</section>' +
       '<section><h3>Freigespielt</h3><p>Hintergrundbilder und Ausschnitte aus den Suchbildern ab 5, 10, 15 und 20 Funden: <a href="musterbuch.html#freigespielt">im Musterbuch</a>.</p></section>' +
       '<section><h3>Figuren</h3><ul class="sbrels">' + rels + '</ul></section>' +
       '<section><h3>Textgeschwindigkeit</h3><p class="sbspeed" role="group" aria-label="Textgeschwindigkeit">' + ['langsam', 'normal', 'sofort'].map(function(k){ return '<label><input type="radio" name="sbspeed" value="' + k + '"' + (sp0 === k ? ' checked' : '') + '> ' + k + '</label>'; }).join(' ') + '</p></section>' +
       '<section><h3>Vergessen</h3><p>Löscht Funde, Punkte, Besuche, Verhältnisse und Kapitel in diesem Browser.</p><p><button type="button" class="sbforget">Alles vergessen</button></p></section></div>';
     html += (H('logbookExtra') || '');
-    openPanel('sblog', 'Logbuch', html);
-    panel.querySelectorAll('input[name=sbspeed]').forEach(function(r){ r.addEventListener('change', function(){ S.tspeed = r.value; save(); cursorSnd('ok'); }); });
-    panel.querySelectorAll('.sbchap').forEach(function(b){ b.addEventListener('click', function(){ var i = b.getAttribute('data-i'); closePanel(); showChapter(i === 's' ? 's' : +i); }); });
-    var wvi = panel.querySelector('.sbwv'); if (wvi) wvi.addEventListener('change', function(){ S.wview = wvi.checked ? 1 : 0; save(); cursorSnd('ok'); });
-    var cb = panel.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); });
-    panel.querySelector('.sbforget').addEventListener('click', function(){ var b = this; if (!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = 'Wirklich alles vergessen?'; setTimeout(function(){ b.classList.remove('sure'); b.textContent = 'Alles vergessen'; }, 5000); return; }
+    box.innerHTML = html;
+    box.querySelectorAll('input[name=sbspeed]').forEach(function(r){ r.addEventListener('change', function(){ S.tspeed = r.value; save(); cursorSnd('ok'); }); });
+    box.querySelectorAll('.sbchap').forEach(function(b){ b.addEventListener('click', function(){ var i = b.getAttribute('data-i'); closePanel(); showChapter(i === 's' ? 's' : +i); }); });
+    var ak = box.querySelector('.sbakte'); if (ak) ak.addEventListener('click', function(){ closePanel(); setTimeout(function(){ invLoad().then(function(){ dialog((INV.scenes || {}).lab_success || []); }); }, 300); });
+    var wvi = box.querySelector('.sbwv'); if (wvi) wvi.addEventListener('change', function(){ S.wview = wvi.checked ? 1 : 0; save(); cursorSnd('ok'); });
+    var cb = box.querySelector('.sbcertbtn'); if (cb) cb.addEventListener('click', function(){ closePanel(); cert(); });
+    box.querySelector('.sbforget').addEventListener('click', function(){ var b = this; if (!b.classList.contains('sure')){ b.classList.add('sure'); b.textContent = 'Wirklich alles vergessen?'; setTimeout(function(){ b.classList.remove('sure'); b.textContent = 'Alles vergessen'; }, 5000); return; }
       try { localStorage.removeItem(SBK); sessionStorage.removeItem('jk_sb_seen'); } catch(e){} location.reload(); }); }
   /* Plus-Stufe 2 und 3: Sigma spricht in Rätseln (Josef, 29.10., 13:14: kryptische Hinweise) */
   function riddle(p){ var where = /^@lb/.test(p.sel) ? 'in einem Bild, wenn man es groß ansieht' : /footgrid/.test(p.sel) ? 'wo die Seite aufhört zu sprechen' : /marg/.test(p.sel) ? 'am Rand, wo die Anmerkungen wohnen' : /figure/.test(p.sel) ? 'in einem Bild, das selbst ein Bild zeigt' : /pagehead/.test(p.sel) ? 'ganz oben, wo der Name steht' : /textwrap|cvl|credits|first-child|nlform|bigtabs|landing-foot|princeofwales/.test(p.sel) ? 'zwischen den Zeilen, wörtlich' : 'wo die Seite ihren Namen nicht sagt';
@@ -778,7 +892,7 @@
     if (T.big) rumbleLite(); }
   function rumbleLite(){ document.documentElement.classList.add('beben'); setTimeout(function(){ document.documentElement.classList.remove('beben'); }, 900); }
   var TOOLACT = null, toolLab = null;
-  function startTool(id){ if (!S.found[id] || (S.used && S.used[id]) || !TOOLS[id]) return; TOOLACT = id; H('onTool', id); document.documentElement.classList.add('sbtoolon');
+  function startTool(id){ if (!(S.found[id] || crafted()[id]) || (S.used && S.used[id]) || !TOOLS[id]) return; TOOLACT = id; H('onTool', id); document.documentElement.classList.add('sbtoolon');
     if (!toolLab){ toolLab = document.createElement('div'); toolLab.className = 'sbtoollab'; toolLab.setAttribute('role', 'status'); document.body.appendChild(toolLab); }
     toolLab.innerHTML = '<img src="' + SPR(id + '.png') + '" alt=""><span><b>' + NAMES[id] + '</b> (' + TOOLS[id].n + '): Klick auf eines von Josefs Werken. <kbd>Esc</kbd> bricht ab.</span><button type="button" class="x" aria-label="Abbrechen">×</button>'; toolLab.classList.add('on');
     toolLab.querySelector('.x').addEventListener('click', stopTool); cursorSnd('ok'); }
@@ -812,7 +926,7 @@
     if (n === 3) L.push(['inka', 'Drei Werke. Wagner nennt dich jetzt Bilderstürmer*in. Das steht auf deiner Urkunde.', 'nachdenklich']);
     if (n === 8) L.push(['gojira', '...'], ['inka', 'Gojira hat aufgesehen. Er sagt: Wenn du so weitermachst, gräbt er am Ende alles ein. Die ganze Seite.', 'ueberrascht']);
     setTimeout(function(){ dialog(L.concat(badgeLines())); }, 700); }
-  function applyRuin(f, R, fresh){ if (!f || f.classList.contains('ruin')) return; var T = TOOLS[R.tool] || TOOLS.flamme; f.classList.add('ruin', 'fx-' + T.fx); if (fresh) f.classList.add('fresh'); f.style.setProperty('--rx', R.rx + '%'); f.style.setProperty('--ry', R.ry + '%');
+  function applyRuin(f, R, fresh){ if (!f || f.classList.contains('ruin')) return; var T = TOOLS[R.tool] || TOOLS.flamme; f.classList.add('ruin', 'fx-' + T.fx); if (T.fx2) f.classList.add('fx-' + T.fx2); if (fresh) f.classList.add('fresh'); f.style.setProperty('--rx', R.rx + '%'); f.style.setProperty('--ry', R.ry + '%');
     var fc = f.querySelector('figcaption'); if (fc && !fc.querySelector('.sbruincap')){ var sp = document.createElement('span'); sp.className = 'sbruincap'; sp.textContent = 'zerstört mit ' + NAMES[R.tool] + ' am ' + new Date(R.t).toLocaleDateString('de-DE'); fc.appendChild(document.createElement('br')); fc.appendChild(sp); }
     if (!f.querySelector('.sbbehind')){ var b = document.createElement('p'); b.className = 'sbbehind hand'; b.textContent = BEHIND[R.b % BEHIND.length]; f.appendChild(b); if (window.JK_PLOT_ONCE && 'IntersectionObserver' in window){ var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if (!en.isIntersecting) return; io.disconnect(); try { window.JK_PLOT_ONCE(b, 3000); } catch(e){} }); }, {threshold:.4}); io.observe(b); } }
     var sec = f.closest('section'); if (sec) sec.classList.add('sbruined'); }
@@ -876,7 +990,8 @@
     var bl = badgeLines(); var ms = n === 1 ? FIRST : n === 5 ? FIVE : n === 10 ? TEN() : n === 15 ? FIFTEEN : null;
     if (n >= N) setTimeout(function(){ dialog(doneLines().concat(bl), function(){ cert(); }); }, 800);
     else if (ms) setTimeout(function(){ dialog(ms.concat(bl), newChapter); }, 800);
-    else if (bl.length) setTimeout(function(){ dialog(bl); }, 800); }
+    else if (bl.length) setTimeout(function(){ dialog(bl); }, 800);
+    if (n >= 8 && n < N) setTimeout(function(){ invCheck(false); }, 1600); }
   /* Finale: drei Fassungen je Verhältnis (Sigma nah, Wagner respektvoll, sonst Inka); auf Plus-Stufe 3 entscheidet man, was mit dem Quadrat geschieht (Josef, 29.10., 13:14) */
   function doneLines(){ if (ruinCount() >= 8) return DONE4(); if (NG < 3){ var he = H('ending'); if (he) return he; } if (NG >= 3) return DONE3();
     if (rel('sigma').n >= 2) return [['gojira', '...'], ['sigma', '[m:froh]... das war Gojira. Ich übersetze heute: Das Quadrat ist für dich. Und für mich, ein bisschen. Alle zwanzig.'], ['inka', 'Sigma hat sich das letzte Wort genommen. Das kommt selten vor. Lass es ihm.', 'froh']];
@@ -967,7 +1082,7 @@
   /* Dev Tools (Josef, 1.11.2026, T13 bis T17): Zugriff aufs Innere, nur nach Freischaltung genutzt */
   X.dev = {S:function(){ return S; }, PLACES:PLACES, N:N, CHAPTERS:CHAPTERS, NAMES:NAMES, CH:CH, MOODS:MOODS, STANCE:STANCE, chapter:showChapter, secret:function(){ showChapter('s'); }, cert:cert, greet:function(){ dialog(greet()); }, intro:function(){ try { sessionStorage.removeItem('jk_sb_seen'); } catch(e){} startIntro('dev'); }, modem:function(){ modemScene(function(){}); }, hint:hint, wander:wanderNow, quest:function(){ offerQuest(); }, done:function(){ dialog(doneLines()); }, done3:function(){ dialog(DONE3()); }, done4:function(){ dialog(DONE4()); }, logbook:logbook, inventory:function(){ inventory(); }, rel:rel, relAdd:relAdd, baseMood:baseMood, count:count, points:points, secs:secs, refresh:refresh, save:save, place:place, close:function(){ var d = document.querySelector('.sbdlg'); if (d){ var e = new KeyboardEvent('keydown', {key:'Escape', bubbles:true}); document.dispatchEvent(e); } }, next:function(){ var d = document.querySelector('.sbdlg .win'); if (d) d.click(); },
     find:function(id){ var p = PLACES.filter(function(q){ return q.id === id; })[0]; if (!p || S.found[p.id]) return; var img = document.querySelector('img.sbobj[data-id="' + id + '"]'); if (img) found(p, img, null); else { if (!S.start) S.start = Date.now(); S.found[id] = Date.now(); if (count() >= N) S.done = Date.now(); save(); refresh(); } },
-    unfind:function(id){ delete S.found[id]; if (count() < N) S.done = 0; save(); refresh(); }, snd:{syl:syl, adv:advSnd, cur:cursorSnd, cheer:cheer, tick:tick, blip:blip, rumble:rumble, vox:function(w, m){ lastVox = 0; voxBuf = {}; vox(w, m); }, voxSynth:function(w, m){ lastVox = 0; voxSynth(w, m); }, VOXF:VOXF, sp:sp}, MOOD:MOOD, MMCOL:MMCOL, TOOLS:TOOLS, KEY:SBK, OBJ:OBJ, SPOTS:SPOTS, SIZE:SIZE, devKey:devKey, pages:function(text, who){ var p = document.querySelector('.sbdlg p'); var cols = Math.round(CF('dlg.chars', 40)); if (who === 'gojira'){ cols = 20; } var it = parseLine(String(text || '')); return paginate(it, cols, who === 'gojira' ? 1 : Math.round(CF('dlg.lines', 3))).length; }, MMNAME:MMNAME, PH:['n', 'rest', 'pts', 'zeit', 'tag', 'werk', 'abschnitt', 'bau', 'seite', 'modus', 'werkzeug', 'song', 'tage', 'uhr', 'bussgeld']};
-  function init(){ try { if (!localStorage.getItem(SBK)) save(); } catch(e){} counter(); markNew(); place(); board(); if (!resumeDlg()) intro(); holes(); wander(); reactions(); mood(); applyRuins(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); setTimeout(loadWorld, 1200); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
+    unfind:function(id){ delete S.found[id]; if (count() < N) S.done = 0; save(); refresh(); }, snd:{syl:syl, adv:advSnd, cur:cursorSnd, cheer:cheer, tick:tick, blip:blip, rumble:rumble, vox:function(w, m){ lastVox = 0; voxBuf = {}; vox(w, m); }, voxSynth:function(w, m){ lastVox = 0; voxSynth(w, m); }, VOXF:VOXF, sp:sp}, MOOD:MOOD, MMCOL:MMCOL, TOOLS:TOOLS, pmenu:pmenu, invCheck:invCheck, inv:function(){ return INV; }, invIntro:function(){ S.invIntro = 0; save(); invCheck(false); }, labIntro:function(){ S.labIntro = 0; save(); invCheck(false); }, labSuccess:function(){ invLoad().then(function(){ dialog((INV.scenes || {}).lab_success || []); }); }, KEY:SBK, OBJ:OBJ, SPOTS:SPOTS, SIZE:SIZE, devKey:devKey, pages:function(text, who){ var p = document.querySelector('.sbdlg p'); var cols = Math.round(CF('dlg.chars', 40)); if (who === 'gojira'){ cols = 20; } var it = parseLine(String(text || '')); return paginate(it, cols, who === 'gojira' ? 1 : Math.round(CF('dlg.lines', 3))).length; }, MMNAME:MMNAME, PH:['n', 'rest', 'pts', 'zeit', 'tag', 'werk', 'abschnitt', 'bau', 'seite', 'modus', 'werkzeug', 'song', 'tage', 'uhr', 'bussgeld']};
+  function init(){ try { if (!localStorage.getItem(SBK)) save(); } catch(e){} counter(); markNew(); place(); board(); if (!resumeDlg()) intro(); holes(); wander(); reactions(); mood(); applyRuins(); badges(true); ['g-inka', 'g-fund'].forEach(spLoad); setTimeout(loadWorld, 1200); setTimeout(function(){ invCheck(true); }, 15000); document.addEventListener('pointerdown', function(){ ['g-wagner', 'g-xae', 'g-sigma', 'g-gojira', 'g-stempel', 'g-kraehe'].forEach(spLoad); }, {once:true}); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

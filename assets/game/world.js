@@ -76,7 +76,7 @@
   function bubble(who, text, opt){ opt = opt || {}; if (W.nowatch || X.optedOut() || !text){ dl('reaktion', 'nicht gezeigt: ' + (W.nowatch ? 'Beobachten aus' : X.optedOut() ? 'Nicht jetzt' : 'kein Text')); return false; }
     text = text.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph(k); return v === null || v === undefined ? m : v; });
     if (opt.inject){ if (X.inject({who:X.CH[who] ? who : 'inka', text:text})){ log([who, text], 'Reaktion'); return true; } return false; }
-    if (X.quiet() || X.busy() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.busy() ? 'Fenster offen' : 'Tab verborgen')); return false; } if (now() - lastBub < X.CF('game.reactgap', 90) * 1000 || now() - X.lastDlg() < 20000 || now() - lastFind < 6000){ dl('reaktion', 'nicht gezeigt: Abstand (' + Math.round((now() - Math.max(lastBub, X.lastDlg())) / 1000) + ' s)'); return false; } lastBub = now();
+    if (X.quiet() || X.busy() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.busy() ? 'Fenster offen' : 'Tab verborgen')); return false; } if (now() - lastBub < X.CF('game.reactgap', 90) * 1000 || now() - X.lastDlg() < 20000 || now() - lastFoundT < 6000){ dl('reaktion', 'nicht gezeigt: Abstand (' + Math.round((now() - Math.max(lastBub, X.lastDlg())) / 1000) + ' s)'); return false; } lastBub = now();
     X.dialog([{who:X.CH[who] ? who : 'inka', text:text}], null, {psst:true}); log([who, text], 'Reaktion'); return true; }
   function log(line, kind){ var who = Array.isArray(line) ? line[0] : line && line.who, t = Array.isArray(line) ? line[1] : line && line.text; if (!who || !t) return; t = String(t).replace(/\[[^\]]*\]/g, '').replace(/\*/g, ''); W.enc.push({w:who, t:t.slice(0, 160), d:now(), k:kind}); if (W.enc.length > 150) W.enc = W.enc.slice(-150); save(); }
 
@@ -147,11 +147,13 @@
   setInterval(function(){ if (!document.hidden && now() - lastInput > 150000){ lastInput = now(); beh('idle'); } }, 20000);
   /* Spielereignisse aus game.js */
   var finds = [];
-  X.hooks.onFound = function(){ var t = now(); lastFind = t; finds.push(t); finds = finds.filter(function(x){ return t - x < 90000; }); if (finds.length >= 3){ finds = []; setTimeout(function(){ beh('find_streak'); }, 3000); } milestones(); };
+  var lastFoundT = 0;
+  X.hooks.onFound = function(){ var t = now(); lastFind = t; lastFoundT = t; finds.push(t); finds = finds.filter(function(x){ return t - x < 90000; }); if (finds.length >= 3){ finds = []; setTimeout(function(){ beh('find_streak'); }, 3000); } milestones(); };
   X.hooks.onHint = function(){ if ((S.hints || 0) >= 3) setTimeout(function(){ beh('many_hints'); }, 2500); };
   X.hooks.onRuin = function(){ var n = X.ruinCount(); setTimeout(function(){ beh(n === 1 ? 'ruin_first' : 'ruin_many'); }, 2500); wanted(1, 'ruin'); };
   var lastTool = null; X.hooks.onTool = function(id){ if (lastTool && lastTool !== id) beh('tool_switch', null, {werkzeug:X.NAMES[id] || id}); lastTool = id; };
   X.hooks.onRestore = function(){ setTimeout(function(){ beh('restored'); }, 4000); };
+  X.hooks.wanted = function(d, why){ wanted(d, why); dl('fahndung', '+' + d + ' (' + why + ')'); };   /* Wagners Alarm im Labor (Josef, 1.11., I12) */
   X.hooks.onPsst = function(){ W.psstV = X.V(); save(); };
 
   /* Besuchsmuster beim Laden */

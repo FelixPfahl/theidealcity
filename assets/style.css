@@ -1552,3 +1552,77 @@ html.calm body .sbdlg.mm .win,html.calm body .sbdlg.mm .more{animation:none!impo
 .sbbub,.sbtick,.sbad{display:none!important}
 body.sbdlgon .sbfab{pointer-events:auto}   /* Inka-Knopf bleibt bedienbar, während ein Dialog läuft (Dialoge blockieren nichts) */
 @media (min-width:601px){html body .sbdlg.mm.sd-r,html body .sbdlg.mm.gut{padding-right:84px}}   /* Box rechts neben dem Inka-Knopf, nicht darüber (Knopf bleibt bedienbar) */
+
+/* ---------- Inventar als Mega-Man-X-Waffenmenü (Josef, 1.11.2026, R1 bis R10) ---------- */
+.sbpanel.mmenu{--pf:"Pixelify","Courier New",monospace;--bg:#0A0A18;--fg:#F4F4F4;--hi:#F8E038;--fr:#C8CCE0;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px}
+html[class*="lh-"] .sbpanel.mmenu{--pf:var(--body)}
+.sbpanel.mmenu .sbpin{position:relative;width:min(900px,100%);height:min(56vh,640px);min-height:min(420px,92vh);max-height:92vh;display:grid;grid-template-rows:auto 1fr auto auto;gap:8px;background:var(--bg);color:var(--fg);border:4px solid var(--fr);border-radius:0;box-shadow:0 0 0 3px #000,inset 0 0 0 2px #000;padding:12px 14px;font-family:var(--pf);font-size:16px;line-height:1.35;overflow:hidden;-webkit-font-smoothing:none;animation:mmopen .2s linear both;max-width:none;margin:0}
+.sbpanel.mmenu.off .sbpin{animation:mmclose .18s linear forwards}
+.sbpanel.mmenu .sbpin>h2{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.sbpanel.mmenu .sbpin>.x{position:absolute;top:6px;right:8px;width:30px;height:30px;border:2px solid var(--fr);background:var(--bg);color:var(--fg);font:20px/1 var(--pf);cursor:pointer;z-index:2;padding:0}
+.sbpanel.mmenu .sbpin>.x:hover,.sbpanel.mmenu .sbpin>.x:focus-visible{background:var(--hi);color:#000;outline:none}
+.mmenu .mmtabs{display:flex;flex-wrap:wrap;gap:4px;padding-right:40px;border-bottom:2px solid var(--fr);padding-bottom:6px}
+.mmenu .mmtabs button{font:16px/1 var(--pf);letter-spacing:.06em;background:none;border:2px solid transparent;color:#8F93AE;padding:6px 10px;cursor:pointer}
+.mmenu .mmtabs button.on{color:var(--hi);border-color:var(--hi)}
+.mmenu .mmtabs button:hover,.mmenu .mmtabs button:focus-visible{color:var(--fg);outline:none;border-color:var(--fr)}
+.mmenu .mmbody{min-height:0;overflow:hidden}
+.mmenu .mmbody.t-dinge{display:grid;grid-template-columns:minmax(220px,38%) 1fr;gap:14px}
+.mmenu .mmlist{list-style:none;margin:0;padding:0 4px 0 22px;overflow:auto;min-height:0;border-right:2px solid #2A2D44}
+.mmenu .mmlist li{position:relative;display:flex;gap:8px;align-items:center;padding:3px 4px;cursor:pointer;color:var(--fg)}
+.mmenu .mmlist li img{width:32px;height:32px;image-rendering:pixelated;flex:none}
+.mmenu .mmlist li span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mmenu .mmlist li small{color:#8F93AE;margin-right:6px;font-size:13px}
+.mmenu .mmlist li em{font-style:normal;font-size:12px;color:#8F93AE}
+.mmenu .mmlist li.open{color:#5C607A}
+.mmenu .mmlist li.used span{text-decoration:line-through;text-decoration-thickness:2px}
+.mmenu img.sil{filter:brightness(0) invert(.25)}
+.mmenu .mmlist li.on{color:var(--hi);background:#1C1F38}
+.mmenu .mmlist li.on::before{content:'\25BA';position:absolute;left:-20px;top:50%;transform:translateY(-50%);color:var(--hi)}
+.mmenu .mmlist li.comb{outline:2px dashed var(--hi);outline-offset:-2px}
+.mmenu .mmlist li.mmsep{cursor:default;color:#8F93AE;font-size:12px;letter-spacing:.12em;padding-top:10px;border-top:2px solid #2A2D44;margin-top:6px}
+.mmenu .blink{animation:mmblink .7s steps(2,jump-none) infinite}
+.mmenu .mmdet{overflow:auto;min-height:0;padding-right:4px}
+.mmenu .mmbig{width:128px;height:128px;border:2px solid #2A2D44;background:#05050C;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.mmenu .mmbig img{width:128px;height:128px;image-rendering:pixelated}
+.mmenu h3{font:20px/1.2 var(--pf);color:var(--hi);margin:0 0 6px;letter-spacing:.02em;text-transform:none}
+.mmenu .mmdet p,.mmenu .mmlabtxt p{margin:0 0 6px}
+.mmenu .mmdet b{color:#8F93AE;font-weight:400}
+.mmenu .mmsmall{font-size:13px;color:#8F93AE}
+.mmenu .mmcom{border-left:3px solid #2A2D44;padding-left:8px}
+.mmenu .mmacts{list-style:none;margin:10px 0 0;padding:0 0 0 22px}
+.mmenu .mmacts button{position:relative;font:16px/1.3 var(--pf);background:none;border:0;color:var(--fg);padding:3px 4px;cursor:pointer;text-align:left;display:flex;gap:6px;align-items:center}
+.mmenu .mmacts button img{width:24px;height:24px;image-rendering:pixelated}
+.mmenu .mmacts button:hover,.mmenu .mmacts button:focus-visible{color:var(--hi);outline:none}
+.mmenu .mmacts button:hover::before,.mmenu .mmacts button:focus-visible::before{content:'\25BA';position:absolute;left:-20px;color:var(--hi)}
+.mmenu .mmmsg{min-height:0;border:2px solid #2A2D44;padding:6px 10px;display:none}
+.mmenu .mmmsg.on{display:block}
+.mmenu .mmmsg p{margin:0}.mmenu .mmmsg .sys{color:var(--hi)}.mmenu .mmmsg .alarm{color:#FF5446;margin-top:4px}
+.mmenu .mmkeys{margin:0;font-size:12px;color:#5C607A}
+.mmenu .mmscroll{height:100%;overflow:auto;padding-right:6px}
+.mmenu .mmscroll h3{margin-top:12px}
+.mmenu .mmscroll a{color:var(--hi)}
+.mmenu .mmscroll button:not(.sbchap){font:15px var(--pf);background:var(--bg);color:var(--fg);border:2px solid var(--fr);padding:4px 10px;cursor:pointer}
+.mmenu .mmscroll .sbchap,.mmenu .mmscroll .sbakte{font:15px var(--pf);background:none;border:0;color:var(--fg);cursor:pointer;padding:2px 0;text-align:left}
+.mmenu .mmscroll .sbchap:hover,.mmenu .mmscroll .sbakte:hover{color:var(--hi)}
+.mmenu .mmscroll section{border:0;padding:0;margin:0 0 10px}
+.mmenu .mmscroll .sblogcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 18px}
+.mmenu .mmscroll .sblogcols .sbwide{grid-column:1/-1}
+.mmenu .mmlab{display:grid;grid-template-columns:150px 1fr;gap:18px;height:100%;overflow:auto}
+.mmenu .mmdoor{position:relative;height:200px;border:4px solid var(--fr);background:repeating-linear-gradient(0deg,#1C1F38 0 6px,#14162A 6px 12px)}
+.mmenu .mmdoor i{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:3px solid var(--hi);border-radius:50%;box-shadow:0 0 0 3px #000}
+.mmenu .mmdoor b{position:absolute;left:50%;top:50%;width:4px;height:12px;margin:-2px 0 0 -2px;background:var(--hi)}
+.mmenu .mmdoor.open{background:#05050C;border-style:dashed}.mmenu .mmdoor.open i,.mmenu .mmdoor.open b{display:none}
+.mmenu .mmwarn{color:#FF5446}
+@media (max-width:600px){
+  .sbpanel.mmenu{padding:0}
+  .sbpanel.mmenu .sbpin{width:100%;height:100%;max-height:none;min-height:0;border-width:3px;font-size:16px;padding:10px}
+  .mmenu .mmtabs button{font-size:14px;padding:5px 6px}
+  .mmenu .mmbody.t-dinge{grid-template-columns:1fr;grid-template-rows:40% 1fr;gap:8px}
+  .mmenu .mmlist{border-right:0;border-bottom:2px solid #2A2D44}
+  .mmenu .mmbig{width:96px;height:96px;float:left;margin:0 10px 6px 0}.mmenu .mmbig img{width:96px;height:96px}
+  .mmenu .mmlab{grid-template-columns:90px 1fr}.mmenu .mmdoor{height:140px}
+  .mmenu .mmkeys{display:none}
+}
+html.calm .sbpanel.mmenu .sbpin,html.calm .mmenu .blink{animation:none!important}
+.mmenu .mmtabs button.on,.mmenu .mmtabs button.on:hover,.mmenu .mmtabs button.on:focus-visible{color:var(--hi);border-color:var(--hi)}
+.mmenu .mmcert{font:15px var(--pf);background:#00A651;color:#000;border:2px solid #000;padding:4px 10px;cursor:pointer;margin-bottom:6px}

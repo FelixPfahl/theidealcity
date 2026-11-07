@@ -1411,7 +1411,8 @@
       b.penX = penAt ? penAt[0] + (b.left || 0) : null;
       if (penAt){ L.setTransform(DPR, 0, 0, DPR, 0, 0); L.globalAlpha = 1; L.fillStyle = b.col.acc; L.beginPath(); L.arc(penAt[0], penAt[1], (b.hero ? 2 : 1) * CF('plot.dot', 3), 0, 6.283); L.fill(); }
     }
-    function update(){ raf = false; var vh = window.innerHeight, moved = false, lag = false, now = performance.now();
+    function update(){ raf = false; if (window.JK_PAUSE){ setTimeout(function(){ if (!raf){ raf = true; requestAnimationFrame(update); } }, 200); return; }   /* Inventar offen: Plotter pausiert (Josef, 1.11., R3) */
+      var vh = window.innerHeight, moved = false, lag = false, now = performance.now();
       var dy = Math.abs(window.scrollY - lastScrollY), dt = Math.max(1, now - lastScrollT); speed = speed * .6 + (dy / dt) * .4; lastScrollY = window.scrollY; lastScrollT = now;
       var grp = [0, 0], gx = [null, null];
       /* sichtbarer Bereich je Fenstergröße und Auflösung (Josef, 29.10., 14:02): unter Kopfzeile und Unternavigation, mit Zoom am Handy (visualViewport); Ausblendweg = ein Drittel der sichtbaren Höhe */

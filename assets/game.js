@@ -480,7 +480,9 @@
     document.addEventListener('keydown', panelKey); cursorSnd('ok'); var f = panel.querySelector('.sbpin button:not(.x), .sbpin input, .sbpin a'); (f || panel.querySelector('.x')).focus(); return panel; }
   /* ---------- Inventar als Mega-Man-X-Waffenmenü mit Kombinieren und Wagners Labor (Josef, 1.11.2026, Fragen R1 bis R10 und I1 bis I20) ---------- */
   var INV = null, INVP = null, RECIPES = {}, ICONC = {};
-  function inventory(refreshOnly){ if (refreshOnly){ if (panel && panel.classList.contains('mmenu')) mmRender(); return; } pmenu('dinge'); }
+  function inventory(refreshOnly){ if (refreshOnly){ if (panel && panel.classList.contains('mmenu') && mmSig() !== MMS.sig) mmRender(); return; } pmenu('dinge'); }
+  /* Neu zeichnen nur, wenn sich am Gezeigten etwas ändert (sonst verschwindet die Zeile unter dem Finger, z. B. wenn Verhaltenspunkte vergeben werden) */
+  function mmSig(){ return [MMS.tab, MMS.sel, MMS.comb, count(), S.done ? 1 : 0, S.invIntro ? 1 : 0, S.labIntro ? 1 : 0, S.lab ? 1 : 0, Object.keys(crafted()).join(','), Object.keys(S.used || {}).join(','), Object.keys(S.gifted || {}).join(','), Object.keys(S.ruins || {}).join(','), MMS.tab === 'dinge' || MMS.tab === 'labor' ? '' : Date.now()].join('|'); }
   function invLoad(){ if (INVP) return INVP; INVP = fetch('../assets/game/inv.json').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }).then(function(d){ INV = d || {}; invTools(); return INV; }); return INVP; }
   function invTools(){ RECIPES = INV.recipes || {}; Object.keys(RECIPES).forEach(function(k){ var r = RECIPES[k], ab = k.split('+'); r.a = ab[0]; r.b = ab[1]; NAMES[r.id] = r.name;
       if (r.kind === 'tool'){ var t1 = TOOLS[ab[0]] || {}, t2 = TOOLS[ab[1]] || {}, tt = (INV.tools || {})[r.id] || {}; TOOLS[r.id] = {n:tt.n || r.name, fx:t1.fx, fx2:t2.fx, big:1, snd:t1.snd || t2.snd, line:tt.line}; } }); }
@@ -505,7 +507,7 @@
       if (!panel || !panel.classList.contains('mmenu')){ openPanel('mmenu sbinv', 'Inventar', '<nav class="mmtabs" role="tablist" aria-label="Bereiche"></nav><div class="mmbody"></div><div class="mmmsg" aria-live="polite"></div><p class="mmkeys" aria-hidden="true">◀ ▶ Bereich · ▲ ▼ wählen · Enter benutzen · 1 bis 9 · Esc schließen</p>'); pauseOn(); MMS.t0 = Date.now(); document.addEventListener('keydown', mmKey, true); }
       mmRender(); }); }
   function mmClose(){ closePanel(); }
-  function mmRender(){ if (!panel || !panel.classList.contains('mmenu')) return; var tabs = tabsVisible(), nav = panel.querySelector('.mmtabs');
+  function mmRender(){ if (!panel || !panel.classList.contains('mmenu')) return; MMS.sig = mmSig(); var tabs = tabsVisible(), nav = panel.querySelector('.mmtabs');
     nav.innerHTML = tabs.map(function(t){ var on = t[0] === MMS.tab; return '<button type="button" role="tab" data-t="' + t[0] + '" aria-selected="' + on + '"' + (on ? ' class="on"' : '') + '>' + t[1] + '</button>'; }).join('');
     nav.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ mmTab(b.getAttribute('data-t')); }); });
     var body = panel.querySelector('.mmbody'); body.className = 'mmbody t-' + MMS.tab;

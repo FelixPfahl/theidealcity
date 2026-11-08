@@ -11,135 +11,181 @@
 <title>Inka</title>
 <script src="https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.32.1/dist/lib.iife.js"></script>
 <style>
-:root{--blue:#0028FF;--ink:#111;--mut:#5a5a5a;--line:#d8d8d8;--bg:#fff;--soft:#f3f5ff;--red:#c4001a}
+:root{--blue:#0028FF;--ink:#111;--mut:#5f6270;--line:#dcdde3;--bg:#fff;--soft:#f3f5ff;--card:#fff;--red:#c4001a;--bar:#fff;--mono:"IBM Plex Mono","JetBrains Mono",ui-monospace,Consolas,monospace;--sans:"Futura","Century Gothic","Avenir Next",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--ink:#eceef3;--mut:#a3a7b5;--line:#2c2f3a;--bg:#0d0e12;--soft:#141a3a;--card:#15171d;--bar:#0d0e12;--blue:#3d5cff}}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Futura","Century Gothic","Avenir Next",system-ui,sans-serif;font-size:18px;line-height:1.4;-webkit-tap-highlight-color:transparent}
-main{max-width:560px;margin:0 auto;padding:16px 16px 120px}
-h1{font-size:26px;margin:4px 0 2px}
-.sub{color:var(--mut);font-size:15px;margin-bottom:14px}
-button{font:inherit;color:inherit;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:12px 14px;cursor:pointer}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+main{max-width:560px;margin:0 auto;padding:10px 14px 0;padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+h1{font-size:22px;margin:0}
+h2{font-size:22px;margin:8px 0 8px}h3{font-size:19px;margin:4px 0}
+.sub{color:var(--mut);font-size:14px}
+button{font:inherit;color:inherit;background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer}
 button.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
 button:disabled{opacity:.45}
 a{color:var(--blue)}
-.card{border:2px solid var(--ink);border-radius:16px;padding:16px;margin:0 0 14px}
+.card{border:2px solid var(--ink);border-radius:14px;padding:12px 14px;margin:0 0 10px;background:var(--card)}
 .card.blue{border-color:var(--blue)}
-.k{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;font-weight:700}
-.play{display:flex;align-items:center;gap:16px}
-.pbtn{width:84px;height:84px;border-radius:50%;background:var(--blue);border:0;color:#fff;font-size:34px;flex:none;display:flex;align-items:center;justify-content:center}
-.now{font-weight:700;font-size:20px}
-.time{color:var(--mut);font-size:15px}
-.bar{height:8px;background:var(--line);border-radius:4px;margin:14px 0 8px;overflow:hidden;cursor:pointer}
+.card.warn{border-color:var(--blue);background:var(--soft)}
+.k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:5px;font-weight:600}
+.k.b{color:var(--blue)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.small{font-size:13px;color:var(--mut)}
+.de{font-size:13px;color:var(--mut)}
+.err{color:var(--red)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.wide{width:100%;margin:6px 0}
+.tap{cursor:pointer}
+.ok{color:var(--blue);font-weight:700}.bad{color:var(--red);font-weight:700}
+.okb{font-size:12px;color:var(--blue);font-weight:700}.nob{font-size:12px;color:var(--red);font-weight:700}
+.wait{font-size:11px;background:var(--blue);color:#fff;border-radius:6px;padding:1px 5px;font-weight:700;vertical-align:middle}
+.stand{font-weight:400;letter-spacing:0;text-transform:none}
+header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 14px 6px;max-width:560px;margin:0 auto;border-bottom:1px solid var(--line)}
+button.round{border-radius:22px;padding:8px 14px}
+section{display:none}section.on{display:block}
+/* Reiter unten, fest (U05, U06) */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bar);border-top:2px solid var(--ink);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{flex:1;min-width:0;max-width:140px;border:0;border-radius:0;padding:9px 2px 10px;font-size:13px;line-height:1.15;background:transparent;color:var(--mut)}
+#tabs button.on{color:var(--blue);font-weight:700;box-shadow:inset 0 3px 0 var(--blue)}
+/* Mini-Player über den Reitern (U08) */
+#mini{position:fixed;left:0;right:0;bottom:calc(46px + env(safe-area-inset-bottom));z-index:6;display:none;justify-content:center}
+#mini.on{display:flex}
+#mini .in{width:100%;max-width:560px;margin:0 8px;background:var(--ink);color:var(--bg);border-radius:12px;display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#mini .mp{width:44px;height:44px;border-radius:50%;background:var(--blue);border:0;color:#fff;font-size:18px;flex:none;display:flex;align-items:center;justify-content:center}
+#mini .mt{flex:1;min-width:0}
+#mini .mt b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+#mini .mt span{display:block;font-family:var(--mono);font-size:12px;opacity:.75}
+#mini .mn{width:40px;height:40px;border:0;background:transparent;color:var(--bg);font-size:20px;flex:none}
+#mini .mb{position:absolute;left:12px;right:12px;bottom:4px;height:2px;background:rgba(255,255,255,.2)}
+#mini .mb i{display:block;height:100%;background:var(--blue)}
+/* Player-Seite */
+.hero{border:2px solid var(--blue);border-radius:16px;padding:14px;margin-bottom:10px;background:var(--card)}
+.hero .now{font-weight:700;font-size:22px;line-height:1.2;margin:4px 0 2px}
+.hero .rest{font-family:var(--mono);font-size:14px;color:var(--mut)}
+.pbig{width:76px;height:76px;border-radius:50%;background:var(--blue);border:0;color:#fff;font-size:30px;flex:none;display:flex;align-items:center;justify-content:center}
+.ctr{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 4px}
+.ctr button{width:54px;height:54px;border-radius:50%;padding:0;font-size:20px;display:flex;align-items:center;justify-content:center}
+.ctr button.pbig{width:76px;height:76px;font-size:30px}
+.ctr .lab{font-family:var(--mono);font-size:11px;display:block;margin-top:1px}
+.bar{height:8px;background:var(--line);border-radius:4px;margin:12px 0 6px;overflow:hidden;cursor:pointer}
 #pb{position:relative;height:16px;border-radius:8px;overflow:visible;touch-action:none}
 #pb i{border-radius:8px}
 #pb s{position:absolute;top:0;bottom:0;background:rgba(0,40,255,.28);border-radius:2px;pointer-events:none}
 #pb b{position:absolute;top:-5px;width:4px;height:26px;margin-left:-2px;background:var(--blue);border-radius:2px;pointer-events:none}
 .bar i{display:block;height:100%;background:var(--blue);width:0}
-.row{display:flex;gap:10px}.row>*{flex:1}
-.chs{margin-top:10px;font-size:16px}
-.ch{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);cursor:pointer}
-.ch b{color:var(--blue);min-width:46px;font-variant-numeric:tabular-nums}
-.ch.cur{font-weight:700}
-.ch.done{color:var(--mut)}
-.set{display:grid;gap:10px}
-.si{display:flex;align-items:center;gap:10px;justify-content:space-between}
-.si span{font-weight:700}
-.ok{color:var(--blue);font-weight:700}
-.bad{color:var(--red);font-weight:700}
-.dep{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
-.dep .m{font-size:24px;font-weight:700;color:var(--blue);min-width:68px}
-.dep .l{font-weight:700}
-.dep .s{font-size:14px;color:var(--mut)}
-.late{color:var(--red);font-style:normal;font-weight:700}
-.stops .st{padding:6px 0;border-top:1px solid var(--line);display:flex;gap:10px}
-.stops .st.past{color:var(--mut)}.stops .st.now{font-weight:700;color:var(--blue)}
-#dim{display:none;position:fixed;inset:0;z-index:20;background:#000;color:#444;align-items:center;justify-content:center;text-align:center;font-size:18px;padding:24px}
-#dim.on{display:flex}
-#toast{position:fixed;left:16px;right:16px;bottom:24px;background:var(--ink);color:#fff;padding:14px 16px;border-radius:12px;font-size:16px;display:none;z-index:9;max-width:528px;margin:0 auto}
-#vc{position:fixed;inset:0;background:#fff;z-index:8;display:none;flex-direction:column;padding:16px}
-#vc .vs{font-size:22px;font-weight:700;color:var(--blue);margin:8px 0}
-#vc .vt{flex:1;overflow:auto;font-size:18px}
-#vc .vl{padding:8px 0;border-top:1px solid var(--line)}
-#vc .vl.u{color:var(--mut)}
-#vc .hang{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;font-size:20px;padding:18px;margin-top:10px}
-.small{font-size:14px;color:var(--mut)}
-header{position:sticky;top:0;z-index:5;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px 8px;max-width:560px;margin:0 auto;border-bottom:1px solid var(--line)}
-header h1{font-size:22px;margin:0}header .sub{margin:0;font-size:14px}
-button.round{border-radius:24px;padding:10px 18px}
-main{padding-bottom:150px}
-section{display:none}section.on{display:block}
-h2{font-size:24px;margin:10px 0 10px}h3{font-size:21px;margin:6px 0}
-#tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:2px solid var(--ink);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-#tabs button{flex:1;min-width:0;max-width:112px;border:0;border-radius:0;padding:10px 1px 12px;font-size:clamp(11px,3.3vw,14px);line-height:1.15;hyphens:manual;overflow-wrap:normal;background:#fff;color:var(--mut)}
-.nw{padding:12px 0;border-top:1px solid var(--line)}.nw .t{font-weight:700;font-size:18px;line-height:1.3}.nw .q{font-size:14px;color:var(--blue);font-weight:700;margin:2px 0 4px}.nw p{margin:4px 0 0;line-height:1.5}
-.nsec{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);font-weight:700;margin:18px 0 2px}
-#tabs button.on{color:var(--blue);font-weight:700;box-shadow:inset 0 4px 0 var(--blue)}
-.fab{position:fixed;right:16px;bottom:78px;z-index:7;width:64px;height:64px;border-radius:50%;background:var(--blue);border:0;color:#fff;font-size:26px;box-shadow:0 4px 14px rgba(0,40,255,.35)}
-.strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
-.fr{flex:none;border:2px solid var(--ink);border-radius:20px;padding:6px 12px;font-size:15px;white-space:nowrap}.fr.hot{border-color:var(--blue);color:var(--blue)}
-.card.warn{border-color:var(--blue);background:var(--soft)}
-.opts{display:grid;gap:8px;margin-top:10px}
-.it{display:grid;grid-template-columns:56px 1fr auto;gap:8px;padding:9px 0;border-top:1px solid var(--line);align-items:baseline;cursor:pointer}
-.it .t{color:var(--blue);font-variant-numeric:tabular-nums}.it .ti{font-weight:600}.it .kd{font-size:12px;color:var(--mut)}
+.cover{width:100%;aspect-ratio:1/1;max-height:52vh;object-fit:cover;border-radius:12px;background:var(--soft);display:block;margin:4px 0 10px}
+.cover.ph{display:flex;align-items:center;justify-content:center;font-size:64px;color:var(--blue)}
+.songt{font-weight:700;font-size:22px;line-height:1.2}.songa{color:var(--mut);font-size:16px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.tools button{flex:1;min-width:30%;font-size:14px;padding:9px 6px}
+.skip{color:var(--red)}
+/* Kapitel und Mitlesen als Vollbild (U15, U16) */
+.full{position:fixed;inset:0;z-index:9;background:var(--bg);display:none;flex-direction:column}
+.full.on{display:flex}
+.full .fh{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 14px 8px;border-bottom:1px solid var(--line)}
+.full .fb{flex:1;overflow:auto;padding:10px 14px calc(20px + env(safe-area-inset-bottom));max-width:560px;width:100%;margin:0 auto}
+.ch{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer;align-items:baseline}
+.ch b{color:var(--blue);min-width:52px;font-family:var(--mono);font-weight:600;font-size:14px}
+.ch.cur{font-weight:700}.ch.cur b{font-weight:700}
+.ch.done{color:var(--mut)}.ch.done b{color:var(--mut)}
+.ch .sk{font-size:12px;color:var(--red);margin-left:auto}
+.trl{padding:9px 0;color:var(--mut);font-size:20px;line-height:1.35;cursor:pointer}.trl b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;margin-bottom:2px}
+.trl.cur{color:var(--ink)}.trl.cur b{color:var(--blue)}
+.trl.past{opacity:.55}
+/* Zeitstrahl (U26) */
+.tlw{position:relative;padding-left:62px}
+.tlw:before{content:"";position:absolute;left:54px;top:0;bottom:0;width:2px;background:var(--line)}
+.tli{position:relative;padding:6px 0 6px 12px;cursor:pointer}
+.tli:before{content:"";position:absolute;left:-12px;top:13px;width:10px;height:10px;border-radius:50%;background:var(--card);border:2px solid var(--ink)}
+.tli.k-fix:before{background:var(--ink)}.tli.k-task:before{border-radius:2px}.tli.k-travel:before{border-color:var(--blue)}.tli.k-deadline:before{background:var(--red);border-color:var(--red)}
+.tli .tt{position:absolute;left:-62px;top:8px;width:46px;text-align:right;font-family:var(--mono);font-size:13px;color:var(--blue);font-weight:600}
+.tli .ti{font-weight:600}.tli .kd{font-size:12px;color:var(--mut)}
+.tli.past{opacity:.5}
+.tli.done .ti{text-decoration:line-through;color:var(--mut)}
+.tlnow{position:relative;height:0;border-top:2px solid var(--blue);margin:4px 0}
+.tlnow:before{content:"jetzt";position:absolute;left:-62px;top:-9px;width:46px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:700}
+.tlnow:after{content:"";position:absolute;left:-12px;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--blue)}
+/* Listen */
+.strip{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.fr{flex:none;border:2px solid var(--ink);border-radius:18px;padding:5px 10px;font-size:14px;white-space:nowrap}.fr.hot{border-color:var(--blue);color:var(--blue)}
+.fr b{font-family:var(--mono);font-weight:600}
+.opts{display:grid;gap:6px;margin-top:8px}
+.it{display:grid;grid-template-columns:50px 1fr auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);align-items:baseline;cursor:pointer}
+.it .t{color:var(--blue);font-family:var(--mono);font-weight:600;font-size:14px}.it .ti{font-weight:600}.it .kd{font-size:12px;color:var(--mut)}
 .it.k-fix .kd,.wl.k-fix b{color:var(--ink)}.it.done .ti,.tk.done .tt>div:first-child{text-decoration:line-through;color:var(--mut)}
-.de{font-size:14px;color:var(--mut)}
-.wbox{border:2px solid var(--blue);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:16px}
-.okb{font-size:13px;color:var(--blue);font-weight:700}.nob{font-size:13px;color:var(--red);font-weight:700}
-.wait{font-size:12px;background:var(--blue);color:#fff;border-radius:8px;padding:1px 6px;font-weight:700;vertical-align:middle}
-.stand{font-weight:400;letter-spacing:0;text-transform:none}
-.tk{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
-.tk .tt{flex:1;cursor:pointer}.tk .tb{display:flex;gap:6px}.tk .tb button{padding:6px 8px;font-size:13px;border-width:1px}
-.chk{width:30px;height:30px;padding:0;border-radius:8px;flex:none;color:var(--blue);font-weight:700}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.wbox{border:2px solid var(--blue);border-radius:10px;padding:8px 10px;margin:8px 0;font-size:15px}
+.tk{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.tk .tt{flex:1;cursor:pointer}.tk .tb{display:flex;gap:6px}.tk .tb button{padding:5px 8px;font-size:13px;border-width:1px}
+.chk{width:28px;height:28px;padding:0;border-radius:7px;flex:none;color:var(--blue);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
 .chip{padding:6px 10px;font-size:14px;border-width:1px;border-radius:16px;color:var(--mut)}.chip.on{border-color:var(--blue);color:var(--blue);font-weight:700}
-.wd{border:2px solid var(--ink);border-radius:14px;padding:10px 12px;margin-bottom:10px;cursor:pointer}
-.wh{margin-bottom:4px}.wh b{font-size:19px}.mk{font-size:13px;color:var(--blue)}
-.wl{font-size:16px;padding:2px 0}.wl b{color:var(--blue);display:inline-block;min-width:48px;font-variant-numeric:tabular-nums}
-.back{border:0;padding:6px 0;color:var(--blue);font-weight:700}
+.subtabs{display:flex;gap:0;margin:0 0 10px;border-bottom:2px solid var(--line)}
+.subtabs button{flex:1;border:0;border-radius:0;padding:8px 2px;background:transparent;color:var(--mut);font-size:14px}
+.subtabs button.on{color:var(--blue);font-weight:700;box-shadow:inset 0 -3px 0 var(--blue)}
+.wd{border:2px solid var(--ink);border-radius:12px;padding:8px 12px;margin-bottom:8px;cursor:pointer;background:var(--card)}
+.wh{margin-bottom:3px}.wh b{font-size:18px}.mk{font-size:13px;color:var(--blue)}
+.wl{font-size:15px;padding:2px 0}.wl b{color:var(--blue);display:inline-block;min-width:46px;font-family:var(--mono);font-weight:600;font-size:13px}
+.back{border:0;padding:6px 0;color:var(--blue);font-weight:700;background:transparent}
 .ev{color:var(--mut)}
-.li{padding:8px 0;border-top:1px solid var(--line)}
-.link{border:0;padding:8px 0;color:var(--blue);font-weight:700}
-.wide{width:100%;margin:8px 0}
-.tap{cursor:pointer}
-#sheet{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.35)}
-.sh-in{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:#fff;border-radius:18px 18px 0 0;padding:16px 16px 28px;max-width:560px;margin:0 auto}
-.sh-in .x{float:right;border:0;color:var(--blue);font-weight:700;padding:4px}
-input,textarea{font:inherit;width:100%;border:2px solid var(--ink);border-radius:10px;padding:10px;margin:6px 0;background:#fff;color:var(--ink)}
-input[type=range]{border:0;padding:0;accent-color:var(--blue)}
-.sl{display:block;font-size:15px;margin-top:8px}
+.li{padding:7px 0;border-top:1px solid var(--line)}
+.link{border:0;padding:6px 0;color:var(--blue);font-weight:700;background:transparent}
+.si{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:8px}
+.si span{font-weight:600}
+.set{display:grid;gap:8px}
+.dep{display:flex;gap:12px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line)}
+.dep .m{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue);min-width:60px}
+.dep .l{font-weight:700}.dep .s{font-size:13px;color:var(--mut)}
+.late{color:var(--red);font-style:normal;font-weight:700}
+.stops .st{padding:5px 0;border-top:1px solid var(--line);display:flex;gap:10px}
+.stops .st.past{color:var(--mut)}.stops .st.now{font-weight:700;color:var(--blue)}
+.nw{padding:10px 0;border-top:1px solid var(--line)}.nw .t{font-weight:700;font-size:17px;line-height:1.3}.nw .q{font-size:13px;color:var(--blue);font-weight:700;margin:2px 0 3px}.nw p{margin:3px 0 0;line-height:1.45}
+.nsec{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);font-weight:600;margin:16px 0 2px}
 .btnl{display:inline-block;margin-top:8px;font-weight:700}
-.si{margin-top:8px}
-.err{color:var(--red)}
-.trbox{max-height:42vh;overflow:auto;margin-top:6px;padding-right:4px}
-.trl{padding:5px 0;color:var(--mut);font-size:16px;line-height:1.4;cursor:pointer}.trl b{color:var(--ink);font-weight:600}
-.trl.cur{color:var(--blue)}.trl.cur b{color:var(--blue)}
-a.btn{display:inline-block;padding:9px 14px;border:2px solid var(--blue);border-radius:10px;color:var(--blue);text-decoration:none;font-weight:700;font-size:16px}a.btn.pri{background:var(--blue);color:#fff}
-.quota{position:relative;margin:10px 0 2px;padding:8px 10px 10px;border:2px solid var(--blue);border-radius:10px;font-size:15px;color:var(--ink);overflow:hidden}
-.quota span{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);font-weight:700}
-.quota b{font-size:20px;color:var(--blue)}.quota i{position:absolute;left:0;bottom:0;height:4px;background:var(--blue)}
+a.btn{display:inline-block;padding:8px 12px;border:2px solid var(--blue);border-radius:10px;color:var(--blue);text-decoration:none;font-weight:700;font-size:15px}a.btn.pri{background:var(--blue);color:#fff}
+.quota{position:relative;margin:8px 0 2px;padding:8px 10px 10px;border:2px solid var(--blue);border-radius:10px;font-size:14px;color:var(--ink);overflow:hidden}
+.quota span{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);font-weight:600}
+.quota b{font-size:18px;color:var(--blue)}.quota i{position:absolute;left:0;bottom:0;height:4px;background:var(--blue)}
 .quota.low{border-color:var(--red)}.quota.low b,.quota.low span{color:var(--red)}.quota.low i{background:var(--red)}
+#sheet{display:none;position:fixed;inset:0;z-index:9;background:rgba(0,0,0,.4)}
+.sh-in{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;padding:14px 14px calc(24px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.sh-in .x{float:right;border:0;color:var(--blue);font-weight:700;padding:4px;background:transparent}
+input,textarea{font:inherit;width:100%;border:2px solid var(--ink);border-radius:10px;padding:9px;margin:5px 0;background:var(--card);color:var(--ink)}
+input[type=range]{border:0;padding:0;accent-color:var(--blue)}
+.sl{display:block;font-size:14px;margin-top:8px}
+#toast{position:fixed;left:14px;right:14px;bottom:calc(112px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:12px;font-size:15px;display:none;z-index:10;max-width:532px;margin:0 auto}
+#upd{display:none;position:sticky;top:0;z-index:5;background:var(--blue);color:#fff;padding:8px 14px;font-size:14px;justify-content:space-between;align-items:center;gap:10px;max-width:560px;margin:0 auto}
+#upd.on{display:flex}
+#upd button{border-color:#fff;color:#fff;background:transparent;padding:5px 10px;font-size:14px}
+#vc{position:fixed;inset:0;background:var(--bg);z-index:8;display:none;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 14px 14px}
+#vc .vs{font-size:20px;font-weight:700;color:var(--blue);margin:6px 0}
+#vc .vt{flex:1;overflow:auto;font-size:17px}
+#vc .vl{padding:7px 0;border-top:1px solid var(--line)}
+#vc .vl.u{color:var(--mut)}
+#vc .hang{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;font-size:19px;padding:16px;margin-top:10px}
+#dim{display:none}
+.trbox{max-height:42vh;overflow:auto;margin-top:6px;padding-right:4px}
 </style>
 </head>
 <body>
 <header><div><h1 id="title">Inka</h1><div class="sub" id="subt">Dein Tag</div></div><button class="pri round" id="hinka">Inka</button></header>
+<div id="upd"></div>
 <main>
-  <section id="t-jetzt"><div id="setup"></div><div id="fristen"></div><div id="konf"></div><div id="next"></div><div id="show"></div><div id="overdue"></div><div id="sent"></div></section>
-  <section id="t-woche"></section>
-  <section id="t-aufgaben"></section>
+  <section id="t-jetzt"><div id="setup"></div><div id="hero"></div><div id="fristen"></div><div id="konf"></div><div id="next"></div><div id="overdue"></div><div id="sent"></div></section>
+  <section id="t-show"><div id="show"></div></section>
   <section id="t-unterwegs"><h2>Unterwegs</h2><div id="deps"></div></section>
-  <section id="t-nachrichten"></section>
-  <section id="t-ueberblick"></section>
+  <section id="t-mehr"><div id="mehr"></div></section>
   <div class="small" id="foot"></div>
 </main>
-<button class="fab" id="mic" aria-label="Diktat">🎙</button>
-<nav id="tabs"><button data-tab="jetzt">Jetzt</button><button data-tab="woche">Woche</button><button data-tab="aufgaben">Auf&shy;gaben</button><button data-tab="unterwegs">Unter&shy;wegs</button><button data-tab="nachrichten">Nach&shy;richten</button><button data-tab="ueberblick">Über&shy;blick</button></nav>
+<div id="mini"><div class="in" id="minin"><button class="mp" id="mpp">▶</button><div class="mt"><b id="mtt">Show</b><span id="mts"></span></div><button class="mn" id="mnx" aria-label="Weiter">⏭</button><div class="mb"><i id="mbar"></i></div></div></div>
+<nav id="tabs"><button data-tab="jetzt">Jetzt</button><button data-tab="show">Show</button><button data-tab="unterwegs">Unterwegs</button><button data-tab="mehr">Mehr</button></nav>
+<div class="full" id="fkap"></div>
+<div class="full" id="ftr"></div>
 <div id="sheet"></div>
 <div id="vc"></div>
 <div id="toast"></div>
-<div id="dim"><div>Die Show läuft.<br>Antippen zum Zurückkehren.</div></div>
+<div id="dim"><div></div></div>
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="2.11. 8:30 (keine Lieblingssongs mehr)";
+const APPV="8.11. (Umbau: Player, vier Reiter, Zeitstrahl)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -157,7 +203,11 @@ const mmss=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+":"+pad2(s
 const WD=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
 const store={get(k,d){try{const v=localStorage.getItem("inka:"+k);return v==null?d:JSON.parse(v);}catch(_){return d;}},set(k,v){try{localStorage.setItem("inka:"+k,JSON.stringify(v));}catch(_){}}};
 let toastT=null;
-function toast(m,ms){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
+/* Josef 8.11.2026 (U18): Hinweise unten nur, wenn er etwas tun muss. Alles andere wandert still ins Protokoll (Mehr > Überblick > Meldungen). */
+const NEED_RX=/tippen|erlaub|verbind|neu laden|Schlüssel|öffnen|gesperrt|installier|Mikrofon|Datum|fehlt|Text|Netz|wecken|Spotify neu|noch einmal/i;
+const NOTES=[];
+function note(m){NOTES.push({t:Date.now(),m:String(m)});if(NOTES.length>40)NOTES.shift();}
+function toast(m,ms,need){note(m);if(!need&&!NEED_RX.test(String(m)))return;const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
 /* Josef 2.11.2026: echte Überblendung in der Android-App. Inkas Stimme läuft über den Android-Player (ab App 1.2.0),
    der Inka weitersprechen lässt, während Spotify leise darunter startet, und die Songwechsel auch bei schlafender Seite selbst fährt.
    Dieses Objekt verhält sich für den Rest der Seite wie das Audio-Element. */
@@ -305,7 +355,7 @@ function natStops(){if(!AUD.native||!S.doc)return;try{const c=chapters(),songs=S
   c.forEach((x,i)=>{if(x.type==="song"){const tr=songs[n];n++;if(tr&&tr.uri){/* Josef 2.11.2026: Übergang so lang wie die Anmoderation: Song startet leise mit dem letzten Satz vor der Songstelle */
     const ls=(S.doc.lines||[]).filter(l=>l.t<x.start-0.5);const last=ls[ls.length-1];const pre=last?Math.max(3,Math.min(20,x.start-last.t-0.3)):6.5;
     L.push({k:i,t:x.start,uri:tr.uri,pre});}}});
-  NAT.voiceStops(JSON.stringify(L),!!(store.get("radio",true)&&SP.ready()));}catch(_){}}
+  NAT.voiceStops(JSON.stringify(L),!!(true&&SP.ready()));}catch(_){}}
 /* Songwechsel, die die App selbst gefahren hat, auf der Seite nachziehen */
 function natSongEvent(o){const k=o.k;const tr=((S.doc&&S.doc.songs)||[])[songIndex(k)];
   if(o.ev==="song-pre"){if(!SONG.on&&tr){S.songDone[k]=true;S.natSong=o.uri;SONG.start(k,true);}return;}
@@ -346,8 +396,8 @@ async function playShow(){
   if(S.ended){AUD.currentTime=0;S.ended=false;S.songDone={};POS.clear();}
   if(S.resume&&!SONG.on&&AUD.currentTime<1){const r=S.resume;S.resume=null;const c=chapters();(r.done||[]).forEach(k=>{S.songDone[k]=true;});
     SP.warm();
-    if(r.song>=0&&c[r.song]&&c[r.song].type==="song"){diag("weiter-wo",{song:r.song,s:Math.round((r.spos||0)/1000)});toast("Weiter, wo du warst.");jumpSong(r.song,(r.spos||0)/1000);return;}
-    AUD.currentTime=Math.max(0,(r.t||0)-2);diag("weiter-wo",{t:Math.round(r.t||0)});toast("Weiter, wo du warst.");}
+    if(r.song>=0&&c[r.song]&&c[r.song].type==="song"){diag("weiter-wo",{song:r.song,s:Math.round((r.spos||0)/1000)});note("Weiter, wo du warst.");jumpSong(r.song,(r.spos||0)/1000);return;}
+    AUD.currentTime=Math.max(0,(r.t||0)-2);diag("weiter-wo",{t:Math.round(r.t||0)});note("Weiter, wo du warst.");}
   try{await AUD.play();}catch(e){toast("Noch einmal auf Play tippen.");}
   SP.warm();
 }
@@ -388,6 +438,8 @@ function pauseShow(){if(SONG.on){SONG.finish("pause",true);}AUD.pause();KEEP.off
 function seekCh(k){const c=chapters()[k];if(!c)return;if(SONG.on)SONG.finish("sprung",true);
   ensureAudio().then(ok=>{if(!ok)return;S.songDone={};for(let i=0;i<k;i++)S.songDone[i]=true;AUD.currentTime=c.type==="song"?c.start+1.02:c.start;AUD.play().catch(()=>{});});}
 function nextCh(){const k=SONG.on?SONG.k:chAt(AUD.currentTime);if(SONG.on){SONG.finish("weiter");return;}const c=chapters();for(let i=k+1;i<c.length;i++){if(c[i].type==="talk"){seekCh(i);return;}}AUD.currentTime=Math.max(0,(AUD.duration||1)-0.5);}
+function back15(){if(SONG.on)return;try{AUD.currentTime=Math.max(0,(AUD.currentTime||0)-15);}catch(_){}bar();}
+window.back15=back15;
 function prevCh(){const k=chAt(AUD.currentTime);const c=chapters();for(let i=k-(AUD.currentTime-(c[k]?c[k].start:0)<4?1:0);i>=0;i--){if(c[i].type==="talk"){seekCh(i);return;}}}
 AUD.addEventListener("timeupdate",()=>{
   const t=AUD.currentTime,k=chAt(t),c=chapters()[k];
@@ -396,15 +448,15 @@ AUD.addEventListener("timeupdate",()=>{
      Nur wenn die Seite selbst spielt (Bildschirm an), sonst wie bisher. */
   const nx=chapters()[k+1];
   const natDuck=NAT&&typeof NAT.spotifyDuck==="function"&&store.get("appPreTest",false); /* 2.11.2026 17:21: Android hält Inkas Stimme an, sobald Spotify loslegt (auch mit Absenken). In der App deshalb kein Vorlauf: Inka spricht zu Ende, dann blendet die App den Song ein. */ /* 2.11.2026: Vorlauf in der App. Absenken wird vor dem Start angemeldet, sonst senkte die App die ganze Medienlautstärke und Inkas letzte Worte gingen unter. */
-  if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&store.get("radio",true)&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
+  if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&true&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
   if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;S.selfPause=Date.now();AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
-  if(k!==S.ch){S.ch=k;meta();renderShow();}
+  if(k!==S.ch){S.ch=k;meta();if(TAB.cur==="show")renderShow();else{renderHero();renderMini();}}
   bar();
 });
 AUD.addEventListener("play",()=>{KEEP.on();render();meta();});
 AUD.addEventListener("pause",()=>{render();if(!SONG.on&&document.hidden&&!AUD.ended)diag("inka-angehalten",{t:Math.round(AUD.currentTime),vis:document.visibilityState});});
 ["stalled","waiting","error","suspend"].forEach(ev=>AUD.addEventListener(ev,()=>{if(!AUD.paused&&ev!=="suspend"||ev==="error")diag("inka-"+ev,{t:Math.round(AUD.currentTime),vis:document.visibilityState,rs:AUD.readyState});}));
-AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;POS.clear();render();if(store.get("autochat",true)&&!(S.doc&&S.doc.nochat))setTimeout(()=>VC.start(true),900);});
+AUD.addEventListener("ended",()=>{KEEP.off();WL.off();S.ended=true;POS.clear();render();if(store.get("autochat",false)&&!(S.doc&&S.doc.nochat))setTimeout(()=>VC.start(true),900);});
 function meta(){try{if(!("mediaSession" in navigator))return;const c=chapters()[S.ch];
   navigator.mediaSession.metadata=new MediaMetadata({title:SONG.on&&SONG.track?SONG.track.name:(c?c.title:"Morning-Show"),artist:SONG.on&&SONG.track?SONG.track.artist:"Inka",album:"Morning-Show "+(S.doc?S.doc.day:"")});}catch(_){}}
 try{if("mediaSession" in navigator){
@@ -412,6 +464,7 @@ try{if("mediaSession" in navigator){
   navigator.mediaSession.setActionHandler("pause",()=>pauseShow());
   navigator.mediaSession.setActionHandler("nexttrack",()=>nextCh());
   navigator.mediaSession.setActionHandler("previoustrack",()=>prevCh());
+  try{navigator.mediaSession.setActionHandler("seekbackward",()=>back15());}catch(_){}
 }}catch(_){}
 
 /* ---------- Songs: Seite pausiert, Spotify spielt, danach weiter mit Inka ---------- */
@@ -424,7 +477,7 @@ RADIO.ramp=function(to,ms){clearInterval(RADIO.iv);const from=RADIO.cur,n=Math.m
   RADIO.iv=setInterval(()=>{i++;const x=i/n;RADIO.set(from+(to-from)*(x*x*(3-2*x)));if(i>=n)clearInterval(RADIO.iv);},100);};
 SONG.start=async function(k,pre){
   const list=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];const tr=list[songIndex(k)];
-  if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr)toast("Musik übersprungen: Spotify noch nicht verbunden.");return;}
+  if(!tr||!SP.ready()){diag("song-uebersprungen",{tr:!!tr,sp:SP.ready()});if(!SP.ready()&&tr){S.skipped[k]="Spotify nicht verbunden";note("Musik übersprungen: Spotify noch nicht verbunden.");}return;}
   SONG.on=true;SONG.pre=!!pre;if(!pre){S.selfPause=Date.now();AUD.pause();}SONG.k=k;SONG.track=tr;SONG.started=Date.now();SONG.lastPos=0;SONG.dur=0;SONG.broken=0;SONG.retries=0;render();meta();
   clearInterval(RADIO.iv);RADIO.set(pre?0:1);
   const sp0=SONG.seekPos||0;SONG.seekPos=0;if(sp0){SONG.started=Date.now()-sp0;SONG.lastPos=sp0;}
@@ -433,7 +486,7 @@ SONG.start=async function(k,pre){
     if(duckFirst&&SONG.via==="app-direkt"){diag("radio-vorlauf",{app:true});}
     else if(pre&&natHandled){diag("radio-vorlauf",{app:"nativ"});}
     else if(pre){if(SONG.via!=="seite"){await SP.pause();SONG.on=false;SONG.pre=false;SONG.track=null;S.songDone[k]=false;RADIO.set(1);return;}
-      if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});toast("♪ "+tr.name+" · "+tr.artist+(SONG.via==="app"?" (Spotify-App)":""));}
+      if(!SONG.pre){RADIO.ramp(1,2000);}else RADIO.ramp(RADIO.low,1800);}diag("song-start",{via:SONG.via,uri:tr.uri});note("♪ "+tr.name+" · "+tr.artist);}
   catch(e){const em=String(e&&e.message||e);diag("song-fehler",{e:em,vis:document.visibilityState,pre:!!pre,try:SONG.tries||0});
     SONG.on=false;SONG.track=null;RADIO.set(1);if(duckFirst){try{NAT.spotifyDuck(false);}catch(_){}}
     if(pre){SONG.pre=false;S.songDone[k]=false;render();return;}   // normaler Start am Kapitelanfang
@@ -443,7 +496,7 @@ SONG.start=async function(k,pre){
     if(net&&(SONG.tries||0)<2){SONG.tries=(SONG.tries||0)+1;setTimeout(()=>{if(!SONG.on&&AUD.paused)SONG.start(k);},3500);render();return;}
     SONG.tries=0;
     if(net&&document.hidden){S.waitSong=k;diag("song-wartet",{k});toast("Kein Netz im Hintergrund. Die Show wartet: Inka-App öffnen, dann kommt der Song.",15000);render();return;}
-    toast("Song ging nicht: "+em.slice(0,70)+". Inka macht weiter.");AUD.play().catch(()=>{});render();return;}
+    S.skipped[k]=em.slice(0,40);note("Song übersprungen: "+em.slice(0,70));AUD.play().catch(()=>{});render();return;}
   SONG.tries=0;
   const ms=Math.min(tr.ms||210000,6*60000);
   clearTimeout(SONG.timer);SONG.timer=setTimeout(()=>SONG.finish("zeit"),ms+800);
@@ -465,8 +518,10 @@ SONG.check=async function(){
     if(paused){SONG.pausedN=(SONG.pausedN||0)+1;if(SONG.pausedN>=3)SONG.finish("steht");}else SONG.pausedN=0;
   }catch(_){}
 };
+S.skipped={};
 SONG.finish=async function(why,stay){
-  if(!SONG.on)return;diag("song-ende",{why,vis:document.visibilityState});SONG.on=false;SONG.pausedN=0;clearTimeout(SONG.timer);clearInterval(SONG.poll);
+  if(!SONG.on)return;diag("song-ende",{why,vis:document.visibilityState});
+  if(/fehlt|fehler|verfuegbar|abbruch|kein Status|steht|spotify/i.test(why||""))S.skipped[SONG.k]=why;SONG.on=false;SONG.pausedN=0;clearTimeout(SONG.timer);clearInterval(SONG.poll);
   SP.pause();SONG.track=null;clearInterval(RADIO.iv);setTimeout(()=>RADIO.set(1),400);
   const wasPre=SONG.pre;SONG.pre=false;
   if(wasPre){S.songDone[SONG.k]=why==="weiter";if(why==="weiter"){const c0=chapters()[SONG.k];if(c0)AUD.currentTime=c0.start+1.02;}render();meta();return;}
@@ -688,7 +743,7 @@ VC.start=async function(auto){
       clientTools:VC.tools,
       onConnect:()=>{VC.state="Inka hört zu";VC.ui();},
       onDisconnect:()=>{VC.conv=null;VC.state="";VC.ui();VC.after();},
-      onError:m=>{VC.state="Fehler";toast("Sprachchat: "+String((m&&m.message)||m).slice(0,90));VC.ui();},
+      onError:m=>{VC.state="Fehler";toast("Sprachchat: "+String((m&&m.message)||m).slice(0,90),6000,true);VC.ui();},
       onModeChange:m=>{VC.state=(m&&m.mode==="speaking")?"Inka spricht":"Inka hört zu";VC.ui();},
       onMessage:m=>{if(!m)return;const txt=String(m.message||"");if(m.source==="user"){VC.lastUser=txt;VC.users.push({t:Date.now(),x:txt});VC.users=VC.users.slice(-6);
           if(/\b(das ist alles|das war'?s|das wars|tschüss|auflegen)\b/i.test(txt)){clearTimeout(VC.byeT);VC.byeT=setTimeout(()=>{if(VC.conv)VC.stop();},25000);}}
@@ -800,26 +855,25 @@ async function permCheck(){try{if(navigator.permissions){const m=await navigator
   const g=await navigator.permissions.query({name:"geolocation"});PERM.geo=g.state;g.onchange=()=>{PERM.geo=g.state;render();};}}catch(_){}}
 function renderSetup(){
   const el=$("#setup");
-  if(!KEY.raw){el.innerHTML='<div class="card blue"><div class="k">Einrichtung</div><div class="now">Schlüssel fehlt</div><p>Öffne einmal den Link aus dem Sekretär-Chat (er endet mit #k=…). Danach merkt sich diese Seite den Schlüssel.</p>'+
-    '<p class="small">Oder hier einfügen: Auf dem Handy in Inka unter Überblick „Schlüssel-Link kopieren“ tippen und den Link hierher schicken.</p>'+
-    '<input id="keyin" type="text" placeholder="Link mit #k=… einfügen" style="width:100%;box-sizing:border-box;font-size:16px;padding:10px;border:2px solid var(--blue);border-radius:10px">'+
-    '<div class="row" style="margin-top:8px"><button class="pri" id="keygo">Übernehmen</button></div></div>';
+  if(!KEY.raw){el.innerHTML='<div class="card blue"><div class="k b">Einrichtung</div><div class="now" style="font-weight:700;font-size:20px">Schlüssel fehlt</div><p>Öffne einmal den Link aus dem Sekretär-Chat (er endet mit #k=…). Danach merkt sich diese Seite den Schlüssel.</p>'+
+    '<input id="keyin" type="text" placeholder="Link mit #k=… einfügen">'+
+    '<div class="row" style="margin-top:6px"><button class="pri" id="keygo">Übernehmen</button></div></div>';
     $("#keygo").onclick=()=>{const v=($("#keyin").value||"").trim();const m=/(?:[#&?]k=)?([A-Za-z0-9_\-]{40,})/.exec(v);
-      if(!m){toast("Das sieht nicht nach einem Inka-Schlüssel aus.");return;}store.set("key",m[1]);location.replace(location.pathname+"?v="+Date.now());};
+      if(!m){toast("Das sieht nicht nach einem Inka-Schlüssel aus.",5000,true);return;}store.set("key",m[1]);location.replace(location.pathname+"?v="+Date.now());};
     return;}
   const spOk=SP.ready(),micOk=PERM.mic==="granted",geoOk=PERM.geo==="granted";
-  if(spOk&&micOk&&geoOk&&!store.get("showSetup",false)){el.innerHTML="";return;}
-  const it=(name,ok,btn,id,hint)=>'<div class="si"><div><span>'+name+'</span><div class="small">'+hint+'</div></div>'+(ok?'<span class="ok">✓</span>':'<button class="pri" id="'+id+'">'+btn+'</button>')+'</div>';
-  el.innerHTML='<div class="card blue"><div class="k">Einmal einrichten</div><div class="set">'+
+  const show=store.get("showSetup",false);
+  if(spOk&&micOk&&geoOk&&!show){el.innerHTML="";return;}
+  const it=(name,ok,btn,id,hint)=>(ok&&!show)?"":'<div class="si"><div><span>'+name+'</span><div class="small">'+hint+'</div></div>'+(ok?'<span class="ok">✓</span>':'<button class="pri" id="'+id+'">'+btn+'</button>')+'</div>';
+  el.innerHTML='<div class="card blue"><div class="k b">Noch einrichten</div><div class="set">'+
     it("Spotify",spOk,"Verbinden","bsp",spOk?esc(SP.sdkState||"verbunden"):"für die Songs zwischen den Kapiteln")+
-    it("Mikrofon",micOk,"Erlauben","bmic","damit Inka nach der Show zuhört")+
+    it("Mikrofon",micOk,"Erlauben","bmic","damit du mit Inka sprechen kannst")+
     it("Standort",geoOk,"Erlauben","bgeo","für Abfahrten in der Nähe")+
-    (spOk?'<button id="bsptest">Spotify testen (10 Sekunden)</button>':"")+
-    '</div><div class="small" style="margin-top:8px">Tipp: Chrome-Menü ⋮ > „Zum Startbildschirm hinzufügen“, dann ist Inka eine App.</div></div>';
+    '</div>'+(show?'<button class="link" id="bhide">Ausblenden</button>':"")+'</div>';
   const on=(id,f)=>{const b=$("#"+id);if(b)b.onclick=f;};
-  on("bsp",()=>SP.connect());on("bsptest",()=>SP.test());
-  on("bmic",async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());PERM.mic="granted";toast("Mikrofon erlaubt.");}catch(e){toast("Mikrofon gesperrt: Schloss in der Adresszeile > Berechtigungen > Mikrofon.",8000);}render();});
-  on("bgeo",()=>{navigator.geolocation.getCurrentPosition(()=>{PERM.geo="granted";toast("Standort erlaubt.");render();},()=>toast("Standort gesperrt: Schloss in der Adresszeile > Berechtigungen.",8000));});
+  on("bsp",()=>SP.connect());on("bhide",()=>{store.set("showSetup",false);render();});
+  on("bmic",async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());PERM.mic="granted";}catch(e){toast("Mikrofon gesperrt: Schloss in der Adresszeile > Berechtigungen > Mikrofon.",8000,true);}render();});
+  on("bgeo",()=>{navigator.geolocation.getCurrentPosition(()=>{PERM.geo="granted";render();},()=>toast("Standort gesperrt: Schloss in der Adresszeile > Berechtigungen.",8000,true));});
 }
 /* Gesamtlaenge = Inka + alle Songs; Fortschritt zaehlt gespielte Songs mit */
 function songMs(n){const l=(S.doc&&Array.isArray(S.doc.songs))?S.doc.songs:[];return Math.min((l[n]&&l[n].ms)||0,6*60000);}
@@ -835,46 +889,105 @@ async function seekTotal(T){const r=seekAt(T);if(r.talk){if(SONG.on)await SONG.f
 async function jumpSong(k,off){if(SONG.on)await SONG.finish("sprung",true);if(!(await ensureAudio()))return;const c=chapters();for(let i=0;i<c.length;i++){if(i<k)S.songDone[i]=true;else delete S.songDone[i];}
   S.selfPause=Date.now();AUD.pause();AUD.currentTime=c[k].start+0.05;S.ch=k;SONG.seekPos=NAT&&off?Math.round(off*1000):0;S.songDone[k]=true;diag("sprung-song",{k,off:Math.round(off||0)});
   await SONG.start(k);if(!SONG.on&&!SONG.tries&&S.waitSong==null){AUD.currentTime=c[k].start+1.02;AUD.play().catch(()=>{});}}
-setInterval(()=>{if(SONG.on)bar();},1000);
+setInterval(()=>{if(SONG.on){bar();miniTick();if(TAB.cur==="show")songTick();}},1000);
+/* ---- Player-Bausteine (Josef 8.11.2026, UX-Umbau) ---- */
+const hhmm=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.round((s%3600)/60);return h?h+" h "+pad2(m)+" min":m+" min";};
+function restLabel(){const d=totalSec(),e=elapsedSec();return "noch "+hhmm(d-e);}
+function curIndex(){return SONG.on?SONG.k:S.ch;}
+function curTitle(){const c=chapters(),cur=curIndex();
+  if(SONG.on&&SONG.track)return "♪ "+SONG.track.name;
+  const rs=S.resume&&AUD.paused&&!SONG.on?S.resume:null;
+  if(rs){const d=S.doc||{};const tr=rs.song>=0?(d.songs||[])[songIndex(rs.song)]:null;const ch=c[chAt(rs.t||0)];const nr=c.slice(0,chAt(rs.t||0)+1).filter(x=>x.type==="talk").length;
+    return "Weiter bei "+(tr?"♪ "+tr.name:(ch?"Kapitel "+nr+", "+mmss(rs.t||0):mmss(rs.t||0)));}
+  if(S.ended)return "Zu Ende gehört";
+  return (cur>=0&&c[cur])?c[cur].title:"Bereit";}
+function songLeft(){if(!SONG.on||!SONG.track)return 0;const ms=Math.min(SONG.track.ms||210000,6*60000);return Math.max(0,ms-(Date.now()-SONG.started))/1000;}
+/* Cover über Spotifys offenes oEmbed (kein Login nötig) */
+const COVER={};
+function coverUrl(uri){if(!uri)return "";if(COVER[uri]!==undefined)return COVER[uri]||"";COVER[uri]=null;
+  fetch("https://open.spotify.com/oembed?url="+encodeURIComponent(uri)).then(r=>r.json()).then(j=>{COVER[uri]=(j&&j.thumbnail_url)||"";if(SONG.on&&SONG.track&&SONG.track.uri===uri)renderShow();}).catch(()=>{COVER[uri]="";});return "";}
+function songTick(){const s=$("#sleft");if(s)s.textContent="Inka spricht weiter in "+mmss(songLeft());}
+function playPause(){if(NAT&&SONG.on){if(SONG.held)appResume();else appPause("knopf");return;}if(!AUD.paused||SONG.on)pauseShow();else playShow();}
+function isPlaying(){return !!((SONG.on&&!SONG.held)||!AUD.paused);}
+function heroHtml(){
+  if(!S.doc)return '<div class="hero"><div class="k b">Show</div><div class="now">'+esc(S.loading||S.err||"Keine Show geladen")+'</div><div class="row" style="margin-top:8px"><button id="hreload">Neu laden</button><button id="hnew">Neue Show</button></div></div>';
+  const d=S.doc,playing=isPlaying();
+  return '<div class="hero tap" id="herocard"><div class="k b">'+esc(d.title||"Morning-Show")+(d.day!==ymd(new Date())?' · '+esc(dlabel(d.day)):'')+'</div><div style="display:flex;align-items:center;gap:14px"><button class="pbig" id="hpp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div style="min-width:0"><div class="now">'+esc(curTitle())+'</div><div class="rest">'+esc(restLabel())+(SONG.on&&SONG.track?' · '+esc(SONG.track.artist):'')+'</div></div></div>'+
+    (S.loading?'<div class="small">'+esc(S.loading)+' …</div>':'')+(S.err?'<div class="small err">'+esc(S.err)+'</div>':'')+'</div>';}
+function renderHero(){const el=$("#hero");if(!el)return;if(!KEY.raw){el.innerHTML="";return;}el.innerHTML=heroHtml();
+  const pp=$("#hpp");if(pp)pp.onclick=e=>{e.stopPropagation();playPause();};
+  const hc=$("#herocard");if(hc)hc.onclick=()=>setTab("show");
+  const r=$("#hreload");if(r)r.onclick=()=>loadShow();const n=$("#hnew");if(n)n.onclick=()=>sheetShowOrder();}
+function renderMini(){const m=$("#mini");if(!m)return;const on=KEY.raw&&S.doc&&TAB.cur!=="show"&&TAB.cur!=="jetzt";m.classList.toggle("on",!!on);if(!on)return;
+  $("#mtt").textContent=curTitle();$("#mts").textContent=restLabel()+(SONG.on&&SONG.track?" · "+SONG.track.artist:"");$("#mpp").textContent=isPlaying()?"❚❚":"▶";miniTick();}
+function miniTick(){const i=$("#mbar");if(!i)return;const d=totalSec()||1;i.style.width=Math.min(100,elapsedSec()/d*100)+"%";}
+$("#mpp").onclick=e=>{e.stopPropagation();playPause();};$("#mnx").onclick=e=>{e.stopPropagation();nextCh();};$("#minin").onclick=()=>setTab("show");
 function renderShow(){
-  const el=$("#show");
+  const el=$("#show");renderHero();renderMini();
   if(!KEY.raw){el.innerHTML="";return;}
-  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Morning-Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button><button id="pnew">Neue Show erstellen</button></div></div>';$("#reload").onclick=()=>loadShow();$("#pnew").onclick=()=>sheetShowOrder();return;}
+  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button><button id="pnew">Neue Show erstellen</button></div></div>';$("#reload").onclick=()=>loadShow();$("#pnew").onclick=()=>sheetShowOrder();return;}
   const d=S.doc,dd=new Date(d.day+"T12:00:00"),isTom=d.day===ymd(addD(new Date(),1)),isOld=d.day<ymd(new Date());
   $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
-  $("#subt").textContent=(isTom?"Show für morgen · ":isOld?"Aus dem Archiv · ":"")+Math.round(totalSec()/60)+" Min, davon "+((d.songs||[]).length)+" Songs"+(d.made?" · Fassung "+hm(new Date(d.made)):"")+(d.weather&&d.weather.short?" · "+d.weather.short:"");
-  const playing=!AUD.paused||SONG.on;const c=chapters();const cur=SONG.on?SONG.k:S.ch;
-  const rs=S.resume&&!playing?S.resume:null;const nowTxt=SONG.on&&SONG.track?"♪ "+SONG.track.name+" · "+SONG.track.artist:rs?("Weiter bei: "+(rs.song>=0&&((d.songs||[])[songIndex(rs.song)])?"♪ "+(d.songs||[])[songIndex(rs.song)].name:(c[chAt(rs.t||0)]||{}).title||mmss(rs.t||0))):(cur>=0&&c[cur]?c[cur].title:"Bereit");
-  let h='';
-  h+='<div class="chips" style="margin-bottom:8px">'+S.dayShows.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-showsel="'+esc(x.id)+'">'+esc(showLabel(x))+'</button>').join("")+'<button class="chip" id="parch">Alle Shows'+(S.shows.length?' ('+S.shows.length+')':'')+'</button></div>';
-  h+='<div class="card blue"><div class="k">'+esc(d.title||"Morning-Show mit Inka")+'</div><div class="play"><button class="pbtn" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><div><div class="now">'+esc(nowTxt)+'</div>'+(SONG.on&&SONG.track&&SONG.track.uri?'<a class="small" style="color:var(--blue)" href="https://open.spotify.com/track/'+esc(SONG.track.uri.split(":").pop())+'" target="_blank" rel="noopener">Lyrics in Spotify</a>'+(SONG.lost?' <span class="small err">· Spotify verbindet neu …</span>':SONG.held?' <span class="small">· angehalten</span>':''):'')+'<div class="time" id="ptime"></div>'+(SONG.on?'<div class="small">Spotify über '+(SONG.via==="seite"?"diese Seite":"die Spotify-App")+(SONG.last?" · "+esc(SONG.last):"")+'</div>':"")+''+(S.loading?'<div class="small">'+esc(S.loading)+' …</div>':"")+(S.err?'<div class="err small">'+esc(S.err)+'</div>':"")+'</div></div>'+
-    '<div class="bar" id="pb"><i id="pbar"></i>'+(()=>{const d=totalSec()||1;return tl().map(g=>'<s style="left:'+(g.c/d*100).toFixed(2)+'%;width:'+Math.max(0.3,g.L/d*100).toFixed(2)+'%"></s>').join("");})()+'<b id="pknob"></b></div><div class="row"><button id="pprev">Zurück</button><button id="pnext">'+(SONG.on?"Song überspringen":"Weiter")+'</button></div>'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="small">Tempo</span><input type="range" id="prate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'" style="flex:1"><b class="small" id="prv" style="min-width:42px;text-align:right">'+Math.round(RATE()*100)+'%</b></div>'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small" style="min-width:44px">Bass</span><input type="range" id="peqb" min="-15" max="6" step="1" value="'+EQ.val("eqb")+'" style="flex:1"><b class="small" id="peqbv" style="min-width:42px;text-align:right">'+EQ.val("eqb")+' dB</b></div>'+
-    '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="small" style="min-width:44px">Höhen</span><input type="range" id="peqt" min="-6" max="9" step="1" value="'+EQ.val("eqt")+'" style="flex:1"><b class="small" id="peqtv" style="min-width:42px;text-align:right">'+EQ.val("eqt")+' dB</b></div>';
-  h+=quotaHtml();
-  h+=trHtml();
-  h+='<details class="chs" id="chdet"'+(S.chOpen?" open":"")+'><summary class="small">Kapitel und Songs</summary>'+c.map((x,i)=>x.type==="song"?(()=>{const tr=((d.songs||[])[songIndex(i)]);return tr?'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-song="'+i+'"><b>♪</b><span class="small">'+esc(tr.name)+' · '+esc(tr.artist)+'</span></div>':"";})():'<div class="ch'+(i===cur?" cur":i<cur?" done":"")+'" data-ch="'+i+'"><b>'+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>').join("")+'</details>';
-  h+='<div class="row" style="margin-top:12px"><button class="pri" id="pinka">Mit Inka sprechen</button><button id="pnew">Neue Show erstellen</button></div>';
-  if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Inka fragt danach: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
+  $("#subt").textContent=(isTom?"Show für morgen · ":isOld?"Aus dem Archiv · ":"")+Math.round(totalSec()/60)+" Min, "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");
+  const playing=isPlaying();const c=chapters();const cur=curIndex();const nr=c.slice(0,cur+1).filter(x=>x.type==="talk").length;
+  let h='<div class="card blue" style="padding-top:10px"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div class="k b" style="margin:0">'+esc(d.title||"Morning-Show")+'</div><button class="link" id="pswitch" style="font-size:14px;white-space:nowrap;flex:none">Show wechseln</button></div>';
+  if(SONG.on&&SONG.track){const cu=coverUrl(SONG.track.uri);
+    h+=(cu?'<img class="cover" src="'+esc(cu)+'" alt="">':'<div class="cover ph">♪</div>')+'<div class="songt">'+esc(SONG.track.name)+'</div><div class="songa">'+esc(SONG.track.artist)+'</div>'+
+      '<div class="mono small" id="sleft" style="margin-top:4px">Inka spricht weiter in '+mmss(songLeft())+'</div>'+
+      (SONG.lost?'<div class="small err" style="margin-top:4px">Spotify antwortet nicht.</div>':SONG.held?'<div class="small">angehalten</div>':'')+
+      '<div class="small" style="margin-top:2px"><a href="https://open.spotify.com/track/'+esc(SONG.track.uri.split(":").pop())+'" target="_blank" rel="noopener">In Spotify öffnen</a></div>';}
+  else{h+='<div class="hero" style="border:0;padding:6px 0 0;margin:0"><div class="small mono">'+(cur>=0&&c[cur]?"Kapitel "+nr+" von "+c.filter(x=>x.type==="talk").length:"")+'</div><div class="now" style="font-size:26px">'+esc(curTitle())+'</div><div class="rest">'+esc(restLabel())+'</div>'+
+      (S.loading?'<div class="small">'+esc(S.loading)+' …</div>':'')+(S.err?'<div class="small err">'+esc(S.err)+'</div>':'')+'</div>';}
+  h+='<div class="bar" id="pb"><i id="pbar"></i>'+(()=>{const dd2=totalSec()||1;return tl().map(g=>'<s style="left:'+(g.c/dd2*100).toFixed(2)+'%;width:'+Math.max(0.3,g.L/dd2*100).toFixed(2)+'%"></s>').join("");})()+'<b id="pknob"></b></div><div class="mono small" id="ptime" style="text-align:right"></div>';
+  h+='<div class="ctr"><button id="pprev" aria-label="Kapitel zurück">⏮</button><button id="pback" aria-label="15 Sekunden zurück">↺<span class="lab">15</span></button><button class="pbig" id="pp" aria-label="'+(playing?"Pause":"Abspielen")+'">'+(playing?"❚❚":"▶")+'</button><button id="pnext" aria-label="'+(SONG.on?"Song überspringen":"Kapitel vor")+'">⏭</button></div>';
+  if(SONG.on&&SONG.lost&&NAT&&typeof NAT.openSpotify==="function")h+='<button class="pri wide" id="pwake">Spotify wecken</button>';
+  if(needResume)h+='<div class="small" style="text-align:center">Weiter mit Inka: einmal auf Play tippen.</div>';
+  const q=S.quota;if(q&&q.limit&&q.rest/q.limit<0.1)h+='<div class="small err" style="margin-top:6px">Sprachkontingent fast leer: '+Number(q.rest).toLocaleString("de-DE")+' Zeichen.</div>';
+  h+='<div class="tools"><button id="pkap">Kapitel</button><button id="ptr">Mitlesen</button><button id="pklang">Klang</button></div>';
+  h+='<div class="row" style="margin-top:8px"><button class="pri" id="pinka">Mit Inka sprechen</button><button id="pnew">Neue Show</button></div>';
+  if(Array.isArray(d.questions)&&d.questions.length)h+='<div class="small" style="margin-top:8px">Fragen nach der Show: '+esc(d.questions[0])+(d.questions.length>1?" (und "+(d.questions.length-1)+" weitere)":"")+'</div>';
   h+='</div>';
   el.innerHTML=h;bar();
-  $("#chdet").addEventListener("toggle",e=>{S.chOpen=e.target.open;});
-  trWire();
-  [["peqb","eqb"],["peqt","eqt"]].forEach(([id,k])=>{const e=$("#"+id);e.oninput=()=>{store.set(k,+e.value);EQ.init();EQ.set();$("#"+id+"v").textContent=e.value+" dB";};});
-  const prt=$("#prate");prt.oninput=()=>{store.set("rate",+prt.value);applyRate();$("#prv").textContent=Math.round(prt.value*100)+"%";};
-  $("#pp").onclick=()=>{if(NAT&&SONG.on){if(SONG.held)appResume();else appPause("knopf");return;}if(!AUD.paused||SONG.on)pauseShow();else playShow();};
-  $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pinka").onclick=()=>VC.start();$("#pnew").onclick=()=>sheetShowOrder();
+  $("#pp").onclick=()=>playPause();
+  $("#pnext").onclick=()=>nextCh();$("#pprev").onclick=()=>prevCh();$("#pback").onclick=()=>back15();$("#pinka").onclick=()=>VC.start();$("#pnew").onclick=()=>sheetShowOrder();
+  $("#pswitch").onclick=()=>sheetSwitch();$("#pkap").onclick=()=>openKap();$("#ptr").onclick=()=>openTr();$("#pklang").onclick=()=>sheetKlang();
+  const w=$("#pwake");if(w)w.onclick=()=>{try{NAT.openSpotify();diag("spotify-wecken",{hand:true});}catch(_){}};
   {const pb=$("#pb");const at=e=>{const r=pb.getBoundingClientRect();return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*(totalSec()||1);};
     pb.onpointerdown=e=>{pb.setPointerCapture(e.pointerId);S.drag=at(e);bar();};
     pb.onpointermove=e=>{if(S.drag!=null){S.drag=at(e);bar();}};
     pb.onpointerup=e=>{if(S.drag==null)return;const T=at(e);S.drag=null;seekTotal(T);};
     pb.onpointercancel=()=>{S.drag=null;bar();};}
-  el.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>seekCh(+n.dataset.ch));
-  el.querySelectorAll("[data-song]").forEach(n=>n.onclick=()=>jumpSong(+n.dataset.song,0));
-  el.querySelectorAll("[data-showsel]").forEach(n=>n.onclick=()=>pickShow(n.dataset.showsel));
-  $("#parch").onclick=()=>sheetArchive();
+  if($("#fkap").classList.contains("on"))openKap(true);
 }
+/* Show wechseln (U10): Titel, Länge, wie viel gehört */
+function heardPct(x){const r=store.get("pos:"+x.id,null);if(!r||!x.duration)return 0;const c=0;return Math.min(100,Math.round(((r.t||0)/(x.duration||1))*100));}
+function sheetSwitch(){const all=S.shows.slice().sort((a,b)=>a.day<b.day?1:a.day>b.day?-1:(a.slot||"").localeCompare(b.slot||"")).slice(0,8);
+  let h='<h3>Show wechseln</h3>';
+  h+=all.map(x=>{const p=heardPct(x);return '<div class="li tap" data-arch="'+esc(x.id)+'"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(showName(x))+(S.doc&&S.doc.id===x.id?' <span class="okb">läuft</span>':'')+'</b><span class="mono small">'+(x.duration?Math.round(x.duration/60)+" Min":"")+'</span></div><div class="small">'+esc(showLabel(x).split(" · ")[0])+(p?' · '+p+' % gehört':'')+'</div></div>';}).join("");
+  h+='<button class="wide" id="parch">Alle Shows im Archiv</button>';
+  openSheet(h);document.querySelectorAll("[data-arch]").forEach(b=>b.onclick=()=>pickShow(b.dataset.arch));$("#parch").onclick=()=>sheetArchive();}
+/* Klang (U12, U24): Tempo, Bass, Höhen, Stimme zu Musik */
+function sheetKlang(){const vol=store.get("vol",0.5);
+  openSheet('<h3>Klang</h3>'+
+    '<label class="sl">Stimme zu Musik: <b id="volv">'+Math.round(vol*100)+'%</b></label><input type="range" id="vol" min="0.2" max="1" step="0.05" value="'+vol+'">'+
+    '<label class="sl">Sprechtempo: <b id="ratev">'+Math.round(RATE()*100)+'%</b></label><input type="range" id="rate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'">'+
+    '<label class="sl">Bass: <b id="peqbv">'+EQ.val("eqb")+' dB</b></label><input type="range" id="peqb" min="-15" max="6" step="1" value="'+EQ.val("eqb")+'">'+
+    '<label class="sl">Höhen: <b id="peqtv">'+EQ.val("eqt")+' dB</b></label><input type="range" id="peqt" min="-6" max="9" step="1" value="'+EQ.val("eqt")+'">'+
+    '<div class="small" style="margin-top:10px">Der Radio-Übergang (Song startet leise unter der Anmoderation) ist immer an.</div>');
+  const rt=$("#rate");rt.oninput=()=>{store.set("rate",+rt.value);applyRate();$("#ratev").textContent=Math.round(rt.value*100)+"%";};
+  const v=$("#vol");v.oninput=()=>{store.set("vol",+v.value);AUD.volume=+v.value;$("#volv").textContent=Math.round(v.value*100)+"%";};
+  [["peqb","eqb"],["peqt","eqt"]].forEach(([id,k])=>{const e=$("#"+id);e.oninput=()=>{store.set(k,+e.value);EQ.init();EQ.set();$("#"+id+"v").textContent=e.value+" dB";};});}
+/* Kapitel und Songs als Vollbild (U16) */
+function openKap(refresh){const f=$("#fkap");const d=S.doc;if(!d)return;const c=chapters(),cur=curIndex();
+  let h='<div class="fh"><h3>Kapitel und Songs</h3><button class="link" data-fclose="fkap">Schließen</button></div><div class="fb">';
+  h+=c.map((x,i)=>{const st=i===cur?" cur":i<cur?" done":"";
+    if(x.type==="song"){const tr=((d.songs||[])[songIndex(i)]);if(!tr)return "";return '<div class="ch'+st+'" data-song="'+i+'"><b>'+(i<cur?"✓":"♪")+'</b><span>'+esc(tr.name)+' <span class="small">· '+esc(tr.artist)+'</span></span>'+(S.skipped[i]?'<span class="sk">übersprungen</span>':'')+'</div>';}
+    return '<div class="ch'+st+'" data-ch="'+i+'"><b>'+(i<cur?"✓ ":"")+mmss(x.start)+'</b><span>'+esc(x.title)+'</span></div>';}).join("");
+  h+='</div>';f.innerHTML=h;f.classList.add("on");
+  f.querySelectorAll("[data-ch]").forEach(n=>n.onclick=()=>{seekCh(+n.dataset.ch);f.classList.remove("on");});
+  f.querySelectorAll("[data-song]").forEach(n=>n.onclick=()=>{jumpSong(+n.dataset.song,0);f.classList.remove("on");});
+  if(!refresh){const el=f.querySelector(".ch.cur");if(el)el.scrollIntoView({block:"center"});}}
+document.addEventListener("click",ev=>{const b=ev.target.closest("[data-fclose]");if(b){$("#"+b.dataset.fclose).classList.remove("on");}});
 function protoHtml(hours){const all=pendList().filter(x=>x.t>Date.now()-hours*3600e3).sort((a,b)=>b.t-a.t);
   return all.length?'<div class="card"><div class="k">Protokoll · ans Sekretariat</div>'+all.map(x=>'<div class="li"><span class="small">'+hm(new Date(x.t))+(x.via?" · "+esc(x.via):"")+'</span><div>'+esc(x.text)+'</div>'+pStatus(x)+(QUIT[x.id]&&QUIT[x.id].text&&QUIT[x.id].ok?'<div class="de">'+esc(QUIT[x.id].text)+'</div>':"")+'</div>').join("")+'<div class="small">Eingetragen wird beim Stundencheck (:23), dann erscheint hier ✓.</div></div>':"";}
 function renderSent(){
@@ -960,31 +1073,39 @@ function taskRow(t,withBtns){
 function filtersHtml(){return '<div class="chips">'+FILTER_ALL.map(k=>'<button class="chip'+(FILTER.includes(k)?" on":"")+'" data-filter="'+k+'">'+KIND[k]+'</button>').join("")+'</div>';}
 
 /* ---------- Reiter: Jetzt ---------- */
+D.tripSoon=function(){const today=ymd(new Date());const tr=(S.doc&&S.doc.day===today&&Array.isArray(S.doc.trips)&&S.doc.trips.length)?S.doc.trips:((APP.data&&APP.data.trips&&APP.data.trips[today])||[]);const now=Date.now();
+  return tr.map(t=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(t.leave||""));if(!m)return null;const s=new Date();s.setHours(+m[1],+m[2],0,0);return {to:t.to||"",leave:t.leave,start:s,end:new Date(s.getTime()+(parseInt(t.minutes,10)||30)*60000)};}).filter(Boolean)
+    .find(t=>now>=t.start-120*60000&&now<=t.end.getTime()+10*60000)||null;};
 function renderJetzt(){
   const today=ymd(new Date()),now=new Date(),nowHM=hm(now),A=APP.data;
-  // Fristen-Leiste
+  // Fristen-Zeile (U04)
   const dl=((A&&A.deadlines)||[]).filter(d=>d.date>=today&&daysBetween(today,d.date)<=14).sort((a,b)=>a.date<b.date?-1:1);
   $("#fristen").innerHTML=dl.length?'<div class="strip">'+dl.map(d=>{const n=daysBetween(today,d.date);return '<span class="fr'+(n<=2?" hot":"")+'"><b>'+(n===0?"heute":n===1?"morgen":"in "+n+" T")+'</b> '+esc(d.title)+'</span>';}).join("")+'</div>':"";
-  // Konflikte
-  const kf=((A&&A.conflicts)||[]);
-  $("#konf").innerHTML=kf.map(c=>{const dec=pendList().find(p=>p.tool==="konflikt"&&p.args&&p.args.id===c.id);
-    return '<div class="card warn"><div class="k">Konflikt'+(c.date?" · "+dlabel(c.date):"")+'</div><div>'+esc(c.text)+'</div>'+
-      (dec?'<div class="small" style="margin-top:8px">Entschieden: '+esc(dec.args.label)+' <span class="wait">wartet</span></div>':
-      '<div class="opts">'+(c.options||[]).map((o,i)=>'<button class="'+(i===0?"pri":"")+'" data-konf="'+esc(c.id)+'" data-opt="'+i+'">'+esc(o.label)+(i===0?" (empfohlen)":"")+'</button>').join("")+'</div>')+'</div>';}).join("");
-  // Als Naechstes
+  // Konflikte: eine Zeile, Antippen klappt auf (U03)
+  const kf=((A&&A.conflicts)||[]).filter(c=>!pendList().find(p=>p.tool==="konflikt"&&p.args&&p.args.id===c.id));
+  if(!kf.length)$("#konf").innerHTML="";
+  else if(!S.konfOpen)$("#konf").innerHTML='<div class="card warn tap" id="konfline" style="padding:10px 14px"><b>'+kf.length+' Konflikt'+(kf.length>1?"e":"")+'</b> <span class="small">· antippen zum Entscheiden</span></div>';
+  else $("#konf").innerHTML=kf.map(c=>'<div class="card warn"><div class="k b">Konflikt'+(c.date?" · "+dlabel(c.date):"")+'</div><div>'+esc(c.text)+'</div><div class="opts">'+(c.options||[]).map((o,i)=>'<button class="'+(i===0?"pri":"")+'" data-konf="'+esc(c.id)+'" data-opt="'+i+'">'+esc(o.label)+(i===0?" (empfohlen)":"")+'</button>').join("")+'</div></div>').join("")+'<button class="link" id="konfclose">Zuklappen</button>';
+  const kl=$("#konfline");if(kl)kl.onclick=()=>{S.konfOpen=true;renderJetzt();};const kc=$("#konfclose");if(kc)kc.onclick=()=>{S.konfOpen=false;renderJetzt();};
+  // Zeitstrahl mit Jetzt-Linie (U26)
   const items=dayEntries(today).filter(e=>e.start&&e.kind!=="event").concat(dayTasks(today).filter(t=>t.time).map(t=>({key:t.key,kind:"task",start:t.time,end:"",title:t.title}))).sort((a,b)=>a.start<b.start?-1:1);
-  const cur=items.filter(e=>e.start<=nowHM&&(e.end||e.start)>nowHM);const nxt=items.filter(e=>e.start>nowHM).slice(0,4);
   let h='<div class="card"><div class="k">Heute · '+esc(dlabel(today))+(A&&A.made?' <span class="stand">Stand '+hm(new Date(A.made))+'</span>':"")+'</div>';
-  if(cur.length)h+='<div class="small">Gerade</div>'+cur.map(itemRow).join("");
-  h+=nxt.length?'<div class="small" style="margin-top:6px">Als Nächstes</div>'+nxt.map(itemRow).join(""):'<div class="small">'+(items.length?"Für heute steht nichts mehr an.":"Heute steht nichts mit Uhrzeit an.")+'</div>';
+  if(!items.length)h+='<div class="small">Heute steht nichts mit Uhrzeit an.</div>';
+  else{h+='<div class="tlw">';let nowDone=false;
+    for(const e of items){const past=(e.end||e.start)<=nowHM&&e.start<=nowHM;const running=e.start<=nowHM&&(e.end||e.start)>nowHM;
+      if(!nowDone&&e.start>nowHM){h+='<div class="tlnow"></div>';nowDone=true;}
+      const p=pendFor(e.key),done=p.some(x=>x.tool==="erledigen");
+      h+='<div class="tli k-'+e.kind+(past&&!running?" past":"")+(done?" done":"")+'" data-key="'+esc(e.key)+'"><span class="tt">'+esc(e.start)+'</span><div class="ti">'+esc(e.title)+badge(e.key)+(running?' <span class="okb">jetzt</span>':'')+'</div><div class="kd">'+esc([KIND[e.kind]||"",e.end?"bis "+e.end:"",e.loc||""].filter(Boolean).join(" · "))+'</div></div>';}
+    if(!nowDone)h+='<div class="tlnow"></div>';h+='</div>';}
   const hints=(A&&A.hints&&A.hints[today])||[];if(hints.length)h+='<div class="wbox">'+hints.map(x=>'<div>'+esc(x)+'</div>').join("")+'</div>';
-  h+='<div class="row" style="margin-top:10px"><button data-openday="'+today+'">Ganzer Tag</button><button data-gotab="woche">Woche</button></div></div>';
-  // Abfahrt in Sicht
-  if(D.tripNow()){const r=D.routes[0];h='<div class="card blue tap" data-gotab="unterwegs"><div class="k">Losgehen</div>'+(r&&r.veh?'<div class="now">'+esc(r.veh.label)+' ab '+esc(r.veh.from)+' '+hm(r.veh.dep)+(r.veh.delay?' <i class="late">+'+r.veh.delay+'</i>':"")+'</div><div class="small">an '+hm(r.arr)+' · antippen für alle Abfahrten</div>':'<div class="small">Abfahrten werden gesucht …</div>')+'</div>'+h;}
+  h+='<div class="row" style="margin-top:8px"><button data-openday="'+today+'">Ganzer Tag</button><button data-gotab="mehr" data-sub="woche">Woche</button></div></div>';
+  // Abfahrt nur, wenn in den nächsten 2 Stunden eine Fahrt ansteht (U27)
+  const ts=D.tripSoon();if(ts){const r=D.routes[0];h='<div class="card blue tap" data-gotab="unterwegs"><div class="k b">Losgehen '+esc(ts.leave)+' · nach '+esc(ts.to)+'</div>'+(r&&r.veh?'<div style="font-weight:700;font-size:19px">'+esc(r.veh.label)+' ab '+esc(r.veh.from)+' '+hm(r.veh.dep)+(r.veh.delay?' <i class="late">+'+r.veh.delay+'</i>':"")+'</div><div class="small">an '+hm(r.arr)+' · antippen für alle Abfahrten</div>':'<div class="small">Antippen für Verbindungen</div>')+'</div>'+h;
+    if(!D.open&&!D.watch){D.open=true;D.locate();}}
   $("#next").innerHTML=h;
   // Ueberfaellig
   const od=overdueTasks();
-  $("#overdue").innerHTML=od.length?'<div class="card"><div class="k">Überfällig · '+od.length+'</div>'+od.slice(0,6).map(t=>taskRow(t,true)).join("")+(od.length>6?'<button class="link" data-gotab="aufgaben">Alle '+od.length+' ansehen</button>':"")+'</div>':"";
+  $("#overdue").innerHTML=od.length?'<div class="card"><div class="k">Überfällig · '+od.length+'</div>'+od.slice(0,6).map(t=>taskRow(t,true)).join("")+(od.length>6?'<button class="link" data-gotab="mehr" data-sub="aufgaben">Alle '+od.length+' ansehen</button>':"")+'</div>':"";
 }
 
 /* ---------- Reiter: Woche und Tag ---------- */
@@ -1054,59 +1175,61 @@ function renderNachrichten(){
   if(N.fetched)h+='<div class="small">Abgerufen '+esc(String(N.fetched).replace("T"," "))+'</div>';
   $("#t-nachrichten").innerHTML=h;
 }
+const MEHR={cur:store.get("mehr","woche")};
+function renderMehr(){const el=$("#mehr");const subs=[["woche","Woche"],["aufgaben","Aufgaben"],["nachrichten","Nachrichten"],["ueberblick","Überblick"]];
+  el.innerHTML='<div class="subtabs">'+subs.map(([k,n])=>'<button class="'+(MEHR.cur===k?"on":"")+'" data-sub="'+k+'">'+n+'</button>').join("")+'</div><div id="t-woche"></div><div id="t-aufgaben"></div><div id="t-nachrichten"></div><div id="t-ueberblick"></div>';
+  ["woche","aufgaben","nachrichten","ueberblick"].forEach(k=>{$("#t-"+k).style.display=MEHR.cur===k?"block":"none";});
+  if(MEHR.cur==="woche")renderWoche();else if(MEHR.cur==="aufgaben")renderAufgaben();else if(MEHR.cur==="nachrichten")renderNachrichten();else renderUeberblick();}
 function renderUeberblick(){
   const A=APP.data||{};let h='<h2>Überblick</h2>'+quotaHtml();
   if(A.made)h+='<div class="small">Daten vom '+dlabel(ymd(new Date(A.made)))+' '+hm(new Date(A.made))+'</div>';
   if(APP.err)h+='<div class="small err">'+esc(APP.err)+'</div>';
-  const kf=A.conflicts||[];if(kf.length)h+='<div class="card warn"><div class="k">Offene Konflikte · '+kf.length+'</div>'+kf.map(c=>'<div class="li">'+esc((c.date?dlabel(c.date)+": ":"")+c.text)+'</div>').join("")+'<button class="link" data-gotab="jetzt">Entscheiden auf „Jetzt“</button></div>';
-  h+='<div class="k" style="margin-top:14px">Projekte</div>'+((A.projects||[]).map(p=>'<div class="card"><div class="now">'+esc(p.name)+'</div>'+(p.stand?'<div><span class="small">Stand</span> '+esc(p.stand)+'</div>':"")+(p.next?'<div><span class="small">Nächster Schritt</span> <b>'+esc(p.next)+'</b></div>':"")+(p.frist?'<div><span class="small">Frist</span> '+esc(p.frist)+'</div>':"")+(p.quelle?'<div class="small">'+esc(p.quelle)+'</div>':"")+'</div>').join("")||'<div class="small">Noch keine Projektdaten.</div>');
+  const kf=A.conflicts||[];if(kf.length)h+='<div class="card warn"><div class="k b">Offene Konflikte · '+kf.length+'</div>'+kf.map(c=>'<div class="li">'+esc((c.date?dlabel(c.date)+": ":"")+c.text)+'</div>').join("")+'<button class="link" data-gotab="jetzt">Entscheiden auf „Jetzt“</button></div>';
+  h+='<div class="k" style="margin-top:12px">Projekte</div>'+((A.projects||[]).map(p=>'<div class="card"><div style="font-weight:700;font-size:18px">'+esc(p.name)+'</div>'+(p.stand?'<div><span class="small">Stand</span> '+esc(p.stand)+'</div>':"")+(p.next?'<div><span class="small">Nächster Schritt</span> <b>'+esc(p.next)+'</b></div>':"")+(p.frist?'<div><span class="small">Frist</span> '+esc(p.frist)+'</div>':"")+(p.quelle?'<div class="small">'+esc(p.quelle)+'</div>':"")+'</div>').join("")||'<div class="small">Noch keine Projektdaten.</div>');
   h+='<div class="card"><div class="k">Post, braucht Antwort</div>'+((A.mails||[]).map(m=>'<div class="li"><b>'+esc(m.from)+'</b> · '+esc(m.subject)+'<div class="de">'+esc([m.since?"seit "+m.since:"",m.why].filter(Boolean).join(" · "))+'</div></div>').join("")||'<div class="small">Nichts offen.</div>')+'<div class="small">Antworttexte formuliere ich dir im Sekretär-Chat.</div></div>';
   h+='<div class="card"><div class="k">Warteschleife</div>'+((A.waiting||[]).map(w=>'<div class="li"><b>'+esc(w.who)+'</b>: '+esc(w.what)+(w.since?' <span class="small">seit '+esc(w.since)+'</span>':"")+'</div>').join("")||'<div class="small">Du wartest auf nichts.</div>')+'</div>';
+  h+=protoHtml(72);
   if(NAT){let sp={};try{sp=JSON.parse(NAT.spotifyState());}catch(_){}
     let off=[];try{off=JSON.parse(NAT.offlineIds());}catch(_){}
     h+='<div class="card"><div class="k">Android-App '+esc((()=>{try{return NAT.version();}catch(_){return "";}})())+'</div>'+
       '<div class="small">Spotify: '+(sp.connected?"verbunden":(sp.connecting?"verbindet …":"nicht verbunden"))+(sp.err?" · "+esc(sp.err):"")+'</div>'+
       '<div class="small">Offline auf dem Handy: '+(off.length?esc(off.map(x=>dlabel(x.slice(0,10))).join(", ")):"noch nichts")+'</div>'+
-      '<div class="small">Show-Songs für unterwegs: '+(S.lib?(S.lib.saved+" in den Spotify-Lieblingssongs"+(S.lib.failed?", "+S.lib.failed+" ging nicht":"")):"noch nicht gemerkt")+'</div>'+
-      '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button><button id="nlike">Songs merken</button></div>'+updHtml()+'</div>';}
+      '<div class="row" style="margin-top:8px"><button id="nsp">Spotify verbinden</button><button id="npre">Jetzt vorladen</button></div>'+updHtml()+'</div>';}
   if(!NAT&&SP.ready())h+='<div class="card"><div class="k">Spotify-Playlist für unterwegs</div>'+(/playlist-modify/.test(SP.cfg.scopes||"")?
-      '<div class="small">„Inka · Shows“ in deinem Spotify enthält die Songs von heute und morgen. Einmal in Spotify auf Herunterladen tippen, dann laufen sie auch ohne Netz.</div><div class="row" style="margin-top:8px"><button id="plsync">Jetzt aktualisieren</button></div>':
+      '<div class="small">„Inka · Shows“ in deinem Spotify enthält die Songs von heute und morgen.</div><div class="row" style="margin-top:8px"><button id="plsync">Jetzt aktualisieren</button><button id="bsptest">Spotify testen</button></div>':
       '<div class="small">Für die Playlist braucht Inka eine zusätzliche Spotify-Erlaubnis.</div><div class="row" style="margin-top:8px"><button id="plcon">Spotify neu verbinden</button></div>')+'</div>';
-  if(NAT){}else if(WIN)h+='<div class="card"><div class="k">Windows-App</div><div class="small">Die Songs spielt die Spotify-App am PC. Ist sie zu, startet Inka sie. Der PC schläft während der Show nicht ein.</div>'+updHtml()+'</div>';
+  if(NAT){}else if(WIN)h+='<div class="card"><div class="k">Windows-App</div><div class="small">Die Songs spielt die Spotify-App am PC. Ist sie zu, startet Inka sie.</div>'+updHtml()+'</div>';
   else h+='<div class="card"><div class="k">Android-App</div><div class="small">Läuft auch ohne Chrome weiter, verbindet Spotify nach Abbrüchen neu und lädt Shows für unterwegs vor.</div>'+
       '<div class="row" style="margin-top:8px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/inka.apk">App laden</a><a class="btn pri" href="inka://open?k='+encodeURIComponent(KEY.raw||"")+'">In der App öffnen</a></div>'+
-      '<div class="small" style="margin-top:6px">Erst laden und installieren, dann „In der App öffnen“ tippen (überträgt den Schlüssel).</div>'+
-      '<div class="row" style="margin-top:10px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/Inka-Setup.exe">Windows-Setup laden</a></div>'+
-      '<div class="small" style="margin-top:6px">Am PC: Inka-Setup.exe starten und durchklicken. Danach hier am PC „In der App öffnen“ oder den Schlüssel-Link in Inka einfügen.</div></div>';
-  const vol=store.get("vol",0.5);
+      '<div class="row" style="margin-top:10px"><a class="btn" href="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/Inka-Setup.exe">Windows-Setup laden</a></div></div>';
   h+='<div class="card"><div class="k">Einstellungen</div>'+
-    '<label class="sl">Lautstärke Inka im Verhältnis zur Musik: <b id="volv">'+Math.round(vol*100)+'%</b></label><input type="range" id="vol" min="0.2" max="1" step="0.05" value="'+vol+'">'+
-    '<label class="sl">Sprechtempo: <b id="ratev">'+Math.round(RATE()*100)+'%</b></label><input type="range" id="rate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'">'+
-    '<div class="si"><span>Gespräch nach der Show</span><button id="fauto">'+(store.get("autochat",true)?"an":"aus")+'</button></div>'+
+    '<div class="si"><span>Klang (Stimme zu Musik, Tempo, Bass, Höhen)</span><button id="fklang">öffnen</button></div>'+
+    '<div class="si"><span>Gespräch nach der Show von selbst</span><button id="fauto">'+(store.get("autochat",false)?"an":"aus")+'</button></div>'+
+    '<div class="si"><span>Diktat ans Sekretariat</span><button id="fdik">aufnehmen</button></div>'+
     '<div class="si"><span>Einrichtung (Spotify, Mikro, Standort)</span><button id="fset">zeigen</button></div>'+
     '<div class="si"><span>Daten neu laden</span><button id="frel">laden</button></div>'+
     '<div class="si"><span>Schlüssel-Link für ein anderes Gerät (geheim halten)</span><button id="fkey">kopieren</button></div>'+
     '<div class="si"><span>Neue Show erstellen</span><button class="pri" id="fnew">bestellen</button></div>'+
-    '<div class="si"><span>App aktualisieren (neueste Fassung)</span><button class="pri" id="fupd">aktualisieren</button></div>'+
+    '<div class="si"><span>App aktualisieren (neueste Fassung)</span><button id="fupd">aktualisieren</button></div>'+
     '<div class="small" style="margin-top:8px"><a href="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN" target="_blank" rel="noopener">Sekretariat-App in claude.ai (Reserve)</a></div></div>';
+  if(NOTES.length)h+='<div class="card"><div class="k">Meldungen</div>'+NOTES.slice().reverse().slice(0,12).map(n=>'<div class="li small"><span class="mono">'+hm(new Date(n.t))+'</span> '+esc(n.m)+'</div>').join("")+'</div>';
   h+='<div class="small" style="margin:8px 0 20px">App-Stand: '+esc(APPV)+'</div>';
   $("#t-ueberblick").innerHTML=h;
-  const rt=$("#rate");rt.oninput=()=>{store.set("rate",+rt.value);applyRate();$("#ratev").textContent=Math.round(rt.value*100)+"%";};
-  const v=$("#vol");v.oninput=()=>{store.set("vol",+v.value);AUD.volume=+v.value;$("#volv").textContent=Math.round(v.value*100)+"%";};
-  $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",true));render();};
+  $("#fklang").onclick=()=>sheetKlang();
+  $("#fauto").onclick=()=>{store.set("autochat",!store.get("autochat",false));render();};
+  $("#fdik").onclick=()=>sheetDiktat();
   $("#fset").onclick=()=>{store.set("showSetup",true);setTab("jetzt");};
-  $("#frel").onclick=()=>{loadApp();loadShow();toast("Lade neu …");};
+  $("#frel").onclick=()=>{loadApp();loadShow();note("Lade neu …");};
   $("#fnew").onclick=()=>sheetShowOrder();
   updWire();
-  if(NAT){const a=$("#nsp");if(a)a.onclick=()=>{try{NAT.spotifyConnect();toast("Verbinde mit Spotify …");setTimeout(renderUeberblick,4000);}catch(_){}};
-    const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();toast("Lade Shows vor …");}catch(_){}};
-    const l=$("#nlike");if(l)l.onclick=()=>{syncLiked(true);toast("Merke die Songs von heute und morgen in Spotify …");};}
-  {const a=$("#plsync");if(a)a.onclick=async()=>{toast("Aktualisiere Playlist …");if(!(await syncPlaylist(true)))toast("Playlist ging nicht, siehe Protokoll.");};
-   const b=$("#plcon");if(b)b.onclick=()=>SP.connect();}
+  if(NAT){const a=$("#nsp");if(a)a.onclick=()=>{try{NAT.spotifyConnect();note("Verbinde mit Spotify …");setTimeout(renderMehr,4000);}catch(_){}};
+    const b=$("#npre");if(b)b.onclick=()=>{try{NAT.prefetch();note("Lade Shows vor …");}catch(_){}};}
+  {const a=$("#plsync");if(a)a.onclick=async()=>{if(!(await syncPlaylist(true)))toast("Playlist ging nicht, siehe Meldungen.",5000,true);};
+   const b=$("#plcon");if(b)b.onclick=()=>SP.connect();const c=$("#bsptest");if(c)c.onclick=()=>SP.test();}
   {const k=$("#fkey");if(k)k.onclick=async()=>{const link="https://raw.githack.com/FelixPfahl/theidealcity/inka/index.html#k="+KEY.raw;
-    try{await navigator.clipboard.writeText(link);toast("Schlüssel-Link kopiert. Nur an dich selbst schicken.");}
+    try{await navigator.clipboard.writeText(link);toast("Schlüssel-Link kopiert. Nur an dich selbst schicken.",5000,true);}
     catch(_){prompt("Schlüssel-Link (kopieren):",link);}};}
-  $("#fupd").onclick=()=>{toast("Lade neueste Fassung …");setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
+  $("#fupd").onclick=()=>{setTimeout(()=>location.replace(location.origin+location.pathname+"?v="+Date.now()),300);};
 }
 
 /* ---------- Sheet: Eintrag, neue Aufgabe, Diktat ---------- */
@@ -1211,12 +1334,15 @@ function dikStart(){
 }
 
 /* ---------- Reiter-Steuerung ---------- */
-function setTab(t){TAB.cur=t;store.set("tab",t);if(t!=="woche")TAB.day="";if(t==="unterwegs"&&!D.open){D.open=true;D.locate();}render();window.scrollTo(0,0);}
+if(["woche","aufgaben","nachrichten","ueberblick"].includes(TAB.cur)){MEHR.cur=TAB.cur;TAB.cur="mehr";}
+if(!["jetzt","show","unterwegs","mehr"].includes(TAB.cur))TAB.cur="jetzt";
+function setTab(t,sub){TAB.cur=t;store.set("tab",t);if(sub){MEHR.cur=sub;store.set("mehr",sub);}if(t!=="mehr"||MEHR.cur!=="woche")TAB.day="";if(t==="unterwegs"&&!D.open){D.open=true;D.locate();}render();window.scrollTo(0,0);}
 document.addEventListener("click",ev=>{
-  const g=ev.target.closest("[data-gotab]");if(g){setTab(g.dataset.gotab);return;}
+  const g=ev.target.closest("[data-gotab]");if(g){setTab(g.dataset.gotab,g.dataset.sub);return;}
+  const sb=ev.target.closest(".subtabs [data-sub]");if(sb){MEHR.cur=sb.dataset.sub;store.set("mehr",MEHR.cur);TAB.day="";render();window.scrollTo(0,0);return;}
   const ns=ev.target.closest("[data-nsel]");if(ns){NEWS.sel=+ns.dataset.nsel;NEWS.sec="";store.set("newssel",NEWS.sel);renderNachrichten();return;}
   const nc=ev.target.closest("[data-nsec]");if(nc){NEWS.sec=nc.dataset.nsec;renderNachrichten();return;}
-  const od=ev.target.closest("[data-openday]");if(od){TAB.day=od.dataset.openday;TAB.cur="woche";store.set("tab","woche");render();window.scrollTo(0,0);return;}
+  const od=ev.target.closest("[data-openday]");if(od){TAB.day=od.dataset.openday;TAB.cur="mehr";MEHR.cur="woche";store.set("tab","mehr");store.set("mehr","woche");render();window.scrollTo(0,0);return;}
   if(ev.target.closest("[data-back]")){TAB.day="";render();return;}
   const f=ev.target.closest("[data-filter]");if(f){const k=f.dataset.filter;FILTER=FILTER.includes(k)?FILTER.filter(x=>x!==k):FILTER.concat([k]);store.set("filter",FILTER);render();return;}
   const td=ev.target.closest("[data-tdone]");if(td){const t=allTasks().find(x=>x.key===td.dataset.tdone);if(t&&!pendFor(t.key).some(p=>p.tool==="erledigen"))doneTask(t);return;}
@@ -1229,23 +1355,26 @@ document.addEventListener("click",ev=>{
   const dt=ev.target.closest("[data-dtag]");if(dt){DIK.tag=dt.dataset.dtag;store.set("diktTag",DIK.tag);document.querySelectorAll("[data-dtag]").forEach(b=>b.classList.toggle("on",b.dataset.dtag===DIK.tag));return;}
   if(ev.target.closest("[data-close]")){closeSheet();return;}
 });
-
+/* Update-Leiste (U22): klein oben, nie ein Dialog */
+function updBar(){const u=updState();const el=$("#upd");let txt="",ok=false;
+  if(NAT&&u&&u.available){txt="Version "+(u.versionName||"")+" bereit";ok=true;}
+  else if(WIN&&u&&u.state==="bereit"){txt="Version "+(u.version||"")+" bereit";ok=true;}
+  el.classList.toggle("on",ok);if(!ok)return;
+  el.innerHTML='<span>'+esc(txt)+'</span><button id="updbar">'+(playingNow()?"nach der Show":"installieren")+'</button>';
+  $("#updbar").onclick=()=>{if(playingNow()){toast("Die Show läuft gerade. Das Update kommt danach.",4000,true);return;}if(NAT){try{NAT.updateInstall();}catch(_){}}else if(WIN)WIN.post({type:"update-install"});};}
 function render(){
-  document.querySelectorAll("section").forEach(x=>x.classList.toggle("on",x.id==="t-"+TAB.cur));
+  document.querySelectorAll("main>section").forEach(x=>x.classList.toggle("on",x.id==="t-"+TAB.cur));
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===TAB.cur));
-  if(!KEY.raw){TAB.cur="jetzt";document.querySelectorAll("section").forEach(x=>x.classList.toggle("on",x.id==="t-jetzt"));renderSetup();return;}
-  try{if(TAB.cur==="jetzt"){renderSetup();renderJetzt();renderShow();renderSent();
-    const sec=$("#t-jetzt"),sh=$("#show"),morning=new Date().getHours()<12&&S.doc&&!S.ended;if(morning&&sec.children[1]!==sh)sec.insertBefore(sh,$("#fristen"));if(!morning&&sh.nextElementSibling!==$("#overdue"))sec.insertBefore(sh,$("#overdue"));}
-  else if(TAB.cur==="woche")renderWoche();
-  else if(TAB.cur==="aufgaben")renderAufgaben();
-  else if(TAB.cur==="unterwegs")renderDeps();
-  else if(TAB.cur==="nachrichten")renderNachrichten();
-  else if(TAB.cur==="ueberblick")renderUeberblick();}catch(e){console.error(e);diag("render-fehler",{tab:TAB.cur,e:String(e&&e.message||e).slice(0,120)});}
-  if(!S.doc&&TAB.cur!=="jetzt"){const d=new Date();$("#title").textContent=WD[d.getDay()]+", "+d.getDate()+"."+(d.getMonth()+1)+".";}
+  if(!KEY.raw){TAB.cur="jetzt";document.querySelectorAll("main>section").forEach(x=>x.classList.toggle("on",x.id==="t-jetzt"));renderSetup();renderMini();return;}
+  try{updBar();
+    if(TAB.cur==="jetzt"){renderSetup();renderHero();renderJetzt();renderSent();renderMini();}
+    else if(TAB.cur==="show")renderShow();
+    else if(TAB.cur==="unterwegs"){renderDeps();renderMini();}
+    else if(TAB.cur==="mehr"){renderMehr();renderMini();}}catch(e){console.error(e);diag("render-fehler",{tab:TAB.cur,e:String(e&&e.message||e).slice(0,120)});}
+  if(!S.doc||TAB.cur!=="show"){const d=new Date();$("#title").textContent=WD[d.getDay()]+", "+d.getDate()+"."+(d.getMonth()+1)+".";$("#subt").textContent=TAB.cur==="jetzt"?"Dein Tag":TAB.cur==="unterwegs"?"Abfahrten":TAB.cur==="mehr"?({woche:"Woche",aufgaben:"Aufgaben",nachrichten:"Perlentaucher",ueberblick:"Überblick"})[MEHR.cur]:"";}
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 $("#hinka").onclick=()=>VC.start();
-$("#mic").onclick=()=>sheetDiktat();
 
 /* ---------- Start ---------- */
 (async()=>{await SP.handle();await permCheck();render();await Promise.all([loadShow(),loadApp()]);loadQuit();setInterval(()=>{if(!document.hidden)loadQuit();},180000);
@@ -1261,8 +1390,8 @@ function armSong(st){if(!SONG.on||!SONG.track)return;clearTimeout(SONG.timer);co
 function appLost(st){if(SONG.lost)return;SONG.lost=true;clearTimeout(SONG.timer);diag("spotify-verloren",{err:st&&st.err,pos:st&&st.pos});
   /* Josef 2.11.2026: "bau das wirklich stabil". Die App hält Spotify selbst wach (ab Android-App 1.1.4). Kommt die Verbindung binnen 60 s nicht, geht die Show ohne diesen Song weiter. */
   /* Hat am 2.11. im Zug geholfen: Spotify einmal nach vorne holen, wenn Inka gerade sichtbar ist (danach verbindet Inka neu). */
-  if(NAT&&typeof NAT.openSpotify==="function"&&SONG.woke!==SONG.k&&document.visibilityState==="visible"){SONG.woke=SONG.k;setTimeout(()=>{try{NAT.openSpotify();diag("spotify-wecken",{});}catch(_){}},1500);toast("Spotify antwortet nicht, ich wecke es kurz. Danach zurück zu Inka.",9000);}
-  else toast("Spotify antwortet gerade nicht. Ich versuche es weiter, nach einer Minute geht es ohne diesen Song weiter.",9000);
+  /* Josef 8.11.2026 (U20): nie von selbst zu Spotify springen. Im Player erscheint ein Knopf "Spotify wecken". */
+  note("Spotify antwortet gerade nicht. Nach einer Minute geht es ohne diesen Song weiter.");
   meta();renderShow();}
 if(NAT){
   try{NAT.setClientId(SP_CLIENT);if(KEY.raw)NAT.setKey(KEY.raw);}catch(_){}
@@ -1299,12 +1428,12 @@ window.__inkaNative=function(o){try{
       else if(o.ev==="gesperrt"){diag("song-fremder-titel",{want:SONG.track.uri,got:o.uri||"",name:o.name||""});toast("Spotify spielte etwas anderes als „"+SONG.track.name+"“. Weiter ohne diesen Song.",9000);SONG.finish("nicht-verfuegbar");}
       else if(o.ev==="pausiert"){SONG.held=true;clearTimeout(SONG.timer);diag("pause",{why:"spotify"});render();meta();}
       else if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
-  if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)toast("Kein Netz. Inka spricht weiter, Songs warten.",6000);renderShow();return;}
-  if(o.type==="update"){S.upd=o;if(o.state==="bereit")toast("Inka-Update "+(o.version||"")+" ist bereit.");if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
+  if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)note("Kein Netz. Inka spricht weiter, Songs warten.");renderShow();return;}
+  if(o.type==="update"){S.upd=o;if(o.state==="bereit")toast("Inka-Update "+(o.version||"")+" ist bereit.");if(TAB.cur==="mehr")try{renderMehr();}catch(_){}return;}
   if(o.type==="lib"){S.lib=o;diag("lieblingssongs",{ok:o.saved,bad:o.failed,e:o.err});
     if(o.saved>0){if(S.likeSig)store.set("likesig",S.likeSig);toast(o.saved+" Show-Songs in deinen Spotify-Lieblingssongs. Dort einmal „Herunterladen“ einschalten, dann laufen sie auch ohne Netz.",9000);}
     else toast("Songs merken ging nicht ("+(o.err||"Spotify")+").");return;}
-  if(o.type==="offline"){S.offline=o.ids||[];if(TAB.cur==="ueberblick")try{renderUeberblick();}catch(_){}return;}
+  if(o.type==="offline"){S.offline=o.ids||[];if(TAB.cur==="mehr")try{renderMehr();}catch(_){}return;}
   if(o.type==="app"&&o.ev==="vorne"){if(S.waitSong!=null&&!SONG.on){const k=S.waitSong;S.waitSong=null;SONG.start(k);}return;}
 }catch(e){console.log("native",e);}};
 /* Pause und Weiter von Sperrbildschirm, Bluetooth und Player: ein Song bleibt an seiner Stelle */
@@ -1345,18 +1474,19 @@ function trLines(){const d=S.doc;if(!d)return [];const sig=(d.id||d.day)+":"+(d.
     G.forEach((g,i)=>{const c=talk[i];if(!c||!g||!g.length)return;const nx=all[all.indexOf(c)+1];const end=nx?nx.start:(d.duration||c.start+60);
       const tot=g.reduce((a,b)=>a+b.x.length,0)||1;let t=c.start;g.forEach(x=>{L.push({t,sp:x.sp,x:x.x});t+=(end-c.start)*x.x.length/tot;});});}
   S.tr=L;S.trFor=sig;S.trK=-2;return L;}
-function trHtml(){const L=trLines();if(!L.length)return "";
-  return '<details class="chs" id="trdet"'+(S.trOpen?" open":"")+'><summary class="small">Mitlesen</summary><div id="trbox" class="trbox">'+
-    L.map((l,i)=>'<div class="trl" data-tr="'+i+'"><b>'+esc(SPN[l.sp]||l.sp)+'</b> '+esc(l.x)+'</div>').join("")+'</div></details>';}
-function trTick(force){if(!S.trOpen)return;const L=S.tr||[];if(!L.length)return;const t=AUD.currentTime;let k=-1;
-  for(let i=0;i<L.length;i++){if(L[i].t<=t+0.05)k=i;else break;}
-  if(k===S.trK&&!force)return;S.trK=k;const box=$("#trbox");if(!box)return;box.querySelectorAll(".trl.cur").forEach(n=>n.classList.remove("cur"));
-  const n=box.querySelector('[data-tr="'+k+'"]');if(n){n.classList.add("cur");if(Date.now()-(S.trUser||0)>8000)box.scrollTop=Math.max(0,n.offsetTop-box.offsetTop-box.clientHeight*0.3);}}
-function trWire(){const det=$("#trdet");if(!det)return;det.addEventListener("toggle",e=>{S.trOpen=e.target.open;if(S.trOpen)trTick(true);});
+function openTr(){const L=trLines();const f=$("#ftr");if(!L.length){toast("Für diese Show gibt es keinen Text.",4000,true);return;}
+  f.innerHTML='<div class="fh"><h3>Mitlesen</h3><button class="link" data-fclose="ftr">Schließen</button></div><div class="fb" id="trbox">'+L.map((l,i)=>'<div class="trl" data-tr="'+i+'"><b>'+esc(SPN[l.sp]||l.sp)+'</b>'+esc(l.x)+'</div>').join("")+'</div>';
+  f.classList.add("on");S.trOpen=true;S.trK=-2;
   const box=$("#trbox");["touchstart","wheel","mousedown"].forEach(ev=>box.addEventListener(ev,()=>{S.trUser=Date.now();},{passive:true}));
-  box.querySelectorAll("[data-tr]").forEach(n=>n.onclick=()=>{const l=S.tr[+n.dataset.tr];if(!l)return;S.trUser=0;ensureAudio().then(ok=>{if(!ok)return;AUD.currentTime=l.t;
-    const c=chapters();for(const k in S.songDone)if(c[k]&&c[k].start>l.t)delete S.songDone[k];trTick(true);});});
+  box.querySelectorAll("[data-tr]").forEach(n=>n.onclick=()=>{const l=S.tr[+n.dataset.tr];if(!l)return;S.trUser=0;ensureAudio().then(ok=>{if(!ok)return;if(SONG.on)SONG.finish("sprung",true);AUD.currentTime=l.t;
+    const c=chapters();for(const k in S.songDone)if(c[k]&&c[k].start>l.t)delete S.songDone[k];if(AUD.paused)playShow();trTick(true);});});
   trTick(true);}
+function trTick(force){const f=$("#ftr");if(!f||!f.classList.contains("on")){S.trOpen=false;return;}const L=S.tr||[];if(!L.length)return;const t=AUD.currentTime;let k=-1;
+  for(let i=0;i<L.length;i++){if(L[i].t<=t+0.05)k=i;else break;}
+  if(k===S.trK&&!force)return;S.trK=k;const box=$("#trbox");if(!box)return;
+  box.querySelectorAll(".trl").forEach((n,i)=>{n.classList.toggle("cur",i===k);n.classList.toggle("past",i<k);});
+  const n=box.querySelector('[data-tr="'+k+'"]');if(n&&Date.now()-(S.trUser||0)>8000)box.scrollTop=Math.max(0,n.offsetTop-box.offsetTop-box.clientHeight*0.35);}
+function trWire(){}
 AUD.addEventListener("timeupdate",()=>trTick(false));
 
 /* ===== Spotify-Playlist "Inka · Shows" (Josef 1.11.2026: Songs offline, z. B. im Zug) =====

@@ -254,7 +254,7 @@ object Voice {
                 if (wasPre) SpotifyCtl.duck(c, false)
                 else if (spotifyOk()) { activeK = s.k; activeUri = s.uri; activeAt = System.currentTimeMillis(); SpotifyCtl.play(c, s.uri, 0L) }
                 else { emit("song-skip", JSONObject().put("k", s.k)); play(false); return }
-                if (activeK >= 0) { activeAt = System.currentTimeMillis(); Hub.main.postDelayed({ watchdog() }, 61000) }
+                if (activeK >= 0) { activeAt = System.currentTimeMillis(); Hub.main.postDelayed({ watchdog() }, 31000) }
                 emit("song-stop", JSONObject().put("k", s.k).put("uri", s.uri).put("pre", wasPre))
                 return
             }
@@ -274,9 +274,9 @@ object Voice {
     /** Die Seite hat den Song übernommen oder beendet (Stop, Sprung, Pause). */
     fun onSongCleared() { if (activeK >= 0 && !pre) { activeK = -1; activeUri = "" } }
 
-    /** Wächter: kommt Spotify an einer Songstelle nicht in Gang, nach 60 s ohne Song weiter. */
+    /** Wächter: kommt Spotify an einer Songstelle nicht in Gang, nach 30 s still ohne Song weiter (Josef 8.11.2026, U19). */
     fun watchdog() {
-        if (activeK >= 0 && !pre && !playing() && System.currentTimeMillis() - activeAt > 60000 && !SpotifyCtl.isWantPlaying()) {
+        if (activeK >= 0 && !pre && !playing() && System.currentTimeMillis() - activeAt > 30000 && !SpotifyCtl.isWantPlaying()) {
             val k = activeK; activeK = -1; activeUri = ""
             Hub.diag("n-song-ohne-spotify", JSONObject().put("k", k))
             play(false); emit("song-resume", JSONObject().put("k", k).put("why", "spotify-fehlt"))

@@ -73,6 +73,8 @@ class PlaybackService : Service() {
                 override fun onPause() { Hub.js("window.appPause&&appPause('sperrbild')") }
                 override fun onSkipToNext() { Hub.js("window.nextCh&&nextCh()") }
                 override fun onSkipToPrevious() { Hub.js("window.prevCh&&prevCh()") }
+                // Josef 8.11.2026 (U17): 15 Sekunden zurück vom Sperrbildschirm und aus der Benachrichtigung
+                override fun onRewind() { Hub.js("window.back15&&back15()") }
                 override fun onStop() { Hub.js("window.appPause&&appPause('stop')") }
             })
             isActive = true
@@ -145,7 +147,7 @@ class PlaybackService : Service() {
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Inka").build())
         session.setPlaybackState(PlaybackStateCompat.Builder()
             .setActions(PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_PAUSE or PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or PlaybackStateCompat.ACTION_STOP)
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS or PlaybackStateCompat.ACTION_REWIND or PlaybackStateCompat.ACTION_STOP)
             .setState(if (playing) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1f)
             .build())
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
@@ -156,10 +158,11 @@ class PlaybackService : Service() {
             .setSmallIcon(R.drawable.ic_stat_inka)
             .setContentTitle(title).setContentText(sub).setContentIntent(open)
             .setOngoing(true).setSilent(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(act(android.R.drawable.ic_media_previous, "Zurück", PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS))
+            // Josef 8.11.2026 (U17): Titel von Kapitel oder Song, 15 s zurück, Play/Pause, Kapitel vor
+            .addAction(act(android.R.drawable.ic_media_rew, "15 s zurück", PlaybackStateCompat.ACTION_REWIND))
             .addAction(if (playing) act(android.R.drawable.ic_media_pause, "Pause", PlaybackStateCompat.ACTION_PAUSE)
                        else act(android.R.drawable.ic_media_play, "Weiter", PlaybackStateCompat.ACTION_PLAY))
-            .addAction(act(android.R.drawable.ic_media_next, "Nächstes", PlaybackStateCompat.ACTION_SKIP_TO_NEXT))
+            .addAction(act(android.R.drawable.ic_media_next, "Kapitel vor", PlaybackStateCompat.ACTION_SKIP_TO_NEXT))
             .setStyle(MediaStyle().setMediaSession(session.sessionToken).setShowActionsInCompactView(0, 1, 2))
             .build()
     }

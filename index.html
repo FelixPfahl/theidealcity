@@ -1407,14 +1407,14 @@ if(NAT){
     const el=Date.now()-SONG.started;
     SONG.last=(st.connected?(st.paused?"pausiert ":"spielt "):"verbindet neu ")+Math.round((st.pos||0)/1000)+" s";
     if(!st.connected){
-      if(/Client-ID|Spotify-App fehlt|Authentication|NotLoggedIn|UserNotAuthorized|Unsupported/i.test(st.err||"")&&el>6000){toast("Spotify geht nicht ("+st.err+"). Inka macht ohne Song weiter.",9000);SONG.finish("spotify-fehler");return;}
+      if(/Client-ID|Spotify-App fehlt|Authentication|NotLoggedIn|UserNotAuthorized|Unsupported/i.test(st.err||"")&&el>6000){note("Spotify geht nicht ("+st.err+"). Inka macht ohne Song weiter.");SONG.finish("spotify-fehler");return;}
       if(st.connecting&&el<20000&&!SONG.lost){renderShow();return;}
-      if(el>60000){diag("song-ohne-spotify",{err:st.err||"",online:navigator.onLine});toast(navigator.onLine?"Spotify nicht erreichbar, weiter ohne diesen Song.":"Kein Netz und keine Verbindung zu Spotify, weiter ohne diesen Song. Tipp für den Zug: in Spotify den Offlinemodus einschalten.",10000);SONG.finish("spotify-fehler");return;}
+      if(el>30000){diag("song-ohne-spotify",{err:st.err||"",online:navigator.onLine});note(navigator.onLine?"Spotify nicht erreichbar, weiter ohne diesen Song.":"Kein Netz und keine Verbindung zu Spotify, weiter ohne diesen Song.");SONG.finish("spotify-fehler");return;}
       appLost(st);return;}
     /* Josef 2.11.2026: gesperrter Song (in Deutschland nicht verfügbar), Spotify spielte stattdessen alte Titel. Läuft nach 12 s ein anderer Titel als bestellt, Song überspringen. */
-    const nm=x=>String(x||"").toLowerCase().replace(/\s*[-(\[].*$/,"").replace(/[^a-z0-9à-ÿ]/g,"");if(st.uri&&st.uri!==SONG.track.uri&&!SONG.pre&&el>12000&&!SONG.lost&&!(st.name&&nm(st.name)===nm(SONG.track.name))){diag("song-nicht-verfuegbar",{want:SONG.track.uri,got:st.uri});toast("„"+SONG.track.name+"“ ist bei Spotify gerade nicht abspielbar, weiter ohne ihn.",9000);SONG.finish("nicht-verfuegbar");return;}
+    const nm=x=>String(x||"").toLowerCase().replace(/\s*[-(\[].*$/,"").replace(/[^a-z0-9à-ÿ]/g,"");if(st.uri&&st.uri!==SONG.track.uri&&!SONG.pre&&el>12000&&!SONG.lost&&!(st.name&&nm(st.name)===nm(SONG.track.name))){diag("song-nicht-verfuegbar",{want:SONG.track.uri,got:st.uri});note("„"+SONG.track.name+"“ ist bei Spotify gerade nicht abspielbar, weiter ohne ihn.");SONG.finish("nicht-verfuegbar");return;}
     if(st.uri===SONG.track.uri){if(st.pos>0)SONG.lastPos=st.pos;if(st.dur)SONG.dur=st.dur;}
-    if(SONG.lost&&st.uri===SONG.track.uri&&!st.paused){SONG.lost=false;diag("spotify-wieder",{pos:st.pos});toast("Spotify wieder da, weiter geht's.");armSong(st);meta();}
+    if(SONG.lost&&st.uri===SONG.track.uri&&!st.paused){SONG.lost=false;diag("spotify-wieder",{pos:st.pos});note("Spotify wieder da, weiter geht's.");armSong(st);meta();}
     if(st.ended||(st.uri===SONG.track.uri&&st.dur&&st.pos>=st.dur-2500)){SONG.finish("ende");return;}
     renderShow();
   };
@@ -1425,7 +1425,7 @@ window.__inkaNative=function(o){try{
   if(!o||!o.type)return;
   if(o.type==="sp"){S.spState=o;if(SONG.on&&!SONG.held&&SONG.track){
       if(o.ended&&o.want&&o.want===SONG.track.uri&&!SONG.pre){SONG.finish("ende");}
-      else if(o.ev==="gesperrt"){diag("song-fremder-titel",{want:SONG.track.uri,got:o.uri||"",name:o.name||""});toast("Spotify spielte etwas anderes als „"+SONG.track.name+"“. Weiter ohne diesen Song.",9000);SONG.finish("nicht-verfuegbar");}
+      else if(o.ev==="gesperrt"){diag("song-fremder-titel",{want:SONG.track.uri,got:o.uri||"",name:o.name||""});note("Spotify spielte etwas anderes als „"+SONG.track.name+"“. Weiter ohne diesen Song.");SONG.finish("nicht-verfuegbar");}
       else if(o.ev==="pausiert"){SONG.held=true;clearTimeout(SONG.timer);diag("pause",{why:"spotify"});render();meta();}
       else if(!o.connected&&o.ev==="verloren")appLost(o);else if(o.connected&&SONG.lost)SONG.check();}return;}
   if(o.type==="net"){S.online=o.online;diag("netz",{online:o.online});if(!o.online)note("Kein Netz. Inka spricht weiter, Songs warten.");renderShow();return;}

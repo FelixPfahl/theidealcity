@@ -14,6 +14,8 @@ Sprecherzeilen `INKA:`, `WAGNER:`, `SIGMA:`; Klänge mit `KLANG:` (siehe unten);
 - Die Welt lebt mit: Das Labor ist Wagners Keller mit dem Raster und Sigmas Glas. Draußen die 2180er: Gojira gräbt nachts Monumente ein (bewahrend, nie zerstörend), der Konzern Nil, Werbung, Straßen, Krähen. Pro Show 2 bis 4 kleine Weltdetails, beiläufig erzählt (Inka sieht es vom Fenster aus), ein Detail darf am Schluss wiederkehren.
 - Josefs Alltag (München 2026) und die Welt der Figuren stehen nebeneinander, ohne Erklärung. Keine Spoiler aus dem Finale.
 - Ortskunde stimmt: Laufstrecken an der Isar oder im Englischen Garten, nicht "am Kanal".
+- **Kunstshow für Erwachsene (Josef 8.11.2026): brutale Inhalte und Schimpfwörter sind ausdrücklich erlaubt.** Wagners Grausamkeit, X Æ A-13s Flüche, Inkas Schärfe dürfen voll ausgespielt werden. Grenzen bleiben: keine Angriffe auf echte Personen aus Josefs Leben, keine Herabsetzung von Gruppen, keine Gewalt gegen Opfer aus den Nachrichten.
+- Hört jemand mit (z. B. Alina, Josefs Freundin, 8.11.2026): Inka duzt und spricht die Person immer wieder an, Wagner siezt sie als "Probandin"; nichts Persönliches über sie erfinden.
 
 ## Ablauf
 1. `## [show] Im Labor`: **Einstieg mit Soundscape und Skit mit allen dreien** (ca. 45 bis 60 Sekunden), z. B. `KLANG: labor 6`, `WAGNER: Licht.`, `KLANG: neon`, dann eine kleine Szene zu dritt mit einem Motiv, das später wiederkehrt. Danach Begrüßung (Wochentag, Datum, Besonderheiten wie Feiertag oder Ferien) und ein Satz zum Charakter des Tages. Ansage des ersten Songs im Gespräch.

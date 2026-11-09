@@ -18,6 +18,8 @@ import org.json.JSONObject
  *  - Dreht Josef selbst an der Lautstärke, gilt seine Einstellung und der Übergang hört sofort auf.
  */
 object Bed {
+    /** Josef 9.11.2026: Sprache beim Übergang auf 120 Prozent (+1,6 dB), solange der Song darunter läuft. */
+    private const val BOOST_DB = 1.58f
     @Volatile var active = false; private set
     private var ctx: Context? = null
     private var orig = -1          // Josefs Medienlautstärke vor dem Übergang
@@ -114,7 +116,7 @@ object Bed {
         try { a.setStreamVolume(AudioManager.STREAM_MUSIC, idx, 0) } catch (_: Exception) {}
         setTo = idx
         // Mit eigenem Sprachkanal trifft die Medienlautstärke nur Spotify: kein Ausgleich nötig
-        Voice.setComp(if (Voice.ownChannel()) 0f else (origDb - dbAt(a, idx, dev)).coerceIn(0f, 24f))
+        Voice.setComp(if (Voice.ownChannel()) BOOST_DB else (origDb - dbAt(a, idx, dev)).coerceIn(0f, 24f))
     }
 
     /** Songstelle: Inka schweigt, Song in 3 s auf Josefs Lautstärke. */

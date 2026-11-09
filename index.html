@@ -515,8 +515,8 @@ function radioTest(){
   const x=c[i],pre=preFor(x);if(SONG.on)SONG.finish("sprung",true);
   Object.assign(RTEST,{on:true,back:t,k:i});S.songDone[i]=false;
   AUD.currentTime=Math.max(0,x.start-pre-3);try{const r=AUD.play();if(r&&r.catch)r.catch(e=>diag("teppich-test-fehler",{e:String(e&&e.message||e)}));}catch(_){}diag("teppich-test",{k:i,pre:Math.round(pre*10)/10,bed:BED()});
-  const ms=((pre+3)/RATE()+9)*1000;toast("Probelauf läuft, etwa "+Math.round(ms/1000)+" s.",5000,true);
-  RTEST.timer=setTimeout(endRadioTest,ms);}
+  /* Josef 9.11.2026: "die Songs hören nach ein paar Sekunden auf". Der Probelauf bricht den Song nicht mehr ab, die Show läuft ab hier einfach weiter. */
+  toast("Probelauf: die letzten Sätze vor dem Song, dann der Übergang. Die Show läuft danach normal weiter.",6000,true);RTEST.on=false;}
 function endRadioTest(){if(!RTEST.on)return;RTEST.on=false;clearTimeout(RTEST.timer);
   try{if(SONG.on)SONG.finish("sprung",true);}catch(_){}try{NAT.spotifyStop();}catch(_){}
   try{AUD.pause();}catch(_){}S.songDone[RTEST.k]=false;AUD.currentTime=RTEST.back;render();
@@ -1149,7 +1149,7 @@ function sheetKlang(){const vol=store.get("vol",0.5);
       
       kanalHtml()+
       '<div class="row" style="margin-top:8px"><button class="pri" id="btest">Übergang testen</button></div>'+
-      '<div class="small" style="margin-top:6px">Probelauf mit dem nächsten Song der Show: die letzten Sätze vor dem Song, dann der Übergang. Danach geht es an der alten Stelle weiter.</div>'
+      '<div class="small" style="margin-top:6px">Probelauf mit dem nächsten Song der Show: die letzten Sätze vor dem Song, dann der Übergang. Danach läuft die Show von dort normal weiter.</div>'
      :'<div class="small" style="margin-top:10px">Der Radio-Übergang (Song startet leise unter der Anmoderation) ist immer an.</div>'));
   {const b=$("#bed");if(b)b.oninput=()=>{try{NAT.radioBed(+b.value);}catch(_){}$("#bedv").textContent=b.value+" dB";};const t=$("#btest");if(t)t.onclick=()=>{closeSheet();radioTest();};
    kanalWire();

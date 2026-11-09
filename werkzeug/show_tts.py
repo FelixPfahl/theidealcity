@@ -243,7 +243,7 @@ def soundscape(spec):
 # Raster-FM-Teppich (Josef 9.11.2026, "eigener Teppich im Sprachtrack"): Unter dem letzten Satz vor jedem Song liegt ein
 # leiser, fest eingemischter Klangteppich. Spotify startet erst an der Songstelle und blendet dort ein; Inka bleibt so
 # immer gleich laut (das Absenken von Spotify unter Inka ging auf Josefs Handy physikalisch nicht ohne Inka leiser zu machen).
-BED_ON = os.environ.get("SHOW_BED", "1") == "1"
+BED_ON = os.environ.get("SHOW_BED", "0") == "1"  # 9.11.2026: aus, seit die Sprachspur einen eigenen Kanal hat und Spotify echt unter der Moderation läuft
 bed_regions = []; last_line_t = None; prev_type = None
 def raster_bed(n, seed=11):
     tt = np.arange(n) / SR; rng = np.random.default_rng(seed)

@@ -2,4 +2,7 @@
 <resources>
     <color name="inka_bg">#0C0D14</color>
     <string name="widget_desc">Nächster Termin, Abfahrt und nächste Frist</string>
+    <string name="kanal_name">Inka: eigene Lautstärke für die Sprache</string>
+    <string name="kanal_kurz">Sprachspur der Shows getrennt von der Musik regeln</string>
+    <string name="kanal_beschreibung">Inka spielt die Sprachspur der Shows (alle Stimmen und Klänge) über die Bedienungshilfen-Lautstärke, Spotify bleibt auf der Medienlautstärke. So lassen sich Sprache und Musik getrennt regeln, und Songs können leise unter der Moderation laufen, ohne dass die Sprache leiser wird. Inka liest dabei keine Bildschirminhalte und reagiert auf keine Eingaben.</string>
 </resources>

@@ -118,16 +118,36 @@ object Voice {
         return out
     }
 
+    // Eigener Kanal (Josef 9.11.2026): Ist der Dienst InkaKanal an, läuft die ganze Sprachspur über die Bedienungshilfen-Lautstärke.
+    @Volatile var onOwnChannel = false; private set
+    private var curFile: File? = null
+    private var pendingSeek = -1L
+    fun ownChannel(): Boolean = onOwnChannel && InkaKanal.running
+
+    /** Kanal an- oder abgeschaltet: Player mit der passenden Ausgabe neu vorbereiten, Stelle behalten (nur wenn er gerade nicht spielt). */
+    fun channelChanged() {
+        val f = curFile ?: return
+        if (onOwnChannel == InkaKanal.running) return
+        if (playing()) { Hub.log("Kanalwechsel wartet bis zur nächsten Pause"); return }
+        val pos = pos(); val tag = loadedId
+        prepare(f, tag); pendingSeek = pos
+    }
+
     private fun prepare(f: File, tag: String) {
         release()
         val p = MediaPlayer()
-        mp = p; loadedId = tag
+        mp = p; loadedId = tag; curFile = f
+        onOwnChannel = InkaKanal.running
         try {
-            p.setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
+            p.setAudioAttributes(AudioAttributes.Builder()
+                .setUsage(if (onOwnChannel) AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY else AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
             ctx?.let { p.setWakeMode(it, PowerManager.PARTIAL_WAKE_LOCK) }
             p.setDataSource(f.path)
             p.setOnPreparedListener {
                 ready = true; durMs = it.duration; applyVolume(); applyEq()
+                if (pendingSeek > 0) { try { it.seekTo(pendingSeek.toInt()) } catch (_: Exception) {}; lastPos = pendingSeek; pendingSeek = -1L }
+                Hub.diag("n-sprachkanal", JSONObject().put("eigen", onOwnChannel))
                 emit("ready")
             }
             p.setOnCompletionListener { stopTick(); abandon(); emit("ended") }
@@ -169,6 +189,7 @@ object Voice {
         stopTick()
         if (byPage) abandon()
         emit("pause", JSONObject().put("why", why))
+        if (onOwnChannel != InkaKanal.running && activeK < 0) Hub.main.post { channelChanged() }
     }
 
     fun seek(ms: Long) {

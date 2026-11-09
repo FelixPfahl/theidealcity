@@ -63,6 +63,18 @@
             </intent-filter>
         </service>
 
+        <!-- Eigener Lautstärkekanal für die Sprachspur (ab 1.7.0) -->
+        <service
+            android:name=".InkaKanal"
+            android:exported="true"
+            android:label="@string/kanal_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/inka_kanal" />
+        </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.files"

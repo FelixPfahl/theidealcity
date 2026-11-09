@@ -113,7 +113,8 @@ object Bed {
     private fun set(a: AudioManager, idx: Int, dev: Int) {
         try { a.setStreamVolume(AudioManager.STREAM_MUSIC, idx, 0) } catch (_: Exception) {}
         setTo = idx
-        Voice.setComp((origDb - dbAt(a, idx, dev)).coerceIn(0f, 24f))
+        // Mit eigenem Sprachkanal trifft die Medienlautstärke nur Spotify: kein Ausgleich nötig
+        Voice.setComp(if (Voice.ownChannel()) 0f else (origDb - dbAt(a, idx, dev)).coerceIn(0f, 24f))
     }
 
     /** Songstelle: Inka schweigt, Song in 3 s auf Josefs Lautstärke. */

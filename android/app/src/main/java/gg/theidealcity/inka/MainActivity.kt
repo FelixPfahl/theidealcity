@@ -177,6 +177,21 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyDuck(on: Boolean) { Hub.main.post { SpotifyCtl.duck(c, on) } }
         @JavascriptInterface fun radioBed(db: Double) { Bed.setBedDb(c, db.toInt()) }
         @JavascriptInterface fun radioBedDb(): Int = Bed.bedDb(c)
+        /** Eigener Sprachkanal (1.7.0): Status, Einrichten, getrennte Regler für Sprache und Musik. */
+        @JavascriptInterface fun voiceChannel(): String = JSONObject().put("dienst", InkaKanal.running).put("aktiv", Voice.ownChannel()).toString()
+        @JavascriptInterface fun openChannelSetup() { Hub.main.post { try { startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) {} } }
+        @JavascriptInterface fun volumes(): String {
+            val a = getSystemService(AUDIO_SERVICE) as android.media.AudioManager
+            return JSONObject().put("sprache", a.getStreamVolume(android.media.AudioManager.STREAM_ACCESSIBILITY)).put("spracheMax", a.getStreamMaxVolume(android.media.AudioManager.STREAM_ACCESSIBILITY))
+                .put("musik", a.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)).put("musikMax", a.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)).toString()
+        }
+        @JavascriptInterface fun volumeSet(which: String, idx: Int) {
+            Hub.main.post {
+                val a = getSystemService(AUDIO_SERVICE) as android.media.AudioManager
+                val st = if (which == "sprache") android.media.AudioManager.STREAM_ACCESSIBILITY else android.media.AudioManager.STREAM_MUSIC
+                try { a.setStreamVolume(st, idx.coerceIn(0, a.getStreamMaxVolume(st)), 0) } catch (e: Exception) { Hub.log("Lautstärke setzen: " + e.javaClass.simpleName) }
+            }
+        }
         @JavascriptInterface fun spNorm(on: Boolean) { Hub.main.post { Voice.setSpNormQuiet(c, on) } }
         @JavascriptInterface fun spNormOn(): Boolean = Voice.spNormQuiet(c)
         /** Spielt gerade eine andere App Ton (Video, Sprachnachricht)? Dann wartet Inka nach einer fremden Unterbrechung, statt sich vorzudrängen. */

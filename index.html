@@ -1057,7 +1057,7 @@ $("#mpp").onclick=e=>{e.stopPropagation();playPause();};$("#mnx").onclick=e=>{e.
 function renderShow(){
   const el=$("#show");renderHero();renderMini();
   if(!KEY.raw){el.innerHTML="";return;}
-  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button><button id="pnew">Neue Show erstellen</button></div></div>';$("#reload").onclick=()=>loadShow();$("#pnew").onclick=()=>sheetShowOrder();return;}
+  if(!S.doc){el.innerHTML='<div class="card"><div class="k">Show</div><div>'+esc(S.loading||S.err||"")+'</div><div class="row" style="margin-top:10px"><button id="reload">Neu laden</button><button id="pnew">Neue Show erstellen</button></div><button class="wide" id="parch0">Alle Shows im Archiv'+(S.shows&&S.shows.length?' ('+S.shows.length+')':'')+'</button></div>';$("#reload").onclick=()=>loadShow();$("#pnew").onclick=()=>sheetShowOrder();$("#parch0").onclick=()=>sheetArchive();return;}
   const d=S.doc,dd=new Date(d.day+"T12:00:00"),isTom=d.day===ymd(addD(new Date(),1)),isOld=d.day<ymd(new Date());
   $("#title").textContent=WD[dd.getDay()]+", "+dd.getDate()+"."+(dd.getMonth()+1)+".";
   $("#subt").textContent=(isTom?"Show für morgen · ":isOld?"Aus dem Archiv · ":"")+Math.round(totalSec()/60)+" Min, "+((d.songs||[]).length)+" Songs"+(d.weather&&d.weather.short?" · "+d.weather.short:"");

@@ -118,10 +118,12 @@ object SpotifyCtl {
      *  Inka nimmt dafür den Audiofokus "kurz, darf absenken"; Android senkt Spotify ab. Fokus abgeben = Spotify blendet hoch. */
     @Volatile var duckWanted = false
 
-    fun duck(ctx: Context, on: Boolean) {
+    /** maxMs: längste Dauer des Absenkens in echter Zeit (Vorlauf geteilt durch das Sprechtempo, plus Reserve). */
+    fun duck(ctx: Context, on: Boolean, maxMs: Long = 20000L) {
         appCtx = ctx.applicationContext
         duckWanted = on
         if (!on) { Duck.off(appCtx); return }
+        Duck.hold(appCtx, maxMs)
         val l = last
         if (l != null && l.track?.uri == wantUri && !l.isPaused) Duck.on(appCtx)
     }
@@ -349,6 +351,35 @@ object Duck {
     @Volatile var active = false; private set
     @Volatile var offAt = 0L; private set
     private var req: android.media.AudioFocusRequest? = null
+    private var until = 0L        // Absenken höchstens bis hierhin (echte Zeit)
+    private var gen = 0           // Generation des Halters, damit alte Wächter verstummen
+    private var tries = 0         // Neuanforderungen in diesem Vorlauf
+    private var losses = 0        // wie oft Spotify den Fokus zurückgeholt hat
+
+    /**
+     * Josef 9.11.2026: "die Lautstärke der Songs bei der Anmoderation ist nicht gedämpft".
+     * Ursache (Protokoll 8.11.): Inka bekam den Fokus "kurz, darf absenken", aber Spotify fordert beim tatsächlichen
+     * Tonstart selbst den Fokus an und nimmt ihn Inka wieder weg; danach lief der Song voll unter Inkas Stimme.
+     * Jetzt hält ein Wächter das Absenken für die ganze Anmoderation: verliert Inka den Fokus, fordert sie ihn sofort neu an.
+     */
+    fun hold(c: Context?, maxMs: Long) {
+        until = System.currentTimeMillis() + maxMs.coerceIn(4000L, 40000L)
+        tries = 0; losses = 0
+        val g = ++gen
+        val r = object : Runnable {
+            override fun run() {
+                if (g != gen || !SpotifyCtl.duckWanted) return
+                if (System.currentTimeMillis() > until) {
+                    // Sicherheitsnetz: nie länger absenken als der Vorlauf (nach Sprechtempo) plus Reserve
+                    Hub.diag("n-absenken-ende", JSONObject().put("grund", "zeit").put("verloren", losses))
+                    SpotifyCtl.duckWanted = false; off(c); return
+                }
+                if (!active && tries < 40) { tries++; on(c) }
+                Hub.main.postDelayed(this, 250)
+            }
+        }
+        Hub.main.postDelayed(r, 250)
+    }
 
     fun on(c: Context?) {
         val a = c?.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager ?: return
@@ -357,21 +388,32 @@ object Duck {
             val attrs = android.media.AudioAttributes.Builder()
                 .setUsage(android.media.AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
                 .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+            var mine: android.media.AudioFocusRequest? = null
             val r = android.media.AudioFocusRequest.Builder(android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
-                .setAudioAttributes(attrs).setOnAudioFocusChangeListener { f -> if (f == android.media.AudioManager.AUDIOFOCUS_LOSS || f == android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) { active = false; req = null } }.build()
+                .setAudioAttributes(attrs)
+                .setOnAudioFocusChangeListener({ f ->
+                    if (f == android.media.AudioManager.AUDIOFOCUS_LOSS || f == android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                        if (req === mine) { active = false; req = null }
+                        losses++
+                        if (losses <= 3) Hub.diag("n-absenken-verloren", JSONObject().put("n", losses))
+                        // sofort neu anfordern, solange die Anmoderation läuft (der Wächter fängt den Rest)
+                        if (SpotifyCtl.duckWanted && System.currentTimeMillis() < until) Hub.main.postDelayed({ if (SpotifyCtl.duckWanted && !active) on(c) }, 60)
+                    }
+                }, Hub.main).build()
+            mine = r
             val g = a.requestAudioFocus(r)
-            if (g == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { req = r; active = true; Hub.log("Radio: Spotify abgesenkt") }
-            Hub.diag("n-absenken", JSONObject().put("ok", g == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED).put("antwort", g))
+            if (g == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED) { req = r; active = true; if (tries <= 1) Hub.log("Radio: Spotify abgesenkt") }
+            if (tries <= 3) Hub.diag("n-absenken", JSONObject().put("ok", g == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED).put("antwort", g).put("versuch", tries))
         } catch (e: Exception) { Hub.log("Absenken nicht möglich: " + e.javaClass.simpleName) }
-        // Sicherheitsnetz: nie länger als 20 s absenken
-        Hub.main.postDelayed({ if (active) { SpotifyCtl.duckWanted = false; off(c) } }, 20000)
     }
 
     fun off(c: Context?) {
+        gen++
         val a = c?.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
         val r = req; req = null
         if (r != null && a != null) try { a.abandonAudioFocusRequest(r) } catch (_: Exception) {}
         if (active) { Hub.log("Radio: Spotify hochgeblendet"); offAt = System.currentTimeMillis() }
+        if (losses > 0) Hub.diag("n-absenken-gehalten", JSONObject().put("verloren", losses).put("versuche", tries))
         active = false
     }
 }

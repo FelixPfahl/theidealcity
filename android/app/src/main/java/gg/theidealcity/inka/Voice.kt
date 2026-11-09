@@ -239,8 +239,8 @@ object Voice {
             if (preOn && spotifyOk() && activeK < 0 && prev < pt && now >= pt) {
                 val c = ctx ?: return
                 pre = true; activeK = s.k; activeUri = s.uri; activeAt = System.currentTimeMillis()
-                SpotifyCtl.duck(c, true); SpotifyCtl.play(c, s.uri, 0L)
-                Hub.diag("n-vorlauf", JSONObject().put("k", s.k))
+                SpotifyCtl.duck(c, true, (s.pre / rate.coerceAtLeast(0.5f)).toLong() + 6000L); SpotifyCtl.play(c, s.uri, 0L)
+                Hub.diag("n-vorlauf", JSONObject().put("k", s.k).put("vorlauf_s", s.pre / 1000.0).put("tempo", rate.toDouble()).put("echt_s", s.pre / 1000.0 / rate))
                 emit("song-pre", JSONObject().put("k", s.k).put("uri", s.uri))
             }
             // Songstelle: Inka hält an, Song voll

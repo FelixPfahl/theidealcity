@@ -581,7 +581,7 @@ AUD.addEventListener("timeupdate",()=>{
   const nx=chapters()[k+1];
   const natDuck=NAT&&typeof NAT.spotifyDuck==="function"&&store.get("appPreTest",false); /* 2.11.2026 17:21: Android hält Inkas Stimme an, sobald Spotify loslegt (auch mit Absenken). In der App deshalb kein Vorlauf: Inka spricht zu Ende, dann blendet die App den Song ein. */ /* 2.11.2026: Vorlauf in der App. Absenken wird vor dem Start angemeldet, sonst senkte die App die ganze Medienlautstärke und Inkas letzte Worte gingen unter. */
   if(nx&&nx.type==="song"&&!S.songDone[k+1]&&!SONG.on&&!AUD.paused&&(natDuck||(!document.hidden&&SP.player))&&SP.ready()&&true&&nx.start-t<=RADIO.pre&&nx.start-t>1){S.songDone[k+1]=true;SONG.start(k+1,true);}
-  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;S.selfPause=Date.now();AUD.pause();if(natDuck){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:natDuck});}
+  if(c&&c.type==="song"&&SONG.on&&SONG.pre&&SONG.k===k){SONG.pre=false;S.selfPause=Date.now();AUD.pause();if(NAT&&typeof NAT.spotifyDuck==="function"){try{NAT.spotifyDuck(false);}catch(_){}}else RADIO.ramp(1,2600);diag("radio-voll",{app:!!NAT});}
   if(k!==S.ch){S.ch=k;meta();if(TAB.cur==="show")renderShow();else{renderHero();renderMini();}}
   bar();
 });

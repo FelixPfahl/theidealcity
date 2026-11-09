@@ -122,7 +122,12 @@ object SpotifyCtl {
     fun duck(ctx: Context, on: Boolean, maxMs: Long = 20000L) {
         appCtx = ctx.applicationContext
         duckWanted = on
-        if (!on) { Duck.off(appCtx); return }
+        if (!on) {
+            // Josef 9.11.2026: "am Ende der Moderation wie im Radio". Hochblenden statt Sprung: Inka schweigt jetzt,
+            // also darf die Medienlautstärke kurz runter; Absenken aufheben und in 4 s auf den alten Wert hochfahren.
+            if (Duck.active) { Fade.down(appCtx); Duck.off(appCtx); Fade.up(appCtx) } else Duck.off(appCtx)
+            return
+        }
         Duck.hold(appCtx, maxMs)
         val l = last
         if (l != null && l.track?.uri == wantUri && !l.isPaused) Duck.on(appCtx)

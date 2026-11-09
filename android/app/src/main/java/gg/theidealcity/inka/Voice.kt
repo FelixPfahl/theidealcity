@@ -151,6 +151,12 @@ object Voice {
 
     fun pause(byPage: Boolean = true, why: String = "") {
         val p = mp ?: return
+        // 9.11.2026: Die Seite hält Inka an der Songstelle oft ein paar Millisekunden vor dem eigenen Takt an.
+        // Läuft gerade der Vorlauf und ist die Songstelle erreicht, Song jetzt hochblenden (sonst blieb er bis zum Sicherheitsnetz leise).
+        if (pre && activeK >= 0) {
+            val st = stops.firstOrNull { it.k == activeK }
+            if (st != null && pos() >= st.t - 400) { pre = false; ctx?.let { SpotifyCtl.duck(it, false) }; Hub.diag("n-songstelle-seite", JSONObject().put("k", activeK)) }
+        }
         if (byPage) { resumeOnGain = false; waitQuietSince = 0L }
         try { if (p.isPlaying) p.pause() } catch (_: Exception) {}
         stopTick()
@@ -248,7 +254,7 @@ object Voice {
                 val c = ctx ?: return
                 try { mp?.pause() } catch (_: Exception) {}
                 stopTick()
-                val wasPre = pre && activeK == s.k   // vor dem Sprung bestimmen: seek() beendet den Vorlauf (2.11.2026: Song lief sonst doppelt)
+                val wasPre = activeK == s.k && (pre || SpotifyCtl.duckWanted)   // vor dem Sprung bestimmen: seek() beendet den Vorlauf (2.11.2026: Song lief sonst doppelt)
                 pre = false
                 seek(s.t + 1020)
                 if (wasPre) SpotifyCtl.duck(c, false)

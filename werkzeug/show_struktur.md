@@ -69,8 +69,8 @@ Jede Show bekommt Regie in Klammern hinter dem Sprecher, mehrere mit Komma: `WAG
 - `zoegernd`: kurzes Zögern davor (z. B. Sigma vor einer verletzlichen Frage).
 Das Skript (`show_tts.py`) setzt das um, ohne den Text zu verändern (Tempo, Tonhöhe, Lautstärke, Raumklang); dazu leicht schwankende Lücken je nach Satzende. Der Text der Zeile bleibt gleich, deshalb bleiben auch gecachte Clips gültig.
 
-## Radio-Übergang zu den Songs (Josef 1.11.2026)
-Die App spielt jeden Song schon in den letzten etwa 6 Sekunden der Anmoderation leise ein und blendet ihn hoch, sobald die Sprache endet. Deshalb endet jede Anmoderation mit einem Satz, unter dem Musik liegen darf (Titel und Künstler nicht erst im allerletzten Wort, lieber davor; der letzte Satz eine Haltung oder ein Bild).
+## Radio-Übergang zu den Songs (Josef 1.11.2026, neu ab 9.11.2026)
+Seit 9.11.2026 ("eigener Teppich im Sprachtrack"): `show_tts.py` mischt unter den letzten Satz vor jedem Song automatisch einen leisen Raster-FM-Klangteppich (Akkord mit Funkrauschen, etwa 14 dB unter der Stimme, `SHOW_BED=0` schaltet ab, `SHOW_BED_RMS` regelt die Stärke). Spotify startet in der Android-App erst an der Songstelle und blendet in wenigen Sekunden ein; Inka bleibt immer gleich laut. Deshalb endet jede Anmoderation mit einem Satz, unter dem der Teppich liegen darf (Titel und Künstler nicht erst im allerletzten Wort, lieber davor; der letzte Satz eine Haltung oder ein Bild).
 
 ## Sprache der Show
 Standard Deutsch. Für eine französische Show (wie am 2.11.2026) `EL_LANG=fr` setzen: dann sendet `show_tts.py` language_code fr und lässt `zahlen.py` weg; Zahlen im Skript selbst als französische Wörter schreiben. Sprechregie-Wörter in Klammern bleiben deutsch.

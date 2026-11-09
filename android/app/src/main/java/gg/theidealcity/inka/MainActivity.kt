@@ -177,6 +177,8 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun spotifyDuck(on: Boolean) { Hub.main.post { SpotifyCtl.duck(c, on) } }
         @JavascriptInterface fun radioBed(db: Double) { Bed.setBedDb(c, db.toInt()) }
         @JavascriptInterface fun radioBedDb(): Int = Bed.bedDb(c)
+        @JavascriptInterface fun spNorm(on: Boolean) { Hub.main.post { Voice.setSpNormQuiet(c, on) } }
+        @JavascriptInterface fun spNormOn(): Boolean = Voice.spNormQuiet(c)
         /** Spielt gerade eine andere App Ton (Video, Sprachnachricht)? Dann wartet Inka nach einer fremden Unterbrechung, statt sich vorzudrängen. */
         // Inkas Stimme über den Android-Player (ab 1.2.0)
         @JavascriptInterface fun voiceLoad(id: String, t: String) { Hub.main.post { Voice.load(c, id, t) } }

@@ -317,7 +317,7 @@ body.raster .card{background:#0c0e15;border-style:dashed}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="9.11. (Radio-Teppich über die Medienlautstärke, Android 1.6.0)";
+const APPV="9.11. (Radio-Teppich, Spotify leise normalisiert, Android 1.6.1)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -1124,10 +1124,12 @@ function sheetKlang(){const vol=store.get("vol",0.5);
     '<label class="sl">Bass: <b id="peqbv">'+EQ.val("eqb")+' dB</b></label><input type="range" id="peqb" min="-15" max="6" step="1" value="'+EQ.val("eqb")+'">'+
     '<label class="sl">Höhen: <b id="peqtv">'+EQ.val("eqt")+' dB</b></label><input type="range" id="peqt" min="-6" max="9" step="1" value="'+EQ.val("eqt")+'">'+
     (NAT&&typeof NAT.radioBed==="function"?'<label class="sl">Song unter Inka (Teppich): <b id="bedv">'+BED()+' dB</b></label><input type="range" id="bed" min="-24" max="-4" step="1" value="'+BED()+'">'+
+      (typeof NAT.spNorm==="function"?'<div class="si" style="margin-top:10px"><div><span>Spotify normalisiert auf „Leise“</span><div class="small">In Spotify: Einstellungen › Wiedergabe › Lautstärke normalisieren an, Lautstärkepegel „Leise“. Dann hat Inka genug Reserve, um im Übergang gleich laut zu bleiben.</div></div><button id="bspn">'+(NAT.spNormOn()?"an":"aus")+'</button></div>':'')+
       '<div class="row" style="margin-top:8px"><button class="pri" id="btest">Übergang testen</button></div>'+
       '<div class="small" style="margin-top:6px">Probelauf mit dem nächsten Song der Show: 3 s Inka, dann setzt der Song leise darunter ein und kommt nach Inkas letztem Wort in 3 s hoch. Danach geht es an der alten Stelle weiter.</div>'
      :'<div class="small" style="margin-top:10px">Der Radio-Übergang (Song startet leise unter der Anmoderation) ist immer an.</div>'));
-  {const b=$("#bed");if(b)b.oninput=()=>{try{NAT.radioBed(+b.value);}catch(_){}$("#bedv").textContent=b.value+" dB";};const t=$("#btest");if(t)t.onclick=()=>{closeSheet();radioTest();};}
+  {const b=$("#bed");if(b)b.oninput=()=>{try{NAT.radioBed(+b.value);}catch(_){}$("#bedv").textContent=b.value+" dB";};const t=$("#btest");if(t)t.onclick=()=>{closeSheet();radioTest();};
+   const sn=$("#bspn");if(sn)sn.onclick=()=>{const on=!NAT.spNormOn();try{NAT.spNorm(on);}catch(_){}sn.textContent=on?"an":"aus";toast(on?"Inka rechnet mit leiser normalisiertem Spotify.":"Inka rechnet mit Spotify ohne Normalisierung (lauter).",4000,true);};}
   const rt=$("#rate");rt.oninput=()=>{store.set("rate",+rt.value);applyRate();$("#ratev").textContent=Math.round(rt.value*100)+"%";};
   const v=$("#vol");v.oninput=()=>{store.set("vol",+v.value);AUD.volume=+v.value;$("#volv").textContent=Math.round(v.value*100)+"%";};
   [["peqb","eqb"],["peqt","eqt"]].forEach(([id,k])=>{const e=$("#"+id);e.oninput=()=>{store.set(k,+e.value);EQ.init();EQ.set();$("#"+id+"v").textContent=e.value+" dB";};});}

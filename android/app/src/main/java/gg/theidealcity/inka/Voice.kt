@@ -36,7 +36,12 @@ object Voice {
      *  Die Sprache liegt bei etwa -20 LUFS. Grundverstärkung +10 dB beim Regler 40 %, der Regler verschiebt das (Begrenzer verhindert Übersteuern). */
     private const val BASE_DB = 10.0
     private var rate = 1f
-    private var compDb = 0f   // Ausgleich, solange die Medienlautstärke für den Radio-Teppich gesenkt ist (Bed)
+    private var compDb = 0f
+    /** Josef 9.11.2026: Spotify normalisiert auf "Leise" (-19 LUFS statt etwa -9 LUFS ohne Normalisierung).
+     *  Dann braucht Inka 10 dB weniger Grundverstärkung und hat Reserve für den Ausgleich beim Radio-Teppich. */
+    private var baseDb = BASE_DB - 10.0
+    fun spNormQuiet(c: Context): Boolean = c.getSharedPreferences("inka", Context.MODE_PRIVATE).getBoolean("spnorm_leise", true)
+    fun setSpNormQuiet(c: Context, on: Boolean) { c.getSharedPreferences("inka", Context.MODE_PRIVATE).edit().putBoolean("spnorm_leise", on).apply(); baseDb = if (on) BASE_DB - 10.0 else BASE_DB; applyVolume() }   // Ausgleich, solange die Medienlautstärke für den Radio-Teppich gesenkt ist (Bed)
     private var eq: Equalizer? = null
     private var eqBass = 0; private var eqTreble = 0
 
@@ -73,6 +78,7 @@ object Voice {
     /** Show laden: verschlüsselte .bin aus dem Speicher (oder Netz), entschlüsseln, in den Player. */
     fun load(c: Context, id: String, t: String) {
         ctx = c.applicationContext
+        baseDb = if (spNormQuiet(c)) BASE_DB - 10.0 else BASE_DB
         if (loadedId == "$id.$t" && ready) { emit("ready"); return }
         Thread {
             try {
@@ -180,7 +186,7 @@ object Voice {
 
     private fun applyVolume() {
         val p = mp ?: return; if (!ready) return
-        val db = if (vol <= 0.001f) -60.0 else ((BASE_DB + 20.0 * Math.log10(vol / 0.4)).coerceIn(-40.0, 16.0) + compDb).coerceAtMost(30.0)
+        val db = if (vol <= 0.001f) -60.0 else ((baseDb + 20.0 * Math.log10(vol / 0.4)).coerceIn(-40.0, 16.0) + compDb).coerceAtMost(30.0)
         val duck = if (ducked) 0.3f else 1f
         try {
             if (db > 0) {

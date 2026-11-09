@@ -122,20 +122,13 @@ object SpotifyCtl {
     fun duck(ctx: Context, on: Boolean, maxMs: Long = 20000L) {
         appCtx = ctx.applicationContext
         duckWanted = on
-        if (!on) {
-            // Josef 9.11.2026: "am Ende der Moderation wie im Radio". Hochblenden statt Sprung: Inka schweigt jetzt,
-            // also darf die Medienlautstärke kurz runter; Absenken aufheben und in 4 s auf den alten Wert hochfahren.
-            if (Duck.active) { Fade.down(appCtx); Duck.off(appCtx); Fade.up(appCtx) } else Duck.off(appCtx)
-            return
-        }
-        Duck.hold(appCtx, maxMs)
-        val l = last
-        if (l != null && l.track?.uri == wantUri && !l.isPaused) Duck.on(appCtx)
+        // Josef 9.11.2026 (Fragebogen UEBERGANG): Androids Absenken wirkt auf seinem Handy nicht auf Spotify.
+        // Der Teppich läuft jetzt über die Medienlautstärke (Bed); duckWanted heißt nur noch "Vorlauf läuft".
+        if (!on) Bed.release(appCtx)
     }
 
     private fun onState(ps: PlayerState) {
         last = ps; lastAt = System.currentTimeMillis()
-        if (duckWanted && !Duck.active && ps.track?.uri == wantUri && !ps.isPaused) Duck.on(appCtx)
         val uri = ps.track?.uri
         if (uri != null && uri == wantUri) {
             if (!ps.isPaused) sawWant = true
@@ -174,7 +167,6 @@ object SpotifyCtl {
         if (fade) Fade.down(appCtx)
         api.play(uri).setResultCallback {
             if (pos > 1500) api.seekTo(pos)
-            if (duckWanted && !Duck.active) Duck.on(appCtx)   // so früh wie möglich absenken, nicht erst bei der nächsten Statusmeldung
             if (fade) Fade.up(appCtx)
         }.setErrorCallback { t -> if (fade) Fade.restore(appCtx); lastErr = "play: " + t.javaClass.simpleName; emit("fehler") }
     }
@@ -210,10 +202,10 @@ object SpotifyCtl {
         }
     }
 
-    fun pause() { wantPlaying = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
+    fun pause() { wantPlaying = false; duckWanted = false; Bed.abort(false, "pause"); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
     fun resume(ctx: Context) { if (wantUri == null) return; wantPlaying = true; startWatch(); if (!connected) connect(ctx) else ensurePlaying("weiter") }
     fun isWantPlaying() = wantPlaying
-    fun stop() { Voice.onSongCleared(); wantPlaying = false; wantUri = null; ended = false; duckWanted = false; Duck.off(appCtx); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
+    fun stop() { Voice.onSongCleared(); wantPlaying = false; wantUri = null; ended = false; duckWanted = false; Bed.abort(false, "stop"); try { remote?.playerApi?.pause() } catch (_: Exception) {} }
 
     /** Wächter: erkennt stumme Abbrüche (keine Statusmeldungen mehr, Spotify pausiert von selbst, anderer Song). */
     private fun startWatch() {
@@ -232,7 +224,7 @@ object SpotifyCtl {
                     val stale = System.currentTimeMillis() - lastAt > 15000
                     val wrong = l?.track?.uri != null && l.track.uri != wantUri && !ended
                     // Während Inka Spotify absenkt (Radio-Vorlauf) und kurz danach ist eine Spotify-Pause keine Nutzerpause
-                    val ducking = Duck.active || System.currentTimeMillis() - Duck.offAt < 6000
+                    val ducking = Bed.active || duckWanted
                     val userPaused = l != null && l.track?.uri == wantUri && l.isPaused && !ended && !ducking && System.currentTimeMillis() - lastAt > 3000
                     if (stale) { r.playerApi.playerState.setResultCallback { if (remote === r) onState(it) }.setErrorCallback { if (remote === r) markLost() } }
                     if (userPaused) {

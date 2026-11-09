@@ -36,6 +36,7 @@ object Voice {
      *  Die Sprache liegt bei etwa -20 LUFS. Grundverstärkung +10 dB beim Regler 40 %, der Regler verschiebt das (Begrenzer verhindert Übersteuern). */
     private const val BASE_DB = 10.0
     private var rate = 1f
+    private var compDb = 0f   // Ausgleich, solange die Medienlautstärke für den Radio-Teppich gesenkt ist (Bed)
     private var eq: Equalizer? = null
     private var eqBass = 0; private var eqTreble = 0
 
@@ -174,9 +175,12 @@ object Voice {
 
     fun setVolume(v: Float) { vol = v.coerceIn(0f, 1f); applyVolume() }
 
+    /** Bed: Medienlautstärke ist um db gesenkt, Inka so viel lauter machen, dass sie gleich laut bleibt. */
+    fun setComp(db: Float) { if (Math.abs(db - compDb) < 0.05f) return; compDb = db; applyVolume() }
+
     private fun applyVolume() {
         val p = mp ?: return; if (!ready) return
-        val db = if (vol <= 0.001f) -60.0 else (BASE_DB + 20.0 * Math.log10(vol / 0.4)).coerceIn(-40.0, 16.0)
+        val db = if (vol <= 0.001f) -60.0 else ((BASE_DB + 20.0 * Math.log10(vol / 0.4)).coerceIn(-40.0, 16.0) + compDb).coerceAtMost(30.0)
         val duck = if (ducked) 0.3f else 1f
         try {
             if (db > 0) {
@@ -245,7 +249,7 @@ object Voice {
             if (preOn && spotifyOk() && activeK < 0 && prev < pt && now >= pt) {
                 val c = ctx ?: return
                 pre = true; activeK = s.k; activeUri = s.uri; activeAt = System.currentTimeMillis()
-                SpotifyCtl.duck(c, true, (s.pre / rate.coerceAtLeast(0.5f)).toLong() + 6000L); SpotifyCtl.play(c, s.uri, 0L)
+                Bed.start(c, (s.pre / rate.coerceAtLeast(0.5f)).toLong() + 8000L); SpotifyCtl.duck(c, true); SpotifyCtl.play(c, s.uri, 0L)
                 Hub.diag("n-vorlauf", JSONObject().put("k", s.k).put("vorlauf_s", s.pre / 1000.0).put("tempo", rate.toDouble()).put("echt_s", s.pre / 1000.0 / rate))
                 emit("song-pre", JSONObject().put("k", s.k).put("uri", s.uri))
             }

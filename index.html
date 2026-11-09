@@ -317,7 +317,7 @@ body.raster .card{background:#0c0e15;border-style:dashed}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="9.11. (Radio-Teppich, Spotify leise normalisiert, Android 1.6.1)";
+const APPV="9.11. (Teppich im Sprachtrack, Song blendet nach Inka ein)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -484,6 +484,8 @@ async function ensureAudio(){
 const chapters=()=>(S.doc&&Array.isArray(S.doc.chapters))?S.doc.chapters:[];
 function chAt(t){const c=chapters();let k=-1;for(let i=0;i<c.length;i++)if(t>=c[i].start-0.05)k=i;return k;}
 /* Radio-Teppich (Josef 9.11.2026, Fragebogen UEBERGANG): Lautstärke des Songs unter Inka in dB, gespeichert in der App */
+/* 9.11.2026: Mit dem Teppich im Sprachtrack braucht Inka keine Reserve mehr. Die Grundverstärkung einmalig wieder auf normal (Spotify ohne Normalisierung). */
+try{if(NAT&&typeof NAT.spNorm==="function"&&!store.get("spnorm_reset_911",false)){NAT.spNorm(false);store.set("spnorm_reset_911",true);}}catch(_){}
 function BED(){try{return NAT.radioBedDb();}catch(_){return -12;}}
 function preFor(x){const ls=(S.doc&&S.doc.lines||[]).filter(l=>l.t<x.start-0.5);const last=ls[ls.length-1];return last?Math.max(3,Math.min(20,x.start-last.t-0.3)):6.5;}
 const RTEST={on:false};
@@ -505,7 +507,8 @@ function natStops(){if(!AUD.native||!S.doc)return;try{const c=chapters(),songs=S
   c.forEach((x,i)=>{if(x.type==="song"){const tr=songs[n];n++;if(tr&&tr.uri){/* Josef 2.11.2026: Übergang so lang wie die Anmoderation: Song startet leise mit dem letzten Satz vor der Songstelle */
     const pre=preFor(x);
     L.push({k:i,t:x.start,uri:tr.uri,pre});}}});
-  NAT.voiceStops(JSON.stringify(L),!!(true&&SP.ready()));}catch(_){}}
+  /* Josef 9.11.2026 ("eigener Teppich im Sprachtrack"): kein Spotify-Vorlauf mehr unter Inka. Der Teppich ist ins Sprachaudio eingemischt, Spotify startet an der Songstelle und blendet ein. */
+  NAT.voiceStops(JSON.stringify(L),false);}catch(_){}}
 /* Songwechsel, die die App selbst gefahren hat, auf der Seite nachziehen */
 function natSongEvent(o){const k=o.k;const tr=((S.doc&&S.doc.songs)||[])[songIndex(k)];
   if(o.ev==="song-pre"){if(!SONG.on&&tr){S.songDone[k]=true;S.natSong=o.uri;SONG.start(k,true);}return;}
@@ -1123,10 +1126,10 @@ function sheetKlang(){const vol=store.get("vol",0.5);
     '<label class="sl">Sprechtempo: <b id="ratev">'+Math.round(RATE()*100)+'%</b></label><input type="range" id="rate" min="0.8" max="1.1" step="0.02" value="'+RATE()+'">'+
     '<label class="sl">Bass: <b id="peqbv">'+EQ.val("eqb")+' dB</b></label><input type="range" id="peqb" min="-15" max="6" step="1" value="'+EQ.val("eqb")+'">'+
     '<label class="sl">Höhen: <b id="peqtv">'+EQ.val("eqt")+' dB</b></label><input type="range" id="peqt" min="-6" max="9" step="1" value="'+EQ.val("eqt")+'">'+
-    (NAT&&typeof NAT.radioBed==="function"?'<label class="sl">Song unter Inka (Teppich): <b id="bedv">'+BED()+' dB</b></label><input type="range" id="bed" min="-24" max="-4" step="1" value="'+BED()+'">'+
-      (typeof NAT.spNorm==="function"?'<div class="si" style="margin-top:10px"><div><span>Spotify normalisiert auf „Leise“</span><div class="small">In Spotify: Einstellungen › Wiedergabe › Lautstärke normalisieren an, Lautstärkepegel „Leise“. Dann hat Inka genug Reserve, um im Übergang gleich laut zu bleiben.</div></div><button id="bspn">'+(NAT.spNormOn()?"an":"aus")+'</button></div>':'')+
+    (NAT&&typeof NAT.radioBed==="function"?
+      (typeof NAT.spNorm==="function"?'<div class="si" style="margin-top:10px"><div><span>Spotify normalisiert auf „Leise“</span><div class="small">Nur einschalten, wenn in Spotify „Lautstärke normalisieren“ auf „Leise“ steht. Dann nimmt Inka ihre Verstärkung zurück, damit Stimme und Songs gleich laut bleiben.</div></div><button id="bspn">'+(NAT.spNormOn()?"an":"aus")+'</button></div>':'')+
       '<div class="row" style="margin-top:8px"><button class="pri" id="btest">Übergang testen</button></div>'+
-      '<div class="small" style="margin-top:6px">Probelauf mit dem nächsten Song der Show: 3 s Inka, dann setzt der Song leise darunter ein und kommt nach Inkas letztem Wort in 3 s hoch. Danach geht es an der alten Stelle weiter.</div>'
+      '<div class="small" style="margin-top:6px">Probelauf mit dem nächsten Song der Show: Inkas letzter Satz mit Raster-FM-Teppich, dann blendet der Song in 3 s ein. Danach geht es an der alten Stelle weiter.</div>'
      :'<div class="small" style="margin-top:10px">Der Radio-Übergang (Song startet leise unter der Anmoderation) ist immer an.</div>'));
   {const b=$("#bed");if(b)b.oninput=()=>{try{NAT.radioBed(+b.value);}catch(_){}$("#bedv").textContent=b.value+" dB";};const t=$("#btest");if(t)t.onclick=()=>{closeSheet();radioTest();};
    const sn=$("#bspn");if(sn)sn.onclick=()=>{const on=!NAT.spNormOn();try{NAT.spNorm(on);}catch(_){}sn.textContent=on?"an":"aus";toast(on?"Inka rechnet mit leiser normalisiertem Spotify.":"Inka rechnet mit Spotify ohne Normalisierung (lauter).",4000,true);};}

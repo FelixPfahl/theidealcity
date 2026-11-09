@@ -240,16 +240,42 @@ def soundscape(spec):
     target = {"labor": 0.045, "neon": 0.05, "summen": 0.03, "gojira": 0.06, "wind": 0.035, "kraehen": 0.035, "zug": 0.04, "rauschen": 0.03, "stoersender": 0.035}.get(kind, 0.04)
     return (a * (target / rms)).astype(np.float32)
 
+# Raster-FM-Teppich (Josef 9.11.2026, "eigener Teppich im Sprachtrack"): Unter dem letzten Satz vor jedem Song liegt ein
+# leiser, fest eingemischter Klangteppich. Spotify startet erst an der Songstelle und blendet dort ein; Inka bleibt so
+# immer gleich laut (das Absenken von Spotify unter Inka ging auf Josefs Handy physikalisch nicht ohne Inka leiser zu machen).
+BED_ON = os.environ.get("SHOW_BED", "1") == "1"
+bed_regions = []; last_line_t = None; prev_type = None
+def raster_bed(n, seed=11):
+    tt = np.arange(n) / SR; rng = np.random.default_rng(seed)
+    a = np.zeros(n)
+    for f, g in ((146.83, 0.9), (220.0, 0.7), (261.63, 0.55), (329.63, 0.5), (440.0, 0.25), (493.88, 0.18)):
+        det = 1 + 0.0025 * np.sin(2 * np.pi * rng.uniform(0.05, 0.12) * tt + rng.uniform(0, 6))
+        ph = 2 * np.pi * np.cumsum(f * det) / SR
+        a += g * (np.sin(ph) + 0.18 * np.sin(2 * ph) + 0.06 * np.sin(3 * ph))
+    a *= 0.75 + 0.25 * np.sin(2 * np.pi * 0.23 * tt)            # langsames Atmen
+    k = int(SR * 0.002); hiss = np.convolve(rng.standard_normal(n), np.ones(k) / k, mode="same")
+    a += 0.35 * hiss * (0.6 + 0.4 * np.sin(2 * np.pi * 0.11 * tt))   # leises Funkrauschen
+    rms = float(np.sqrt(np.mean(a ** 2))) or 1.0
+    a = a * (float(os.environ.get("SHOW_BED_RMS", "0.03")) / rms)
+    fi = min(n, int(SR * 1.6)); fo = min(n, int(SR * 1.2))
+    env = np.ones(n); env[:fi] = np.linspace(0, 1, fi) ** 2; env[n - fo:] *= np.linspace(1, 0, fo)
+    return (a * env).astype(np.float32)
+
 t0 = time.time(); pieces = []; meta = []; lines = []; t = 0.0; chars = 0; idx = 0
 def add(a):
     global t
     pieces.append(a); t += len(a) / SR
 for ch in chapters:
     if ch["tag"] == "song":
+        if BED_ON and prev_type == "talk" and last_line_t is not None:
+            st = max(last_line_t - 0.3, t - 12.0); st = min(st, t - 3.0)
+            bed_regions.append((max(0, int(st * SR)), int(t * SR)))
+        prev_type = "song"
         meta.append({"type": "song", "title": "Musik", "start": round(t, 2)})
         add(np.zeros(int(SR * 1.0), np.float32)); continue
     blocks = [[b[0], clean(b[1]) if b[0] != "klang" else b[1].strip(), b[2] if len(b) > 2 and b[2] else parse_tags("")] for b in ch["blocks"] if b and b[1].strip()]
     if not blocks: continue
+    prev_type = "talk"; last_line_t = None
     speakers = sorted(set(b[0] for b in blocks if b[0] != "klang"))
     meta.append({"type": "talk", "voice": "+".join(speakers), "title": ch["title"], "start": round(t, 2),
                  "words": sum(len(b[1].split()) for b in blocks)})
@@ -269,7 +295,7 @@ for ch in chapters:
             ov = min(int(SR * rnd.uniform(0.5, 0.9)), len(pieces[-1]) // 3, len(clip) // 3)
             last = pieces[-1].copy(); fade = np.linspace(1.0, 0.3, ov).astype(np.float32)
             last[-ov:] = last[-ov:] * fade + clip[:ov]
-            lines.append({"t": round(t - ov / SR, 2), "sp": sp, "x": text})
+            lines.append({"t": round(t - ov / SR, 2), "sp": sp, "x": text}); last_line_t = t - ov / SR
             pieces[-1] = last; add(clip[ov:]); prev = sp; prev_text = text; continue
         if prev is not None:
             gap = 0.25 if sp != prev else 0.45
@@ -279,7 +305,7 @@ for ch in chapters:
             if tg["hes"]: gap += rnd.uniform(0.5, 0.9)
             if tg["pause"]: gap = tg["pause"]                                # betroffenes Schweigen
             add(np.zeros(int(SR * max(0.08, gap)), np.float32))
-        lines.append({"t": round(t, 2), "sp": sp, "x": text}); add(clip); prev = sp; prev_text = text
+        lines.append({"t": round(t, 2), "sp": sp, "x": text}); last_line_t = t; add(clip); prev = sp; prev_text = text
     add(np.zeros(int(SR * 0.9), np.float32))
 
 audio = np.concatenate(pieces)
@@ -305,6 +331,9 @@ def lab_ambience(n, sr, seed=7):
     return amb.astype(np.float32)
 if os.environ.get("SHOW_AMBIENCE", "lab") == "lab":
     audio = audio + lab_ambience(len(audio), SR)
+for i, (a0, a1) in enumerate(bed_regions):
+    a1 = min(a1, len(audio))
+    if a1 - a0 > SR: audio[a0:a1] += raster_bed(a1 - a0, seed=11 + i)
 wav = os.path.join(out, "show.wav"); sf.write(wav, audio, SR)
 mp4 = os.path.join(out, "show.mp4")
 subprocess.run([ff, "-y", "-loglevel", "error", "-i", wav, "-ac", "1", "-ar", str(SR), "-af", "highpass=f=170:poles=2,bass=g=-8:f=260:w=0.8,loudnorm=I=-20:TP=-2:LRA=11",

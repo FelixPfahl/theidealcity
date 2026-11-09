@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="InkaTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- Ab 1.4.0 immer dunkel (Josef 9.11.2026) -->
+    <style name="InkaTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">#0028FF</item>
-        <item name="colorPrimaryDark">#0028FF</item>
-        <item name="colorAccent">#0028FF</item>
-        <item name="android:statusBarColor">#FFFFFF</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">#FFFFFF</item>
-        <item name="android:windowBackground">@android:color/white</item>
+        <item name="colorPrimaryDark">#0C0D14</item>
+        <item name="colorAccent">#4D6BFF</item>
+        <item name="android:statusBarColor">#0C0D14</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">#0C0D14</item>
+        <item name="android:windowBackground">@color/inka_bg</item>
     </style>
 </resources>

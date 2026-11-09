@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(b)
         WebView.setWebContentsDebuggingEnabled(true)
         web = WebView(this)
+        web.setBackgroundColor(0xFF0C0D14.toInt())
         setContentView(web)
         Hub.web = web; Hub.activity = this; Hub.ctx = applicationContext; Hub.version = versionName()
         // Die Seite bleibt auch bei ausgeschaltetem Bildschirm "wichtig", damit Android sie während eines Songs nicht einfriert
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             override fun onGeolocationPermissionsShowPrompt(origin: String, cb: android.webkit.GeolocationPermissions.Callback) {
                 val ok = ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                if (ok) cb.invoke(origin, true, false)
+                if (ok) cb.invoke(origin, true, true)
                 else { pendingGeo = origin to cb; requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 9) }
             }
             override fun onPermissionRequest(req: PermissionRequest) {
@@ -72,8 +73,7 @@ class MainActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { if (web.canGoBack()) web.goBack() else moveTaskToBack(true) }
         })
-        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
-            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 8)
+        askOnce()
         handle(intent?.data)
         if (web.url == null) load()
         OfflineStore.schedule(this)
@@ -101,9 +101,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(i: Intent) { super.onNewIntent(i); handle(i.data) }
 
+    /** Josef 9.11.2026: Mikrofon und Standort nur EINMAL freigeben. Die App fragt Android beim ersten Start nach allem auf einmal
+     *  (bitte "Bei Nutzung der App" wählen, nicht "Nur dieses Mal"); danach gibt sie der Seite die Rechte ohne Rückfrage weiter. */
+    private fun askOnce() {
+        val want = mutableListOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (Build.VERSION.SDK_INT >= 33) want.add(Manifest.permission.POST_NOTIFICATIONS)
+        val miss = want.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+        val sp = getSharedPreferences("inka", MODE_PRIVATE); val n = sp.getInt("permAsked", 0)
+        if (miss.isNotEmpty() && n < 3) { sp.edit().putInt("permAsked", n + 1).apply(); requestPermissions(miss.toTypedArray(), 6) }
+    }
+    private fun has(p: String) = ContextCompat.checkSelfPermission(this, p) == PackageManager.PERMISSION_GRANTED
+
     override fun onRequestPermissionsResult(code: Int, perms: Array<out String>, res: IntArray) {
         super.onRequestPermissionsResult(code, perms, res)
-        if (code == 9) { val g = pendingGeo; pendingGeo = null; g?.second?.invoke(g.first, res.any { it == PackageManager.PERMISSION_GRANTED }, false) }
+        if (code == 6) Hub.emit(JSONObject().put("type", "perms").put("mic", has(Manifest.permission.RECORD_AUDIO)).put("geo", has(Manifest.permission.ACCESS_FINE_LOCATION) || has(Manifest.permission.ACCESS_COARSE_LOCATION)))
+        if (code == 9) { val g = pendingGeo; pendingGeo = null; g?.second?.invoke(g.first, res.any { it == PackageManager.PERMISSION_GRANTED }, true) }
         if (code == 7) { val p = pendingPerm; pendingPerm = null
             if (res.firstOrNull() == PackageManager.PERMISSION_GRANTED) p?.grant(p.resources) else p?.deny() }
     }
@@ -127,6 +139,18 @@ class MainActivity : AppCompatActivity() {
         private val c get() = this@MainActivity
 
         @JavascriptInterface fun isApp() = true
+        /** Stand der Android-Rechte, damit die Seite nicht jedes Mal "Erlauben" zeigt (ab 1.4.0). */
+        @JavascriptInterface fun perms(): String = JSONObject().put("mic", has(Manifest.permission.RECORD_AUDIO))
+            .put("geo", has(Manifest.permission.ACCESS_FINE_LOCATION) || has(Manifest.permission.ACCESS_COARSE_LOCATION)).toString()
+        @JavascriptInterface fun askPerms() { runOnUiThread { getSharedPreferences("inka", MODE_PRIVATE).edit().putInt("permAsked", 0).apply(); askOnce() } }
+        /** Offene Aufträge ans Sekretariat: die App sendet sie nach, bis eine Quittung kommt (ntfy hält Nachrichten nur 12 Stunden). */
+        @JavascriptInterface fun queueSet(json: String) { Outbox.set(c, json) }
+        /** Daten für das Widget "Als Nächstes". */
+        @JavascriptInterface fun widgetSet(json: String) { NextWidget.save(c, json) }
+        @JavascriptInterface fun vibrate(ms: Int) { try {
+            val v = if (Build.VERSION.SDK_INT >= 31) (getSystemService(android.os.VibratorManager::class.java)).defaultVibrator else @Suppress("DEPRECATION") (getSystemService(VIBRATOR_SERVICE) as android.os.Vibrator)
+            v.vibrate(android.os.VibrationEffect.createOneShot(ms.toLong().coerceIn(5, 200), android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+        } catch (_: Exception) {} }
         @JavascriptInterface fun version() = versionName()
         @JavascriptInterface fun setKey(k: String) { Prefs.setKey(c, k) }
         @JavascriptInterface fun setTopic(t: String) { Prefs.setTopic(c, t) }

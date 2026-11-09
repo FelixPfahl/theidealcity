@@ -147,6 +147,8 @@ object OfflineStore {
 class PrefetchWorker(ctx: Context, p: WorkerParameters) : CoroutineWorker(ctx, p) {
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val r = OfflineStore.prefetch(applicationContext)
+        try { Outbox.flush(applicationContext) } catch (_: Exception) {}
+        try { NextWidget.refresh(applicationContext) } catch (_: Exception) {}
         try { Updates.check(applicationContext) } catch (_: Exception) {}
         Hub.log("Vorladen: $r")
         Hub.emit(org.json.JSONObject().put("type", "offline").put("ev", r)

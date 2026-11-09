@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="inka_bg">#0C0D14</color>
+    <string name="widget_desc">Nächster Termin, Abfahrt und nächste Frist</string>
+</resources>

@@ -24,6 +24,10 @@ for i, t in enumerate(d.get("tasks", [])):
     if not HM.match(t.get("time", "") or ""): err.append("tasks[%d].time" % i)
 for i, c in enumerate(d.get("conflicts", [])):
     if not c.get("id") or len(c.get("options", [])) < 1: err.append("conflicts[%d]" % i)
+for i, q in enumerate(d.get("questions", [])):
+    if not q.get("id") or not q.get("q"): err.append("questions[%d] id/q" % i)
+m = d.get("morning")
+if m is not None and not isinstance(m.get("lines", None), list): err.append("morning.lines")
 if err: sys.exit("Fehler im Klartext: " + ", ".join(err[:20]))
 d["topic"] = cfg["topic"]
 d.setdefault("made", int(datetime.datetime.now().timestamp() * 1000))

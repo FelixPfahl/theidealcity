@@ -19,7 +19,7 @@ Zeitraum: heute bis heute + 6 Tage. Zeiten "HH:MM" (24 h, Europe/Berlin), Daten 
     {"key": "t|<taskId>", "title": "MTV kündigen", "date": "2026-10-30", "time": "21:30", "dur": 20,
      "prio": 1, "project": "Inbox", "overdue": true, "due": "30.10."}
   ],
-  "deadlines": [{"date": "2026-11-04", "title": "Montessori: Geld und Dokumente"}],
+  "deadlines": [{"date": "2026-11-04", "title": "Montessori: Geld und Dokumente", "need_h": 3, "planned_h": 1}],
   "trips": {"2026-11-02": [{"leave": "12:30", "to": "Motten", "dest": "Hauptstr. 15, 97786 Motten", "minutes": 270}]},
   "hints": {"2026-11-03": ["Papa hat Geburtstag: anrufen"]},
   "conflicts": [
@@ -27,6 +27,8 @@ Zeitraum: heute bis heute + 6 Tage. Zeiten "HH:MM" (24 h, Europe/Berlin), Daten 
      "options": [{"label": "Empfohlene Lösung kurz", "auftrag": "Genaue Anweisung fürs Sekretariat, z. B. misc-Eintrag X auf 9:00 bis 9:45 verschieben"},
                  {"label": "Zweite Lösung", "auftrag": "..."}]}
   ],
+  "morning": {"made": 1793510000000, "lines": ["Heute: …", "Übergabe Kunst: …", "Synchron korrigiert: …"]},
+  "questions": [{"id": "q-2026-11-09-1", "q": "Frage an Josef", "from": "Sekretariat | Bildende Kunst und Comics | Unterrichtsvorbereitung", "options": ["Antwort A", "Antwort B"]}],
   "projects": [{"name": "Unterricht", "stand": "…", "next": "…", "frist": "…", "quelle": "Memo 30.10."}],
   "mails": [{"from": "Name", "subject": "Betreff", "since": "28.10.", "why": "Frage nach Termin"}],
   "waiting": [{"who": "Name", "what": "Rückmeldung zu …", "since": "27.10."}],
@@ -56,3 +58,11 @@ Regeln:
 - waiting: worauf Josef von wem wartet (aus der Übersicht).
 - news (Reiter Nachrichten): die jeweils neueste 9punkt- und Efeu-Ausgabe, ALLE Beiträge der Rundschau, je Beitrag Rubrik (section: Politikfeld bzw. Kunst, Literatur, Bühne, Film, Musik, Comic …), Zeitung, Autor, Überschrift und eine ausführliche eigene Zusammenfassung in 2 bis 4 Sätzen (keine wörtlichen Übernahmen langer Passagen). Reihenfolge wie im Original. Im Morgenlauf neu holen, bei den Voll-Aktualisierungen 7:23, 12:23, 17:23 und 21:23 (seit 2.11.2026) nur ersetzen, wenn eine neue Ausgabe erschienen ist; sonst unverändert übernehmen.
 - Keine langen Gedankenstriche in Texten.
+
+Seit 9.11.2026 (Umbau nach Josefs Fragebogen):
+- deadlines: need_h = geschätzte Arbeitsstunden bis zur Frist, planned_h = Stunden in Kalenderblöcken davor (beides aus den Übergaben, sonst weglassen). Die App zeigt "noch 3 h Arbeit, 1 h geplant".
+- morning: der Morgenbericht des Morgenchecks in 3 bis 8 kurzen Zeilen (Karte "Heute früh").
+- questions: offene Fragen an Josef aus Übergaben und Morgencheck, je 2 bis 4 Antworten zum Antippen; Josef kann auch frei antworten.
+- conflicts[].minutes: Überschneidung in Minuten, wenn es eine zeitliche ist.
+- tasks[].place: Ort für Besorgungen (Liste "Unterwegs erledigen"); entries[].heavy: true für schwere Blöcke (sonst erkennt die App sie am Titel).
+- Antworten der App kommen als Aufträge über den Kanal (kanal.py lesen): tool "erledigen", "verschieben", "aufgabe_anlegen", "termin_anlegen" {titel, datum, start, ende, ort}, "notiz" {text, tag}, "konflikt" {id, label, auftrag, text}, "antwort" {id, frage, antwort, von}. Die App sendet jeden Auftrag ohne Quittung alle 6 Stunden erneut mit derselben id: nur einmal ausführen, immer quittieren.

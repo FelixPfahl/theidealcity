@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:padding="14dp" android:background="@drawable/widget_bg">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ALS NÄCHSTES"
+        android:textColor="#8FA2FF" android:textSize="11sp" android:letterSpacing="0.1" android:fontFamily="monospace" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="2dp">
+        <TextView android:id="@+id/w_time" android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:textColor="#4D6BFF" android:textSize="30sp" android:textStyle="bold" android:text="–" />
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp" android:layout_gravity="center_vertical">
+            <TextView android:id="@+id/w_title" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="#F1F2F7" android:textSize="17sp" android:textStyle="bold" android:maxLines="2" android:ellipsize="end" />
+            <TextView android:id="@+id/w_sub" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="#9A9CB0" android:textSize="13sp" android:maxLines="1" />
+        </LinearLayout>
+    </LinearLayout>
+    <TextView android:id="@+id/w_trip" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textColor="#4D6BFF" android:textSize="14sp" android:textStyle="bold" android:maxLines="1" android:layout_marginTop="4dp" />
+    <TextView android:id="@+id/w_dl" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:textColor="#C9CBD8" android:textSize="13sp" android:maxLines="1" />
+</LinearLayout>

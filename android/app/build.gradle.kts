@@ -42,4 +42,5 @@ dependencies {
     implementation("androidx.media:media:1.7.0")
     implementation("androidx.webkit:webkit:1.11.0")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.browser:browser:1.8.0")
 }

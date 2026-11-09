@@ -272,6 +272,26 @@ body.raster h1,body.raster h2,body.raster .hero .now,body.raster .songt{font-fam
 body.raster #subt{font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
 body.raster .hero{border:1px dashed var(--blue);background:#0b0d16}
 body.raster .card{background:#0c0e15;border-style:dashed}
+/* ===== Eine App (9.11.2026) ===== */
+.nowblk{background:var(--fill);color:#fff;border-radius:18px;padding:16px 18px 18px;margin:0 0 14px;cursor:pointer}
+.nowblk .nk{display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.9}
+.nowblk .nbig{font-family:var(--disp);font-weight:800;font-stretch:75%;font-size:clamp(76px,26vw,132px);line-height:.82;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:8px}
+.nowblk .nti{font-size:22px;font-weight:700;line-height:1.15;margin-top:6px;text-wrap:balance}
+.nowblk .nloc{font-family:var(--mono);font-size:12px;opacity:.85;margin-top:4px}
+.nowblk .nafter{border-top:1px solid rgba(255,255,255,.35);margin-top:12px;padding-top:9px;display:grid;gap:3px;font-size:15px}
+.nowblk .nafter b{font-family:var(--mono);font-weight:500;display:inline-block;min-width:3.4em}
+.stand .nextrun{color:var(--ink)}.stand .livechip{margin-left:0}
+.livechip{font-family:var(--mono);font-size:12px;color:var(--blue);border:1.5px solid var(--blue);border-radius:999px;padding:3px 10px!important}
+.livebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.flag{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:15.5px}.flag:first-child{border-top:0}
+.flag span{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);padding-top:3px}
+.memo .pl{padding:8px 0;border-top:1px solid var(--line);margin-top:8px}.memo .pl .k{display:block;margin-bottom:2px}
+.tcount{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:var(--fill);color:#fff;font-family:var(--mono);font-size:11px;line-height:18px;margin-left:3px}
+#undo{position:fixed;left:12px;right:12px;bottom:calc(66px + env(safe-area-inset-bottom));z-index:11;max-width:540px;margin:0 auto;background:#1d2031;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:none;align-items:center;justify-content:space-between;gap:12px;font-size:15px;overflow:hidden}
+#undo.on{display:flex}#undo button{border:0;background:transparent;color:var(--blue);font-weight:700;padding:4px;white-space:nowrap}
+#undo i{position:absolute;left:0;bottom:0;height:3px;background:var(--fill);width:100%;transition:width 5s linear}
+.vctype{display:flex;gap:8px;margin-top:10px}.vctype input{flex:1;margin:0}.vctype button{flex:none}
+
 </style>
 </head>
 <body>
@@ -297,7 +317,7 @@ body.raster .card{background:#0c0e15;border-style:dashed}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="9.11. (Umbau: Heute, Woche, dunkel, Widget)";
+const APPV="9.11. (Eine App: Inka mit Sekretariat, Läufe 4:17 9:23 12:23 16:23 20:23)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -1778,7 +1798,7 @@ function renderHeute(){
   /* Heute früh: Morgenbericht des Sekretariats (4a) */
   const M=A&&A.morning;let mh="";
   if(M&&(M.lines||[]).length&&ymd(new Date(M.made||A.made))===today){const L=M.lines,show=UMB.openMorning?L:L.slice(0,4);
-    mh='<div class="card"><div class="k">Heute früh · Sekretariat '+(M.made?hm(new Date(M.made)):"")+'</div>'+show.map(x=>'<div class="ml">'+esc(x)+'</div>').join("")+(L.length>4?'<button class="link" id="mmore">'+(UMB.openMorning?"weniger":"alle "+L.length+" Punkte")+'</button>':"")+'</div>';}
+    mh='<div class="card"><div class="k">Heute früh · Inka '+(M.made?hm(new Date(M.made)):"")+'</div>'+show.map(x=>'<div class="ml">'+esc(x)+'</div>').join("")+(L.length>4?'<button class="link" id="mmore">'+(UMB.openMorning?"weniger":"alle "+L.length+" Punkte")+'</button>':"")+'</div>';}
   $("#morning").innerHTML=mh;const mm=$("#mmore");if(mm)mm.onclick=()=>{UMB.openMorning=!UMB.openMorning;renderHeute();};
   /* Zu entscheiden: Konflikte und Fragen (3a, 6a, 17a) */
   const kf=((A&&A.conflicts)||[]).filter(c=>!pendList().find(p=>p.tool==="konflikt"&&p.args&&p.args.id===c.id));
@@ -1998,6 +2018,121 @@ function render(){
 }
 window.__inkaNativeUmbau=function(o){if(o&&o.type==="perms"){PERM.mic=o.mic?"granted":"prompt";PERM.geo=o.geo?"granted":"prompt";render();return true;}return false;};
 {const _n=window.__inkaNative;window.__inkaNative=function(o){if(window.__inkaNativeUmbau(o))return;return _n&&_n(o);};}
+
+/* ================= Eine App: Inka (9.11.2026, Josefs 30 Antworten "INKA-EINS") =================
+   Läufe 4:17, 9:23, 12:23, 16:23, 20:23 setzen Aufträge um; die App sagt immer, wann. Post, Memo, Entwürfe, Hinweise,
+   großer Jetzt-Block, Rückgängig, Plan-Links, Live-Bereich (claude.ai) und eigene Benachrichtigungen. */
+const LIVE_URL="https://claude.ai/artifact/EkNqxBBfUr4tsNZhP9NvUN";
+const RUNS_DEF=["04:17","09:23","12:23","16:23","20:23"];
+function runs(){const r=APP.data&&Array.isArray(APP.data.runs)&&APP.data.runs.length?APP.data.runs:RUNS_DEF;return r.map(toMin).filter(x=>x!=null).sort((a,b)=>a-b);}
+function nextRun(after){const d=after?new Date(after):new Date(),m=d.getHours()*60+d.getMinutes(),R=runs();const n=R.find(x=>x>m+1);
+  return n!=null?{min:n,day:0,txt:"um "+fromMin(n).replace(/^0/,"")}:{min:R[0],day:1,txt:"morgen um "+fromMin(R[0]).replace(/^0/,"")};}
+function showEta(){const n=nextRun(),a=n.min+45;return n.txt.replace("um ","ab ")+", fertig gegen "+(n.day?"morgen ":"")+fromMin(a%1440).replace(/^0/,"");}
+function openLive(){if(NAT&&typeof NAT.openLive==="function"){try{NAT.openLive(LIVE_URL);return;}catch(_){}}window.open(LIVE_URL,"_blank");}
+
+/* ---------- Aufträge mit 5 Sekunden Rückgängig und klarer Rückmeldung ---------- */
+const UNDO={t:null,job:null};
+function undoBar(text,onUndo){let b=$("#undo");if(!b){b=document.createElement("div");b.id="undo";document.body.appendChild(b);}
+  b.innerHTML='<span>'+esc(text)+'</span><button type="button" id="undogo">Rückgängig</button><i></i>';b.className="on";
+  $("#undogo").onclick=()=>{onUndo();b.className="";};requestAnimationFrame(()=>{const i=b.querySelector("i");if(i)i.style.width="0";});}
+async function sendNow(tool,args,text,key){
+  try{const id=await sendSek("aktion",{tool,args,text});const l=pendList();l.push({id,t:Date.now(),key:key||"",tool,args,text,via:"App"});store.set("pend",l.slice(-80));
+    syncOutbox();render();return true;}
+  catch(e){toast("Senden ging nicht: "+String(e&&e.message||e).slice(0,60)+". Ich versuche es beim nächsten Öffnen erneut.",7000,true);
+    const q=store.get("offq",[]);q.push({tool,args,text,key,t:Date.now()});store.set("offq",q.slice(-40));return false;}
+}
+async function auftrag(tool,args,text,key){
+  if(UNDO.job){clearTimeout(UNDO.t);const j=UNDO.job;UNDO.job=null;sendNow(j.tool,j.args,j.text,j.key);}
+  vib(12);closeSheet();
+  const when=tool==="show_bestellen"?"Show wird "+showEta()+".":"Wird "+nextRun().txt+" übernommen.";
+  UNDO.job={tool,args,text,key};
+  undoBar(text+" · "+when,()=>{clearTimeout(UNDO.t);UNDO.job=null;note("Zurückgenommen: "+text);render();});
+  UNDO.t=setTimeout(()=>{const j=UNDO.job;UNDO.job=null;const b=$("#undo");if(b)b.className="";if(j)sendNow(j.tool,j.args,j.text,j.key);},5000);
+  render();return true;
+}
+async function flushOffq(){const q=store.get("offq",[]);if(!q.length||!navigator.onLine)return;store.set("offq",[]);for(const j of q)await sendNow(j.tool,j.args,j.text,j.key);}
+window.addEventListener("online",()=>{flushOffq();render();});window.addEventListener("offline",()=>render());
+
+/* ---------- Bausteine ---------- */
+function liveChip(){return '<button class="link livechip" id="golive" type="button">Live öffnen</button>';}
+function hintsToday(today){const A=APP.data||{},out=[];
+  dayEntries(today).filter(e=>!e.start&&e.kind==="allday").forEach(e=>{if(/krank/i.test(e.title))out.push(["Krank","Krankheitstag. Was heute geplant war, bleibt liegen."]);else if(/ferien|feiertag/i.test(e.title))out.push(["Frei",e.title]);});
+  if(dOf(today).getDate()===15)out.push(["Geld","Finanz-Check heute (Finanzguru-Export)."]);
+  if(!navigator.onLine)out.push(["Offline","Letzter Stand bleibt sichtbar, Aktionen werden gesammelt und später gesendet."]);
+  return out;}
+function memoHtml(today){const M=APP.data&&APP.data.memo;if(!M||M.day!==today)return "";
+  return '<div class="card memo"><div class="k b">Schule heute</div><div class="nt" style="font-size:18px">'+esc(M.title||"Tagesmemo")+'</div>'+
+    ((M.druck||[]).length?'<div class="pl"><span class="k">Drucken</span>'+M.druck.map(x=>'<div>'+esc(x)+'</div>').join("")+'</div>':"")+
+    ((M.mitnehmen||[]).length?'<div class="pl"><span class="k">Mitnehmen</span>'+M.mitnehmen.map(x=>'<div>'+esc(x)+'</div>').join("")+'</div>':"")+
+    (M.url?'<a class="btn" style="margin-top:10px" target="_blank" rel="noopener" href="'+esc(M.url)+'">Memo öffnen</a>':"")+'</div>';}
+function planLinks(){const L=(APP.data&&APP.data.links)||{};const a=[];if(L.tagesplan)a.push('<a class="btn" target="_blank" rel="noopener" href="'+esc(L.tagesplan)+'">Tagesplan</a>');if(L.wochenplan)a.push('<a class="btn" target="_blank" rel="noopener" href="'+esc(L.wochenplan)+'">Wochenplan</a>');
+  return a.length?'<div class="row" style="margin-top:10px">'+a.join("")+'</div>':"";}
+function orderCard(){const o=openPend().filter(p=>p.tool==="show_bestellen");if(!o.length)return "";
+  return '<div class="card blue"><div class="k b">Bestellte Show</div>'+o.map(p=>'<div>'+esc(p.text)+'</div>').join("")+'<div class="de">Wird '+esc(showEta())+'.</div></div>';}
+
+/* ---------- Heute: zusätzliche Teile ---------- */
+{const _rh=renderHeute;renderHeute=function(){_rh();
+  const A=APP.data,today=ymd(new Date()),now=new Date(),nm=now.getHours()*60+now.getMinutes();
+  /* Stand-Zeile mit Übernahmezeit und Live */
+  const st=$("#stand");if(st){st.insertAdjacentHTML("beforeend",'<span class="nextrun">Änderungen werden '+esc(nextRun().txt)+' übernommen</span>'+liveChip());
+    const gl=$("#golive");if(gl)gl.onclick=openLive;}
+  /* großer Jetzt-Block (12a) */
+  const items=timedToday(today).filter(e=>!PAUSE_RX.test(e.title));const cur=items.filter(e=>e.s<=nm&&e.e2>nm).pop();const up=items.filter(e=>e.s>nm);
+  const main=cur||up[0];let h;
+  if(main){const mins=main.s-nm;const after=(cur?up:up.slice(1)).slice(0,2);
+    h='<div class="nowblk" data-key="'+esc(main.key)+'"><div class="nk"><span>'+(cur?"Jetzt · bis "+fromMin(main.e2):"Als Nächstes · in "+durTxt(mins))+'</span><span>'+esc(KIND[main.kind]||"")+'</span></div><div class="nbig">'+esc(main.start)+'</div><div class="nti">'+esc(main.title)+'</div>'+(main.loc?'<div class="nloc">'+esc(main.loc)+'</div>':"")+
+      (after.length?'<div class="nafter">'+after.map(a=>'<div><b>'+esc(a.start)+'</b> '+esc(a.title)+'</div>').join("")+'</div>':"")+'</div>';}
+  else{const tm=timedToday(addDays(today,1))[0];h='<div class="nowblk"><div class="nk"><span>Heute nichts mehr · Morgen</span><span>'+esc(dlabel(addDays(today,1)))+'</span></div>'+(tm?'<div class="nbig">'+esc(tm.start)+'</div><div class="nti">'+esc(tm.title)+'</div>':'<div class="nti">Morgen ist noch nichts geplant.</div>')+'</div>';}
+  $("#next").innerHTML=h;
+  /* Hinweise (13a), Schul-Memo (6a), Bestellte Show */
+  const hs=hintsToday(today);
+  $("#morning").insertAdjacentHTML("afterbegin",orderCard()+memoHtml(today)+(hs.length?'<div class="card">'+hs.map(x=>'<div class="flag"><span>'+esc(x[0])+'</span><div>'+esc(x[1])+'</div></div>').join("")+'</div>':""));
+  /* Entscheidungs-Hinweis mit nächster Übernahme */
+  const dc=$("#decide");if(dc)dc.innerHTML=dc.innerHTML.replace("Deine Wahl setzt der Morgencheck um 4:17 um.","Deine Wahl wird "+nextRun().txt+" übernommen.").replace(/warte[nt]? auf den Morgencheck\./,m=>m.replace("auf den Morgencheck","auf die Übernahme "+nextRun().txt));
+  /* Plan-Links am Tag (18a) */
+  const tl=$("#tl .card");if(tl)tl.insertAdjacentHTML("beforeend",planLinks());
+  scheduleAlarms();
+};}
+
+/* ---------- Post (5a, 7a) ---------- */
+function renderPost(){const A=APP.data||{},M=A.mails||[],Dr=A.drafts||[];
+  let h='<h2>Post</h2><div class="small" style="margin-bottom:12px">Gmail bleibt nur lesend. Antworten formuliere ich im Sekretär-Chat, du schickst selbst.</div>';
+  h+='<div class="card"><div class="k">Braucht eine Antwort · '+M.length+'</div>'+(M.length?M.map((m,i)=>'<div class="li"><b>'+esc(m.from)+'</b> · '+esc(m.subject)+'<div class="de">'+esc([m.since?"seit "+m.since:"",m.why].filter(Boolean).join(" · "))+'</div><button class="link" data-reply="'+i+'">Antwort formulieren</button></div>').join(""):'<div class="small">Nichts offen.</div>')+'</div>';
+  h+='<div class="card"><div class="k">Formuliert, noch nicht verschickt · '+Dr.length+'</div>'+(Dr.length?Dr.map((d,i)=>'<div class="li"><b>'+esc(d.to||"")+'</b> · '+esc(d.subject||"")+'<div class="de" style="white-space:pre-wrap">'+esc(String(d.text||"").slice(0,400))+'</div><button class="link" data-copydraft="'+i+'">Text kopieren</button></div>').join(""):'<div class="small">Keine Entwürfe.</div>')+'</div>';
+  h+='<div class="card"><div class="k">Warteschleife</div>'+((A.waiting||[]).map(w=>'<div class="li"><b>'+esc(w.who)+'</b>: '+esc(w.what)+(w.since?' <span class="small">seit '+esc(w.since)+'</span>':"")+'</div>').join("")||'<div class="small">Du wartest auf nichts.</div>')+'</div>';
+  $("#t-post").innerHTML=h;}
+function renderMehr(){const el=$("#mehr");if(MEHR.cur==="woche")MEHR.cur="aufgaben";const nM=((APP.data&&APP.data.mails)||[]).length;
+  const subs=[["aufgaben","Aufgaben"],["post","Post"+(nM?" "+nM:"")],["projekte","Projekte"],["nachrichten","Nachrichten"],["unterwegs","Unterwegs"],["ueberblick","Überblick"]];
+  el.innerHTML='<div class="subtabs">'+subs.map(([k,n])=>'<button class="'+(MEHR.cur===k?"on":"")+'" data-sub="'+k+'">'+n+'</button>').join("")+'</div><div class="livebar">'+liveChip()+'<span class="small">live Kalender, Aufgaben und Post in claude.ai</span></div><div id="t-aufgaben"></div><div id="t-post"></div><div id="t-projekte"></div><div id="t-nachrichten"></div><div id="t-ueberblick"></div>';
+  const gl=$("#golive");if(gl)gl.onclick=openLive;
+  ["aufgaben","post","projekte","nachrichten","ueberblick"].forEach(k=>{$("#t-"+k).style.display=MEHR.cur===k?"block":"none";});
+  if(MEHR.cur==="aufgaben")renderAufgaben();else if(MEHR.cur==="post")renderPost();else if(MEHR.cur==="projekte")renderProjekte();else if(MEHR.cur==="nachrichten")renderNachrichten();else renderUeberblick();}
+function tabCounts(){const b=document.querySelector('#tabs [data-tab="mehr"]');if(!b)return;const n=((APP.data&&APP.data.mails)||[]).length;b.innerHTML="Mehr"+(n?' <span class="tcount">'+n+'</span>':"");
+  const s=document.querySelector('#tabs [data-tab="show"]');if(s)s.innerHTML="Show"+(openPend().some(p=>p.tool==="show_bestellen")?' <span class="tcount">1</span>':"");}
+{const _r=render;render=function(){_r();try{tabCounts();}catch(_){}
+  if(TAB.cur==="show"&&!S.doc){const el=$("#show");if(el&&!el.querySelector(".nextshow"))el.insertAdjacentHTML("beforeend",'<div class="card nextshow"><div class="k b">Nächste Show</div>'+(openPend().some(p=>p.tool==="show_bestellen")?'<div>Bestellt. Sie wird '+esc(showEta())+'.</div>':'<div>Shows gibt es gerade auf Anfrage. Bestellst du jetzt eine, wird sie '+esc(showEta())+'.</div>')+'</div>');}};}
+document.addEventListener("click",ev=>{
+  const r=ev.target.closest("[data-reply]");if(r){ev.stopImmediatePropagation();const m=((APP.data&&APP.data.mails)||[])[+r.dataset.reply];
+    if(m)chatPrompt("Bitte formuliere eine Antwort auf die Mail von "+m.from+" (Betreff: "+m.subject+(m.since?", seit "+m.since:"")+"). Worum es geht: "+(m.why||"")+". Lies die Mail in Gmail nur lesend und beantworte jede darin gestellte Frage.");return;}
+  const c=ev.target.closest("[data-copydraft]");if(c){ev.stopImmediatePropagation();const d=((APP.data&&APP.data.drafts)||[])[+c.dataset.copydraft];
+    if(d){const t=(d.subject?"Betreff: "+d.subject+"\n\n":"")+(d.text||"");navigator.clipboard.writeText(t).then(()=>toast("Text kopiert.",3000,true)).catch(()=>openSheet('<h3>Entwurf</h3><textarea rows="10" readonly>'+esc(t)+'</textarea>'));}return;}
+},true);
+
+/* ---------- Eigene Benachrichtigungen (19a): Abfahrt 10 min vorher, Fristen morgens ---------- */
+function scheduleAlarms(){if(!NAT||typeof NAT.alarmsSet!=="function")return;const A=APP.data;if(!A)return;const sig=(A.made||0)+"";if(UMB.alarmSig===sig)return;UMB.alarmSig=sig;
+  const L=[],today=ymd(new Date()),at=(day,hmS,off)=>{const m=toMin(hmS);if(m==null)return 0;const d=dOf(day);d.setHours(0,0,0,0);return d.getTime()+(m-(off||0))*60000;};
+  for(let i=0;i<3;i++){const day=addDays(today,i);((A.trips||{})[day]||[]).forEach((t,k)=>{const ms=at(day,t.leave,10);if(ms)L.push({id:"ab-"+day+"-"+k,at:ms,title:"In 10 Minuten los nach "+(t.to||""),text:(t.line?t.line+" · ":"")+"Abfahrt "+t.leave+". Live-Abfahrten in Inka."});});}
+  (A.deadlines||[]).forEach((d,k)=>{[0,1].forEach(b=>{const day=addDays(d.date,-b),ms=at(day,"07:30",0);if(ms)L.push({id:"fr-"+d.date+"-"+k+"-"+b,at:ms,title:(b?"Morgen Frist: ":"Heute Frist: ")+d.title,text:d.need_h?"Noch "+d.need_h+" h Arbeit, "+(d.planned_h||0)+" h geplant.":"In Inka unter Fristen."});});});
+  try{NAT.alarmsSet(JSON.stringify(L));}catch(_){}}
+
+/* ---------- Inka: sprechen oder tippen (8a) ---------- */
+{const _ui=VC.ui;VC.ui=function(open){_ui.call(VC,open);const el=$("#vc");if(!el||el.style.display!=="flex"||!VC.conv||$("#vctype"))return;
+  el.insertAdjacentHTML("beforeend",'<div class="vctype" id="vctype"><input id="vcin" placeholder="Oder tippen …" autocomplete="off"><button class="pri" id="vcsend">Senden</button></div>');
+  const go=()=>{const v=($("#vcin").value||"").trim();if(!v||!VC.conv)return;try{VC.conv.sendUserMessage(v);VC.lastUser=v;VC.users.push({t:Date.now(),x:v});VC.log.push("Du: "+v);$("#vcin").value="";VC.ui();}catch(e){toast("Tippen geht gerade nicht: "+String(e&&e.message||e).slice(0,50),5000,true);}};
+  $("#vcsend").onclick=go;$("#vcin").onkeydown=e=>{if(e.key==="Enter")go();};};}
+/* Inka-Werkzeuge im Gespräch: Rückmeldung mit Übernahmezeit statt "Stundencheck" */
+{const _ak=aktion;aktion=async function(tool,args,text){const r=await _ak(tool,args,text);return String(r).replace("Wird beim nächsten Stundencheck eingetragen.","Wird "+nextRun().txt+" übernommen.");};}
+setTimeout(flushOffq,3000);
 
 </script>
 </body>

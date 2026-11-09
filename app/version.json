@@ -5,10 +5,10 @@
   "sha256": "58aef09cfdb1c03faa219ffa923cee1830d28d19b7c1dd4b8dcc3420efd69a4f"
  },
  "android": {
-  "versionCode": 16,
-  "versionName": "1.4.0",
+  "versionCode": 17,
+  "versionName": "1.5.0",
   "url": "https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/app/inka.apk",
-  "sha256": "8d70f5f5da01cb5cdb7e493236a0ac4249dd92a7407174ac56fe957f112d96ae"
+  "sha256": "ec9d4d375774b110ccb2e24b57de4e4a3e3305113e12c9b594a10aa18d8475bc"
  },
  "hinweis": "Wird von den Apps gelesen. Bei jedem Release Version und Prüfsumme anpassen."
 }

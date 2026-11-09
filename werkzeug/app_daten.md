@@ -66,3 +66,11 @@ Seit 9.11.2026 (Umbau nach Josefs Fragebogen):
 - conflicts[].minutes: Überschneidung in Minuten, wenn es eine zeitliche ist.
 - tasks[].place: Ort für Besorgungen (Liste "Unterwegs erledigen"); entries[].heavy: true für schwere Blöcke (sonst erkennt die App sie am Titel).
 - Antworten der App kommen als Aufträge über den Kanal (kanal.py lesen): tool "erledigen", "verschieben", "aufgabe_anlegen", "termin_anlegen" {titel, datum, start, ende, ort}, "notiz" {text, tag}, "konflikt" {id, label, auftrag, text}, "antwort" {id, frage, antwort, von}. Die App sendet jeden Auftrag ohne Quittung alle 6 Stunden erneut mit derselben id: nur einmal ausführen, immer quittieren.
+
+Seit 9.11.2026 (eine App "Inka", Sekretariat integriert):
+- runs: Uhrzeiten der Läufe, die Aufträge übernehmen (["04:17","09:23","12:23","16:23","20:23"]); die App sagt damit "Wird um 12:23 übernommen".
+- memo: {day, title, url, druck: [..], mitnehmen: [..]} das Schul-Memo des Tages (aus Tagesmemos_2026-27 bzw. Übergabe Unterricht), nur an Schultagen.
+- drafts: [{to, subject, text}] formulierte, laut Josef noch nicht verschickte Nachrichten (aus der Übersicht).
+- links: {tagesplan, wochenplan} Drive-Links der aktuellen Pläne aus "Tages und Wochenplanung".
+- Auftrag show_bestellen: Show produzieren (code/sekretariat/show/show_bestellen.md); die App zeigt "wird ab <nächster Lauf> gebaut, fertig gegen <+45 min>".
+- Push-Absender heißt "Inka".

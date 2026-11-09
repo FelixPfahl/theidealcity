@@ -147,6 +147,14 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface fun queueSet(json: String) { Outbox.set(c, json) }
         /** Daten für das Widget "Als Nächstes". */
         @JavascriptInterface fun widgetSet(json: String) { NextWidget.save(c, json) }
+        /** Inka Live (claude.ai, live Kalender, Todoist, Gmail) im eingebetteten Chrome-Tab: nutzt die claude.ai-Anmeldung aus Chrome (ab 1.5.0). */
+        @JavascriptInterface fun openLive(url: String) { runOnUiThread { try {
+            androidx.browser.customtabs.CustomTabsIntent.Builder().setShowTitle(true)
+                .setDefaultColorSchemeParams(androidx.browser.customtabs.CustomTabColorSchemeParams.Builder().setToolbarColor(0xFF0C0D14.toInt()).build())
+                .build().launchUrl(c, Uri.parse(url))
+        } catch (_: Exception) { try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: Exception) {} } } }
+        /** Eigene Benachrichtigungen: Abfahrt 10 min vorher, Fristen morgens (ab 1.5.0). json = [{id, at (ms), title, text}] */
+        @JavascriptInterface fun alarmsSet(json: String) { Alarms.set(c, json) }
         @JavascriptInterface fun vibrate(ms: Int) { try {
             val v = if (Build.VERSION.SDK_INT >= 31) (getSystemService(android.os.VibratorManager::class.java)).defaultVibrator else @Suppress("DEPRECATION") (getSystemService(VIBRATOR_SERVICE) as android.os.Vibrator)
             v.vibrate(android.os.VibrationEffect.createOneShot(ms.toLong().coerceIn(5, 200), android.os.VibrationEffect.DEFAULT_AMPLITUDE))

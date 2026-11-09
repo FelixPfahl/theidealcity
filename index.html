@@ -1434,7 +1434,7 @@ function boHtml(){
   return head+'<div style="font-size:22px;font-weight:700;margin-bottom:8px">Noch Wünsche?</div><textarea id="dk" rows="4" placeholder="Gäste, Orte, was vorkommen soll …"></textarea>'+
     '<div class="row"><button id="dkmic">● Diktat</button></div><div class="small" id="dkst"></div>'+
     '<div class="k" style="margin-top:14px">Deine Auswahl</div>'+sum+
-    nav('<button class="pri" id="bogo">Show bestellen</button>')+'<div class="small" style="margin-top:8px">Fertig meist 30 bis 60 Minuten nach dem Absenden, du bekommst eine Nachricht.</div>';
+    nav('<button class="pri" id="bogo">Show bestellen</button>')+'<div class="small" style="margin-top:8px">Gebaut wird beim nächsten Lauf: '+esc((()=>{try{return showEta();}catch(_){return "beim nächsten Lauf";}})())+'. Du bekommst eine Nachricht.</div>';
 }
 function sheetShowOrder(){
   if(!BO.a.anlass){boDefaults();BO.step=0;}

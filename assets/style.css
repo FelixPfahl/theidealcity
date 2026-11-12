@@ -1626,3 +1626,30 @@ html[class*="lh-"] .sbpanel.mmenu{--pf:var(--body)}
 html.calm .sbpanel.mmenu .sbpin,html.calm .mmenu .blink{animation:none!important}
 .mmenu .mmtabs button.on,.mmenu .mmtabs button.on:hover,.mmenu .mmtabs button.on:focus-visible{color:var(--hi);border-color:var(--hi)}
 .mmenu .mmcert{font:15px var(--pf);background:#00A651;color:#000;border:2px solid #000;padding:4px 10px;cursor:pointer;margin-bottom:6px}
+/* Wirkungen der Werkzeuge auch in der Großansicht (Josef, 12.11.2026) */
+.lb2 .lbruinov{position:absolute;pointer-events:none;transform-origin:0 0;z-index:1}
+.lb2 img.main.lbruin.fx-burn{filter:sepia(.45) contrast(1.1)}
+.lb2 .lbruinov.fx-burn{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--paper) 0 10%,#2a1a0a 11% 13%,rgba(120,60,10,.75) 14% 17%,rgba(60,30,5,.35) 18% 22%,transparent 26%)}
+.lb2 img.main.lbruin.fx-crater{filter:contrast(1.15) brightness(.85)}
+.lb2 .lbruinov.fx-crater{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),#111 0 14%,#444 15% 18%,rgba(40,40,40,.6) 19% 24%,rgba(0,0,0,.25) 25% 34%,transparent 40%)}
+.lb2 .lbruinov.fx-cuts{background:repeating-linear-gradient(28deg,transparent 0 46px,var(--paper) 46px 49px),repeating-linear-gradient(-61deg,transparent 0 83px,var(--paper) 83px 85px)}
+.lb2 .lbruinov.fx-concrete{background:linear-gradient(#8f8f8f,#6b6b6b);clip-path:polygon(0 48%,12% 44%,25% 50%,40% 43%,55% 49%,70% 42%,85% 47%,100% 44%,100% 100%,0 100%)}
+.lb2 img.main.lbruin.fx-bites{clip-path:polygon(0 0,70% 0,74% 8%,80% 2%,86% 10%,100% 6%,100% 100%,30% 100%,26% 92%,18% 98%,12% 90%,0 94%)}
+.lb2 img.main.lbruin.fx-water{filter:saturate(.4) blur(.8px) brightness(.9)}
+.lb2 .lbruinov.fx-water{background:linear-gradient(rgba(60,120,170,.1),rgba(30,80,140,.5)),repeating-linear-gradient(0deg,transparent 0 18px,rgba(255,255,255,.12) 18px 20px)}
+.lb2 .lbruinov.fx-wrap{background:repeating-linear-gradient(-12deg,rgba(255,255,255,.92) 0 22px,rgba(235,235,235,.85) 22px 26px,transparent 26px 34px)}
+.lb2 img.main.lbruin.fx-smear{filter:contrast(.8) sepia(.3)}
+.lb2 .lbruinov.fx-smear{background:radial-gradient(ellipse at var(--rx,50%) var(--ry,50%),rgba(230,170,40,.55),rgba(230,170,40,.2) 40%,transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(230,170,40,.4),transparent 30%)}
+.lb2 .lbruinov.fx-spots{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),#3a2410 0 4%,rgba(120,70,20,.6) 5% 7%,transparent 9%),radial-gradient(circle at 30% 30%,#3a2410 0 3%,rgba(120,70,20,.6) 4% 6%,transparent 8%),radial-gradient(circle at 75% 70%,#3a2410 0 3.5%,rgba(120,70,20,.6) 4.5% 6.5%,transparent 8.5%)}
+.lb2 img.main.lbruin.fx-bleach{filter:brightness(1.7) contrast(.45) saturate(.2)}
+.lb2 .lbruinov.fx-mirror{background:linear-gradient(100deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.35) 50%,rgba(255,255,255,0) 60%)}
+.lb2 .lbruinov.fx-wall{background:repeating-linear-gradient(0deg,transparent 0 22px,#e4e0d8 22px 25px),repeating-linear-gradient(90deg,transparent 0 48px,#e4e0d8 48px 51px),linear-gradient(#b85a3a,#a34e32);opacity:.96}
+.lb2 img.main.lbruin.fx-sunk{filter:brightness(.55) saturate(.5) hue-rotate(190deg)}
+.lb2 .lbruinov.fx-sunk{background:linear-gradient(rgba(20,50,90,.15),rgba(10,30,70,.7))}
+.lb2 .lbruinov.fx-grease{background:radial-gradient(ellipse at var(--rx,50%) var(--ry,50%),rgba(255,210,80,.5),transparent 35%),radial-gradient(ellipse at 70% 30%,rgba(255,210,80,.45),transparent 25%),radial-gradient(ellipse at 25% 75%,rgba(255,210,80,.4),transparent 22%)}
+.lb2 .lbruinov.fx-paper{background:var(--paper);box-shadow:inset 0 0 0 1px var(--line),inset 0 0 0 4px var(--paper),inset 0 0 0 5px var(--hair);clip-path:inset(18% 10% 22% 14%)}
+.lb2 img.main.lbruin.fx-nibble{clip-path:polygon(0 0,100% 0,100% 100%,40% 100%,37% 93%,30% 97%,24% 88%,17% 95%,10% 86%,5% 92%,0 84%)}
+.lb2 .lbruinov.fx-sticker{background:radial-gradient(circle at 12% 14%,#E2231A 0 7%,transparent 8%),radial-gradient(circle at 88% 20%,#00A651 0 6%,transparent 7%),radial-gradient(circle at 80% 86%,#3F97B8 0 8%,transparent 9%),radial-gradient(circle at 18% 80%,#E2231A 0 5%,transparent 6%)}
+.lb2 .lbruinov.fx-holes{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--paper) 0 9%,transparent 10%),radial-gradient(circle at 25% 30%,var(--paper) 0 6%,transparent 7%),radial-gradient(circle at 78% 65%,var(--paper) 0 7%,transparent 8%),radial-gradient(circle at 60% 15%,var(--paper) 0 4%,transparent 5%)}
+.lb2 .lbruinov.fx-spill{background:radial-gradient(ellipse at 50% 100%,rgba(220,40,80,.6),rgba(220,40,80,.25) 45%,transparent 70%)}
+.lb2 .lbruinov.fx-scratch{background:repeating-linear-gradient(35deg,transparent 0 9px,rgba(255,255,255,.7) 9px 10px,transparent 10px 23px),repeating-linear-gradient(-50deg,transparent 0 14px,rgba(255,255,255,.6) 14px 15px,transparent 15px 31px)}

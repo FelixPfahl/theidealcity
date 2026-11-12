@@ -929,6 +929,22 @@
     if (n === 3) L.push(['inka', 'Drei Werke. Wagner nennt dich jetzt Bilderstürmer*in. Das steht auf deiner Urkunde.', 'nachdenklich']);
     if (n === 8) L.push(['gojira', '...'], ['inka', 'Gojira hat aufgesehen. Er sagt: Wenn du so weitermachst, gräbt er am Ende alles ein. Die ganze Seite.', 'ueberrascht']);
     setTimeout(function(){ dialog(L.concat(badgeLines())); }, 700); }
+  /* Wirkungen bleiben in der Großansicht (Josef, 12.11.2026): Klassen aufs große Bild, Überlagerung folgt Zoom und Verschieben */
+  var lbObs = null;
+  function lbRuin(a){ var lb = document.querySelector('.lb2'); if (!lb) return; var img = lb.querySelector('img.main'), stage = lb.querySelector('.stage'); if (!img || !stage) return;
+    if (lbObs){ lbObs.disconnect(); lbObs = null; } var old = lb.querySelector('.lbruinov'); if (old) old.remove();
+    [].slice.call(img.classList).forEach(function(c){ if (c === 'lbruin' || /^fx-/.test(c)) img.classList.remove(c); }); if (img.style.scale) img.style.scale = ''; if (img.style.translate) img.style.translate = '';
+    var f = a && a.closest && a.closest('figure.work.ruin'); if (!f) return;
+    var fx = [].slice.call(f.classList).filter(function(c){ return /^fx-/.test(c); }); if (!fx.length) return;
+    img.classList.add('lbruin'); fx.forEach(function(c){ img.classList.add(c); });
+    var ov = document.createElement('div'); ov.className = 'lbruinov ' + fx.join(' '); ov.setAttribute('aria-hidden', 'true'); ov.style.setProperty('--rx', f.style.getPropertyValue('--rx') || '50%'); ov.style.setProperty('--ry', f.style.getPropertyValue('--ry') || '50%'); stage.appendChild(ov);
+    var mirror = fx.indexOf('fx-mirror') >= 0;
+    function sync(){ if (!ov.parentNode) return; ov.style.left = img.offsetLeft + 'px'; ov.style.top = img.offsetTop + 'px'; ov.style.width = img.offsetWidth + 'px'; ov.style.height = img.offsetHeight + 'px'; ov.style.transform = img.style.transform || '';
+      if (mirror){ var m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)\s*scale\(([-\d.]+)\)/.exec(img.style.transform || '') || [0, 0, 0, 1]; var t = (2 * (+m[1]) + (+m[3]) * img.offsetWidth) + 'px 0px'; if (img.style.scale !== '-1 1') img.style.scale = '-1 1'; if (img.style.translate !== t) img.style.translate = t; } }
+    sync(); img.addEventListener('load', sync); setTimeout(sync, 60); setTimeout(sync, 400);
+    lbObs = new MutationObserver(sync); lbObs.observe(img, {attributes:true, attributeFilter:['style', 'src']}); }
+  window.addEventListener('jk:lb', function(e){ try { lbRuin(e.detail && e.detail.a); } catch(_){} });
+  window.addEventListener('resize', function(){ var a = document.querySelector('.lb2.on .lbruinov'); if (a && lbObs){ var im = document.querySelector('.lb2 img.main'); if (im) im.style.transform = im.style.transform; } });
   function applyRuin(f, R, fresh){ if (!f || f.classList.contains('ruin')) return; var T = TOOLS[R.tool] || TOOLS.flamme; f.classList.add('ruin', 'fx-' + T.fx); if (T.fx2) f.classList.add('fx-' + T.fx2); if (fresh) f.classList.add('fresh'); f.style.setProperty('--rx', R.rx + '%'); f.style.setProperty('--ry', R.ry + '%');
     var fc = f.querySelector('figcaption'); if (fc && !fc.querySelector('.sbruincap')){ var sp = document.createElement('span'); sp.className = 'sbruincap'; sp.textContent = 'zerstört mit ' + NAMES[R.tool] + ' am ' + new Date(R.t).toLocaleDateString('de-DE'); fc.appendChild(document.createElement('br')); fc.appendChild(sp); }
     if (!f.querySelector('.sbbehind')){ var b = document.createElement('p'); b.className = 'sbbehind hand'; b.textContent = BEHIND[R.b % BEHIND.length]; f.appendChild(b); if (window.JK_PLOT_ONCE && 'IntersectionObserver' in window){ var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if (!en.isIntersecting) return; io.disconnect(); try { window.JK_PLOT_ONCE(b, 3000); } catch(e){} }); }, {threshold:.4}); io.observe(b); } }

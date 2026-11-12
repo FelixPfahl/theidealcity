@@ -62,7 +62,7 @@
   X.hooks.greetExtra = function(){ var c = pick({}); if (!c) return []; W.cs[c.id] = 1; save(); return c.lines; };
   /* ungefragt: höchstens alle 40 s, nie während der Plotter im Sichtfeld schreibt, nie über Panels */
   var lastAmb = now();
-  function ambient(){ if (!ready || document.hidden || X.busy() || X.quiet() || X.optedOut()) return; var gap = X.CF('game.gap', 40) * 1000; if (now() - X.lastDlg() < gap || now() - lastAmb < gap) return; if (X.readingNow()) return; if (now() - lastInput > 120000) return;
+  function ambient(){ if (!ready || document.hidden || X.busy() || X.quiet() || X.optedOut()) return; var gap = X.CF('game.gap', 120) * 1000; if (now() - X.lastDlg() < gap || now() - lastAmb < gap) return; if (X.readingNow()) return; if (now() - lastInput > 120000) return;
     var w = worldEvent(); if (w) { lastAmb = now(); return; }
     if (Math.random() < X.CF('game.ambskip', .35)) return;   /* nicht jedes Mal */
     var c = pick({}); if (c && show(c, 'amb')) lastAmb = now(); }
@@ -76,7 +76,7 @@
   function bubble(who, text, opt){ opt = opt || {}; if (W.nowatch || X.optedOut() || !text){ dl('reaktion', 'nicht gezeigt: ' + (W.nowatch ? 'Beobachten aus' : X.optedOut() ? 'Nicht jetzt' : 'kein Text')); return false; }
     text = text.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph(k); return v === null || v === undefined ? m : v; });
     if (opt.inject){ if (X.inject({who:X.CH[who] ? who : 'inka', text:text})){ log([who, text], 'Reaktion'); return true; } return false; }
-    if (X.quiet() || X.busy() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.busy() ? 'Fenster offen' : 'Tab verborgen')); return false; } if (now() - lastBub < X.CF('game.reactgap', 90) * 1000 || now() - X.lastDlg() < 20000 || now() - lastFoundT < 6000){ dl('reaktion', 'nicht gezeigt: Abstand (' + Math.round((now() - Math.max(lastBub, X.lastDlg())) / 1000) + ' s)'); return false; } lastBub = now();
+    if (X.quiet() || X.busy() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.busy() ? 'Fenster offen' : 'Tab verborgen')); return false; } if (now() - lastBub < X.CF('game.reactgap', 180) * 1000 || now() - X.lastDlg() < 20000 || now() - lastFoundT < 6000){ dl('reaktion', 'nicht gezeigt: Abstand (' + Math.round((now() - Math.max(lastBub, X.lastDlg())) / 1000) + ' s)'); return false; } lastBub = now();
     X.dialog([{who:X.CH[who] ? who : 'inka', text:text}], null, {psst:true}); log([who, text], 'Reaktion'); return true; }
   function log(line, kind){ var who = Array.isArray(line) ? line[0] : line && line.who, t = Array.isArray(line) ? line[1] : line && line.text; if (!who || !t) return; t = String(t).replace(/\[[^\]]*\]/g, '').replace(/\*/g, ''); W.enc.push({w:who, t:t.slice(0, 160), d:now(), k:kind}); if (W.enc.length > 150) W.enc = W.enc.slice(-150); save(); }
 
@@ -84,7 +84,7 @@
   var PTS = {read_full:20, footnote:15, ref_open:15, captions:15, slow_read:15, musterbuch:15, pdf:10, spotify:10, lightbox:10, tab_jump:5, page_change:5, select_text:5, copy:5, mode_change:5, lesehilfe:10, zoom:5, calm_toggle:5, rotate:5, resize:5, tab_return:5, external_link:5, find_ctrlf:5, find_streak:20, long_session:15, daily:20, same_hour:10, long_away:10, fav_page:10, type_title:15, type_name:10, cheat_code:10, poke:5, restored:15, scroll_pingpong:5, plot_interrupt:5, images_only:5, pointer_circle:5, page_404:10, back_button:5};
   var cool = {};
   function beh(key, who, extra){ if (!T || !T.beh || !T.beh[key] || W.nowatch || X.optedOut()){ dl('verhalten', key + ': aus'); return false; } var B = T.beh[key]; var n = W.bh[key] = (W.bh[key] || 0) + 1; save();
-    if (cool[key] && now() - cool[key] < X.CF('game.behcool', 45) * 1000){ dl('verhalten', key + ': Abkühlung'); return false; } cool[key] = now();
+    if (cool[key] && now() - cool[key] < X.CF('game.behcool', 90) * 1000){ dl('verhalten', key + ': Abkühlung'); return false; } cool[key] = now();
     var st = n <= 2 ? 0 : n <= 5 ? 1 : 2, arr = B.stages[st] || B.stages[0]; var used = W.bv[key + st] = W.bv[key + st] || []; var free = []; arr.forEach(function(_, i){ if (used.indexOf(i) < 0) free.push(i); }); if (!free.length){ used.length = 0; free = arr.map(function(_, i){ return i; }); }
     var i = rnd(free); used.push(i); var v = arr[i]; dl('verhalten', key + ' Stufe ' + (st + 1) + ' Variante ' + (i + 1)); var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka;
     if (extra) Object.keys(extra).forEach(function(k){ ctx[k] = extra[k]; });
@@ -172,7 +172,7 @@
   var pendingPolice = 0;
   function police(){ if (!pendingPolice || !T || !T.scenes) return false; var lv = pendingPolice; pendingPolice = 0; var key = 'polizei_kontrolle_' + lv; if (W.sc[key + ':' + X.V()]) return false; var L = T.scenes[key]; if (!L) return false; W.sc[key + ':' + X.V()] = 1;
     var fine = 10 * lv; W.fines = Math.min(300, (W.fines || 0) + fine); ctx.bussgeld = fine; save(); X.dialog(L.concat(T.scenes.polizei_bussgeld || []), function(){ X.refresh(); }, {}); log(L[0], 'Polizei'); return true; }
-  setInterval(function(){ if (W.wanted >= 1 && T && T.police && Math.random() < .25) bubble('polizei', rnd(T.police.durchsage)); }, 150000);
+  setInterval(function(){ if (W.wanted >= 1 && T && T.police && Math.random() < .125) bubble('polizei', rnd(T.police.durchsage)); }, 150000);
 
   /* ---------- Welt-Ereignisse: Szenen der Gäste, Ticker, Auge, Werbung, Händler*in ---------- */
   function scene(key, once){ if (!T || !T.scenes || !T.scenes[key]) return false; if (once !== false && W.sc[key]) return false; dl('szene', key); W.sc[key] = now(); save(); X.dialog(T.scenes[key], null, {psst:true}); log(T.scenes[key][0], 'Szene'); return true; }
@@ -195,7 +195,7 @@
     if (!tick){ tick = document.createElement('div'); tick.className = 'sbtick'; tick.setAttribute('role', 'status'); tick.setAttribute('aria-live', 'polite'); document.body.appendChild(tick); }
     tick.innerHTML = '<b>NIL NEWS 2186</b><span>' + X.esc(txt) + '</span>'; tick.classList.add('on'); setTimeout(function(){ tick.classList.remove('on'); }, 14000); log(['libido', txt], 'Ticker'); return true; }
   /* das schwebende Auge: selten, einmal je Besuch höchstens */
-  function eye(force){ if (!force && (W.nowatch || X.optedOut() || W.eyeV === X.V() || Math.random() > .25)) return; dl('welt', 'Auge'); W.eyeV = X.V(); W.eyeN = (W.eyeN || 0) + 1; save();
+  function eye(force){ if (!force && (W.nowatch || X.optedOut() || W.eyeV === X.V() || Math.random() > .125)) return; dl('welt', 'Auge'); W.eyeV = X.V(); W.eyeN = (W.eyeN || 0) + 1; save();
     var e = document.createElement('div'); e.className = 'sbeye'; e.setAttribute('aria-hidden', 'true'); e.innerHTML = '<svg viewBox="0 0 120 60" width="120" height="60"><path class="wl" d="M42 30 C20 10 6 14 0 22 C14 22 24 28 40 34"/><path class="wr" d="M78 30 C100 10 114 14 120 22 C106 22 96 28 80 34"/><ellipse cx="60" cy="30" rx="18" ry="12" fill="#fff" stroke="#000" stroke-width="2"/><circle cx="60" cy="30" r="6" fill="#000"/><path d="M60 30 L74 4" stroke="#000" stroke-width="2.5"/></svg>'; document.body.appendChild(e);
     setTimeout(function(){ e.remove(); }, 9000); setTimeout(function(){ bubble(rnd(['inka', 'sigma', 'xae']), rnd(['Da oben. Das Auge. Hast du es gesehen?', '... es fliegt wieder. Es sieht alles, nur nicht sich selbst.', 'Mein Auge. Flex: es hat Flügel. Ich nicht.'])); achievements(); }, 5000); }
   /* Werbung: eine kleine Anzeige je Seite, selten, schließbar */

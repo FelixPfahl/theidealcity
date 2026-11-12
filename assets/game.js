@@ -502,9 +502,9 @@
   function pauseOff(){ if (!window.JK_PAUSE) return; window.JK_PAUSE = 0; document.documentElement.classList.remove('sbpaused'); if (S.start && !S.done){ S.start += Date.now() - pauseT; save(); } }
   var MMTABS = [['dinge', 'DINGE'], ['album', 'ALBUM'], ['abzeichen', 'ABZEICHEN'], ['logbuch', 'LOGBUCH'], ['tausch', 'TAUSCH'], ['labor', 'LABOR']];
   var MMS = {tab:'dinge', sel:0, comb:null, msg:null, tut:false, after:null};
-  function tabsVisible(){ return MMTABS.filter(function(t){ if (t[0] === 'labor') return !!S.labIntro; if (/^(album|abzeichen|tausch)$/.test(t[0])) return !!S.invIntro; return true; }); }
+  function tabsVisible(){ return MMTABS.filter(function(t){ if (t[0] === 'labor') return !!S.labIntro; if (/^(album|abzeichen|tausch)$/.test(t[0])) return !!S.moreIntro; return true; }); }
   function pmenu(tab, opt){ opt = opt || {}; return invLoad().then(function(){ if (tab) MMS.tab = tab; MMS.comb = null; MMS.msg = null; MMS.tut = !!opt.tut; var tabs = tabsVisible(); if (!tabs.some(function(t){ return t[0] === MMS.tab; })) MMS.tab = tabs[0][0];
-      if (!panel || !panel.classList.contains('mmenu')){ openPanel('mmenu sbinv', 'Inventar', '<nav class="mmtabs" role="tablist" aria-label="Bereiche"></nav><div class="mmbody"></div><div class="mmmsg" aria-live="polite"></div><p class="mmkeys" aria-hidden="true">◀ ▶ Bereich · ▲ ▼ wählen · Enter benutzen · 1 bis 9 · Esc schließen</p>'); pauseOn(); MMS.t0 = Date.now(); document.addEventListener('keydown', mmKey, true); }
+      if (!panel || !panel.classList.contains('mmenu')){ openPanel('mmenu sbinv', 'Inventar', '<nav class="mmtabs" role="tablist" aria-label="Bereiche"></nav><div class="mmbody"></div><div class="mmmsg" aria-live="polite"></div><p class="mmkeys" aria-hidden="true">◀ ▶ Bereich · ▲ ▼ wählen · Enter benutzen · Ziehen kombiniert · Esc schließen</p>'); pauseOn(); MMS.t0 = Date.now(); document.addEventListener('keydown', mmKey, true); }
       mmRender(); }); }
   function mmClose(){ closePanel(); }
   function mmRender(){ if (!panel || !panel.classList.contains('mmenu')) return; MMS.sig = mmSig(); var tabs = tabsVisible(), nav = panel.querySelector('.mmtabs');
@@ -521,7 +521,7 @@
   function comment(id){ var a = ((INV && INV.itemlines) || {})[id]; if (!a || !a.length) return null; var l = a[((S.visits || 1) + new Date().getDate()) % a.length]; return Array.isArray(l) ? {who:l[0], text:l[1]} : l; }
   function actsFor(x){ var A = []; if (!x) return A; if (!x.got){ A.push(['hint', 'Hinweis kaufen (' + CF('game.hint', HINT_COST) + ' Punkte)']); return A; }
     var T = TOOLS[x.id], R = x.craft, used = S.used && S.used[x.id], gifted = S.gifted && S.gifted[x.id];
-    if (T && !used && !gifted) A.push(['tool', 'Als Werkzeug benutzen']);
+    if (T && !used && !gifted && toolsOn()) A.push(['tool', 'Als Werkzeug benutzen']);
     if (!R && S.invIntro) A.push(['comb', MMS.comb === x.id ? 'Kombinieren abbrechen' : 'Kombinieren']);
     if (R && R.kind === 'gift' && !gifted){ var to = ((INV.gifts || {})[x.id] || {}).to || 'inka'; A.push(['gift', 'Verschenken an ' + (MMNAME[to] || to)]); }
     if (R && R.kind === 'lab' && S.labIntro && !S.lab) A.push(['lab', 'Am Labor benutzen']);
@@ -538,7 +538,7 @@
     body.innerHTML = '<ol class="mmlist" role="listbox" aria-label="Dinge">' + L.map(function(x, i){ var used = S.used && S.used[x.id], gifted = S.gifted && S.gifted[x.id];
       return (x.craft && (i === 0 || !L[i - 1].craft) ? '<li class="mmsep" aria-hidden="true">KOMBINIERT</li>' : '') + '<li role="option" tabindex="-1" data-i="' + i + '" aria-selected="' + (i === MMS.sel) + '" class="' + [i === MMS.sel ? 'on' : '', x.got ? 'got' : 'open', used || gifted ? 'used' : '', MMS.comb === x.id ? 'comb' : '', tutPair && tutPair.indexOf(x.id) >= 0 ? 'blink' : ''].join(' ') + '">' +
         (x.got ? iconImg(x.id) : '<img src="' + SPR('px/obj-' + x.id + '.png') + '" alt="" class="sil">') + '<span>' + (i < 9 ? '<small>' + (i + 1) + '</small>' : '') + esc(x.got ? (NAMES[x.id] || x.id) : '???') + '</span>' + (used ? '<em>benutzt</em>' : gifted ? '<em>verschenkt</em>' : '') + '</li>'; }).join('') + '</ol><div class="mmdet">' + detail(L[MMS.sel]) + '</div>';
-    body.querySelectorAll('.mmlist li[data-i]').forEach(function(li){ li.addEventListener('click', function(){ mmPick(+li.getAttribute('data-i')); }); });
+    body.querySelectorAll('.mmlist li[data-i]').forEach(function(li){ li.addEventListener('click', function(){ if (Date.now() - MMDRAGT < 400) return; mmPick(+li.getAttribute('data-i')); }); }); mmDragBind(body, L);
     body.querySelectorAll('.mmacts button').forEach(function(b){ b.addEventListener('click', function(){ mmAct(b.getAttribute('data-a')); }); });
     var cb = body.querySelector('.mmcert'); if (cb) cb.addEventListener('click', function(){ mmClose(); setTimeout(cert, 260); });
     var on = body.querySelector('.mmlist li.on'); if (on && on.scrollIntoView) on.scrollIntoView({block:'nearest'}); }
@@ -549,16 +549,16 @@
     if (a === 'comb'){ if (MMS.comb === x.id){ MMS.comb = null; MMS.msg = null; } else { MMS.comb = x.id; MMS.tut = false; MMS.msg = {sys:'Kombinieren: ' + (NAMES[x.id] || x.id) + ' + ? Wähle ein zweites Ding.'}; } cursorSnd('ok'); mmRender(); return; }
     if (a === 'gift'){ give(x.id); return; }
     if (a === 'lab'){ labTry(x.id); return; } }
-  function tutorialPair(){ var ks = Object.keys(RECIPES).filter(function(k){ var r = RECIPES[k]; return S.found[r.a] && S.found[r.b] && !crafted()[r.id]; }); ks.sort(function(a, b){ return (RECIPES[a].kind === 'lab') - (RECIPES[b].kind === 'lab'); }); return ks.length ? [RECIPES[ks[0]].a, RECIPES[ks[0]].b] : null; }
+  function tutorialPair(){ var ks = Object.keys(RECIPES).filter(function(k){ var r = RECIPES[k]; return S.found[r.a] && S.found[r.b] && !crafted()[r.id]; }); var KO = {tool:0, gift:1, lab:2}; ks.sort(function(a, b){ return (KO[RECIPES[a].kind] || 0) - (KO[RECIPES[b].kind] || 0); });   /* erste Kombination soll gleich nützen: Werkzeug vor Geschenk vor Schlüssel (Josef, 12.11.2026) */ return ks.length ? [RECIPES[ks[0]].a, RECIPES[ks[0]].b] : null; }
   function fill(t, a, b){ return String(t || '').replace(/\{a\}/g, NAMES[a] || a).replace(/\{b\}/g, NAMES[b] || b); }
-  function mmSay(line, extra){ MMS.msg = {who:line.who || 'inka', text:clean(line.text), extra:extra ? clean(norm0(extra).text || extra) : ''}; try { syl(MMS.msg.who, 'neutral', 'quick'); } catch(e){} mmMsg(); }
+  function mmSay(line, extra, tip){ MMS.msg = {who:line.who || 'inka', text:clean(line.text), extra:extra ? clean(norm0(extra).text || extra) : '', tip:tip || ''}; try { syl(MMS.msg.who, 'neutral', 'quick'); } catch(e){} mmMsg(); }
   function mmMsg(){ var m = panel && panel.querySelector('.mmmsg'); if (!m) return; var M = MMS.msg; if (!M){ m.innerHTML = ''; m.classList.remove('on'); return; } m.classList.add('on');
-    m.innerHTML = M.sys ? '<p class="sys">' + esc(M.sys) + '</p>' : '<p><b style="color:' + (MMCOL[M.who] || '#fff') + '">' + esc(MMNAME[M.who] || M.who) + ':</b> ' + esc(M.text) + '</p>' + (M.extra ? '<p class="alarm">' + esc(M.extra) + '</p>' : ''); }
+    m.innerHTML = M.sys ? '<p class="sys">' + esc(M.sys) + '</p>' : '<p><b style="color:' + (MMCOL[M.who] || '#fff') + '">' + esc(MMNAME[M.who] || M.who) + ':</b> ' + esc(M.text) + '</p>' + (M.extra ? '<p class="alarm">' + esc(M.extra) + '</p>' : '') + (M.tip ? '<p class="sys">' + esc(M.tip) + '</p>' : ''); }
   function doCombine(a, b){ MMS.comb = null; var k = pairKey(a, b), R = RECIPES[k];
     if (R){ var C = crafted(); if (C[R.id]){ mmSay({who:'inka', text:'Das hast du schon: ' + R.name + '.'}); mmRender(); return; }
-      C[R.id] = Date.now(); var first = !S.firstCraft; S.firstCraft = S.firstCraft || Date.now(); save(); cursorSnd('ok'); sp('g-fund', {vol:.6, max:.35}); H('onCraft', R);
-      dingeList().forEach(function(x, i){ if (x.id === R.id) MMS.sel = i; }); mmRender(); mmSay({who:R.who || 'inka', text:R.made || (R.name + '.')});
-      if (first && INV.scenes && INV.scenes.inv_firstcraft) MMS.after = INV.scenes.inv_firstcraft; return; }
+      C[R.id] = Date.now(); var first = !S.firstCraft; S.firstCraft = S.firstCraft || Date.now(); save(); H('onCraft', R); icon(R.id);
+      craftAnim(a, b, R, function(){ cursorSnd('ok'); sp('g-fund', {vol:.6, max:.35}); dingeList().forEach(function(x, i){ if (x.id === R.id) MMS.sel = i; }); mmRender(); mmSay({who:R.who || 'inka', text:R.made || (R.name + '.')}, null, first ? (R.kind === 'tool' ? 'Schließ das Inventar (Esc). Inka zeigt dir, wofür das gut ist.' : R.kind === 'gift' ? 'Wähl es aus und verschenk es.' : '') : ''); });
+      if (first){ if (INV.scenes && INV.scenes.inv_firstcraft) MMS.after = INV.scenes.inv_firstcraft; if (R.kind === 'tool') MMS.afterFn = function(){ craftGuide(R.id); }; } return; }
     var c = (INV.pairs || {})[k] || {who:'inka', text:'Das passt nicht zusammen.'}; cursorSnd('mv'); mmRender();
     if (S.labIntro && !S.lab){ S.labFails = (S.labFails || 0) + 1; save(); H('wanted', .5, 'labor'); var al = INV.lab_alarm || []; tick(); mmSay(c, al.length ? al[S.labFails % al.length] : 'Alarm.'); }
     else mmSay(c); }
@@ -577,6 +577,7 @@
     else { var hn = INV.lab_hint_none || ['Dir fehlt noch etwas. Such weiter.']; mmSay({who:'inka', text:hn[(S.hints || 0) % hn.length]}); } }
   /* Tastatur: Pfeile, Enter, Zahlen, Esc; Taste I öffnet (verzögert, damit getippte Namen und Cheatcodes weiter gehen) */
   function mmKey(e){ if (!panel || !panel.classList.contains('mmenu')){ document.removeEventListener('keydown', mmKey, true); return; } var t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) && t.type !== 'checkbox' && t.type !== 'radio') return;
+    if (MMS.anim){ e.preventDefault(); e.stopPropagation(); return; }
     var tabs = tabsVisible().map(function(x){ return x[0]; }), ti = tabs.indexOf(MMS.tab), k = e.key;
     if (k === 'Enter' && Date.now() - (MMS.t0 || 0) < 600){ e.preventDefault(); e.stopPropagation(); return; }   /* Enter aus dem Dialog davor löst nichts aus */
     if (k === 'Escape'){ e.preventDefault(); e.stopPropagation(); if (MMS.comb){ MMS.comb = null; MMS.msg = null; mmRender(); } else mmClose(); return; }
@@ -592,14 +593,72 @@
     if ((e.key === 'i' || e.key === 'I') && !(panel && panel.classList.contains('mmenu'))){ clearTimeout(iKeyT); iKeyT = setTimeout(function(){ if (!optedOut() && !ov && !mo) pmenu('dinge'); }, 450); return; }
     if (e.key.length === 1) clearTimeout(iKeyT); });
   /* Einführung nach 8 Funden, Labor nach 12 (Josef, I2 und I6): erst wenn nichts anderes offen ist */
+  /* ---------- Mechaniken nacheinander (Josef, 12.11.2026) ----------
+     5 Funde: Werkzeug. Inka nennt genau das Ding (zuletzt gefunden) und das Werk (auf dieser Seite); dahinter liegt eines der 20 Dinge.
+     8 Funde: Kombinieren, per Ziehen (Klick und Tasten bleiben). Die erste Kombination ist möglichst ein stärkeres Werkzeug; Inka nennt wieder ein Werk, dahinter liegt wieder ein Ding.
+     Danach: Album, Abzeichen, Tausch. Alte Spielstände (Inventar schon eingeführt) behalten alles. */
+  if (S.invIntro && !S.stg){ S.stg = 1; S.toolIntro = S.toolIntro || S.invIntro; S.toolFirst = S.toolFirst || 1; S.craftUse = 1; S.moreIntro = S.invIntro; }
+  function toolsOn(){ return !!S.toolIntro; }
+  function nearWork(){ var vh = window.innerHeight, best = null, bd = 1e9; [].forEach.call(document.querySelectorAll('figure.work[id^="w-"]'), function(f){ if (!ruinable(f) || !f.querySelector('a[data-full]')) return; var r = f.getBoundingClientRect(); if (!r.height) return; var d = Math.abs((r.top + r.bottom) / 2 - vh / 2); if (d < bd){ bd = d; best = f; } }); return best; }
+  function lastTool(){ var ids = Object.keys(S.found).filter(function(id){ return TOOLS[id] && !(S.used && S.used[id]) && !(S.gifted && S.gifted[id]); }).sort(function(a, b){ return S.found[b] - S.found[a]; }); return ids[0] || null; }
+  var TOOLTARGET = null;
+  function guideTool(id, f){ if (!f || !ruinable(f)) return false; startTool(id); if (TOOLACT !== id) return false; TOOLTARGET = f; f.classList.add('sbtarget'); try { f.scrollIntoView({block:'center', behavior:'smooth'}); } catch(e){ try { f.scrollIntoView(); } catch(e2){} }
+    var sp2 = toolLab && toolLab.querySelector('span'); if (sp2) sp2.innerHTML = '<b>' + esc(NAMES[id] || id) + '</b>: Klick auf <i>' + esc(workTitle(f) || 'das Werk') + '</i>. Es blinkt. <kbd>Esc</kbd> bricht ab.'; return true; }
+  function toolCheck(){ if (toolsOn() || count() < 5 || S.done) return false; if (!nearWork() || !lastTool()) return false;
+    invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; if (toolsOn()) return; var f = nearWork(), id = lastTool(); if (!f || !id) return; S.stg = 1; S.toolIntro = Date.now(); save(); markNew(); var t = workTitle(f) || 'dieses Werk';
+      dialog([['inka', 'Fünf Funde. Zeit für etwas Neues: Jedes Ding ist auch ein *Werkzeug*.', 'froh'], ['inka', 'Benutz *' + (NAMES[id] || id) + '* auf *' + t + '*. Genau dieses Werk. Ich lege dir das Ding in die Hand und das Werk blinkt.'], ['inka', 'Klick drauf. Dahinter liegt etwas, das du suchst.', 'nachdenklich']], function(){ guideTool(id, f); }); }); }); return true; }
+  function craftGuide(id){ whenFree(function(){ var f = nearWork(), n = NAMES[id] || id; if (!f){ dialog([['inka', '*' + n + '* ist ein stärkeres Werkzeug. Geh zu einem von Josefs Werken und zieh es aus dem Inventar darauf. Dahinter liegt wieder ein Ding.']]); return; }
+    dialog([['inka', 'Jetzt lohnt es sich: *' + n + '* ist ein stärkeres Werkzeug. Benutz es auf *' + (workTitle(f) || 'dieses Werk') + '*. Dahinter liegt wieder ein Ding.', 'froh']], function(){ guideTool(id, f); }); }); }
+  function makeObj(p){ var img = document.createElement('img'); img.src = SPR(p.id + '.png'); img.alt = ''; img.className = 'sbobj d' + p.d; img.draggable = false; img.setAttribute('data-id', p.id); img.style.width = SIZE[p.d] + 'px'; img._p = p; a11yObj(img, p); img.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); found(p, img, e); }); return img; }
+  /* welches Ding liegt dahinter: bevorzugt eines, das mit einem schon gefundenen ein Werkzeug ergibt, dann Zutaten überhaupt, dann Dinge dieser Seite */
+  function revealObj(){ var C = crafted(); function score(id){ var s = 0; Object.keys(RECIPES).forEach(function(k){ var r = RECIPES[k]; if (C[r.id] || (r.a !== id && r.b !== id)) return; var o = r.a === id ? r.b : r.a, w = r.kind === 'tool' ? 4 : r.kind === 'gift' ? 2 : 1; s = Math.max(s, S.found[o] ? w + 4 : w); }); return s; }
+    var cand = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!cand.length) return null; cand.sort(function(a, b){ return (score(b.id) - score(a.id)) || ((b.p === PAGE) - (a.p === PAGE)); }); var p = cand[0];
+    var ex = document.querySelector('img.sbobj[data-id="' + p.id + '"]:not(.found)'); if (ex && ex._p) return ex; return makeObj(p); }
+  function toolDrop(f, id){ if (!ruinable(f)){ dialog([['inka', albumOk(f) ? 'Das ist schon kaputt. Einmal reicht.' : 'Nicht das. Das ist nicht von Josef.']]); return; }
+    if (TOOLTARGET){ if (f !== TOOLTARGET || id !== TOOLACT){ dialog([['inka', 'Erst *' + (NAMES[TOOLACT] || TOOLACT) + '* auf *' + (workTitle(TOOLTARGET) || 'das blinkende Werk') + '*. Es blinkt.']]); return; } stopTool(); ruin(f, id); return; } askRuin(f, id); }
+  /* Ziehen: Ding auf Ding kombiniert; Werkzeug aus dem Inventar hinaus auf ein Werk (Inventar wird dabei durchsichtig). Maus überall, Finger am Icon. */
+  var MMDRAGT = 0;
+  function mmDragBind(body, L){ var list = body.querySelector('.mmlist'); if (!list) return;
+    body.querySelectorAll('.mmlist li.got[data-i]').forEach(function(li){ li.addEventListener('pointerdown', function(e){ if (e.button || MMS.anim) return; var i = +li.getAttribute('data-i'), x = L[i]; if (!x || !x.got) return; if (e.pointerType !== 'mouse' && e.target.tagName !== 'IMG') return;
+      var sx = e.clientX, sy = e.clientY, ghost = null, on = false, out = false, pn = panel, pin = pn && pn.querySelector('.sbpin'); if (!pin) return; var l0 = list.getBoundingClientRect(), lr = {left:l0.left - 24, right:l0.right + 24, top:l0.top - 24, bottom:l0.bottom + 24};   /* außerhalb der Liste wird das Inventar durchsichtig, auch über Werken, die darunter liegen */
+      var canTool = toolsOn() && TOOLS[x.id] && !(S.used && S.used[x.id]) && !(S.gifted && S.gifted[x.id]);
+      function inR(r, ev){ return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom; }
+      function clearHi(){ var d = document.querySelectorAll('.mmlist li.drop, figure.work.sbdrop'); [].forEach.call(d, function(el){ el.classList.remove('drop', 'sbdrop'); }); }
+      function under(ev){ return document.elementFromPoint(ev.clientX, ev.clientY); }
+      function mv(ev){ if (!on){ if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 8) return; on = true; var im = li.querySelector('img'); ghost = document.createElement('img'); ghost.className = 'mmghost'; ghost.alt = ''; ghost.src = im ? im.src : ''; document.body.appendChild(ghost); li.classList.add('dragging'); cursorSnd('mv'); }
+        if (ev.cancelable) ev.preventDefault(); ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
+        var o = !!canTool && !inR(lr, ev); if (o !== out){ out = o; pn.classList.toggle('mmdragout', out); }
+        clearHi(); var el = under(ev); if (!el || !el.closest) return; if (out){ var f = el.closest('figure.work'); if (f) f.classList.add('sbdrop'); } else { var t = el.closest('.mmlist li.got[data-i]'); if (t && t !== li) t.classList.add('drop'); } }
+      function end(ev, cancel){ window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cn); if (!on) return; MMDRAGT = Date.now();
+        var eat = function(c){ c.preventDefault(); c.stopPropagation(); }; window.addEventListener('click', eat, true); setTimeout(function(){ window.removeEventListener('click', eat, true); }, 350);
+        var el = cancel ? null : under(ev); if (ghost) ghost.remove(); li.classList.remove('dragging'); clearHi();
+        if (out){ var f = el && el.closest && el.closest('figure.work'); if (f && panel === pn){ mmClose(); setTimeout(function(){ toolDrop(f, x.id); }, 300); } else pn.classList.remove('mmdragout'); return; }
+        var t = el && el.closest && el.closest('.mmlist li[data-i]'); if (!t || t === li) return; var j = +t.getAttribute('data-i'), y = L[j]; if (!y || !y.got) return;
+        if (!S.invIntro){ mmSay({who:'inka', text:'Kombinieren kommt später. Erst acht Funde.'}); return; }
+        if (x.craft || y.craft){ mmSay({who:'inka', text:'Kombiniertes lässt sich nicht noch einmal kombinieren.'}); return; }
+        MMS.tut = false; MMS.sel = j; doCombine(x.id, y.id); }
+      function up(ev){ end(ev, false); } function cn(ev){ end(ev, true); }
+      window.addEventListener('pointermove', mv, {passive:false}); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', cn); }); }); }
+  /* Kombinationsanimation passend zu den Gegenständen: jede Zutat wirft ihre eigenen Teilchen (Feuer, Wasser, Schnitte, Brocken, Papier, Krümel, Licht) */
+  var FXK = {flamme:['fire', '#F8A038'], zigarette:['fire', '#E2231A'], bombe:['fire', '#F8E038'], sonne:['light', '#F8E038'], spiegel:['light', '#FFFFFF'], hai:['water', '#3F97B8'], cocktail:['water', '#DC2850'], bier:['water', '#E6AA28'], krokodil:['cut', '#00A651'], schere:['cut', '#FFFFFF'], krabbe:['cut', '#E2231A'], maus:['food', '#C8CCE0'], kaese:['food', '#F8E038'], burger:['food', '#C87832'], betonmischer:['stone', '#8F8F8F'], ziegel:['stone', '#B85A3A'], anker:['stone', '#6B7C93'], brief:['paper', '#FFFFFF'], klopapier:['paper', '#F4F4F4'], sticker:['paper', '#00A651']};
+  function craftAnim(a, b, R, done){ var pin = panel && panel.querySelector('.sbpin'), spd = window.JK_DEVSPD; if (!pin || document.documentElement.classList.contains('calm') || (spd && spd.mult > 4)){ done(); return; }
+    MMS.anim = true; var pn = panel, fx = document.createElement('div'); fx.className = 'mmfx'; fx.setAttribute('aria-hidden', 'true');
+    fx.innerHTML = '<div class="mmfxs"><span class="in a">' + iconImg(a) + '</span><span class="in b">' + iconImg(b) + '</span><span class="out">' + iconImg(R.id) + '</span><i class="flash"></i></div>'; pin.appendChild(fx); var st = fx.querySelector('.mmfxs');
+    function burst(id, side){ var k = FXK[id] || ['spark', '#F8E038']; for (var i = 0; i < 12; i++){ var p = document.createElement('b'); p.className = 'pf pf-' + k[0]; var ang = Math.random() * Math.PI * 2, r = 40 + Math.random() * 70; p.style.setProperty('--dx', Math.round(Math.cos(ang) * r + side * 18) + 'px'); p.style.setProperty('--dy', Math.round(Math.sin(ang) * r) + 'px'); p.style.setProperty('--c', k[1]); p.style.setProperty('--r', Math.round(Math.random() * 360) + 'deg'); p.style.animationDelay = Math.round(Math.random() * 120) + 'ms'; st.appendChild(p); } }
+    cursorSnd('mv');
+    setTimeout(function(){ burst(a, -1); burst(b, 1); st.classList.add('hit'); try { if (TOOLS[a] && !TOOLS[a].big) ruinSnd(a); else if (TOOLS[b] && !TOOLS[b].big) ruinSnd(b); else cursorSnd('ok'); } catch(e){} }, 620);
+    setTimeout(function(){ var o = fx.querySelector('.out img'); if (o && !o.getAttribute('src')){ var s = icon(R.id); if (s) o.src = s; } st.classList.add('res'); }, 900);
+    setTimeout(function(){ fx.remove(); MMS.anim = false; if (panel === pn) done(); }, 1750); }
   var invBusy = false;
   function whenFree(fn){ var n = 0; var iv = setInterval(function(){ if (++n > 240){ clearInterval(iv); return; } if (dlg || panel || ov || mo || document.hidden || window.JK_PAUSE || document.querySelector('.lb2.on')) return; clearInterval(iv); fn(); }, 500); }
   function invCheck(polite){ if (invBusy || optedOut() || (polite && quiet())) return false; var n = count();
-    if (n >= 8 && !S.invIntro){ invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; S.invIntro = Date.now(); save(); markNew(); dialog(((INV.scenes || {}).inv_intro) || [['inka', 'Dein Inventar ist jetzt mehr als eine Liste. Drück I.']], function(nat){ if (!nat) return; pmenu('dinge', {tut:true}).then(function(){ var tp = tutorialPair(); var ch = INV.craft_hint || []; if (tp){ dingeList().forEach(function(x, i){ if (x.id === tp[0]) MMS.sel = i; }); MMS.comb = tp[0]; mmRender(); mmSay({who:'inka', text:fill(ch[0] || 'Probier {a} mit {b}.', tp[0], tp[1]) + ' (' + (NAMES[tp[0]] || tp[0]) + ' ist schon gewählt.)'}); } }); }); }); }); return true; }
+    if (toolCheck()) return true;
+    if (n >= 8 && !S.invIntro && (S.toolFirst || n >= 12)){ S.stg = 1; invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; S.invIntro = Date.now(); save(); markNew(); dialog(((INV.scenes || {}).inv_intro) || [['inka', 'Dein Inventar ist jetzt mehr als eine Liste. Drück I.']], function(nat){ if (!nat) return; pmenu('dinge', {tut:true}).then(function(){ var tp = tutorialPair(); var ch = INV.craft_hint || []; if (tp){ dingeList().forEach(function(x, i){ if (x.id === tp[0]) MMS.sel = i; }); MMS.comb = tp[0]; mmRender(); mmSay({who:'inka', text:fill(ch[0] || 'Zieh {a} auf {b}.', tp[0], tp[1])}, null, 'Ziehen oder klicken: ' + (NAMES[tp[0]] || tp[0]) + ' ist schon gewählt.'); } }); }); }); }); return true; }
+    if (S.invIntro && !S.moreIntro && (S.firstCraft || n >= 12)){ invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; S.moreIntro = Date.now(); save(); markNew(); var mo = (INV.scenes || {}).inv_more; if (mo && mo.length) dialog(mo); }); }); return true; }
     if (n >= 12 && S.invIntro && !S.labIntro){ invBusy = true; invLoad().then(function(){ whenFree(function(){ invBusy = false; S.labIntro = Date.now(); save(); markNew(); dialog(((INV.scenes || {}).lab_intro) || [['inka', 'Wagners Labor. Im Inventar unter LABOR.']], function(nat){ if (nat) pmenu('labor'); }); }); }); return true; }
     return false; }
   /* Nach dem Schließen: aufgeschobene Zeilen (erste Kombination) */
-  function mmAfter(){ if (MMS.after){ var a = MMS.after; MMS.after = null; setTimeout(function(){ dialog(a); }, 350); } }
+  function mmAfter(){ var a = MMS.after, f = MMS.afterFn; MMS.after = null; MMS.afterFn = null; if (a) setTimeout(function(){ dialog(a, f ? function(){ f(); } : null); }, 350); else if (f) setTimeout(f, 350); }
   /* Logbuch */
   /* ---------- Story-Kapitel (Suchbild 2.0, Etappe 4): zwölf Kapitel aus dem Skript von THE IDEAL CITY, freigeschaltet je Besuch (v) und Fundzahl (f); gelesen wird im Dialogfenster, nachzulesen im Logbuch; W = Wagners Sicht (ab Plus-Stufe 2) ---------- */
   var CHAPTERS = [
@@ -901,11 +960,11 @@
     if (!toolLab){ toolLab = document.createElement('div'); toolLab.className = 'sbtoollab'; toolLab.setAttribute('role', 'status'); document.body.appendChild(toolLab); }
     toolLab.innerHTML = '<img src="' + SPR(id + '.png') + '" alt=""><span><b>' + NAMES[id] + '</b> (' + TOOLS[id].n + '): Klick auf eines von Josefs Werken. <kbd>Esc</kbd> bricht ab.</span><button type="button" class="x" aria-label="Abbrechen">×</button>'; toolLab.classList.add('on');
     toolLab.querySelector('.x').addEventListener('click', stopTool); cursorSnd('ok'); }
-  function stopTool(){ TOOLACT = null; document.documentElement.classList.remove('sbtoolon'); if (toolLab) toolLab.classList.remove('on'); }
+  function stopTool(){ if (TOOLTARGET){ TOOLTARGET.classList.remove('sbtarget'); TOOLTARGET = null; } TOOLACT = null; document.documentElement.classList.remove('sbtoolon'); if (toolLab) toolLab.classList.remove('on'); }
   function ruinable(f){ return albumOk(f) && !(S.ruins && S.ruins[f.id.slice(2)]); }
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && TOOLACT){ stopTool(); } });
   document.addEventListener('click', function(e){ if (!TOOLACT) return; var f = e.target.closest && e.target.closest('figure.work'); if (!f){ if (!e.target.closest('.sbtoollab, .sbfab, .sbdlg, .sbpanel')) stopTool(); return; } e.preventDefault(); e.stopPropagation();
-    if (!ruinable(f)){ dialog([['inka', albumOk(f) ? 'Das ist schon kaputt. Einmal reicht.' : 'Nicht das. Das ist nicht von Josef.']]); return; } askRuin(f, TOOLACT); }, true);
+    if (!ruinable(f)){ dialog([['inka', albumOk(f) ? 'Das ist schon kaputt. Einmal reicht.' : 'Nicht das. Das ist nicht von Josef.']]); return; } if (TOOLTARGET){ if (f !== TOOLTARGET){ dialog([['inka', 'Erst *' + (workTitle(TOOLTARGET) || 'das blinkende Werk') + '*. Es blinkt.']]); return; } var tl = TOOLACT; stopTool(); ruin(f, tl); return; } askRuin(f, TOOLACT); }, true);
   function askRuin(f, tool){ stopTool(); var T = TOOLS[tool], t = workTitle(f) || 'dieses Werk'; var id = f.id.slice(2);
     var who = T.big ? pickOne(['xae', 'inka']) : pickOne(['sigma', 'wagner', 'inka']);
     var Q = {inka:{who:'inka', mood:'ueberrascht', text:'*' + NAMES[tool] + '* auf *' + t + '*? [m:froh]Das wird ' + T.n + '. Ich bin dafür. Josef nicht, wahrscheinlich. Wirklich?'},
@@ -927,7 +986,8 @@
       ['sigma', pickOne(['... [p:.8] warum. Es war ein Bild. Es hat niemandem etwas getan.', '... ich sehe weg. [p:.5] Sag mir, wenn es vorbei ist.']), 'traurig'],
       ['wagner', T.big ? 'Ordnung gestört, Wahrheit freigelegt. Beides zugleich. [m:nachdenklich]Ich hasse es, dass es stimmt.' : 'Kleinlich. Aber auch Kleinlichkeit hinterlässt Koordinaten.', T.big ? 'nachdenklich' : 'neutral'],
       ['xae', T.big ? '[m:froh]Das war spektakulär. Ich speichere das in voller Auflösung.' : '[m:nachdenklich]Das war ... klein. Ich habe nicht einmal gezoomt.']];
-    if (NG >= 1){ var hid = [].filter.call(document.querySelectorAll('img.sbobj:not(.found)'), function(o){ return o._p; })[0]; if (hid){ var sz = hid.offsetWidth || SIZE[hid._p.d]; if (getComputedStyle(f).position === 'static') f.style.position = 'relative'; f.appendChild(hid); hid.style.left = 'calc(50% - ' + sz / 2 + 'px)'; hid.style.top = 'calc(50% - ' + sz / 2 + 'px)'; hid.classList.add('pop'); L.push(['inka', 'Und da: Unter dem Bild lag eines der Dinge. Sigma hat es dort versteckt. Klick drauf.', 'ueberrascht']); } }
+    var rev = NG >= 1 || !S.toolFirst || (!!crafted()[tool] && !S.craftUse); S.toolFirst = S.toolFirst || Date.now(); if (crafted()[tool]) S.craftUse = S.craftUse || Date.now(); save();   /* erstes Werkzeug und erstes kombiniertes Werkzeug legen ein Ding frei (Josef, 12.11.2026) */
+    if (rev){ var hid = revealObj(); if (hid){ var sz = hid.offsetWidth || SIZE[hid._p.d]; if (getComputedStyle(f).position === 'static') f.style.position = 'relative'; f.appendChild(hid); hid.style.left = 'calc(50% - ' + sz / 2 + 'px)'; hid.style.top = 'calc(50% - ' + sz / 2 + 'px)'; hid.classList.add('pop'); L.push(['inka', 'Und da: Unter dem Bild lag eines der Dinge. Sigma hat es dort versteckt. Klick drauf.', 'ueberrascht']); } }
     if (n === 3) L.push(['inka', 'Drei Werke. Wagner nennt dich jetzt Bilderstürmer*in. Das steht auf deiner Urkunde.', 'nachdenklich']);
     if (n === 8) L.push(['gojira', '...'], ['inka', 'Gojira hat aufgesehen. Er sagt: Wenn du so weitermachst, gräbt er am Ende alles ein. Die ganze Seite.', 'ueberrascht']);
     setTimeout(function(){ dialog(L.concat(badgeLines())); }, 700); }
@@ -1012,7 +1072,7 @@
     if (n >= N) setTimeout(function(){ dialog(doneLines().concat(bl), function(){ cert(); }); }, 800);
     else if (ms) setTimeout(function(){ dialog(ms.concat(bl), newChapter); }, 800);
     else if (bl.length) setTimeout(function(){ dialog(bl); }, 800);
-    if (n >= 8 && n < N) setTimeout(function(){ invCheck(false); }, 1600); }
+    if (n >= 5 && n < N) setTimeout(function(){ invCheck(false); }, 1600); }
   /* Finale: drei Fassungen je Verhältnis (Sigma nah, Wagner respektvoll, sonst Inka); auf Plus-Stufe 3 entscheidet man, was mit dem Quadrat geschieht (Josef, 29.10., 13:14) */
   function doneLines(){ if (ruinCount() >= 8) return DONE4(); if (NG < 3){ var he = H('ending'); if (he) return he; } if (NG >= 3) return DONE3();
     if (rel('sigma').n >= 2) return [['gojira', '...'], ['sigma', '[m:froh]... das war Gojira. Ich übersetze heute: Das Quadrat ist für dich. Und für mich, ein bisschen. Alle zwanzig.'], ['inka', 'Sigma hat sich das letzte Wort genommen. Das kommt selten vor. Lass es ihm.', 'froh']];

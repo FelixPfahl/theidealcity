@@ -1653,3 +1653,47 @@ html.calm .sbpanel.mmenu .sbpin,html.calm .mmenu .blink{animation:none!important
 .lb2 .lbruinov.fx-holes{background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),var(--paper) 0 9%,transparent 10%),radial-gradient(circle at 25% 30%,var(--paper) 0 6%,transparent 7%),radial-gradient(circle at 78% 65%,var(--paper) 0 7%,transparent 8%),radial-gradient(circle at 60% 15%,var(--paper) 0 4%,transparent 5%)}
 .lb2 .lbruinov.fx-spill{background:radial-gradient(ellipse at 50% 100%,rgba(220,40,80,.6),rgba(220,40,80,.25) 45%,transparent 70%)}
 .lb2 .lbruinov.fx-scratch{background:repeating-linear-gradient(35deg,transparent 0 9px,rgba(255,255,255,.7) 9px 10px,transparent 10px 23px),repeating-linear-gradient(-50deg,transparent 0 14px,rgba(255,255,255,.6) 14px 15px,transparent 15px 31px)}
+
+/* Mechaniken nacheinander, Ziehen, Kombinationsanimation (Josef, 12.11.2026) */
+.mmlist li.got img{touch-action:none;cursor:grab}
+.mmghost{position:fixed;z-index:600;width:48px;height:48px;margin:-24px 0 0 -24px;pointer-events:none;image-rendering:pixelated;filter:drop-shadow(3px 3px 0 #000)}
+.mmlist li.dragging{opacity:.45}
+.mmlist li.drop{outline:2px solid var(--hi);outline-offset:-2px;background:rgba(248,224,56,.18)}
+.sbpanel.mmenu.mmdragout{background:transparent;pointer-events:none}
+.sbpanel.mmenu.mmdragout .sbpin{opacity:.08;pointer-events:none}
+figure.work.sbdrop img{outline:3px dashed var(--accent);outline-offset:3px}
+figure.work.sbtarget{animation:sbtarget 1s steps(2,jump-none) infinite;outline-offset:6px}
+@keyframes sbtarget{0%{outline:4px dashed var(--accent)}100%{outline:4px dashed transparent}}
+html.calm figure.work.sbtarget{animation:none;outline:4px dashed var(--accent)}
+.mmfx{position:absolute;inset:0;z-index:5;background:rgba(5,5,12,.86);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mmfxs{position:relative;width:260px;height:180px}
+.mmfxs span{position:absolute;top:50%;left:50%;width:64px;height:64px;margin:-32px 0 0 -32px}
+.mmfxs img{width:64px;height:64px;image-rendering:pixelated;display:block}
+.mmfxs .in.a{animation:mmfxa .62s steps(8) forwards}
+.mmfxs .in.b{animation:mmfxb .62s steps(8) forwards}
+@keyframes mmfxa{0%{transform:translateX(-104px)}60%{transform:translateX(-116px)}100%{transform:translateX(-16px)}}
+@keyframes mmfxb{0%{transform:translateX(104px)}60%{transform:translateX(116px)}100%{transform:translateX(16px)}}
+.mmfxs.hit .in{animation:mmfxgone .28s steps(4) forwards}
+@keyframes mmfxgone{0%{transform:scale(1)}50%{transform:scale(1.25) rotate(8deg)}100%{transform:scale(.2);opacity:0}}
+.mmfxs .out{opacity:0}
+.mmfxs.res .out{animation:mmfxout .55s steps(6) forwards}
+@keyframes mmfxout{0%{opacity:1;transform:scale(.2)}60%{opacity:1;transform:scale(1.9)}100%{opacity:1;transform:scale(1.5)}}
+.mmfxs .flash{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px;background:#fff;opacity:0;pointer-events:none}
+.mmfxs.hit .flash{animation:mmfxflash .3s steps(3)}
+@keyframes mmfxflash{0%{opacity:.45}100%{opacity:0}}
+.pf{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;background:var(--c,#F8E038);animation:pfspark .8s steps(8) both}
+@keyframes pfspark{0%{transform:translate(0,0)}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
+.pf-fire{animation-name:pffire}
+@keyframes pffire{0%{transform:translate(0,0) scale(1.5)}100%{transform:translate(calc(var(--dx)*.35),calc(-52px + var(--dy)*.3)) scale(.4);opacity:0}}
+.pf-water{width:5px;height:8px;animation-name:pfwater;animation-timing-function:steps(10)}
+@keyframes pfwater{0%{transform:translate(0,0)}40%{transform:translate(calc(var(--dx)*.6),calc(var(--dy)*.5 - 34px))}100%{transform:translate(var(--dx),calc(var(--dy)*.5 + 84px));opacity:0}}
+.pf-cut{width:34px;height:2px;margin:-1px -17px;animation-name:pfcut;animation-duration:.6s}
+@keyframes pfcut{0%{transform:translate(calc(var(--dx)*.4),calc(var(--dy)*.4)) rotate(var(--r)) scaleX(0)}45%{transform:translate(calc(var(--dx)*.4),calc(var(--dy)*.4)) rotate(var(--r)) scaleX(1)}100%{transform:translate(calc(var(--dx)*.5),calc(var(--dy)*.5)) rotate(var(--r)) scaleX(1);opacity:0}}
+.pf-stone{width:9px;height:9px;margin:-4px;animation-name:pfstone}
+@keyframes pfstone{0%{transform:translate(0,0)}100%{transform:translate(calc(var(--dx)*.6),96px) rotate(var(--r));opacity:0}}
+.pf-paper{width:10px;height:7px;animation-name:pfpaper;animation-duration:1s}
+@keyframes pfpaper{0%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(var(--dx),calc(var(--dy)*.5)) rotate(var(--r))}100%{transform:translate(calc(var(--dx)*.7),calc(var(--dy)*.5 + 56px)) rotate(calc(var(--r)*2));opacity:0}}
+.pf-food{width:5px;height:5px;animation-name:pffood}
+@keyframes pffood{0%{transform:translate(0,0)}50%{transform:translate(calc(var(--dx)*.5),-38px)}100%{transform:translate(var(--dx),72px);opacity:0}}
+.pf-light{width:3px;height:46px;margin:-23px -1px;animation-name:pflight;animation-duration:.6s}
+@keyframes pflight{0%{transform:rotate(var(--r)) translateY(-10px) scaleY(.2);opacity:1}100%{transform:rotate(var(--r)) translateY(-88px) scaleY(1);opacity:0}}

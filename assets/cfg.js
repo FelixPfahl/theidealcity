@@ -80,6 +80,7 @@
     ['game.gap', 'Spiel', 'Reaktionen', 'Abstand ungefragter Fenster', 'Sekunden zwischen zwei ungefragten Dialogfenstern. Halbiert am 12.11.2026 (Josef: Nachrichten nur halb so oft).', 120, 10, 600, 5, 's'],
     ['game.longsearch', 'Spiel', 'Reaktionen', 'Lange Suche nach', 'Sekunden ohne Fund auf einer Seite mit Dingen, dann meldet sich Sigma. Halbiert am 12.11.2026 (Josef: Nachrichten nur halb so oft).', 300, 30, 900, 10, 's'],
     ['game.idle', 'Spiel', 'Reaktionen', 'Untätig nach', 'Sekunden ohne Eingabe, dann meldet sich Sigma. Halbiert am 12.11.2026 (Josef: Nachrichten nur halb so oft).', 180, 20, 600, 10, 's'],
+    ['game.fastscroll', 'Spiel', 'Reaktionen', 'Rasantes Scrollen ab', 'Bildschirmhöhen je Sekunde, ab denen Scrollen als rasant gilt und kommentiert wird (Josef, 12.11.2026: nur bei wirklich schnellem Scrollen; vorher etwa 2,7).', 8, 2, 30, .5, 'H/s'],
     ['game.hint', 'Spiel', 'Punkte', 'Kosten Hinweis', 'Abzug je Hinweis.', 50, 0, 500, 5],
     /* Welt-Regeln (Josef, 1.11., T18: als Regler) */
     ['game.reactgap', 'Spiel', 'Welt', 'Abstand Reaktions-Boxen', 'Sekunden zwischen zwei kurzen Reaktionen auf das Verhalten (nie während ein Gespräch läuft). Halbiert am 12.11.2026 (Josef: Nachrichten nur halb so oft).', 180, 10, 900, 5, 's'],
@@ -94,9 +95,9 @@
     ['dlg.fg', 'Dialoge', 'Box', 'Schriftfarbe', 'Farbe des Texts in der Box.', '#F4F4F4', 0, 0, 0, 'color', '--mmfg'],
     ['dlg.hi', 'Dialoge', 'Box', 'Betonung', 'Farbe für Betonungen, Links, Cursor und Dreieck.', '#F8E038', 0, 0, 0, 'color', '--mmhi'],
     ['dlg.open', 'Dialoge', 'Box', 'Öffnen und Schließen', 'Dauer der Linien-Animation.', 240, 0, 1500, 10, 'ms', '--mmopen'],
-    ['dlg.autominms', 'Dialoge', 'Fenster', 'Mindestens nach dem Schreiben', 'Millisekunden, die eine fertig geschriebene Seite mindestens stehen bleibt.', 400, 0, 5000, 50, 'ms'],
-    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Millisekunden je Zeichen, gezählt ab Beginn des Schreibens (während geschrieben wird, wird schon gelesen); für alle Figuren gleich.', 60, 10, 200, 1, 'ms'],
-    ['dlg.endwait', 'Dialoge', 'Fenster', 'Stehen nach dem letzten Satz', 'Millisekunden, die die Box nach der Lesezeit des letzten Satzes noch stehen bleibt (Josef, 1.11., 17:43).', 1000, 0, 10000, 100, 'ms'],
+    ['dlg.autominms', 'Dialoge', 'Fenster', 'Mindestens nach dem Schreiben', 'Millisekunden, die eine fertig geschriebene Seite mindestens stehen bleibt. Verlängert am 12.11.2026 (Josef: sonst kommt keiner mit).', 1500, 0, 5000, 50, 'ms'],
+    ['dlg.automs', 'Dialoge', 'Fenster', 'Lesezeit je Zeichen', 'Millisekunden je Zeichen, gezählt ab Beginn des Schreibens (während geschrieben wird, wird schon gelesen); für alle Figuren gleich. Verlängert am 12.11.2026 (Josef: sonst kommt keiner mit).', 85, 10, 200, 1, 'ms'],
+    ['dlg.endwait', 'Dialoge', 'Fenster', 'Stehen nach dem letzten Satz', 'Millisekunden, die die Box nach der Lesezeit des letzten Satzes noch stehen bleibt (Josef, 1.11., 17:43). Verlängert am 12.11.2026 (Josef: sonst kommt keiner mit).', 2000, 0, 10000, 100, 'ms'],
     ['dlg.askwait', 'Dialoge', 'Fenster', 'Warten auf Antwort', 'Sekunden, bevor eine unbeantwortete Frage das Fenster schließt.', 25, 5, 120, 1, 's'],
     /* ---------- Grafik ---------- */
     ['ui.barh', 'Grafik', 'Balken', 'Höhe Balken', 'Höhe des grünen Fortschrittsbalkens.', [56, 44], 8, 120, 1, 'px', '--pbh'],

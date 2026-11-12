@@ -98,9 +98,9 @@
   window.addEventListener('scroll', function(){ var y = window.pageYOffset, dy = y - lastY, t = now(); if (Math.abs(dy) < 4) return; var d = dy > 0 ? 1 : -1;
     if (d !== dir){ flips.push(t); flips = flips.filter(function(x){ return t - x < 8000; }); if (flips.length >= 7){ flips = []; beh('scroll_pingpong'); } dir = d; }
     var H2 = document.documentElement.scrollHeight - window.innerHeight; if (Math.abs(dy) > H2 * .5 && H2 > window.innerHeight * 3) beh('jump_bottom');
-    var dt = (t - lastScrollT) / 1000; if (dt > 0 && dt < 3){ var v = Math.abs(dy) / dt; if (v < 60) slowAcc += dt; else slowAcc = Math.max(0, slowAcc - dt); if (slowAcc > 75){ slowAcc = 0; beh('slow_read'); } if (v > window.innerHeight * 3) fastN++; }
-    lastScrollT = t; lastY = y; plotCheck(); }, {passive:true});
-  var fastN = 0; setInterval(function(){ if (fastN > 6) beh('fast_scroll'); fastN = 0; }, 2000);
+    var dt = (t - lastScrollT) / 1000; if (dt > 0 && dt < 3){ var v = Math.abs(dy) / dt; if (v < 60) slowAcc += dt; else slowAcc = Math.max(0, slowAcc - dt); if (slowAcc > 75){ slowAcc = 0; beh('slow_read'); } }
+    fastD += Math.abs(dy); lastScrollT = t; lastY = y; plotCheck(); }, {passive:true});
+  /* rasant = Strecke je Sekunde über der Schwelle game.fastscroll (Josef, 12.11.2026: nur bei wirklich schnellem Scrollen) */ var fastD = 0, fastPrev = 0; setInterval(function(){ if (fastD > window.innerHeight * X.CF('game.fastscroll', 8)) beh('fast_scroll'); fastPrev = fastD; fastD = 0; }, 1000);
   /* Zeiger kreist oder wackelt */
   var pts = []; document.addEventListener('pointermove', function(e){ if (e.pointerType !== 'mouse') return; var t = now(); pts.push([e.clientX, e.clientY, t]); pts = pts.filter(function(p){ return t - p[2] < 1800; }); if (pts.length < 20) return; var ang = 0, rev = 0; for (var i = 2; i < pts.length; i++){ var a1 = Math.atan2(pts[i - 1][1] - pts[i - 2][1], pts[i - 1][0] - pts[i - 2][0]), a2 = Math.atan2(pts[i][1] - pts[i - 1][1], pts[i][0] - pts[i - 1][0]); var da = a2 - a1; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; ang += da; if (Math.abs(da) > 2.4) rev++; }
     if (Math.abs(ang) > Math.PI * 5 || rev > 14){ pts = []; beh('pointer_circle'); } }, {passive:true});
@@ -136,7 +136,7 @@
     var c = html.classList.contains('calm'); if (c !== lastCalm){ lastCalm = c; beh('calm_toggle'); } var l = /\blh-/.test(html.className); if (l && !lastLh) beh('lesehilfe'); lastLh = l; }).observe(html, {attributes:true, attributeFilter:['class', 'data-mode']});
   /* Lesen: Absatz zu Ende geschrieben, Plotter unterbrochen, Bildunterschriften, nur Bilder */
   var pens = [];
-  function plotCheck(){ if (!window.JK_PLOT_PENS) return; var p = window.JK_PLOT_PENS(); var vh = window.innerHeight; var was = pens.filter(function(y){ return y > 0 && y < vh; }).length; pens = p.map(function(q){ return q.y; }); var nowIn = pens.filter(function(y){ return y > 0 && y < vh; }).length; if (was > 0 && nowIn === 0 && p.length) beh('plot_interrupt'); }
+  function plotCheck(){ if (!window.JK_PLOT_PENS) return; var p = window.JK_PLOT_PENS(); var vh = window.innerHeight; var was = pens.filter(function(y){ return y > 0 && y < vh; }).length; pens = p.map(function(q){ return q.y; }); var nowIn = pens.filter(function(y){ return y > 0 && y < vh; }).length; if (was > 0 && nowIn === 0 && p.length && Math.max(fastD, fastPrev) > vh * X.CF('game.fastscroll', 8)) beh('plot_interrupt'); }   /* nur bei wirklich schnellem Scrollen (Josef, 12.11.2026) */
   var doneN = 0; new MutationObserver(function(ms){ ms.forEach(function(m){ var el = m.target; if (el.classList && el.classList.contains('plotdone') && !el._jkd){ el._jkd = 1; var r = el.getBoundingClientRect(); if (r.bottom > 0 && r.top < window.innerHeight && el.matches('.textwrap p:last-of-type, .sertext p:last-of-type')) beh('read_full'); doneN++; } }); }).observe(document.body, {attributes:true, subtree:true, attributeFilter:['class']});
   var lbN = 0; window.addEventListener('jk:lb', function(){ lbN++; if (lbN >= 5 && doneN < 2) beh('images_only'); });
   var capT = null; document.addEventListener('pointerover', function(e){ var c = e.target.closest && e.target.closest('figcaption'); clearTimeout(capT); if (!c || X.TOUCH) return; capT = setTimeout(function(){ if (c.matches(':hover')) beh('captions'); }, 5000); }, {passive:true});

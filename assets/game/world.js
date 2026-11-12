@@ -76,6 +76,8 @@
   function bubble(who, text, opt){ opt = opt || {}; if (W.nowatch || X.optedOut() || !text){ dl('reaktion', 'nicht gezeigt: ' + (W.nowatch ? 'Beobachten aus' : X.optedOut() ? 'Nicht jetzt' : 'kein Text')); return false; }
     text = text.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph(k); return v === null || v === undefined ? m : v; });
     if (opt.inject){ if (X.inject({who:X.CH[who] ? who : 'inka', text:text})){ log([who, text], 'Reaktion'); return true; } return false; }
+    /* Reaktionen auf Verhalten (opt.now) kommen sofort, ohne Mindestabstand, und ersetzen einen kurzen Kommentar, egal auf welcher Seite er steht; Gespräche, Panels und Großansicht bleiben unberührt (Josef, 12.11.2026) */
+    if (opt.now){ if (X.quiet() || X.hard() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.hard() ? 'Gespräch oder Panel offen' : 'Tab verborgen')); return false; } if (X.busy()){ dl('reaktion', 'ersetzt laufenden Kommentar'); X.closeSoft(); } lastBub = now(); X.dialog([{who:X.CH[who] ? who : 'inka', text:text}], null, {psst:true}); log([who, text], 'Reaktion'); return true; }
     if (X.quiet() || X.busy() || document.hidden){ dl('reaktion', 'nicht gezeigt: ' + (X.quiet() ? 'Psst oder ruhig' : X.busy() ? 'Fenster offen' : 'Tab verborgen')); return false; } if (now() - lastBub < X.CF('game.reactgap', 180) * 1000 || now() - X.lastDlg() < 20000 || now() - lastFoundT < 6000){ dl('reaktion', 'nicht gezeigt: Abstand (' + Math.round((now() - Math.max(lastBub, X.lastDlg())) / 1000) + ' s)'); return false; } lastBub = now();
     X.dialog([{who:X.CH[who] ? who : 'inka', text:text}], null, {psst:true}); log([who, text], 'Reaktion'); return true; }
   function log(line, kind){ var who = Array.isArray(line) ? line[0] : line && line.who, t = Array.isArray(line) ? line[1] : line && line.text; if (!who || !t) return; t = String(t).replace(/\[[^\]]*\]/g, '').replace(/\*/g, ''); W.enc.push({w:who, t:t.slice(0, 160), d:now(), k:kind}); if (W.enc.length > 150) W.enc = W.enc.slice(-150); save(); }
@@ -89,7 +91,7 @@
     var i = rnd(free); used.push(i); var v = arr[i]; dl('verhalten', key + ' Stufe ' + (st + 1) + ' Variante ' + (i + 1)); var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka;
     if (extra) Object.keys(extra).forEach(function(k){ ctx[k] = extra[k]; });
     if (!W.bp[key] && PTS[key] !== undefined){ W.bp[key] = PTS[key]; save(); X.refresh(); }   /* Punkte zählen auch, wenn gerade keine Box erscheinen darf */
-    var shown = bubble(w, v, {inject:key === 'poke'}); if (!shown){ used.pop(); W.bh[key]--; cool[key] = 0; save(); achievements(); return false; }
+    var shown = bubble(w, v, {inject:key === 'poke', now:key !== 'poke'}); if (!shown){ used.pop(); W.bh[key]--; cool[key] = 0; save(); achievements(); return false; }
     achievements(); return true; }
   X.beh = beh;
 

@@ -287,7 +287,7 @@
   function ph(t){ return typeof t === 'string' ? t.replace(/\{(\w+)\}/g, function(m, k){ var v = X.hooks.ph ? X.hooks.ph(k) : (k === 'n' ? String(count()) : k === 'pts' ? String(points()) : k === 'rest' ? String(N - count()) : null); return v === null || v === undefined ? m : v; }) : t; }
   function norm0(l){ if (typeof l === 'string') return {who:'inka', text:l}; if (Array.isArray(l)) return {who:l[0], text:l[1], mood:l[2], ask:l[3]}; return l; }
   function norm(l){ var o = norm0(l); if (o && typeof o.text === 'string' && o.text.indexOf('{') >= 0){ var c = {}; for (var k in o) c[k] = o[k]; c.raw = o.text; c.text = ph(o.text); o = c; } if (o && o.ask && o.ask.some(function(a){ return /\{\w+\}/.test(a.t || ''); })){ var c2 = {}; for (var k2 in o) c2[k2] = o[k2]; c2.ask = o.ask.map(function(a){ var b = {}; for (var k3 in a) b[k3] = a[k3]; b.t = ph(a.t); return b; }); o = c2; } return o; }
-  var lastDlg = 0, injectFn = null, snapFn = null, closeCur = null;
+  var lastDlg = 0, injectFn = null, snapFn = null, closeCur = null, dlgSoft = false;   /* dlgSoft: kurzer ungefragter Kommentar, darf von einer Reaktion ersetzt werden (Josef, 12.11.2026) */
   /* Josef, 1.11., 17:49: ein offener Dialog bleibt beim Seitenwechsel stehen und läuft auf der neuen Seite weiter */
   window.addEventListener('pagehide', function(){ try { if (snapFn) sessionStorage.setItem('jk_dlg_resume', JSON.stringify(snapFn())); else sessionStorage.removeItem('jk_dlg_resume'); } catch(e){} });
   window.addEventListener('pageshow', function(e){ if (e.persisted) try { sessionStorage.removeItem('jk_dlg_resume'); } catch(x){} });
@@ -302,7 +302,7 @@
   var MMNAME = {inka:'Inka', wagner:'Wagner', xae:'X', sigma:'Sigma', gojira:'Gojira', polizei:'Nil-Polizei', nole:'Nole', grind:'Grind', griffith:'Griffith', libido:'Libido', kalmar:'Kalmar', haendler:'Gestalt'};
   var MMCOL = {inka:'#5FB8DA', wagner:'#FF5446', xae:'#FFFFFF', sigma:'#2BD27A', gojira:'#2BD27A', polizei:'#B4B4B4', nole:'#D2AA64', grind:'#D2AA64', griffith:'#7C98F0', libido:'#B49BE6', kalmar:'#5FB8DA', haendler:'#D2A05A'};   /* Figurenfarben, auf dunklem Grund lesbar */
   function dialog(lines, done, opt){ opt = opt || {}; if (window.JK_DEVLOG && lines && lines[0]){ var l0 = norm0(lines[0]); window.JK_DEVLOG('dialog', (dlg ? 'angehängt, ' : '') + l0.who + ': ' + String(l0.text || '').slice(0, 80)); } if (dlg){ dq = (dq || []).concat(lines); return; } dq = []; lastDlg = Date.now();
-    lines = lines.map(norm); var t0 = Date.now(), k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
+    lines = lines.map(norm); dlgSoft = !!opt.psst && !opt.resumed && lines.length <= 2 && !lines.some(function(l){ return l && l.ask; }); var t0 = Date.now(), k = 0, pageIdx = 0, pages = [], typing = false, raf = null, answered = 0, cur, curMood = 'neutral', pending = null;
     dlg = document.createElement('div'); dlg.className = 'sbdlg mm'; dlg.setAttribute('role', 'dialog');
     /* Mega Man X (Josef, 1.11.2026, 16:00): dunkle Box, Pixelschrift, Name vorne in der Figurenfarbe, Porträt außen */
     dlg.innerHTML = '<span class="vh dlglive" aria-live="polite"></span><div class="win"><b class="who vh"></b><img alt=""><div class="txt"><p></p><i class="more" aria-hidden="true">▼</i></div></div>';
@@ -384,7 +384,7 @@
         var L = lines[k]; if (pageIdx === pages.length - 1 && L.ask && answered < 2){ if (!pending){ askAnswers(L); autoArm(CF('dlg.askwait', 25) * 1000, true); } return; } more.style.visibility = 'visible'; cursorSnd('mv'); autoArm(readMs(items) + (pageIdx === pages.length - 1 && k === lines.length - 1 && !(dq && dq.length) ? CF('dlg.endwait', 2000) : 0)); return; }   /* Josef, 1.11., 16:00: nach dem Überspringen schloss der Dialog nicht mehr von allein */
       if (pageIdx < pages.length - 1){ pageIdx++; advSnd('next'); showPage(); return; }
       k++; advSnd(k >= lines.length && !dq.length ? 'end' : 'next'); if (k >= lines.length){ if (dq.length){ lines = lines.concat(dq.map(norm)); dq = []; startLine(); return; } close(true); return; } startLine(); }
-    function close(nat){ clearTimeout(autoT); if (!dlg) return; lastDlg = Date.now();   /* Abstände zählen ab dem Ende eines Dialogs (keine Reaktion direkt nach einem langen Gespräch) */ if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; injectFn = null; snapFn = null; closeCur = null; setTimeout(function(){ d.remove(); }, 300); if (done) done(nat === true); }
+    function close(nat){ clearTimeout(autoT); if (!dlg) return; lastDlg = Date.now();   /* Abstände zählen ab dem Ende eines Dialogs (keine Reaktion direkt nach einem langen Gespräch) */ if (raf) cancelAnimationFrame(raf); document.removeEventListener('keydown', onkey); document.body.classList.remove('sbdlgon'); dlg.classList.add('off'); var d = dlg; dlg = null; dlgSoft = false; injectFn = null; snapFn = null; closeCur = null; setTimeout(function(){ d.remove(); }, 300); if (done) done(nat === true); }
     snapFn = function(){ var rest = lines.slice(k).concat(dq || []); return {t:Date.now(), lines:rest.map(function(l){ var o = {}; for (var q in l) if (q !== 'raw' && typeof l[q] !== 'function') o[q] = l[q]; if (o.ask) o.ask = o.ask.map(function(a){ var b = {}; for (var q2 in a) if (typeof a[q2] !== 'function') b[q2] = a[q2]; return b; }); return o; }), page:pageIdx, psst:!!opt.psst}; };
     closeCur = function(){ close(false); };
     var side = 'r'; injectFn = function(line){ if (!dlg) return false; lines.splice(k + 1, 0, norm(line)); if (!typing && !pending && pageIdx === pages.length - 1) { clearTimeout(autoT); autoArm(600); } return true; };
@@ -736,9 +736,11 @@
      Ungefragte Fenster höchstens alle 60 s (Regler game.gap), je Auslöser einmal je Besuch, nie während jemand liest (sichtbarer Absatz wird noch geschrieben), nie bei Psst oder Nicht jetzt. */
   var lastInput = Date.now(), misses = 0, hiddenAt = 0;
   function readingNow(){ var vh = window.innerHeight; return [].slice.call(document.querySelectorAll('.plotted:not(.plotdone)')).some(function(el){ var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < vh && r.height > 0; }); }
-  function react(key, mk, tries){ if (quiet() || dlg || panel || ov || mo || document.hidden) return false; S.rx = S.rx || {}; if (S.rx[key] === V()) return false;
-    if (Date.now() - lastDlg < CF('game.gap', 120) * 1000) return false;
-    if (readingNow()){ if ((tries || 0) < 10) setTimeout(function(){ react(key, mk, (tries || 0) + 1); }, 4000); return false; }
+  function react(key, mk, tries){ var NOW = !/^op:/.test(key);   /* Reaktionen auf Verhalten kommen sofort und ersetzen einen kurzen Kommentar (Josef, 12.11.2026); Meinungsfragen halten den Abstand */
+    if (quiet() || (dlg && !(NOW && dlgSoft)) || panel || ov || mo || document.hidden) return false; S.rx = S.rx || {}; if (S.rx[key] === V()) return false;
+    if (!NOW && Date.now() - lastDlg < CF('game.gap', 120) * 1000) return false;
+    if (NOW && dlg && dlgSoft && closeCur) closeCur();
+    if (!NOW && readingNow()){ if ((tries || 0) < 10) setTimeout(function(){ react(key, mk, (tries || 0) + 1); }, 4000); return false; }
     var lines = typeof mk === 'function' ? mk() : mk; if (!lines || !lines.length) return false;
     S.rx[key] = V(); save(); dialog(lines, null, {psst:true}); return true; }
   function workTitle(f){ var i = f && f.querySelector('figcaption i'); if (i) return i.textContent.trim(); var im = f && f.querySelector('img'); var alt = im && im.alt || ''; return alt.replace(/^Josef Knoll,\s*/, '').replace(/,\s*\d{4}.*$/, '') || ''; }
@@ -1094,7 +1096,7 @@
     io.observe(el); }
 
   /* Schnittstelle für die Welt (assets/game/world.js, Josef, 1.11.2026) */
-  var X = window.JK_SBX = {hooks:{}, S:function(){ return S; }, save:save, dialog:function(l, d, o){ return dialog(l, d, o); }, inject:function(l){ return injectFn ? injectFn(l) : false; }, busy:function(){ return !!(dlg || panel || ov || mo || document.querySelector('.lb2.on')); }, quiet:quiet, optedOut:optedOut, count:count, points:points, refresh:refresh, markNew:markNew, V:V, PAGE:PAGE, TOUCH:TOUCH, CF:CF, esc:esc, rel:rel, CH:CH, VOICE:VOICE, NAMES:NAMES, NG:function(){ return NG; }, ruinCount:ruinCount, chapSeen:function(){ return Object.keys(S.chap || {}).length; }, readingNow:readingNow, lastDlg:function(){ return lastDlg; }, syl:syl,
+  var X = window.JK_SBX = {hooks:{}, S:function(){ return S; }, save:save, dialog:function(l, d, o){ return dialog(l, d, o); }, inject:function(l){ return injectFn ? injectFn(l) : false; }, busy:function(){ return !!(dlg || panel || ov || mo || document.querySelector('.lb2.on')); }, hard:function(){ return !!((dlg && !dlgSoft) || panel || ov || mo || document.querySelector('.lb2.on')); }, closeSoft:function(){ if (dlg && dlgSoft && closeCur) closeCur(); }, quiet:quiet, optedOut:optedOut, count:count, points:points, refresh:refresh, markNew:markNew, V:V, PAGE:PAGE, TOUCH:TOUCH, CF:CF, esc:esc, rel:rel, CH:CH, VOICE:VOICE, NAMES:NAMES, NG:function(){ return NG; }, ruinCount:ruinCount, chapSeen:function(){ return Object.keys(S.chap || {}).length; }, readingNow:readingNow, lastDlg:function(){ return lastDlg; }, syl:syl,
     freeHint:function(){ var left = PLACES.filter(function(p){ return !S.found[p.id]; }); if (!left.length) return; var here = left.filter(function(p){ return p.p === PAGE; }); hintFor((here.length ? here : left)[0]); S.hints = Math.max(0, S.hints - 1); save(); refresh(); }};
   function H(n){ var f = X.hooks[n]; if (!f) return undefined; try { return f.apply(null, [].slice.call(arguments, 1)); } catch(e){ try { console.warn('world', n, e); } catch(_){} return undefined; } }
   function loadWorld(){ if (optedOut() && !S.done) {} var sc = document.querySelector('script[src*="game.js"]'); var v = sc ? ((sc.src.match(/[?&]v=([^&]+)/) || [])[1] || '') : ''; var s2 = document.createElement('script'); s2.src = '../assets/game/world.js' + (v ? '?v=' + v : ''); s2.defer = true; document.head.appendChild(s2); }

@@ -2,13 +2,16 @@
  "id": "20261119160900-z7p4wp",
  "kind": "publish",
  "author": "Josef",
- "email": "josef@theidealcity.gg",
  "message": "Test Backend: Parallax 10,5",
- "draft": "5wsvgr8dxgza",
  "created": "2026-11-19T16:09:00.713Z",
- "payload": {
+ "applied": "2026-11-19T16:09:11+00:00",
+ "files": [
+  "assets/cfg.js"
+ ],
+ "inverse": {
   "regler": {
-   "fx.parallax": 10.5
+   "fx.parallax": null
   }
- }
+ },
+ "notes": []
 }

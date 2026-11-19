@@ -42,6 +42,8 @@ async function sendMail(env, to, name, link) {
     headers: { 'api-key': env.BREVO_KEY, 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify({ sender: { name: 'theidealcity.gg', email: env.MAIL_FROM }, to: [{ email: to, name }], subject: 'Anmeldung Dev Tools theidealcity.gg', htmlContent: html })
   });
+  if (!r.ok) console.error('Brevo', r.status, (await r.text()).slice(0, 500));
+  else console.log('Brevo ok', to);
   return r.ok;
 }
 

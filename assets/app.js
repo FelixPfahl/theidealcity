@@ -532,6 +532,7 @@
   /* ---------- Zufällige Neigung der Werke (dezent) ---------- */
   document.querySelectorAll('.work.rot').forEach(function(w,i){ w.style.setProperty('--tilt', (((i*7919)%7)-3)*0.5+'deg'); });
 
+  var NL_BREVO = 'https://bd31bb86.sibforms.com/serve/MUIFAGcXrhTyaqodLK7LQSz9kmXfpq_NtOB4fLNgOi6lqK0M0xRfK7kYPSKF5jSO7Bsvkp7T5dw-JyRjzCimeW5bWaiW1Corz17O0cAvRRbWkn04eRt7BBzFj7HNqmsqkpDjdl_7Sxc81U5X6kEB44mQvkNCSy94kULnV7FN8caVUD6BkaD9fOLeNMpGBEQGN_K2Mc0Gd_5zDNQGvw=='; /* Brevo-Formularlink (…sibforms.com/serve/…), Josef, 19.11.2026 */
   /* ---------- Newsletter: schwebender Mail-Knopf, Anmeldung mit Applaus (Josef, 27.10.) ----------
      Mit Brevo-Link läuft die Anmeldung im Hintergrund; sonst geht das Formular normal ab (FormSubmit), nach dem Applaus. */
   safe(function(){
@@ -553,6 +554,14 @@
       var btn = f.querySelector('button[type=submit]'); if (btn){ btn.disabled = true; btn.textContent = 'Danke!'; }
       var wait = applause() || 300;
       var brevo = /sibforms|brevo/.test(f.action);
+      /* Josef, 19.11.2026: Newsletter über Brevo mit Double-Opt-in. Steht NL_BREVO leer, bleibt der Mail-Weg. */
+      if (NL_BREVO && f.hasAttribute('data-nl')){ var em = f.querySelector('input[type=email]'); var fd = new FormData(); fd.append('EMAIL', em ? em.value.trim() : ''); fd.append('email_address_check', ''); fd.append('locale', 'de');
+        var done = function(){ var row = f.querySelector('.nlrow'); if (row) row.hidden = true; else if (em) em.hidden = true; if (btn) btn.hidden = true;
+          var ok = f.querySelector('.nlok') || (f.parentNode && f.parentNode.querySelector('.nlok')); if (!ok){ ok = document.createElement('p'); ok.className = 'nlok'; f.appendChild(ok); }
+          ok.textContent = 'Fast geschafft: Bitte bestätige die Mail, die gleich kommt. Erst dann bist du dabei.'; ok.hidden = false; busy = false; };
+        fetch(NL_BREVO, {method:'POST', body:fd, mode:'no-cors'}).then(function(){ setTimeout(done, Math.min(wait, 900)); }).catch(function(){ if (btn){ btn.disabled = false; btn.textContent = 'Anmelden'; } busy = false;
+          var ok = f.querySelector('.nlok') || document.createElement('p'); ok.className = 'nlok'; ok.textContent = 'Das hat nicht geklappt. Bitte noch einmal versuchen oder an josef@theidealcity.gg schreiben.'; ok.hidden = false; if (!ok.parentNode) f.appendChild(ok); });
+        return; }
       /* Josef, 29.10., 14:05: ohne Dienst dazwischen. Das Formular öffnet eine fertige Mail im eigenen Mailprogramm. */
       if (f.hasAttribute('data-mail')){ var to = 'josef@theidealcity.gg', kind = f.getAttribute('data-mail'), val = function(sel){ var el = f.querySelector(sel); return el ? el.value.trim() : ''; };
         var subj, body; if (kind === 'nl'){ subj = 'Newsletter-Anmeldung theidealcity.gg'; body = 'Bitte trag mich in den Newsletter ein: ' + val('input[type=email]') + '\n\n(Abmelden geht jederzeit mit einer kurzen Mail an ' + to + '.)'; }

@@ -12,7 +12,7 @@
   function who(l){ if (!l) return ''; if (typeof l === 'string') return 'inka'; if (Array.isArray(l)) return l[0]; return l.who || ''; }
   function clean(t){ return String(t || '').replace(/\[[^\]]*\]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim(); }
   var MOB = window.matchMedia && matchMedia('(max-width:700px)').matches;
-  var TABS = [['go', 'Auslösen'], ['tx', 'Texte'], ['st', 'Spielstand'], ['ov', 'Anzeigen'], ['log', 'Protokoll'], ['err', 'Fehler'], ['sp', 'Sprites'], ['so', 'Sound'], ['wl', 'Welt'], ['ob', 'Objekte'], ['wk', 'Werke'], ['ex', 'Export'], ['reg', 'Regler'], ['keys', 'Tasten']];
+  var TABS = [['go', 'Auslösen'], ['tx', 'Texte'], ['st', 'Spielstand'], ['ov', 'Anzeigen'], ['log', 'Protokoll'], ['err', 'Fehler'], ['sp', 'Sprites'], ['so', 'Sound'], ['wl', 'Welt'], ['ob', 'Objekte'], ['wk', 'Werke'], ['pub', 'Veröffentlichen'], ['ex', 'Export'], ['reg', 'Regler'], ['keys', 'Tasten']];
   var st = {open: ls('jk_dev_open', '1') === '1', tab: ls('jk_dev_tab', 'go'), q: '', type: 'alle', fig: '', logk: '', obj: ls('jk_dev_obj', '0') === '1', spots: ls('jk_dev_spots', '0') === '1', more: 200};
   var SPD = window.JK_DEVSPD || (window.JK_DEVSPD = {mult:1, pause:false});
 
@@ -34,7 +34,7 @@
     '#jkdev .vars{margin:2px 0 4px 28px}#jkdev .vars .it{border-bottom:0;padding:1px 0}',
     '#jkdev .grid{display:grid;grid-template-columns:1fr auto auto;gap:2px 8px;align-items:center}',
     '#jkdev table{border-collapse:collapse;width:100%}#jkdev td,#jkdev th{border-bottom:1px solid #d5d5d5;padding:2px 4px;text-align:left;font-weight:400}#jkdev th{color:#555;font-size:11px}',
-    '#jkdev .log div{font:11px/1.35 ui-monospace,Consolas,monospace;padding:1px 0;border-bottom:1px dotted #d0d0d0}#jkdev .log i{font-style:normal;color:#777}#jkdev .log b{font-weight:600;color:#2b6cb0}',
+    '#jkdev .log div{font:11px/1.35 ui-monospace,Consolas,monospace;padding:1px 0;border-bottom:1px dotted #d0d0d0}#jkdev .log i{font-style:normal;color:#777;font-family:inherit}#jkdev .log b{font-weight:600;color:#2b6cb0}',
     '#jkdev .err div{padding:3px 0;border-bottom:1px dotted #d0d0d0;color:#c0392b}#jkdev .ok{color:#1e7d43}',
     '#jkdev .note{color:#666;font-size:11px}',
     '#jkdevtab{position:fixed;right:0;top:45%;z-index:9100;background:#2b6cb0;color:#fff;border:0;padding:8px 5px;font:600 11px system-ui,sans-serif;letter-spacing:.06em;writing-mode:vertical-rl;cursor:pointer}',
@@ -68,6 +68,7 @@
 
   /* ---------- Reiter ---------- */
   function render(){ if (!st.open) return; nav.querySelectorAll('button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-t') === st.tab); }); markSpeed();
+    if (st.tab === 'pub'){ rPub(); return; }
     if (!X || !G){ bd.innerHTML = '<p class="note">Warte auf das Spiel ...</p>'; return; }
     var f = {go:rGo, sp:rSp, so:rSo, wl:rWl, ob:rOb, wk:rWk, tx:rTx, st:rState, ov:rOv, log:rLog, err:rErr, ex:rEx, reg:rReg, keys:rKeys}[st.tab] || rGo; f(); }
   function h(html){ bd.innerHTML = html; }
@@ -500,6 +501,46 @@
     ov.querySelector('.fs').addEventListener('change', function(e){ idx = +e.target.value; lsSet('jk_dev_frame', String(idx)); lay(); }); ov.querySelector('.fr').addEventListener('click', function(){ rot = !rot; lay(); }); ov.querySelector('.frl').addEventListener('click', function(){ fr.src = fr.src; }); ov.querySelector('.fx').addEventListener('click', function(){ ov.remove(); }); window.addEventListener('resize', lay); }
 
   /* ---------- Start: warten, bis Spiel und Welt bereit sind ---------- */
+  /* ---------- Veröffentlichen ohne Claude (Josef, 19.11.2026, Etappe 1): Login per Mail-Link, Vorschau-Link, Veröffentlichen, Verlauf, Zurückrollen ---------- */
+  var API = (window.JK_CFG && window.JK_CFG.API) || 'https://theidealcity-api.josef-51d.workers.dev';
+  var PUBST = {sess:localStorage.getItem('jk_api_sess') || '', me:lsJ('jk_api_me', null), msg:'', hist:null, drafts:null, users:null, last:null};
+  function api(path, body, cb){ var x = new XMLHttpRequest(); x.open(body === undefined ? 'GET' : 'POST', API + path, true); x.setRequestHeader('Content-Type', 'application/json'); if (PUBST.sess) x.setRequestHeader('Authorization', 'Bearer ' + PUBST.sess);
+    x.onload = function(){ var j = null; try { j = JSON.parse(x.responseText); } catch(e){} if (x.status === 401 && path !== '/auth/verify'){ pubLogout(true); } cb(j || {ok:false, error:'Antwort ' + x.status}); }; x.onerror = function(){ cb({ok:false, error:'Backend nicht erreichbar'}); }; x.send(body === undefined ? null : JSON.stringify(body)); }
+  function pubLogout(silent){ if (!silent && PUBST.sess) api('/auth/logout', {}, function(){}); PUBST.sess = ''; PUBST.me = null; lsSet('jk_api_sess', null); lsSet('jk_api_me', null); }
+  function pubPayload(){ var p = {}, R = window.JK_CFG ? window.JK_CFG.local() : {}; if (Object.keys(R).length) p.regler = R;
+    if (Object.keys(TX.convos).length + Object.keys(TX.scenes).length + Object.keys(TX.beh).length) p.texte = TX; if (KOR.length) p.korrekturen = KOR; return p; }
+  function pubClearLocal(){ TX = {convos:{}, scenes:{}, beh:{}}; KOR = []; lsSet('jk_dev_kor', '[]'); lsSet('jk_dev_text', JSON.stringify(TX)); if (window.JK_CFG) window.JK_CFG.replace({}); }
+  function pubWhen(t){ var d = new Date(typeof t === 'number' ? t : Date.parse(t)), p = function(n){ return ('0' + n).slice(-2); }; return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '. ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+  function pubLoad(){ api('/history', undefined, function(j){ PUBST.hist = j.ok ? j.items : []; if (st.tab === 'pub') rPub(); }); api('/drafts', undefined, function(j){ PUBST.drafts = j.ok ? j.drafts : []; if (st.tab === 'pub') rPub(); });
+    if (PUBST.me && PUBST.me.role === 'owner') api('/users', undefined, function(j){ PUBST.users = j.ok ? j.users : []; if (st.tab === 'pub') rPub(); }); }
+  function rPub(){ var me = PUBST.me, m = PUBST.msg ? '<p class="note" style="color:#0028FF"><b>' + esc(PUBST.msg) + '</b></p>' : '';
+    if (!PUBST.sess || !me){ h('<h5>Anmelden</h5>' + m + '<p>Du bekommst einen Link per Mail. Er gilt 15 Minuten.</p><div class="row"><input type="text" class="pe" placeholder="E-Mail-Adresse" autocomplete="email" style="flex:1"><button class="b on pl">Link schicken</button></div>');
+      on('.pl', 'click', function(){ var e = bd.querySelector('.pe').value.trim(); if (!e) return; api('/auth/link', {email:e, back:location.origin + location.pathname}, function(j){ PUBST.msg = j.ok ? 'Wenn die Adresse eingetragen ist, kommt gleich eine Mail. Link dort anklicken.' : (j.error || 'Fehler'); rPub(); }); }); return; }
+    var p = pubPayload(), nT = p.texte ? Object.keys(TX.convos).length + Object.keys(TX.scenes).length + Object.keys(TX.beh).length : 0, nR = p.regler ? Object.keys(p.regler).length : 0, any = nT + KOR.length + nR;
+    var ex = (window.JK_DEVEXPORT_EXTRA || []).map(function(x){ return x.label(); }).filter(function(s){ return !/^0\b/.test(s); });
+    var html = '<h5>Angemeldet</h5><div class="row"><span>' + esc(me.name) + ' (' + (me.role === 'owner' ? 'alles' : 'Gestaltung') + ')</span><button class="b lo">Abmelden</button><button class="b rl">Aktualisieren</button></div>' + m +
+      '<h5>Deine Änderungen</h5><p>' + nT + ' Texte, ' + KOR.length + ' Korrekturen, ' + nR + ' Regler.</p>' + (ex.length ? '<p class="note">Sprites und Sounds (' + esc(ex.join(', ')) + ') gehen noch per ZIP-Export.</p>' : '') +
+      (any ? '<div class="row"><input type="text" class="pt" placeholder="Kurz beschreiben, was sich ändert" style="flex:1"></div><div class="row"><button class="b pv">Vorschau-Link</button><button class="b on pp">Veröffentlichen</button></div>' : '<p class="note">Keine lokalen Änderungen.</p>');
+    if (PUBST.last) html += '<p class="note">Vorschau: <a href="' + esc(PUBST.last) + '" target="_blank" rel="noopener">' + esc(PUBST.last) + '</a> <button class="b cp">kopieren</button></p>';
+    html += '<h5>Verlauf</h5>' + (PUBST.hist === null ? '<p class="note">lädt ...</p>' : !PUBST.hist.length ? '<p class="note">Noch nichts veröffentlicht.</p>' : '<div class="log">' + PUBST.hist.map(function(x){
+      var col = x.status === 'fehler' ? '#c0392b' : x.status === 'wartet' ? '#777' : '#0028FF', lbl = x.status === 'wartet' ? 'wird eingebaut' : x.status;
+      return '<div><i>' + pubWhen(x.created) + '</i> <b style="color:' + col + '">' + esc(lbl) + '</b> ' + esc(x.message) + ' <i>(' + esc(x.name || '') + ')</i>' + (me.role === 'owner' && x.kind === 'publish' && x.status === 'eingebaut' ? ' <button class="b warn rv" data-id="' + esc(x.id) + '">zurückrollen</button>' : '') + '</div>'; }).join('') + '</div>');
+    html += '<h5>Entwürfe</h5>' + (PUBST.drafts === null ? '<p class="note">lädt ...</p>' : !PUBST.drafts.length ? '<p class="note">Keine.</p>' : '<div class="log">' + PUBST.drafts.map(function(d){
+      return '<div><i>' + pubWhen(d.created) + '</i> <a href="' + esc(location.origin + '/de/index.html?preview=' + d.id) + '" target="_blank" rel="noopener">' + esc(d.title) + '</a> <i>(' + esc(d.name || d.email) + ')</i>' + (me.role === 'owner' ? ' <button class="b dp" data-id="' + esc(d.id) + '" data-t="' + esc(d.title) + '">veröffentlichen</button>' : '') + '</div>'; }).join('') + '</div>');
+    if (me.role === 'owner') html += '<h5>Personen</h5>' + (PUBST.users ? '<div class="log">' + PUBST.users.map(function(u){ return '<div>' + esc(u.name) + ' <i>' + esc(u.email) + ' · ' + (u.role === 'owner' ? 'alles' : 'Gestaltung') + '</i></div>'; }).join('') + '</div>' : '') +
+      '<div class="row"><input type="text" class="un" placeholder="Name" style="width:90px"><input type="text" class="ue" placeholder="E-Mail" style="flex:1"><select class="ur"><option value="design">Gestaltung</option><option value="owner">alles</option></select><button class="b ua">Hinzufügen</button></div>';
+    h(html);
+    on('.lo', 'click', function(){ pubLogout(); PUBST.msg = 'Abgemeldet.'; rPub(); }); on('.rl', 'click', function(){ PUBST.msg = ''; pubLoad(); });
+    on('.cp', 'click', function(){ try { navigator.clipboard.writeText(PUBST.last); PUBST.msg = 'Link kopiert.'; } catch(e){} rPub(); });
+    on('.pv', 'click', function(){ var t = bd.querySelector('.pt').value.trim() || 'Entwurf ' + pubWhen(Date.now()); api('/drafts', {title:t, payload:pubPayload()}, function(j){ if (j.ok){ PUBST.last = j.preview.replace(/^https:\/\/theidealcity\.gg/, location.origin); PUBST.msg = 'Vorschau-Link erstellt.'; log('vorschau', t); pubLoad(); } else PUBST.msg = j.error || 'Fehler'; rPub(); }); });
+    var armP = false; on('.pp', 'click', function(e){ if (!armP){ armP = true; e.textContent = 'Wirklich veröffentlichen?'; return; } var t = bd.querySelector('.pt').value.trim() || 'Änderungen aus den Dev Tools'; e.disabled = true;
+      api('/publish', {payload:pubPayload(), message:t}, function(j){ if (j.ok){ pubClearLocal(); PUBST.msg = 'Veröffentlicht. In 1 bis 3 Minuten ist es live (Verlauf zeigt den Stand).'; log('veröffentlicht', t); pubLoad(); setTimeout(pubLoad, 90000); } else PUBST.msg = j.error || 'Fehler'; rPub(); }); });
+    on('.dp', 'click', function(e){ if (e.getAttribute('data-arm') !== '1'){ e.setAttribute('data-arm', '1'); e.textContent = 'Wirklich?'; return; } api('/publish', {draft:e.getAttribute('data-id'), message:e.getAttribute('data-t')}, function(j){ PUBST.msg = j.ok ? 'Entwurf veröffentlicht.' : (j.error || 'Fehler'); pubLoad(); setTimeout(pubLoad, 90000); rPub(); }); });
+    on('.rv', 'click', function(e){ if (e.getAttribute('data-arm') !== '1'){ e.setAttribute('data-arm', '1'); e.textContent = 'Wirklich zurückrollen?'; return; } api('/revert', {id:e.getAttribute('data-id')}, function(j){ PUBST.msg = j.ok ? 'Wird zurückgerollt. In 1 bis 3 Minuten live.' : (j.error || 'Fehler'); log('zurückrollen', e.getAttribute('data-id')); pubLoad(); setTimeout(pubLoad, 90000); rPub(); }); });
+    on('.ua', 'click', function(){ var e = bd.querySelector('.ue').value.trim(), n = bd.querySelector('.un').value.trim(), r = bd.querySelector('.ur').value; if (!e) return; api('/users', {email:e, name:n || e, role:r}, function(j){ PUBST.msg = j.ok ? n + ' kann sich jetzt anmelden.' : (j.error || 'Fehler'); pubLoad(); rPub(); }); });
+    if (PUBST.hist === null && !PUBST.loading){ PUBST.loading = true; pubLoad(); } }
+  (function(){ var m = location.search.match(/[?&]login=([A-Za-z0-9_-]+)/); if (!m) return; var clean = location.pathname + location.search.replace(/([?&])login=[^&]*&?/, '$1').replace(/[?&]$/, '') + location.hash; try { history.replaceState(null, '', clean); } catch(e){}
+    api('/auth/verify', {token:m[1]}, function(j){ if (j.ok){ PUBST.sess = j.session; PUBST.me = j.user; lsSet('jk_api_sess', j.session); lsSet('jk_api_me', JSON.stringify(j.user)); PUBST.msg = 'Angemeldet.'; } else PUBST.msg = j.error || 'Anmeldung fehlgeschlagen'; st.open = true; setOpen(true); setTab('pub'); }); })();
   function boot(){ document.body.appendChild(box); document.body.appendChild(tabBtn); document.body.appendChild(back); setOpen(st.open); if (st.tab === 'reg') setTab('reg'); rErrMark();
     var tries = 0; (function wait(){ X = window.JK_SBX; G = X && X.dev; WD = X && X.wdev; if (X && X.PAGE) PAGE = X.PAGE; if (G && (WD || tries > 40)){ if (Object.keys(BLIP).length) blipApply(); worldApply(); document.documentElement.classList.toggle('jkdev-obj', st.obj); document.documentElement.classList.toggle('jkdev-spots', st.spots); setTimeout(function(){ labels(); spots(); }, 600); render(); return; } tries++; setTimeout(wait, 250); })(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

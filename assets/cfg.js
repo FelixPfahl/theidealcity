@@ -130,6 +130,20 @@
   var DEF = {}, META = {}; P.forEach(function(p){ DEF[p[0]] = p[5]; META[p[0]] = p; });
   var PUB = {};   /* veröffentlichte Werte: hier trägt Claude nach Josefs Übernahme ein (Schlüssel, @d, @m) */
   var ON = false, LOC = {};
+  /* Vorschau-Link aus den Dev Tools (Josef, 19.11.2026, Etappe 1): ?preview=<id> lädt einen Entwurf vom Backend und zeigt die Seite damit; gilt im Tab weiter bis ?preview=aus */
+  var API = 'https://theidealcity-api.josef-51d.workers.dev';
+  try { var pq = location.search.match(/[?&]preview=([a-z0-9]{12}|aus)\b/); if (pq){ if (pq[1] === 'aus') sessionStorage.removeItem('jk_preview'); else sessionStorage.setItem('jk_preview', pq[1]); }
+    var pid = sessionStorage.getItem('jk_preview');
+    if (pid){ var px = new XMLHttpRequest(); px.open('GET', API + '/p/' + pid, false); px.send(); var pr = px.status === 200 ? JSON.parse(px.responseText) : null;
+      if (pr && pr.ok){ var pl = pr.payload || {}; Object.keys(pl.regler || {}).forEach(function(k){ if (pl.regler[k] === null) delete PUB[k]; else PUB[k] = pl.regler[k]; }); window.JK_PREVIEW = {id:pid, title:pr.title || 'Entwurf', payload:pl};
+        document.addEventListener('DOMContentLoaded', function(){ var page = document.body.getAttribute('data-page') || '';
+          (pl.korrekturen || []).forEach(function(k){ if (k.where !== 'seite' || (k.page && k.page !== page)) return; var el = null; try { el = document.querySelector(k.sel); } catch(e){} if (!el) return;
+            if (!el.querySelector('*')){ if (el.textContent.replace(/\s+/g, ' ').trim() === k.old) el.textContent = k['new']; return; }
+            var w = document.createTreeWalker(el, 4), n; while ((n = w.nextNode())){ var i = n.nodeValue.indexOf(k.old); if (i >= 0){ n.nodeValue = n.nodeValue.slice(0, i) + k['new'] + n.nodeValue.slice(i + k.old.length); break; } } });
+          var b = document.createElement('div'); b.className = 'jkpreview'; b.setAttribute('role', 'status');
+          b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:2147483000;background:#0028FF;color:#fff;font:12px/1.4 monospace;padding:6px 10px;border:2px solid #000;box-shadow:3px 3px 0 #000';
+          b.textContent = 'VORSCHAU: ' + window.JK_PREVIEW.title + ' '; var a = document.createElement('a'); a.href = location.pathname + '?preview=aus'; a.textContent = '[beenden]'; a.style.color = '#fff'; b.appendChild(a); document.body.appendChild(b); });
+      } else sessionStorage.removeItem('jk_preview'); } } catch(e){}
   /* Dev Tools (Josef, 1.11.2026, T1: geheimer Link ?dev, ?dev=aus meldet ab); schalten auch die Regler frei. Zeit-Simulation: Date läuft mit Versatz */
   var DEVON = false; try { if (/[?&]dev=aus\b/.test(location.search)){ localStorage.removeItem('jk_dev_on'); localStorage.removeItem('jk_regler_on'); } else if (/[?&]dev\b/.test(location.search)) localStorage.setItem('jk_dev_on', '1'); DEVON = localStorage.getItem('jk_dev_on') === '1'; } catch(e){} var FRAME = /[?&]devframe\b/.test(location.search); if (FRAME) DEVON = false;   /* Geräte-Vorschau: Seite wie für Besucher*innen */
   if (DEVON){ window.JK_DEV_ON = true; window.__jkdevbuf = []; window.__jkdeverr = []; window.JK_DEVLOG = function(k, m){ var b = window.__jkdevbuf; b.push({t:Date.now(), k:k, m:String(m)}); if (b.length > 600) b.splice(0, b.length - 600); if (window.JK_DEVLOG_ON) try { window.JK_DEVLOG_ON(b[b.length - 1]); } catch(e){} };
@@ -147,7 +161,7 @@
   function css(){ var r = document.documentElement; P.forEach(function(p){ if (!p[10]) return; var v = get(p[0]), base = dev(p[5]); var u = p[9] === 'color' || p[9] === '%' || p[9] === '°' ? '' : (p[9] || '');
       if (v === base){ r.style.removeProperty(p[10]); return; } r.style.setProperty(p[10], (p[9] === 'color' ? v : v + u)); }); }
   window.JK_CF = function(k){ var v = get(k); var d = window.JK_DEVSPD; if (d && k === 'plot.speed' && d.mult > 1) v = v * Math.min(d.mult, 50); return v; };
-  window.JK_CFG = {P:P, DEF:DEF, META:META, PUB:PUB, MOB:MOB, on:function(){ return ON; }, local:function(){ return LOC; }, dev:dev,
+  window.JK_CFG = {API:API, P:P, DEF:DEF, META:META, PUB:PUB, MOB:MOB, on:function(){ return ON; }, local:function(){ return LOC; }, dev:dev,
     set:function(k, v, scope){ var key = k + (scope === 'd' ? '@d' : scope === 'm' ? '@m' : ''); if (v === null) delete LOC[key]; else LOC[key] = v; try { localStorage.setItem('jk_regler', JSON.stringify(LOC)); } catch(e){} css(); subs.forEach(function(f){ try { f(k); } catch(e){} }); },
     replace:function(obj){ LOC = obj || {}; try { localStorage.setItem('jk_regler', JSON.stringify(LOC)); } catch(e){} css(); subs.forEach(function(f){ try { f('*'); } catch(e){} }); },
     sub:function(f){ subs.push(f); }, css:css};

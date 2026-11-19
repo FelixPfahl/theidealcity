@@ -1,0 +1,52 @@
+# Baut Veröffentlichungen aus den Dev Tools ein (Josef, 19.11.2026, Etappe 1).
+# Der Worker legt data/inbox/<id>.json an; hier wird eingebaut, committet und die Seite neu gebaut.
+name: Dev Tools einbauen
+
+on:
+  push:
+    branches: [main]
+    paths: ['data/inbox/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: devtools-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Einbauen
+        id: apply
+        run: python3 -I tools/apply.py
+
+      - name: Committen
+        if: steps.apply.outputs.count != '0'
+        env:
+          SUMMARY: ${{ steps.apply.outputs.summary }}
+        run: |
+          git config user.name "theidealcity Dev Tools"
+          git config user.email "josef@theidealcity.gg"
+          git add -A
+          if git diff --cached --quiet; then echo "Nichts zu committen"; exit 0; fi
+          printf 'Dev Tools: eingebaut\n\n%s\n' "$SUMMARY" > /tmp/msg
+          git commit -q -F /tmp/msg
+          for i in 1 2 3; do
+            git push -q origin HEAD:main && break
+            git pull -q --rebase origin main
+          done
+
+      - name: Seite neu bauen
+        if: steps.apply.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || true

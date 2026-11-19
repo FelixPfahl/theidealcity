@@ -253,7 +253,9 @@
     beh:function(key, st, i, who){ var B = T && T.beh[key]; if (!B) return; var arr = B.stages[st] || []; var v = arr[i]; var w = B.who === 'self' ? (who || 'inka') : B.who; if (typeof v === 'object') v = v[w] || v.inka; if (v){ dl('verhalten', key + ' Stufe ' + (st + 1) + ' Variante ' + (i + 1) + ' (dev)'); X.dialog([{who:X.CH[w] ? w : 'inka', text:v}]); } },
     police:function(lv){ pendingPolice = lv; delete W.sc['polizei_kontrolle_' + lv + ':' + X.V()]; police(); }, eye:function(){ eye(true); }, ambient:function(){ lastAmb = 0; ambient(); }, worldEvent:function(){ return worldEvent(); }, applyDev:function(){ devApply(T); }, orig:null };
   /* Dev Tools Etappe 2: bearbeitete Texte (localStorage jk_dev_text) wirken sofort im eigenen Browser */
-  function devApply(D){ if (!window.JK_DEV_ON || !D) return D; var O = null; try { O = JSON.parse(localStorage.getItem('jk_dev_text') || 'null'); } catch(e){} if (!O) return D; D.convos = D.convos || []; D.scenes = D.scenes || {}; D.beh = D.beh || {};
+  /* Vorschau-Link (cfg.js, window.JK_PREVIEW) zuerst, dann lokale Dev-Texte (Josef, 19.11.2026) */
+  function devApply(D){ if (!D) return D; var P = window.JK_PREVIEW && window.JK_PREVIEW.payload && window.JK_PREVIEW.payload.texte; if (P) D = textMerge(D, P); if (!window.JK_DEV_ON) return D; var O = null; try { O = JSON.parse(localStorage.getItem('jk_dev_text') || 'null'); } catch(e){} if (!O) return D; return textMerge(D, O); }
+  function textMerge(D, O){ D.convos = D.convos || []; D.scenes = D.scenes || {}; D.beh = D.beh || {};
     Object.keys(O.convos || {}).forEach(function(id){ var v = O.convos[id], i = -1; D.convos.forEach(function(c, j){ if (c.id === id) i = j; }); if (v === null){ if (i >= 0) D.convos.splice(i, 1); } else if (i >= 0) D.convos[i] = v; else D.convos.push(v); });
     Object.keys(O.scenes || {}).forEach(function(k){ if (O.scenes[k] === null) delete D.scenes[k]; else D.scenes[k] = O.scenes[k]; });
     Object.keys(O.beh || {}).forEach(function(k){ if (O.beh[k] === null) delete D.beh[k]; else D.beh[k] = O.beh[k]; }); return D; }

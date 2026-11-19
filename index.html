@@ -1771,11 +1771,11 @@ async function auftrag(tool,args,text,key){
 }
 function openPend(){return pendList().filter(p=>!QUIT[p.id]);}
 async function syncOutbox(){
-  const open=openPend().map(p=>({v:1,from:"inka",id:p.id,t:p.t,day:ymd(new Date(p.t)),kind:"aktion",tool:p.tool,args:p.args,text:p.text}));
+  const open=openPend().filter(p=>!p.local).map(p=>({v:1,from:"inka",id:p.id,t:p.t,day:ymd(new Date(p.t)),kind:"aktion",tool:p.tool,args:p.args,text:p.text}));
   if(NAT&&typeof NAT.queueSet==="function"){try{NAT.queueSet(JSON.stringify(open));}catch(_){}return;}
   /* Browser ohne App: beim Öffnen alles nachsenden, was älter als 6 Stunden und noch nicht quittiert ist (ntfy hält nur 12 Stunden) */
   const tp=topic();if(!tp)return;const l=pendList();let ch=false;
-  for(const p of l){if(QUIT[p.id]||Date.now()-(p.rs||p.t)<6*3600e3||Date.now()-p.t>96*3600e3)continue;
+  for(const p of l){if(p.local||QUIT[p.id]||Date.now()-(p.rs||p.t)<6*3600e3||Date.now()-p.t>96*3600e3)continue;
     try{const msg={v:1,from:"inka",id:p.id,t:p.t,day:ymd(new Date(p.t)),kind:"aktion",tool:p.tool,args:p.args,text:p.text};
       const r=await fetch("https://ntfy.sh/"+tp,{method:"POST",body:JSON.stringify(await sealEnv(msg))});if(r.ok){p.rs=Date.now();ch=true;}}catch(_){}}
   if(ch)store.set("pend",l);
@@ -2083,22 +2083,32 @@ const UNDO={t:null,job:null};
 function undoBar(text,onUndo){let b=$("#undo");if(!b){b=document.createElement("div");b.id="undo";document.body.appendChild(b);}
   b.innerHTML='<span>'+esc(text)+'</span><button type="button" id="undogo">Rückgängig</button><i></i>';b.className="on";
   $("#undogo").onclick=()=>{onUndo();b.className="";};requestAnimationFrame(()=>{const i=b.querySelector("i");if(i)i.style.width="0";});}
-async function sendNow(tool,args,text,key){
-  try{const id=await sendSek("aktion",{tool,args,text});const l=pendList();l.push({id,t:Date.now(),key:key||"",tool,args,text,via:"App"});store.set("pend",l.slice(-80));
+/* Josef 19.11.2026: "Das dauert auf der Maske immer ein paar Sekunden bis Entscheidungen übernommen werden ... man verklickt sich".
+   Jede Entscheidung steht sofort beim Antippen als lokaler Eintrag in "pend": Karte verschwindet, Haken/Markierung erscheinen sofort.
+   Gesendet wird nach den 5 s Rückgängig im Hintergrund; danach bekommt der Eintrag seine echte ID. Rückgängig entfernt ihn wieder. */
+function pendPut(lid,patch){const l=pendList();const i=l.findIndex(p=>p.id===lid);if(i<0)return false;if(patch)l[i]=Object.assign({},l[i],patch);else l.splice(i,1);store.set("pend",l);return true;}
+async function sendNow(tool,args,text,key,lid){
+  try{const id=await sendSek("aktion",{tool,args,text});
+    if(!(lid&&pendPut(lid,{id,local:false}))){const l=pendList();l.push({id,t:Date.now(),key:key||"",tool,args,text,via:"App"});store.set("pend",l.slice(-80));}
     syncOutbox();render();return true;}
   catch(e){toast("Senden ging nicht: "+String(e&&e.message||e).slice(0,60)+". Ich versuche es beim nächsten Öffnen erneut.",7000,true);
-    const q=store.get("offq",[]);q.push({tool,args,text,key,t:Date.now()});store.set("offq",q.slice(-40));return false;}
+    const q=store.get("offq",[]);q.push({tool,args,text,key,lid,t:Date.now()});store.set("offq",q.slice(-40));return false;}
 }
 async function auftrag(tool,args,text,key){
-  if(UNDO.job){clearTimeout(UNDO.t);const j=UNDO.job;UNDO.job=null;sendNow(j.tool,j.args,j.text,j.key);}
+  if(UNDO.job){clearTimeout(UNDO.t);const j=UNDO.job;UNDO.job=null;sendNow(j.tool,j.args,j.text,j.key,j.lid);}
   vib(12);closeSheet();
+  const lid="l-"+Date.now()+"-"+Math.random().toString(36).slice(2,6);
+  const l=pendList();l.push({id:lid,local:true,t:Date.now(),key:key||"",tool,args,text,via:"App"});store.set("pend",l.slice(-80));
   const when=tool==="show_bestellen"?"Show wird "+showEta()+".":"Wird "+nextRun().txt+" übernommen.";
-  UNDO.job={tool,args,text,key};
-  undoBar(text+" · "+when,()=>{clearTimeout(UNDO.t);UNDO.job=null;note("Zurückgenommen: "+text);render();});
-  UNDO.t=setTimeout(()=>{const j=UNDO.job;UNDO.job=null;const b=$("#undo");if(b)b.className="";if(j)sendNow(j.tool,j.args,j.text,j.key);},5000);
+  UNDO.job={tool,args,text,key,lid};
+  undoBar(text+" · "+when,()=>{clearTimeout(UNDO.t);UNDO.job=null;pendPut(lid);note("Zurückgenommen: "+text);render();});
+  UNDO.t=setTimeout(()=>{const j=UNDO.job;UNDO.job=null;const b=$("#undo");if(b)b.className="";if(j)sendNow(j.tool,j.args,j.text,j.key,j.lid);},5000);
   render();return true;
 }
-async function flushOffq(){const q=store.get("offq",[]);if(!q.length||!navigator.onLine)return;store.set("offq",[]);for(const j of q)await sendNow(j.tool,j.args,j.text,j.key);}
+async function flushOffq(){const q=store.get("offq",[]);if(!q.length||!navigator.onLine)return;store.set("offq",[]);for(const j of q)await sendNow(j.tool,j.args,j.text,j.key,j.lid);}
+/* Falls die App während der 5 s geschlossen wurde: verwaiste lokale Einträge ohne Warteschlange nachsenden */
+setTimeout(()=>{const q=store.get("offq",[]),inQ=new Set(q.map(j=>j.lid));const lost=pendList().filter(p=>p.local&&!inQ.has(p.id)&&Date.now()-p.t>8000&&(!UNDO.job||UNDO.job.lid!==p.id));
+  lost.forEach(p=>sendNow(p.tool,p.args,p.text,p.key,p.id));},3000);
 window.addEventListener("online",()=>{flushOffq();render();});window.addEventListener("offline",()=>render());
 
 /* ---------- Bausteine ---------- */

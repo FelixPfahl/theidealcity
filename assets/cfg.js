@@ -128,7 +128,7 @@
     ['fx.net', 'Effekte', 'Konstruktionsnetz', 'Strichstärke', 'Stärke der Linien von Dürers Fierung beim Hover über große Titel.', 1, 0, 3, .05, '', '--knet']
   ];
   var DEF = {}, META = {}; P.forEach(function(p){ DEF[p[0]] = p[5]; META[p[0]] = p; });
-  var PUB = {"fx.parallax": 10.5};   /* veröffentlichte Werte: hier trägt Claude nach Josefs Übernahme ein (Schlüssel, @d, @m) */
+  var PUB = {};   /* veröffentlichte Werte: hier trägt Claude nach Josefs Übernahme ein (Schlüssel, @d, @m) */
   var ON = false, LOC = {};
   /* Vorschau-Link aus den Dev Tools (Josef, 19.11.2026, Etappe 1): ?preview=<id> lädt einen Entwurf vom Backend und zeigt die Seite damit; gilt im Tab weiter bis ?preview=aus */
   var API = 'https://theidealcity-api.josef-51d.workers.dev';

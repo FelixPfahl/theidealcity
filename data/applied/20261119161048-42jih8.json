@@ -1,0 +1,18 @@
+{
+ "id": "20261119161048-42jih8",
+ "kind": "revert",
+ "author": "Josef",
+ "message": "Zurückgerollt: 20261119160900-z7p4wp",
+ "created": "2026-11-19T16:10:48.360Z",
+ "applied": "2026-11-19T16:11:00+00:00",
+ "target": "20261119160900-z7p4wp",
+ "files": [
+  "assets/cfg.js"
+ ],
+ "inverse": {
+  "regler": {
+   "fx.parallax": 10.5
+  }
+ },
+ "notes": []
+}

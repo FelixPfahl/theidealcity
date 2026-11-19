@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /*?regler
+Disallow: /entwurf/
 Disallow: /img/refs/
 Disallow: /assets/josef_knoll_portfolio_2026.pdf
 Disallow: /assets/josef_knoll_portfolio_2026_handy.pdf

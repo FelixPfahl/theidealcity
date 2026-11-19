@@ -145,7 +145,9 @@
           b.textContent = 'VORSCHAU: ' + window.JK_PREVIEW.title + ' '; var a = document.createElement('a'); a.href = location.pathname + '?preview=aus'; a.textContent = '[beenden]'; a.style.color = '#fff'; b.appendChild(a); document.body.appendChild(b); });
       } else sessionStorage.removeItem('jk_preview'); } } catch(e){}
   /* Dev Tools (Josef, 1.11.2026, T1: geheimer Link ?dev, ?dev=aus meldet ab); schalten auch die Regler frei. Zeit-Simulation: Date läuft mit Versatz */
-  var DEVON = false; try { if (/[?&]dev=aus\b/.test(location.search)){ localStorage.removeItem('jk_dev_on'); localStorage.removeItem('jk_regler_on'); } else if (/[?&]dev\b/.test(location.search)) localStorage.setItem('jk_dev_on', '1'); DEVON = localStorage.getItem('jk_dev_on') === '1'; } catch(e){} var FRAME = /[?&]devframe\b/.test(location.search); if (FRAME) DEVON = false;   /* Geräte-Vorschau: Seite wie für Besucher*innen */
+  /* Werkstatt (Josef, 19.11.2026, Umbau Teil A): ?werkstatt schaltet die neue Leiste frei (ersetzt Dev Tools und Reglerleiste), ?werkstatt=aus meldet ab. Bis zur Abnahme laufen die alten Dev Tools unter ?dev weiter. */
+  var WSON = false; try { if (/[?&]werkstatt=aus\b/.test(location.search)) localStorage.removeItem('jk_ws_on'); else if (/[?&]werkstatt\b/.test(location.search)) localStorage.setItem('jk_ws_on', '1'); WSON = localStorage.getItem('jk_ws_on') === '1'; } catch(e){}
+  var DEVON = false; try { if (/[?&]dev=aus\b/.test(location.search)){ localStorage.removeItem('jk_dev_on'); localStorage.removeItem('jk_regler_on'); } else if (/[?&]dev\b/.test(location.search)) localStorage.setItem('jk_dev_on', '1'); DEVON = localStorage.getItem('jk_dev_on') === '1' || WSON; } catch(e){} var FRAME = /[?&]devframe\b/.test(location.search); if (FRAME){ DEVON = false; WSON = false; }   /* Geräte-Vorschau: Seite wie für Besucher*innen */
   if (DEVON){ window.JK_DEV_ON = true; window.__jkdevbuf = []; window.__jkdeverr = []; window.JK_DEVLOG = function(k, m){ var b = window.__jkdevbuf; b.push({t:Date.now(), k:k, m:String(m)}); if (b.length > 600) b.splice(0, b.length - 600); if (window.JK_DEVLOG_ON) try { window.JK_DEVLOG_ON(b[b.length - 1]); } catch(e){} };
     window.addEventListener('error', function(e){ var t = e.target; var m = t && t !== window && (t.src || t.href) ? 'Datei fehlt: ' + (t.src || t.href) : (e.message || 'Fehler') + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''); window.__jkdeverr.push({t:Date.now(), m:m}); }, true);
     window.addEventListener('unhandledrejection', function(e){ window.__jkdeverr.push({t:Date.now(), m:'Promise: ' + (e.reason && e.reason.message || e.reason)}); });
@@ -166,6 +168,10 @@
     replace:function(obj){ LOC = obj || {}; try { localStorage.setItem('jk_regler', JSON.stringify(LOC)); } catch(e){} css(); subs.forEach(function(f){ try { f('*'); } catch(e){} }); },
     sub:function(f){ subs.push(f); }, css:css};
   css();
+  /* Regler aus anderen Fenstern (Geräte-Vorschau, zweiter Tab) sofort übernehmen */
+  window.addEventListener('storage', function(e){ if (e.key !== 'jk_regler') return; try { LOC = JSON.parse(e.newValue || '{}') || {}; } catch(x){ LOC = {}; } css(); subs.forEach(function(f){ try { f('*'); } catch(x){} }); });
+  var SRC = document.currentScript && document.currentScript.src || '../assets/cfg.js';
+  if (WSON){ window.JK_WS_ON = true; var ws = document.createElement('script'); ws.src = SRC.replace(/cfg\.js(\?.*)?$/, 'werkstatt.js') + '?t=' + Math.floor(Date.now() / 60000); ws.defer = true; document.head.appendChild(ws); DEVON = false; ON = false; }
   if (DEVON){ var ds = document.createElement('script'); ds.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'devtools.js') + '?t=' + Math.floor(Date.now() / 60000); ds.defer = true; document.head.appendChild(ds); }
   if (FRAME) ON = false;   /* Regler-Werte gelten, die Leiste nicht */
   if (ON){ document.documentElement.classList.add('regler'); var s = document.createElement('script'); s.src = (document.currentScript && document.currentScript.src || '../assets/cfg.js').replace(/cfg\.js(\?.*)?$/, 'regler.js') + '?t=' + Math.floor(Date.now() / 60000); s.defer = true; document.head.appendChild(s); }

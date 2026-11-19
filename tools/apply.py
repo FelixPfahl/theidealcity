@@ -229,6 +229,33 @@ def versions():
     return changed
 
 
+# ---------- Dateien aus der Werkstatt (19.11.2026): Sprites, Klänge, Werkbilder, welt.json ----------
+UPLOADS = os.path.join(ROOT, 'data', 'uploads')
+
+
+def apply_dateien(iid, files):
+    import base64
+    base = os.path.join(UPLOADS, iid)
+    n = 0
+    for f in files:
+        name = f.get('name', '')
+        if not re.match(r'^[A-Za-z0-9_\-][A-Za-z0-9_.\-/]{0,160}$', name) or '..' in name:
+            raise RuntimeError('Ungültiger Dateiname: ' + name)
+        p = os.path.join(base, name)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, 'wb') as fh:
+            fh.write(base64.b64decode(f.get('b64', '')))
+        n += 1
+    return iid, n
+
+
+def drop_dateien(iid):
+    import shutil
+    if not re.match(r'^[0-9]{14}-[a-z0-9]{6}$', str(iid)):
+        raise RuntimeError('Ungültige id für Dateien: ' + str(iid))
+    shutil.rmtree(os.path.join(UPLOADS, iid), ignore_errors=True)
+
+
 # ---------- Ablauf ----------
 def handle(path):
     item = json.loads(rd(path))
@@ -260,6 +287,11 @@ def handle(path):
         inverse['texte'] = apply_texte(F, payload['texte'])
     if payload.get('regler'):
         inverse['regler'] = apply_regler(F, payload['regler'])
+    if payload.get('dateien'):
+        inverse['dateien_weg'], n = apply_dateien(iid, payload['dateien'])
+        notes.append('%d Dateien in data/uploads/%s/ (Einbau ins Spiel durch Claude)' % (n, iid))
+    if payload.get('dateien_weg'):
+        drop_dateien(payload['dateien_weg'])
     rec['files'] = F.flush()
     rec['inverse'] = inverse
     rec['notes'] = notes

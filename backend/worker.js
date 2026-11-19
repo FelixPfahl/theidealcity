@@ -5,8 +5,9 @@
 
 const DAY = 86400000;
 const ORIGINS = [/^https:\/\/theidealcity\.gg$/, /^https:\/\/www\.theidealcity\.gg$/, /^https:\/\/felixpfahl\.github\.io$/, /^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/];
-// Was die Rolle "design" (Alina) selbst veröffentlichen darf: Regler der Gestaltung (Präfixe)
-const DESIGN_PREFIXES = ['type.', 'color.', 'grid.', 'design.'];
+// Was die Rolle "design" (Alina) selbst veröffentlichen darf: Regler der Gestaltung (Präfixe).
+// Werkstatt, 19.11.2026: dazu die bestehenden Gestaltungsregler (Schrift ui., Farben col., Plotter plot., Handschrift hand., Effekte fx.)
+const DESIGN_PREFIXES = ['type.', 'color.', 'grid.', 'design.', 'ui.', 'col.', 'plot.', 'hand.', 'fx.'];
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -54,18 +55,23 @@ async function gh(env, path, opt = {}) {
   });
 }
 
-function checkPayload(p) {
+function checkPayload(p, max = 900000) {
   if (!p || typeof p !== 'object') return 'Leerer Entwurf';
   const keys = Object.keys(p);
-  const allowed = ['regler', 'texte', 'korrekturen', 'meta'];
+  const allowed = ['regler', 'texte', 'korrekturen', 'meta', 'dateien'];
   if (keys.some(k => !allowed.includes(k))) return 'Unbekannter Teil: ' + keys.filter(k => !allowed.includes(k)).join(', ');
-  const s = JSON.stringify(p); if (s.length > 900000) return 'Entwurf zu groß';
+  // dateien (Werkstatt, 19.11.2026): Sprites, Klänge, Werkbilder, welt.json aus dem Werkzeug, je {name, b64}
+  if (p.dateien !== undefined) {
+    if (!Array.isArray(p.dateien) || p.dateien.length > 400) return 'Dateien: ungültige Liste';
+    for (const f of p.dateien) { if (!f || typeof f.name !== 'string' || typeof f.b64 !== 'string') return 'Dateien: ungültiger Eintrag'; if (!/^[A-Za-z0-9_\-][A-Za-z0-9_.\-\/]{0,160}$/.test(f.name) || f.name.includes('..')) return 'Dateien: ungültiger Name ' + f.name; }
+  }
+  const s = JSON.stringify(p); if (s.length > max) return 'Entwurf zu groß';
   return '';
 }
 function designOnly(p) {
   const r = p.regler || {}; const t = p.texte || {}; const k = p.korrekturen || [];
   const textCount = Object.keys(t.convos || {}).length + Object.keys(t.scenes || {}).length + Object.keys(t.beh || {}).length;
-  if (textCount || k.length) return false;
+  if (textCount || k.length || (p.dateien && p.dateien.length)) return false;
   return Object.keys(r).every(key => DESIGN_PREFIXES.some(pre => key.startsWith(pre)));
 }
 
@@ -139,7 +145,7 @@ export default {
         const b = await body(req);
         let payload = b.payload, draftId = b.draft || null;
         if (draftId) { const d = await env.DB.prepare('SELECT payload FROM drafts WHERE id = ?').bind(draftId).first(); if (!d) return json(req, { ok: false, error: 'Entwurf nicht gefunden' }, 404); payload = JSON.parse(d.payload); }
-        const err = checkPayload(payload); if (err) return json(req, { ok: false, error: err }, 400);
+        const err = checkPayload(payload, draftId ? 900000 : 5000000); if (err) return json(req, { ok: false, error: err }, 400);
         if (u.role !== 'owner' && !designOnly(payload)) return json(req, { ok: false, error: 'Diese Änderung darf nur Josef veröffentlichen. Bitte als Entwurf mit Vorschau-Link schicken.' }, 403);
         const id = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14) + '-' + shortId().slice(0, 6);
         const msg = String(b.message || 'Veröffentlicht aus den Dev Tools').slice(0, 200);

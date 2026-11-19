@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Inka-Kanal fuer den Stundencheck (verschluesselt ueber ntfy).
-  kanal.py <schluesseldatei> lesen [<seit-id>]          -> JSON-Liste der Nachrichten von der App (neueste zuletzt), je {ntfy_id, ...}
+  kanal.py <schluesseldatei> lesen [<seit-id>]          -> JSON-Liste der Nachrichten von der App (neueste zuletzt), je {ntfy_id, ...}; Eintraege mit "zurueckgenommen": true nie ausfuehren
   kanal.py <schluesseldatei> quittung <re-id> <ok 1|0> <text>   -> Rueckmeldung an die App (erscheint dort als ✓ oder ✗)
   kanal.py <schluesseldatei> app_lesen <repo> <ausgabe.json>    -> d/app.json entschluesseln (zum Nachziehen nach Auftraegen)
 Der Schluessel wird nie ausgegeben."""
@@ -33,6 +33,14 @@ if cmd == "lesen":
         except Exception: continue
         if d.get("from") != "inka": continue
         d["ntfy_id"] = m["id"]; res.append(d)
+    # 19.11.2026: Josef nimmt Entscheidungen in der App zurueck (tool "zuruecknehmen" {re}).
+    # Der zurueckgenommene Auftrag wird markiert und nie ausgefuehrt; nur mit "zurückgenommen" quittieren.
+    # War er schon ausgefuehrt (fruehere Quittung ✓), rueckgaengig machen (siehe app_daten.md).
+    weg = {x.get("args", {}).get("re") for x in res if x.get("tool") == "zuruecknehmen"}
+    for x in res:
+        if x.get("id") in weg and x.get("tool") != "zuruecknehmen":
+            x["zurueckgenommen"] = True
+            x["hinweis"] = "NICHT ausfuehren. Quittung: 1 'zurückgenommen'."
     print(json.dumps(res, ensure_ascii=False, indent=1))
 elif cmd == "quittung":
     re_id, ok, text = sys.argv[3], sys.argv[4] == "1", sys.argv[5]

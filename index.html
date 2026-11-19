@@ -292,13 +292,38 @@ body.raster .card{background:#0c0e15;border-style:dashed}
 #undo i{position:absolute;left:0;bottom:0;height:3px;background:var(--fill);width:100%;transition:width 5s linear}
 .vctype{display:flex;gap:8px;margin-top:10px}.vctype input{flex:1;margin:0}.vctype button{flex:none}
 
+
+/* INKA-UX16 (Josef 19.11.2026): Entscheidungen ruhig und fehlertolerant */
+.opts{gap:16px!important;margin-top:14px}
+.opts button.big{font-size:18px;font-weight:700;padding:15px 16px;min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.opts button.big small{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.opts button.alt{font-size:15px;padding:11px 14px;min-height:46px;background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+details.more{margin-top:14px}details.more summary{font-size:14px;color:var(--mut);padding:10px 0;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.kc{position:relative;padding-right:52px;min-height:24px}
+.chatic{position:absolute;right:-8px;top:-12px;width:44px;height:44px;border:0;background:transparent;font-size:18px;padding:0;opacity:.75}
+.card.warn{border:1px solid var(--line)!important;background:var(--soft)}
+.card.dec{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border:1px solid var(--line)}
+.card.dec .dtx{flex:1;min-width:0}.card.dec .kc{margin-bottom:2px;padding-right:0}
+.dck{flex:none;width:30px;height:30px;border-radius:50%;background:var(--fill);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.card.dec.fresh .dck{animation:dpop .2s ease-out}
+@keyframes dpop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.dundo{flex:none;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:10px 12px;min-height:44px;font-size:14px;font-weight:600}
+.setrow{display:flex;justify-content:space-between;width:100%;background:transparent;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:15px;color:var(--mut)}
+.setrow span:last-child{color:var(--ink)}
+.card.blue{border:1px solid var(--line)!important}
+#hinka{background:transparent!important;color:var(--ink)!important;border:1.5px solid var(--line)!important}
+.livechip{color:var(--mut)!important;border-color:var(--line)!important}
+.minchip{border-color:var(--line)!important;color:var(--mut)!important}
+.tk.sw-r{box-shadow:inset 6px 0 0 var(--blue)}.tk.sw-l{box-shadow:inset -6px 0 0 var(--mut)}
+#decide:not(:empty){margin-top:14px}
+@media (prefers-reduced-motion:reduce){.card.dec.fresh .dck{animation:none}}
 </style>
 </head>
 <body>
 <header><div><h1 id="title">Inka</h1><div class="sub" id="subt">Dein Tag</div></div><button class="pri round" id="hinka">Inka</button></header>
 <div id="upd"></div>
 <main>
-  <section id="t-heute"><div id="stand"></div><div id="setup"></div><div id="trip"></div><div id="next"></div><div id="morning"></div><div id="decide"></div><div id="deadl"></div><div id="tl"></div><div id="errands"></div><div id="overdue"></div><div id="closing"></div><div id="hero" hidden></div><div id="fristen" hidden></div><div id="konf" hidden></div><div id="sent" hidden></div></section>
+  <section id="t-heute"><div id="stand"></div><div id="decide"></div><div id="setup"></div><div id="trip"></div><div id="next"></div><div id="morning"></div><div id="deadl"></div><div id="tl"></div><div id="errands"></div><div id="overdue"></div><div id="closing"></div><div id="hero" hidden></div><div id="fristen" hidden></div><div id="konf" hidden></div><div id="sent" hidden></div></section>
   <section id="t-woche"></section>
   <section id="t-show"><div id="show"></div></section>
   <section id="t-unterwegs"><h2>Unterwegs</h2><div id="deps"></div></section>
@@ -317,7 +342,7 @@ body.raster .card{background:#0c0e15;border-style:dashed}
 <audio id="aud" preload="auto"></audio>
 <script>
 "use strict";
-const APPV="9.11. (Eigener Sprachkanal, Android 1.7.0)";
+const APPV="19.11. 19:30 (Entscheidungen sofort, INKA-UX16) · 9.11. (Eigener Sprachkanal, Android 1.7.0)";
 /* ---------- Grundlagen ---------- */
 const RAW="https://raw.githubusercontent.com/FelixPfahl/theidealcity/inka/";
 const SP_CLIENT="aa813e25970f4abd874c4cb71bd7bd01";
@@ -338,6 +363,7 @@ let toastT=null;
 /* Josef 8.11.2026 (U18): Hinweise unten nur, wenn er etwas tun muss. Alles andere wandert still ins Protokoll (Mehr > Überblick > Meldungen). */
 const NEED_RX=/tippen|erlaub|verbind|neu laden|Schlüssel|öffnen|gesperrt|installier|Mikrofon|Datum|fehlt|Text|Netz|wecken|Spotify neu|noch einmal/i;
 const NOTES=[];
+const DEC={fresh:"",own:"",focused:false,lock:0};
 function note(m){NOTES.push({t:Date.now(),m:String(m)});if(NOTES.length>40)NOTES.shift();}
 function toast(m,ms,need){note(m);if(!need&&!NEED_RX.test(String(m)))return;const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>{t.style.display="none";},ms||4500);}
 /* Josef 2.11.2026: echte Überblendung in der Android-App. Inkas Stimme läuft über den Android-Player (ab App 1.2.0),
@@ -1035,6 +1061,9 @@ function renderSetup(){
   const spOk=SP.ready(),micOk=PERM.mic==="granted",geoOk=PERM.geo==="granted";
   const show=store.get("showSetup",false);
   if(spOk&&micOk&&geoOk&&!show){el.innerHTML="";return;}
+  if(!show){const n=[spOk,micOk,geoOk].filter(x=>!x).length;
+    el.innerHTML='<button class="setrow" id="bsetopen"><span>Einrichtung · '+n+' offen</span><span>ansehen ›</span></button>';
+    $("#bsetopen").onclick=()=>{store.set("showSetup",true);render();};return;}
   const it=(name,ok,btn,id,hint)=>(ok&&!show)?"":'<div class="si"><div><span>'+name+'</span><div class="small">'+hint+'</div></div>'+(ok?'<span class="ok">✓</span>':'<button class="pri" id="'+id+'">'+btn+'</button>')+'</div>';
   el.innerHTML='<div class="card blue"><div class="k b">Noch einrichten</div><div class="set">'+
     it("Spotify",spOk,"Verbinden","bsp",spOk?esc(SP.sdkState||"verbunden"):"für die Songs zwischen den Kapiteln")+
@@ -1771,11 +1800,11 @@ async function auftrag(tool,args,text,key){
 }
 function openPend(){return pendList().filter(p=>!QUIT[p.id]);}
 async function syncOutbox(){
-  const open=openPend().filter(p=>!p.local).map(p=>({v:1,from:"inka",id:p.id,t:p.t,day:ymd(new Date(p.t)),kind:"aktion",tool:p.tool,args:p.args,text:p.text}));
+  const open=openPend().filter(p=>!p.local&&!p.undone).map(p=>({v:1,from:"inka",id:p.id,t:p.t,day:ymd(new Date(p.t)),kind:"aktion",tool:p.tool,args:p.args,text:p.text}));
   if(NAT&&typeof NAT.queueSet==="function"){try{NAT.queueSet(JSON.stringify(open));}catch(_){}return;}
   /* Browser ohne App: beim Öffnen alles nachsenden, was älter als 6 Stunden und noch nicht quittiert ist (ntfy hält nur 12 Stunden) */
   const tp=topic();if(!tp)return;const l=pendList();let ch=false;
-  for(const p of l){if(p.local||QUIT[p.id]||Date.now()-(p.rs||p.t)<6*3600e3||Date.now()-p.t>96*3600e3)continue;
+  for(const p of l){if(p.local||p.undone||QUIT[p.id]||Date.now()-(p.rs||p.t)<6*3600e3||Date.now()-p.t>96*3600e3)continue;
     try{const msg={v:1,from:"inka",id:p.id,t:p.t,day:ymd(new Date(p.t)),kind:"aktion",tool:p.tool,args:p.args,text:p.text};
       const r=await fetch("https://ntfy.sh/"+tp,{method:"POST",body:JSON.stringify(await sealEnv(msg))});if(r.ok){p.rs=Date.now();ch=true;}}catch(_){}}
   if(ch)store.set("pend",l);
@@ -1849,17 +1878,29 @@ function renderHeute(){
     mh='<div class="card"><div class="k">Heute früh · Inka '+(M.made?hm(new Date(M.made)):"")+'</div>'+show.map(x=>'<div class="ml">'+esc(x)+'</div>').join("")+(L.length>4?'<button class="link" id="mmore">'+(UMB.openMorning?"weniger":"alle "+L.length+" Punkte")+'</button>':"")+'</div>';}
   $("#morning").innerHTML=mh;const mm=$("#mmore");if(mm)mm.onclick=()=>{UMB.openMorning=!UMB.openMorning;renderHeute();};
   /* Zu entscheiden: Konflikte und Fragen (3a, 6a, 17a) */
-  const kf=((A&&A.conflicts)||[]).filter(c=>!pendList().find(p=>p.tool==="konflikt"&&p.args&&p.args.id===c.id));
-  const qs=((A&&A.questions)||[]).filter(q=>!pendList().find(p=>p.tool==="antwort"&&p.args&&p.args.id===q.id));
-  let dh="";
-  if(kf.length||qs.length){dh='<div class="k b">Zu entscheiden · '+(kf.length+qs.length)+'</div>';
-    dh+=kf.map(c=>'<div class="card warn"><div class="kc">Konflikt'+(c.date?" · "+esc(dlabel(c.date)):"")+(c.minutes?' <span class="minchip">'+c.minutes+' min Überschneidung</span>':"")+'</div><div class="ctext">'+esc(c.text)+'</div><div class="opts">'+
-      (c.options||[]).map((o,i)=>'<button class="'+(i===0?"pri":"")+'" data-konf="'+esc(c.id)+'" data-opt="'+i+'">'+esc(o.label)+(i===0?" · empfohlen":"")+'</button>').join("")+'</div><button class="link" data-chat="'+esc(c.id)+'">Lieber gleich im Chat klären</button></div>').join("");
-    dh+=qs.map(q=>'<div class="card ask"><div class="kc">Frage'+(q.from?" · "+esc(q.from):"")+'</div><div class="ctext">'+esc(q.q)+'</div>'+((q.options||[]).length?'<div class="opts">'+q.options.map((o,i)=>'<button class="'+(i===0?"pri":"")+'" data-qid="'+esc(q.id)+'" data-qopt="'+i+'">'+esc(o)+'</button>').join("")+'</div>':"")+
-      '<div class="qown"><input id="qa-'+esc(q.id)+'" placeholder="eigene Antwort"><button data-qown="'+esc(q.id)+'">senden</button></div></div>').join("");
-    dh+='<div class="small" style="margin:-2px 0 14px">Deine Wahl setzt der Morgencheck um 4:17 um. Eilt es, tippe „im Chat klären“.</div>';}
-  const sentN=openPend().length;if(sentN)dh+='<div class="small" style="margin:0 0 14px">'+sentN+' Auftr'+(sentN>1?"äge warten":"ag wartet")+' auf den Morgencheck.</div>';
+  /* Josef 19.11.2026, Fragebogen INKA-UX16 (alle Empfehlungen): entschiedene Karten schrumpfen an Ort und Stelle zu einer Zeile
+     mit eigenem Rückgängig bis zur Übernahme (1A, 3A, 4A, 11A); Empfehlung groß, Rest kleiner mit Abstand (5A); folgenreiche Optionen
+     eingeklappt (6A); Chat als Symbol oben rechts (7A); eigene Antwort hinter Knopf (10A). */
+  const decOf=(tool,id)=>pendList().filter(p=>p.tool===tool&&p.args&&p.args.id===id&&!p.undone).pop();
+  const kf=((A&&A.conflicts)||[]),qs=((A&&A.questions)||[]);
+  const RISKY=/ignor|lösch|loesch|absag|streich|weglass|entfern|verwerf|nicht mach|ausfallen/i;
+  const decRow=(p,kind)=>{const q=QUIT[p.id],undo=!q&&!p.undoReq;
+    return '<div class="card dec'+(DEC.fresh===p.id?" fresh":"")+'"><span class="dck">✓</span><div class="dtx"><div class="kc">'+kind+'</div><div><b>'+esc(p.args.label||p.args.antwort||"")+'</b></div>'+
+      '<div class="de">'+(q?(q.ok?"übernommen":"nicht möglich: "+esc(q.text||"")):p.undoReq?"wird zurückgenommen "+esc(nextRun().txt):"übernimmt "+esc(nextRun().txt))+'</div></div>'+
+      (undo?'<button class="dundo" data-undo="'+esc(p.id)+'">Rückgängig</button>':"")+'</div>';};
+  const optBtns=(list,attr)=>{const safe=[],risky=[];list.forEach((o,i)=>{(i>0&&RISKY.test(o.label||o)?risky:safe).push([o,i]);});
+    const b=([o,i])=>'<button class="'+(i===0?"pri big":"alt")+'" '+attr(i)+'>'+esc(o.label||o)+(i===0?'<small>empfohlen</small>':"")+'</button>';
+    return '<div class="opts">'+safe.map(b).join("")+'</div>'+(risky.length?'<details class="more"><summary>Andere Möglichkeiten</summary><div class="opts">'+risky.map(b).join("")+'</div></details>':"");};
+  let dh="",open=0;
+  dh+=kf.map(c=>{const p=decOf("konflikt",c.id);if(p)return decRow(p,"Konflikt"+(c.date?" · "+esc(dlabel(c.date)):""));open++;
+    return '<div class="card warn"><div class="kc">Konflikt'+(c.date?" · "+esc(dlabel(c.date)):"")+(c.minutes?' <span class="minchip">'+c.minutes+' min Überschneidung</span>':"")+'<button class="chatic" data-chat="'+esc(c.id)+'" aria-label="Im Chat klären">💬</button></div><div class="ctext">'+esc(c.text)+'</div>'+
+      optBtns(c.options||[],i=>'data-konf="'+esc(c.id)+'" data-opt="'+i+'"')+'</div>';}).join("");
+  dh+=qs.map(q=>{const p=decOf("antwort",q.id);if(p)return decRow(p,"Frage"+(q.from?" · "+esc(q.from):""));open++;
+    return '<div class="card ask"><div class="kc">Frage'+(q.from?" · "+esc(q.from):"")+'</div><div class="ctext">'+esc(q.q)+'</div>'+((q.options||[]).length?optBtns(q.options,i=>'data-qid="'+esc(q.id)+'" data-qopt="'+i+'"'):"")+
+      (DEC.own===q.id?'<div class="qown"><input id="qa-'+esc(q.id)+'" placeholder="eigene Antwort"><button data-qown="'+esc(q.id)+'">senden</button></div>':'<button class="link" data-qopen="'+esc(q.id)+'">Andere Antwort …</button>')+'</div>';}).join("");
+  if(kf.length||qs.length)dh='<div class="k b">Zu entscheiden'+(open?" · "+open:" · erledigt")+'</div>'+dh;
   $("#decide").innerHTML=dh;
+  if(DEC.own){const i=document.getElementById("qa-"+DEC.own);if(i&&!DEC.focused){DEC.focused=true;i.focus();}}
   /* Fristen rückwärts (24a) und Regeln (23a) */
   const dr=deadlineRows(14);
   $("#deadl").innerHTML=(dr.length?'<div class="card"><div class="k">Fristen · 14 Tage</div>'+dr.slice(0,5).join("")+(dr.length>5?'<button class="link" data-gotab="woche">alle '+dr.length+'</button>':"")+'</div>':"");
@@ -2019,10 +2060,10 @@ function pushWidget(){
     if(!tk&&!G.day)return;G.el=tk;G.x=ev.clientX;G.y=ev.clientY;G.dx=0;G.lock="";},{passive:true});
   document.addEventListener("pointermove",ev=>{if(!G.el&&!G.day)return;const dx=ev.clientX-G.x,dy=ev.clientY-G.y;
     if(!G.lock){if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.4)G.lock="x";else if(Math.abs(dy)>12)G.lock="y";}
-    if(G.lock!=="x")return;G.dx=dx;if(G.el){G.el.style.transform="translateX("+Math.max(-120,Math.min(120,dx))+"px)";G.el.classList.toggle("sw-r",dx>70);G.el.classList.toggle("sw-l",dx<-70);}},{passive:true});
+    if(G.lock!=="x")return;G.dx=dx;if(G.el){G.el.style.transform="translateX("+Math.max(-170,Math.min(170,dx))+"px)";const arm=Math.abs(dx)>140;if(arm&&!G.armed)vib(12);G.armed=arm;G.el.classList.toggle("sw-r",dx>140);G.el.classList.toggle("sw-l",dx<-140);}},{passive:true});
   const end=()=>{const el=G.el,dx=G.dx,lock=G.lock,day=G.day;G.el=null;G.day=false;G.lock="";if(el){el.style.transform="";el.classList.remove("sw-r","sw-l");}
     if(lock!=="x")return;
-    if(el){const t=allTasks().find(x=>x.key===el.dataset.task);if(!t)return;if(dx>90){if(!pendFor(t.key).some(p=>p.tool==="erledigen")){el.classList.add("pop");doneTask(t);}}else if(dx<-90){vib(10);moveTask(t,addDays(ymd(new Date()),1));}
+    if(el){const t=allTasks().find(x=>x.key===el.dataset.task);if(!t)return;G.armed=false;if(dx>140){if(!pendFor(t.key).some(p=>p.tool==="erledigen")){el.classList.add("pop");doneTask(t);}}else if(dx<-140){vib(10);moveTask(t,addDays(ymd(new Date()),1));}
       UMB.swiped=Date.now();return;}
     if(day&&Math.abs(dx)>80)shiftDay(dx<0?1:-1);};
   document.addEventListener("pointerup",end,{passive:true});document.addEventListener("pointercancel",()=>{if(G.el)G.el.style.transform="";G.el=null;G.day=false;G.lock="";},{passive:true});}
@@ -2031,6 +2072,10 @@ function pushWidget(){
 document.addEventListener("click",ev=>{
   if(UMB.swiped&&Date.now()-UMB.swiped<400){ev.stopImmediatePropagation();ev.preventDefault();return;}
   const stop=()=>{ev.stopImmediatePropagation();ev.preventDefault();};
+  /* Tippsperre 0,5 s nach jeder Entscheidung (INKA-UX16 2A): Knöpfe, die gerade unter den Finger gerutscht sind, reagieren nicht */
+  if(Date.now()<DEC.lock&&ev.target.closest("#t-heute button, #t-heute .tk")){stop();return;}
+  const un=ev.target.closest("[data-undo]");if(un){stop();undoDec(un.dataset.undo);return;}
+  const qop=ev.target.closest("[data-qopen]");if(qop){stop();DEC.own=qop.dataset.qopen;DEC.focused=false;render();return;}
   const od=ev.target.closest("[data-openday]");if(od){stop();TAB.day=od.dataset.openday;setTab("woche");TAB.day=od.dataset.openday;render();window.scrollTo(0,0);return;}
   const sb=ev.target.closest(".subtabs [data-sub]");if(sb&&sb.dataset.sub==="unterwegs"){stop();setTab("unterwegs");return;}
   const ds=ev.target.closest("[data-dshift]");if(ds){stop();if(!ds.disabled)shiftDay(+ds.dataset.dshift);return;}
@@ -2094,7 +2139,23 @@ async function sendNow(tool,args,text,key,lid){
   catch(e){toast("Senden ging nicht: "+String(e&&e.message||e).slice(0,60)+". Ich versuche es beim nächsten Öffnen erneut.",7000,true);
     const q=store.get("offq",[]);q.push({tool,args,text,key,lid,t:Date.now()});store.set("offq",q.slice(-40));return false;}
 }
+/* Entscheidungen (Konflikte, Fragen): sofort senden, Rückgängig steht in der Zeile bis zur Übernahme (INKA-UX16 3A, 4A).
+   Rückgängig nach dem Senden schickt den Auftrag "zuruecknehmen" {re}; der Lauf führt den ursprünglichen dann nicht aus. */
+function decide(tool,args,text,key){
+  vib(15);closeSheet();DEC.own="";DEC.focused=false;
+  const lid="l-"+Date.now()+"-"+Math.random().toString(36).slice(2,6);
+  const l=pendList();l.push({id:lid,local:true,t:Date.now(),key:key||"",tool,args,text,via:"App"});store.set("pend",l.slice(-80));
+  DEC.fresh=lid;DEC.lock=Date.now()+500;render();setTimeout(()=>{DEC.fresh="";},600);
+  const t0=l[l.length-1].t;
+  sendNow(tool,args,text,key,lid).then(()=>{const p=pendList().find(x=>x.tool===tool&&x.t===t0&&x.args&&x.args.id===args.id);
+    if(p&&p.undone&&!p.local&&!p.cancelSent)cancelDec(p);render();});
+  return true;
+}
+function cancelDec(p){pendPut(p.id,{cancelSent:true});sendNow("zuruecknehmen",{re:p.id,id:p.args&&p.args.id,text:p.text},"zurückgenommen: "+p.text,"");}
+function undoDec(id){const p=pendList().find(x=>x.id===id);if(!p||QUIT[p.id])return;vib(10);pendPut(id,{undone:true});note("Zurückgenommen: "+p.text);
+  if(!p.local)cancelDec(Object.assign({},p,{undone:true}));DEC.lock=Date.now()+500;render();}
 async function auftrag(tool,args,text,key){
+  if(tool==="konflikt"||tool==="antwort")return decide(tool,args,text,key);
   if(UNDO.job){clearTimeout(UNDO.t);const j=UNDO.job;UNDO.job=null;sendNow(j.tool,j.args,j.text,j.key,j.lid);}
   vib(12);closeSheet();
   const lid="l-"+Date.now()+"-"+Math.random().toString(36).slice(2,6);
@@ -2107,7 +2168,7 @@ async function auftrag(tool,args,text,key){
 }
 async function flushOffq(){const q=store.get("offq",[]);if(!q.length||!navigator.onLine)return;store.set("offq",[]);for(const j of q)await sendNow(j.tool,j.args,j.text,j.key,j.lid);}
 /* Falls die App während der 5 s geschlossen wurde: verwaiste lokale Einträge ohne Warteschlange nachsenden */
-setTimeout(()=>{const q=store.get("offq",[]),inQ=new Set(q.map(j=>j.lid));const lost=pendList().filter(p=>p.local&&!inQ.has(p.id)&&Date.now()-p.t>8000&&(!UNDO.job||UNDO.job.lid!==p.id));
+setTimeout(()=>{const q=store.get("offq",[]),inQ=new Set(q.map(j=>j.lid));const lost=pendList().filter(p=>p.local&&!p.undone&&!inQ.has(p.id)&&Date.now()-p.t>8000&&(!UNDO.job||UNDO.job.lid!==p.id));
   lost.forEach(p=>sendNow(p.tool,p.args,p.text,p.key,p.id));},3000);
 window.addEventListener("online",()=>{flushOffq();render();});window.addEventListener("offline",()=>render());
 
@@ -2132,7 +2193,7 @@ function orderCard(){const o=openPend().filter(p=>p.tool==="show_bestellen");if(
 {const _rh=renderHeute;renderHeute=function(){_rh();
   const A=APP.data,today=ymd(new Date()),now=new Date(),nm=now.getHours()*60+now.getMinutes();
   /* Stand-Zeile mit Übernahmezeit und Live */
-  const st=$("#stand");if(st){st.insertAdjacentHTML("beforeend",'<span class="nextrun">Änderungen werden '+esc(nextRun().txt)+' übernommen</span>'+liveChip());
+  const st=$("#stand");if(st){st.insertAdjacentHTML("beforeend",liveChip());
     const gl=$("#golive");if(gl)gl.onclick=openLive;}
   /* großer Jetzt-Block (12a) */
   const items=timedToday(today).filter(e=>!PAUSE_RX.test(e.title));const cur=items.filter(e=>e.s<=nm&&e.e2>nm).pop();const up=items.filter(e=>e.s>nm);
@@ -2146,7 +2207,6 @@ function orderCard(){const o=openPend().filter(p=>p.tool==="show_bestellen");if(
   const hs=hintsToday(today);
   $("#morning").insertAdjacentHTML("afterbegin",orderCard()+memoHtml(today)+(hs.length?'<div class="card">'+hs.map(x=>'<div class="flag"><span>'+esc(x[0])+'</span><div>'+esc(x[1])+'</div></div>').join("")+'</div>':""));
   /* Entscheidungs-Hinweis mit nächster Übernahme */
-  const dc=$("#decide");if(dc)dc.innerHTML=dc.innerHTML.replace("Deine Wahl setzt der Morgencheck um 4:17 um.","Deine Wahl wird "+nextRun().txt+" übernommen.").replace(/warte[nt]? auf den Morgencheck\./,m=>m.replace("auf den Morgencheck","auf die Übernahme "+nextRun().txt));
   /* Plan-Links am Tag (18a) */
   const tl=$("#tl .card");if(tl)tl.insertAdjacentHTML("beforeend",planLinks());
   scheduleAlarms();
